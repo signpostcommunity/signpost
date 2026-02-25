@@ -81,6 +81,36 @@
   .nav-btn:hover { color: var(--text); background: var(--surface2); }
   .nav-btn.active { color: var(--text); }
 
+  /* Language dropdown */
+  .lang-dropdown { position: relative; }
+  .lang-btn {
+    display: flex; align-items: center; gap: 5px;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--muted); border-radius: 8px;
+    padding: 7px 12px; font-size: 0.82rem; font-weight: 600;
+    cursor: pointer; letter-spacing: 0.04em;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .lang-btn:hover { border-color: rgba(0,229,255,0.4); color: var(--accent); }
+  .lang-globe { font-size: 0.95rem; }
+  .lang-caret { font-size: 0.65rem; opacity: 0.6; margin-left: 1px; }
+  .lang-menu {
+    display: none; position: absolute; right: 0; top: calc(100% + 8px);
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; list-style: none; margin: 0; padding: 6px;
+    min-width: 155px; z-index: 999;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.45);
+  }
+  .lang-menu.open { display: block; }
+  .lang-option {
+    padding: 9px 12px; border-radius: 7px; font-size: 0.88rem;
+    cursor: pointer; color: var(--muted);
+    transition: background 0.12s, color 0.12s;
+    white-space: nowrap;
+  }
+  .lang-option:hover { background: rgba(0,229,255,0.08); color: var(--text); }
+  .lang-option.selected { color: var(--accent); font-weight: 600; }
+
   .btn-primary {
     background: var(--accent); color: #000;
     font-weight: 600; border-radius: 10px;
@@ -1754,6 +1784,21 @@
     <button class="nav-btn" onclick="showView('directory')">Browse Interpreter Directory</button>
     <button class="nav-btn" onclick="showView('interpreter-portal')">Interpreter Portal</button>
     <button class="btn-primary" onclick="showView('requester-signup')">Request Interpreters</button>
+    <div class="lang-dropdown" id="lang-dropdown">
+      <button class="lang-btn" onclick="toggleLangMenu()" aria-label="Select language">
+        <span class="lang-globe">🌐</span>
+        <span id="lang-current">EN</span>
+        <span class="lang-caret">▾</span>
+      </button>
+      <ul class="lang-menu" id="lang-menu" role="listbox">
+        <li onclick="selectLang(this, 'EN')" class="lang-option selected" role="option">🇺🇸 English</li>
+        <li onclick="selectLang(this, 'ES')" class="lang-option" role="option">🇪🇸 Español</li>
+        <li onclick="selectLang(this, 'FR')" class="lang-option" role="option">🇫🇷 Français</li>
+        <li onclick="selectLang(this, 'DE')" class="lang-option" role="option">🇩🇪 Deutsch</li>
+        <li onclick="selectLang(this, 'PT')" class="lang-option" role="option">🇧🇷 Português</li>
+        <li onclick="selectLang(this, 'JA')" class="lang-option" role="option">🇯🇵 日本語</li>
+      </ul>
+    </div>
   </div>
   <button class="hamburger" id="hamburger-btn" aria-label="Open menu" onclick="toggleMobileNav()">
     <span></span><span></span><span></span>
@@ -1795,9 +1840,9 @@
   <section class="feature-highlights-section" style="max-width:1200px;margin:0 auto;padding:0 40px 100px;">
     <div style="margin-bottom:40px;">
       <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:100px;padding:8px 20px;font-size:0.9rem;color:var(--accent);margin-bottom:20px;font-weight:500;">How it works</div>
-      <h2 style="font-family:'Syne',sans-serif;font-size:clamp(1.8rem,3vw,2.6rem);font-weight:800;letter-spacing:-0.04em;line-height:1.1;">A direct line between you and your interpreter.</h2>
+      <h2 style="font-family:'Syne',sans-serif;font-size:clamp(1.2rem,2vw,1.7rem);font-weight:800;letter-spacing:-0.04em;line-height:1.1;">A direct line between you and your interpreter.</h2>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:2px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
       <div style="padding:28px 24px;background:var(--surface);">
         <div style="font-family:'Syne',sans-serif;font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;">Your choice, always</div>
         <div style="font-size:0.9rem;line-height:1.65;color:var(--muted);">Watch interpreters introduce themselves or see a sample of their work. Check specializations, read profiles, and choose the person who is genuinely the right fit.</div>
@@ -3185,6 +3230,24 @@ function toggleMobileNav() {
   document.body.style.overflow = isOpen ? 'hidden' : '';
 }
 
+// Language dropdown
+function toggleLangMenu() {
+  document.getElementById('lang-menu').classList.toggle('open');
+}
+function selectLang(el, code) {
+  document.querySelectorAll('.lang-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('lang-current').textContent = code;
+  document.getElementById('lang-menu').classList.remove('open');
+  // Translation hook: wire up your i18n library here when ready
+}
+document.addEventListener('click', function(e) {
+  const dd = document.getElementById('lang-dropdown');
+  if (dd && !dd.contains(e.target)) {
+    document.getElementById('lang-menu').classList.remove('open');
+  }
+});
+
 function mobileNavGo(view, dashboard) {
   toggleMobileNav();
   setTimeout(() => {
@@ -3321,7 +3384,7 @@ function closeFilterDrawer() {
       <div style="margin-bottom:56px;">
         <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(123,97,255,0.1);border:1px solid rgba(123,97,255,0.25);border-radius:100px;padding:6px 14px;font-size:0.8rem;color:#a891ff;margin-bottom:24px;font-weight:500;">For Interpreters</div>
         <h1 style="font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-0.04em;line-height:1.1;margin-bottom:16px;">Your interpreter profile,<br><em style="font-style:normal;background:linear-gradient(135deg,#7b61ff,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">working for you.</em></h1>
-        <p style="color:var(--muted);font-size:1rem;line-height:1.75;max-width:540px;">Join the signpost community, for free. No commission. No agency fees. Book and manage your interpreting work in one place.</p>
+        <p style="color:var(--muted);font-size:1rem;line-height:1.75;max-width:540px;">Join the signpost community, for free. No commission. No agency fees.<br>Book and manage your interpreting work in one place.</p>
       </div>
 
       <!-- Two cards side by side -->
