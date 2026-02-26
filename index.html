@@ -744,7 +744,6 @@
     .profile-grid { grid-template-columns: 1fr; }
     .profile-body { padding: 32px 24px; }
     .profile-container { padding: 0 24px; }
-    .form-row { grid-template-columns: 1fr; }
     .signup-view { padding: 100px 24px 60px; }
     .dash-main { padding: 32px 24px; }
     .stats-row { gap: 24px; }
@@ -2587,19 +2586,19 @@
 
         <div class="form-section">
           <div class="form-section-title">Specializations</div>
-          <div class="chip-group">
-            <span class="chip" onclick="toggleChip(this)">Medical</span>
-            <span class="chip" onclick="toggleChip(this)">Legal</span>
-            <span class="chip" onclick="toggleChip(this)">Conference / Events</span>
-            <span class="chip" onclick="toggleChip(this)">Academic / Education</span>
-            <span class="chip" onclick="toggleChip(this)">Mental Health</span>
-            <span class="chip" onclick="toggleChip(this)">Religious</span>
-            <span class="chip" onclick="toggleChip(this)">Technical / IT</span>
-            <span class="chip" onclick="toggleChip(this)">Music / Concerts</span>
-            <span class="chip" onclick="toggleChip(this)">Theatre</span>
-            <span class="chip" onclick="toggleChip(this)">Business</span>
-            <span class="chip" onclick="toggleChip(this)">Police / Emergency</span>
-            <span class="chip" onclick="toggleChip(this)">Diplomatic</span>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Medical</span>
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Legal</span>
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Conference / Events</span>
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Academic / Education</span>
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Mental Health</span>
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Religious</span>
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Technical / IT</span>
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Music / Concerts</span>
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Theatre</span>
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Business</span>
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Police / Emergency</span>
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Diplomatic</span>
           </div>
           <div style="margin-top:14px;">
             <label style="font-size:0.82rem;color:var(--muted);font-weight:500;display:block;margin-bottom:6px;">Other specializations <span style="color:var(--muted);font-weight:400;">(comma-separated)</span></label>
@@ -3665,7 +3664,7 @@ function closeFilterDrawer() {
         <!-- Organization Information (shown only if org role selected) -->
         <div id="org-info-section" style="display:none;" class="form-section">
           <div class="form-section-title">Organization Information</div>
-          <div id="org-name-field" class="form-row three">
+          <div id="org-name-field" class="form-row">
             <div class="form-field">
               <label>Organization Name *</label>
               <input type="text" placeholder="e.g. Pacific Northwest School for the Deaf">
@@ -3684,10 +3683,6 @@ function closeFilterDrawer() {
                 <option>Event / Entertainment</option>
                 <option>Other</option>
               </select>
-            </div>
-            <div class="form-field">
-              <label>Primary Contact Name</label>
-              <input type="text" placeholder="Full name of the point person">
             </div>
           </div>
         </div>
@@ -3772,19 +3767,10 @@ function closeFilterDrawer() {
               </div>
             </div>
 
-            <div class="form-row">
+            <div class="form-row full">
               <div class="form-field">
-                <label>Format</label>
-                <select>
-                  <option>Select…</option>
-                  <option selected>In-person</option>
-                  <option>Remote (video)</option>
-                  <option>Hybrid</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label>Location or platform</label>
-                <input type="text" placeholder="e.g. Seattle, WA — or Zoom">
+                <label>Appointment address or video platform</label>
+                <input type="text" placeholder="e.g. 1234 Main St, Seattle, WA 98101 — or Zoom / Google Meet link">
               </div>
             </div>
 
@@ -3798,15 +3784,25 @@ function closeFilterDrawer() {
                   <option>Not sure yet</option>
                 </select>
               </div>
-              <div class="form-field" style="justify-content:flex-end;padding-bottom:4px;">
-                <label style="display:flex;align-items:flex-start;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;cursor:pointer;margin-top:auto;">
-                  <input type="checkbox" id="urgent-request-cb" style="width:auto;margin-top:2px;accent-color:var(--accent);flex-shrink:0;">
-                  <div>
-                    <div style="font-size:0.88rem;font-weight:500;color:var(--text);">This is an urgent request.</div>
-                    <div style="font-size:0.78rem;color:var(--muted);margin-top:2px;">Appointment start time is within 48 hours</div>
-                  </div>
-                </label>
+              <div class="form-field">
+                <label>Format</label>
+                <select>
+                  <option>Select…</option>
+                  <option selected>In-person</option>
+                  <option>Remote (video)</option>
+                  <option>Hybrid</option>
+                </select>
               </div>
+            </div>
+
+            <div class="form-row full">
+              <label style="display:flex;align-items:flex-start;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;cursor:pointer;font-weight:normal;">
+                <input type="checkbox" id="urgent-request-cb" style="width:auto;margin-top:2px;accent-color:var(--accent);flex-shrink:0;">
+                <div>
+                  <div style="font-size:0.88rem;font-weight:500;color:var(--text);">This is an urgent request.</div>
+                  <div style="font-size:0.78rem;color:var(--muted);margin-top:2px;">Appointment start time is within 48 hours</div>
+                </div>
+              </label>
             </div>
 
             <!-- ── DIVIDER ── -->
@@ -3815,7 +3811,7 @@ function closeFilterDrawer() {
             <!-- ── SECTION 2: PARTICIPANT DETAILS ── -->
             <div class="form-section-title" style="margin-bottom:16px;">Participant Details</div>
 
-            <div class="form-row">
+            <div class="form-row full">
               <div class="form-field">
                 <label>Name of Deaf / Hard of Hearing participant/s</label>
                 <input type="text" placeholder="e.g. Jordan Smith — or leave blank if unknown">
@@ -3824,7 +3820,6 @@ function closeFilterDrawer() {
                   <span style="font-size:0.75rem;color:#a891ff;line-height:1.5;">This name is kept private and will not be shared with the interpreter until they are confirmed for the appointment.</span>
                 </div>
               </div>
-              <div class="form-field" style="visibility:hidden;"></div>
             </div>
 
             <div class="form-row full" style="margin-top:8px;">
@@ -3851,17 +3846,17 @@ function closeFilterDrawer() {
             <div class="form-row full">
               <div class="form-field">
                 <label>Context / setting *</label>
-                <div class="chip-group" style="margin-top:8px;" id="req-context-chips">
-                  <span class="chip" onclick="toggleChip(this)">Medical</span>
-                  <span class="chip" onclick="toggleChip(this)">Legal</span>
-                  <span class="chip" onclick="toggleChip(this)">Mental Health</span>
-                  <span class="chip" onclick="toggleChip(this)">Education</span>
-                  <span class="chip" onclick="toggleChip(this)">Conference</span>
-                  <span class="chip" onclick="toggleChip(this)">Workplace</span>
-                  <span class="chip" onclick="toggleChip(this)">Religious</span>
-                  <span class="chip" onclick="toggleChip(this)">Social / Family</span>
-                  <span class="chip" onclick="toggleChip(this)">Performance (Music / Theatre)</span>
-                  <span class="chip chip-other-trigger" onclick="toggleChip(this);toggleOtherField(this,'req-context-other')">Other</span>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px;" id="req-context-chips">
+                  <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Medical</span>
+                  <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Legal</span>
+                  <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Mental Health</span>
+                  <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Education</span>
+                  <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Conference</span>
+                  <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Workplace</span>
+                  <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Religious</span>
+                  <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Social / Family</span>
+                  <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Performance (Music / Theatre)</span>
+                  <span class="chip chip-other-trigger" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this);toggleOtherField(this,'req-context-other')">Other</span>
                 </div>
                 <input type="text" id="req-context-other" placeholder="Please describe…" style="display:none;margin-top:10px;">
               </div>
@@ -5150,19 +5145,19 @@ function closeFilterDrawer() {
         </div>
         <div class="form-field">
           <label>Context / Setting *</label>
-          <div class="chip-group" style="margin-top:8px;" id="modal-context-chips">
-            <span class="chip" onclick="toggleChip(this)">Medical</span>
-            <span class="chip" onclick="toggleChip(this)">Mental Health</span>
-            <span class="chip" onclick="toggleChip(this)">Legal</span>
-            <span class="chip" onclick="toggleChip(this)">Education / IEP</span>
-            <span class="chip" onclick="toggleChip(this)">Workplace</span>
-            <span class="chip" onclick="toggleChip(this)">Conference / Event</span>
-            <span class="chip" onclick="toggleChip(this)">Government</span>
-            <span class="chip" onclick="toggleChip(this)">Religious</span>
-            <span class="chip" onclick="toggleChip(this)">Social / Family</span>
-            <span class="chip" onclick="toggleChip(this)">Performance (Music / Theatre)</span>
-            <span class="chip" onclick="toggleChip(this)">Entertainment</span>
-            <span class="chip chip-other-trigger" onclick="toggleChip(this);toggleOtherField(this,'modal-context-other')">Other</span>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px;" id="modal-context-chips">
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Medical</span>
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Mental Health</span>
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Legal</span>
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Education / IEP</span>
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Workplace</span>
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Conference / Event</span>
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Government</span>
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Religious</span>
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Social / Family</span>
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Performance (Music / Theatre)</span>
+            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Entertainment</span>
+            <span class="chip chip-other-trigger" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this);toggleOtherField(this,'modal-context-other')">Other</span>
           </div>
           <input type="text" id="modal-context-other" placeholder="Please describe…" style="display:none;margin-top:10px;">
         </div>
@@ -5540,12 +5535,8 @@ const SIGN_LANGUAGES_TOP10 = [
   'American Sign Language (ASL)',
   'British Sign Language (BSL)',
   'International Sign (IS)',
-  'Auslan — Australian SL',
   'Langue des Signes Française (LSF)',
-  'Deutsche Gebärdensprache (DGS)',
-  'Língua Brasileira de Sinais (LIBRAS)',
-  'Lengua de Signos Española (LSE)',
-  'Japanese Sign Language (JSL)',
+  'Lengua de Señas Mexicana (LSM)',
   'ProTactile ASL (PTASL / DeafBlind)',
 ];
 
@@ -5626,10 +5617,6 @@ const SPOKEN_LANGUAGES_TOP10 = [
   'Arabic (العربية)',
   'Mandarin Chinese (普通话)',
   'Portuguese (Português)',
-  'Russian (Русский)',
-  'German (Deutsch)',
-  'Japanese (日本語)',
-  'Korean (한국어)',
 ];
 
 const SPOKEN_LANGUAGES_BY_CONTINENT = {
@@ -5718,9 +5705,9 @@ function buildLangPicker(containerId, top10, byContinent, otherId) {
   if (!container) return;
 
   let html = `<div class="lang-picker-top-label">Most common</div>`;
-  html += `<div class="chip-group" style="margin-bottom:4px;">`;
+  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px;">`;
   top10.forEach(lang => {
-    html += `<span class="chip" onclick="toggleChip(this)">${lang}</span>`;
+    html += `<span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;width:100%;box-sizing:border-box;" onclick="toggleChip(this)">${lang}</span>`;
   });
   html += `</div>`;
 
