@@ -399,8 +399,7 @@
     padding-top: 12px; border-top: 1px solid var(--border);
   }
 
-  .star-rating { color: #f5c518; font-size: 0.8rem; }
-  .rating-count { color: var(--muted); font-size: 0.78rem; margin-left: 4px; }
+
 
   .cert-badge {
     background: rgba(0,229,255,0.08);
@@ -1833,8 +1832,8 @@
   <div class="nav-logo wordmark" onclick="showView('home')">sign<span>post</span></div>
   <div class="nav-links">
     <button class="nav-btn" onclick="showView('directory')">Browse Interpreter Directory</button>
-    <button class="nav-btn" onclick="showView('interpreter-portal')">Interpreter Portal</button>
-    <button class="btn-primary" onclick="showView('requester-signup')">Request Interpreters</button>
+    <button class="nav-btn" onclick="goToInterpreterPortalNav()">Interpreter Portal</button>
+    <button class="btn-primary" onclick="goToRequesterPortal()">Request Interpreters</button>
     <div class="lang-dropdown" id="lang-dropdown">
       <button class="lang-btn" onclick="toggleLangMenu()" aria-label="Select language">
         <span class="lang-globe">🌐</span>
@@ -1860,8 +1859,8 @@
 <div class="mobile-nav" id="mobile-nav">
   <button class="mobile-nav-close" onclick="toggleMobileNav()">✕</button>
   <button class="mobile-nav-btn" onclick="mobileNavGo('directory')">Browse Interpreter Directory</button>
-  <button class="mobile-nav-btn" onclick="mobileNavGo('interpreter-portal')">Interpreter Portal</button>
-  <button class="mobile-nav-btn primary" onclick="mobileNavGo('requester-signup')">Request Interpreters</button>
+  <button class="mobile-nav-btn" onclick="closeMobileNav();goToInterpreterPortalNav()">Interpreter Portal</button>
+  <button class="mobile-nav-btn primary" onclick="closeMobileNav();goToRequesterPortal()">Request Interpreters</button>
   <button class="mobile-nav-btn" onclick="mobileNavGo('about')" style="margin-top:8px;opacity:0.7;font-size:0.9rem;">About signpost</button>
 </div>
 
@@ -1880,7 +1879,7 @@
         <h1>Find your interpreter,<br><em>wherever you are.</em></h1>
         <p>We are the un-agency: connect with and book sign language interpreters directly. Browse real profiles, watch intro videos, and choose the right person for the job.</p>
         <div class="hero-ctas">
-          <button class="btn-primary btn-large" onclick="showView('requester-signup')" style="width:100%;text-align:center;">Need an interpreter?<br>Submit a request →</button>
+          <button class="btn-primary btn-large" onclick="goToRequesterPortal()" style="width:100%;text-align:center;">Need an interpreter?<br>Submit a request →</button>
           <button class="btn-large" onclick="showView('interpreter-portal')" style="width:100%;text-align:center;background:none;border:1.5px solid var(--border);color:var(--text);" onmouseover="this.style.borderColor='rgba(0,229,255,0.4)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">Are you an interpreter?<br>Create your free profile →</button>
         </div>
       </div>
@@ -2041,9 +2040,6 @@
       </div>
 
       <div class="filter-section">
-        <div class="filter-title">Min. Rating</div>
-        <input type="range" class="range-slider" min="1" max="5" value="3" step="0.5">
-        <div class="range-labels"><span>1&#9733;</span><span>3&#9733;</span><span>5&#9733;</span></div>
       </div>
     </aside>
 
@@ -2055,8 +2051,6 @@
           <button class="filter-toggle" onclick="openFilterDrawer()">&#9881; Filters</button>
           <select class="sort-select">
             <option>Sort: Best Match</option>
-            <option>Sort: Highest Rated</option>
-            <option>Sort: Most Reviews</option>
             <option>Sort: Recently Active</option>
           </select>
         </div>
@@ -2104,7 +2098,6 @@
           <button class="tab-btn active" onclick="switchTab(this,'overview')">Overview</button>
           <button class="tab-btn" onclick="switchTab(this,'credentials')">Credentials</button>
           <button class="tab-btn" onclick="switchTab(this,'rates')">Rates &amp; Terms</button>
-          <button class="tab-btn" onclick="switchTab(this,'reviews')">Reviews (42)</button>
           <button class="tab-btn" onclick="switchTab(this,'availability')">Availability</button>
         </div>
       </div>
@@ -2355,26 +2348,6 @@
 
         <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 18px;margin-top:8px;">
           <p style="color:var(--muted);font-size:0.8rem;line-height:1.6;">Rate profiles are set by the interpreter and shared privately when you send an inquiry. Actual figures are confirmed through direct conversation before any job is booked.</p>
-        </div>
-      </div>
-
-      <!-- REVIEWS TAB -->
-      <div id="tab-reviews" style="display:none;">
-        <div style="display:flex;flex-direction:column;gap:16px;">
-          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
-            <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
-              <strong>WHO · Interpreter, Geneva</strong>
-              
-            </div>
-            <p style="color:var(--muted);font-size:0.88rem;line-height:1.6;">Sofia interpreted for our annual assembly across three days. Her International Sign was impeccable and her ability to switch between languages mid-session was exceptional.</p>
-          </div>
-          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
-            <div style="display:flex;justify-content:space-between;margin-bottom:10px;">
-              <strong>Community Deaf Center, Madrid</strong>
-              
-            </div>
-            <p style="color:var(--muted);font-size:0.88rem;line-height:1.6;">We've worked with Sofia multiple times in medical settings. She is professional, culturally sensitive, and deeply knowledgeable. Highly recommended.</p>
-          </div>
         </div>
       </div>
 
@@ -3068,6 +3041,43 @@ function goToDashboard() {
   }
 }
 
+function goToRequesterPortal() {
+  if (currentUserRole === 'requester') {
+    showView('requester-dashboard');
+  } else {
+    showView('requester-portal');
+  }
+}
+
+function goToInterpreterPortalNav() {
+  if (currentUserRole === 'interpreter') {
+    showView('interpreter-dashboard');
+  } else {
+    showView('interpreter-portal');
+  }
+}
+
+function goToInterpreterPortal() {
+  if (currentUserRole === 'interpreter') {
+    showView('interpreter-dashboard');
+  } else {
+    showView('interpreter-login');
+  }
+}
+
+function handleRequesterLogin() {
+  const email = document.getElementById('req-login-email').value.trim();
+  const password = document.getElementById('req-login-password').value;
+  const errorEl = document.getElementById('req-login-error');
+  if (!email || !password) {
+    errorEl.style.display = 'block';
+    return;
+  }
+  errorEl.style.display = 'none';
+  setUserRole('requester');
+  showView('requester-dashboard');
+}
+
 function handleInterpreterLogin() {
   const email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
@@ -3092,7 +3102,7 @@ function showView(view) {
   if (view === 'requester-signup' || view === 'requester-dashboard') setUserRole('requester');
   if (view === 'interpreter-dashboard') setUserRole('interpreter');
   // Show footer on browsing views, hide on forms and dashboards
-  const noFooterViews = ['signup','requester-signup','requester-dashboard','interpreter-dashboard','interpreter-portal','interpreter-login'];
+  const noFooterViews = ['signup','requester-signup','requester-portal','requester-login','requester-dashboard','interpreter-dashboard','interpreter-portal','interpreter-login'];
   const footer = document.getElementById('site-footer');
   if (footer) footer.style.display = noFooterViews.includes(view) ? 'none' : 'flex';
 }
@@ -3160,7 +3170,7 @@ function openProfile(id) {
 function switchTab(btn, tab) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  ['overview','credentials','rates','reviews','availability'].forEach(t => {
+  ['overview','credentials','rates','availability'].forEach(t => {
     const el = document.getElementById('tab-'+t);
     if (el) el.style.display = t===tab ? (t==='overview'?'grid':'block') : 'none';
   });
@@ -3370,6 +3380,8 @@ function mobileNavGo(view, dashboard) {
   }, 200);
 }
 
+function closeMobileNav() { toggleMobileNav(); }
+
 // Close mobile nav when clicking outside
 document.getElementById('mobile-nav').addEventListener('click', function(e) {
   if (e.target === this) toggleMobileNav();
@@ -3402,7 +3414,7 @@ function closeFilterDrawer() {
   <div style="display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
     <button class="nav-btn" onclick="showView('directory')" style="font-size:0.82rem;">Browse Interpreter Directory</button>
     <button class="nav-btn" onclick="showView('interpreter-portal')" style="font-size:0.82rem;">Interpreter Portal</button>
-    <button class="nav-btn" onclick="showView('requester-signup')" style="font-size:0.82rem;">Request Interpreters</button>
+    <button class="nav-btn" onclick="goToRequesterPortal()" style="font-size:0.82rem;">Request Interpreters</button>
     <button class="nav-btn" onclick="showView('about')" style="font-size:0.82rem;">About Us</button>
   </div>
   <div style="color:var(--muted);font-size:0.78rem;">© 2025 signpost. Built with care by and for the Deaf community.</div>
@@ -3519,7 +3531,7 @@ function closeFilterDrawer() {
             <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:#7b61ff;font-size:1rem;">✓</span> Credentials &amp; certifications</li>
             <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:#7b61ff;font-size:1rem;">✓</span> Rates, availability &amp; intro video</li>
           </ul>
-          <button class="btn-primary" onclick="showView('signup')" style="background:#7b61ff;margin-top:auto;text-align:center;" onmouseover="this.style.background='#6a52e0'" onmouseout="this.style.background='#7b61ff'">Create My Profile →</button>
+          <button class="btn-primary" onclick="showView('signup')" style="background:#7b61ff;margin-top:auto;text-align:center;" onmouseover="this.style.background='#6a52e0'" onmouseout="this.style.background='#7b61ff'">Create my profile →</button>
         </div>
 
         <!-- Sign in card -->
@@ -3539,7 +3551,7 @@ function closeFilterDrawer() {
             <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:var(--accent);font-size:1rem;">✓</span> Manage availability &amp; calendar</li>
             <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:var(--accent);font-size:1rem;">✓</span> Review &amp; respond to requests</li>
           </ul>
-          <button class="btn-primary" onclick="showView('interpreter-login')" style="margin-top:auto;text-align:center;">Sign In to Dashboard →</button>
+          <button class="btn-primary" onclick="goToInterpreterPortal()" style="margin-top:auto;text-align:center;">Sign in to my portal →</button>
         </div>
 
       </div>
@@ -3573,6 +3585,11 @@ function closeFilterDrawer() {
       <!-- Login form card -->
       <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:32px;display:flex;flex-direction:column;gap:20px;">
 
+        <!-- Demo hint at top of card -->
+        <div style="background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.2);border-radius:8px;padding:12px 16px;">
+          <div style="font-size:0.78rem;color:var(--accent);line-height:1.6;font-weight:600;">Demo mode — enter ANY text to sign in to the sample interpreter dashboard.</div>
+        </div>
+
         <div class="form-field">
           <label>Email address</label>
           <input type="email" id="login-email" placeholder="sofia@example.com" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" onkeydown="if(event.key==='Enter')handleInterpreterLogin()">
@@ -3588,10 +3605,16 @@ function closeFilterDrawer() {
 
         <!-- Error message (hidden by default) -->
         <div id="login-error" style="display:none;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.25);border-radius:8px;padding:10px 14px;font-size:0.83rem;color:#ff8099;">
-          Incorrect email or password. Please try again.
+          Please enter your email and password.
         </div>
 
-        <button class="btn-primary" onclick="handleInterpreterLogin()" style="width:100%;padding:13px;font-size:0.95rem;margin-top:4px;">Sign In →</button>
+        <!-- Remember me -->
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.85rem;color:var(--muted);">
+          <input type="checkbox" id="interp-remember-me" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;">
+          Remember me
+        </label>
+
+        <button class="btn-primary" onclick="handleInterpreterLogin()" style="width:100%;padding:13px;font-size:0.95rem;margin-top:4px;">Sign in →</button>
 
         <div style="text-align:center;padding-top:4px;border-top:1px solid var(--border);">
           <span style="color:var(--muted);font-size:0.83rem;">Don't have a profile yet? </span>
@@ -3600,11 +3623,121 @@ function closeFilterDrawer() {
 
       </div>
 
-      <!-- Demo hint -->
-      <div style="margin-top:20px;background:rgba(0,229,255,0.05);border:1px solid rgba(0,229,255,0.12);border-radius:10px;padding:14px 18px;">
-        <div style="font-size:0.78rem;color:var(--muted);line-height:1.6;">
-          <span style="color:var(--accent);font-weight:600;">Demo:</span> Enter any email and password to sign in to the sample interpreter dashboard.
+    </div>
+  </div>
+</div>
+
+<!-- =========================================
+     REQUESTER PORTAL LANDING VIEW
+     ========================================= -->
+<div class="view" id="view-requester-portal">
+  <div class="signup-view" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:100px 24px 60px;">
+    <div style="max-width:960px;width:100%;margin:0 auto;">
+
+      <button class="back-btn" onclick="showView('home')" style="margin-bottom:40px;">&#8592; Back to Home</button>
+
+      <div style="margin-bottom:56px;">
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:100px;padding:6px 14px;font-size:0.8rem;color:var(--accent);margin-bottom:24px;font-weight:500;">For Requesters</div>
+        <h1 style="font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-0.04em;line-height:1.1;margin-bottom:16px;">Find the right interpreter,<br><em style="font-style:normal;background:linear-gradient(135deg,#00e5ff,#7b61ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">every time.</em></h1>
+        <p style="color:var(--muted);font-size:1rem;line-height:1.75;">Book directly with qualified interpreters. No agency markup. Full transparency on rates, credentials, and availability.</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:48px;">
+
+        <!-- Create account card -->
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:36px;display:flex;flex-direction:column;gap:20px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(0,229,255,0.4)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="width:52px;height:52px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:14px;display:flex;align-items:center;justify-content:center;">
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><circle cx="13" cy="9" r="4.5" stroke="#00e5ff" stroke-width="1.5"/><path d="M4 22c0-4.97 4.03-9 9-9s9 4.03 9 9" stroke="#00e5ff" stroke-width="1.5" stroke-linecap="round"/><path d="M19 4v6M16 7h6" stroke="#7b61ff" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:8px;">New to signpost?</div>
+            <p style="color:var(--muted);font-size:0.875rem;line-height:1.65;">Create your free requester account. Build a favorites list, track your requests, and connect directly with interpreters — no agency in the middle.</p>
+          </div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;margin:0;padding:0;">
+            <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:var(--accent);font-size:1rem;">✓</span> Browse verified interpreter profiles</li>
+            <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:var(--accent);font-size:1rem;">✓</span> See real rates before you book</li>
+            <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:var(--accent);font-size:1rem;">✓</span> Save favorites &amp; track all requests</li>
+          </ul>
+          <button class="btn-primary" onclick="showView('requester-signup')" style="margin-top:auto;text-align:center;">Create my first request →</button>
         </div>
+
+        <!-- Sign in card -->
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:36px;display:flex;flex-direction:column;gap:20px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(123,97,255,0.4)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="width:52px;height:52px;background:rgba(123,97,255,0.1);border:1px solid rgba(123,97,255,0.25);border-radius:14px;display:flex;align-items:center;justify-content:center;">
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><rect x="4" y="4" width="18" height="18" rx="4" stroke="#7b61ff" stroke-width="1.5"/><path d="M9 13h8M14 10l3 3-3 3" stroke="#7b61ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:8px;">Been here before?</div>
+            <p style="color:var(--muted);font-size:0.875rem;line-height:1.65;">Sign in to your requester portal to manage your requests, message interpreters, and view your booking history.</p>
+          </div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;margin:0;padding:0;">
+            <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:#a78bfa;font-size:1rem;">✓</span> View &amp; manage active requests</li>
+            <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:#a78bfa;font-size:1rem;">✓</span> Message your interpreters</li>
+            <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:#a78bfa;font-size:1rem;">✓</span> Access your full booking history</li>
+          </ul>
+          <button class="btn-primary" onclick="showView('requester-login')" style="background:#7b61ff;margin-top:auto;text-align:center;" onmouseover="this.style.background='#6a52e0'" onmouseout="this.style.background='#7b61ff'">Sign in to my portal →</button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- =========================================
+     REQUESTER LOGIN VIEW
+     ========================================= -->
+<div class="view" id="view-requester-login">
+  <div class="signup-view" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:100px 24px 60px;">
+    <div style="max-width:440px;width:100%;margin:0 auto;">
+
+      <button class="back-btn" onclick="showView('requester-portal')" style="margin-bottom:36px;">&#8592; Back</button>
+
+      <div style="margin-bottom:36px;">
+        <div style="width:52px;height:52px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+          <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><circle cx="13" cy="9" r="4.5" stroke="#00e5ff" stroke-width="1.5"/><path d="M4 22c0-4.97 4.03-9 9-9s9 4.03 9 9" stroke="#00e5ff" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <h1 style="font-family:'Syne',sans-serif;font-size:1.9rem;font-weight:800;letter-spacing:-0.04em;margin-bottom:8px;">Requester sign in</h1>
+        <p style="color:var(--muted);font-size:0.9rem;line-height:1.6;">Welcome back. Sign in to manage your requests and connect with interpreters.</p>
+      </div>
+
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:32px;display:flex;flex-direction:column;gap:20px;">
+
+        <!-- Demo hint at top -->
+        <div style="background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.2);border-radius:8px;padding:12px 16px;">
+          <div style="font-size:0.78rem;color:var(--accent);line-height:1.6;font-weight:600;">Demo mode — enter ANY text to sign in to the sample requester portal.</div>
+        </div>
+
+        <div class="form-field">
+          <label>Email address</label>
+          <input type="email" id="req-login-email" placeholder="you@example.com" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" onkeydown="if(event.key==='Enter')handleRequesterLogin()">
+        </div>
+
+        <div class="form-field">
+          <label style="display:flex;justify-content:space-between;align-items:center;">
+            Password
+            <span style="color:var(--accent);font-size:0.8rem;cursor:pointer;font-weight:400;">Forgot password?</span>
+          </label>
+          <input type="password" id="req-login-password" placeholder="••••••••" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" onkeydown="if(event.key==='Enter')handleRequesterLogin()">
+        </div>
+
+        <!-- Remember me -->
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.85rem;color:var(--muted);">
+          <input type="checkbox" id="req-remember-me" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;">
+          Remember me
+        </label>
+
+        <div id="req-login-error" style="display:none;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.25);border-radius:8px;padding:10px 14px;font-size:0.83rem;color:#ff8099;">
+          Please enter your email and password.
+        </div>
+
+        <button class="btn-primary" onclick="handleRequesterLogin()" style="width:100%;padding:13px;font-size:0.95rem;margin-top:4px;">Sign in →</button>
+
+        <div style="text-align:center;padding-top:4px;border-top:1px solid var(--border);">
+          <span style="color:var(--muted);font-size:0.83rem;">Don't have an account? </span>
+          <span style="color:var(--accent);font-size:0.83rem;cursor:pointer;" onclick="showView('requester-signup')">Create one →</span>
+        </div>
+
       </div>
 
     </div>
@@ -3926,7 +4059,7 @@ function closeFilterDrawer() {
                 <span class="lang-tag">ASL</span><span class="lang-tag">IS</span><span class="spec-tag">Medical</span><span class="spec-tag">Conference</span>
               </div>
               <div style="display:flex;align-items:center;justify-content:space-between;">
-                <span style="color:var(--muted);font-size:0.78rem;">⭐ 4.9 · RID Certified</span>
+                <span style="color:var(--muted);font-size:0.78rem;">RID Certified</span>
                 <button class="add-btn" style="width:auto;padding:6px 14px;font-size:0.8rem;" onclick="toggleSignupFav(this)">+ Favorite</button>
               </div>
             </div>
@@ -3943,7 +4076,7 @@ function closeFilterDrawer() {
                 <span class="lang-tag">BSL</span><span class="lang-tag">IS</span><span class="spec-tag">Legal</span><span class="spec-tag">Mental Health</span>
               </div>
               <div style="display:flex;align-items:center;justify-content:space-between;">
-                <span style="color:var(--muted);font-size:0.78rem;">⭐ 4.8 · NRSLI</span>
+                <span style="color:var(--muted);font-size:0.78rem;">NRSLI</span>
                 <button class="add-btn" style="width:auto;padding:6px 14px;font-size:0.8rem;" onclick="toggleSignupFav(this)">+ Favorite</button>
               </div>
             </div>
@@ -3960,7 +4093,7 @@ function closeFilterDrawer() {
                 <span class="lang-tag">ASL</span><span class="lang-tag">IS</span><span class="spec-tag">Medical</span><span class="spec-tag">Academic</span>
               </div>
               <div style="display:flex;align-items:center;justify-content:space-between;">
-                <span style="color:var(--muted);font-size:0.78rem;">⭐ 5.0 · RID Certified</span>
+                <span style="color:var(--muted);font-size:0.78rem;">RID Certified</span>
                 <button class="add-btn" style="width:auto;padding:6px 14px;font-size:0.8rem;" onclick="toggleSignupFav(this)">+ Favorite</button>
               </div>
             </div>
@@ -3977,7 +4110,7 @@ function closeFilterDrawer() {
                 <span class="lang-tag">ASL</span><span class="lang-tag">IS</span><span class="spec-tag">Education</span><span class="spec-tag">Religious</span>
               </div>
               <div style="display:flex;align-items:center;justify-content:space-between;">
-                <span style="color:var(--muted);font-size:0.78rem;">⭐ 4.7 · RID Certified</span>
+                <span style="color:var(--muted);font-size:0.78rem;">RID Certified</span>
                 <button class="add-btn" style="width:auto;padding:6px 14px;font-size:0.8rem;" onclick="toggleSignupFav(this)">+ Favorite</button>
               </div>
             </div>
@@ -4082,6 +4215,10 @@ function closeFilterDrawer() {
       <button class="dash-nav-item" onclick="showDashPanel('drafts', this)">
         <span class="dash-nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3" y="2" width="10" height="12" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M6 6h4M6 9h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></span> Drafts
         <span class="dash-badge" style="background:var(--surface2);color:var(--muted);">1</span>
+      </button>
+      <button class="dash-nav-item" onclick="showDashPanel('inbox', this)">
+        <span class="dash-nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 5l6 4.5L14 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Inbox
+        <span class="dash-badge">3</span>
       </button>
 
       <div class="dash-nav-section">Favorites</div>
@@ -4368,7 +4505,7 @@ function closeFilterDrawer() {
               <div class="fav-avatar" style="background:linear-gradient(135deg,#ff4d6d,#7b61ff);">MK</div>
               <div class="fav-info">
                 <div class="fav-name">Marcus Kim</div>
-                <div class="fav-details">ASL · Mental Health, Education · ⭐ 4.8 · Remote</div>
+                <div class="fav-details">ASL · Mental Health, Education · Remote</div>
               </div>
               <div class="fav-actions">
                 <button class="fav-btn" onclick="openNewRequest()">Request</button>
@@ -4380,7 +4517,7 @@ function closeFilterDrawer() {
               <div class="fav-avatar" style="background:linear-gradient(135deg,#00e5ff,#34d399);">PN</div>
               <div class="fav-info">
                 <div class="fav-name">Priya Nair</div>
-                <div class="fav-details">ASL, IS · Medical, Mental Health · ⭐ 4.7 · On-site (PNW)</div>
+                <div class="fav-details">ASL, IS · Medical, Mental Health · On-site (PNW)</div>
               </div>
               <div class="fav-actions">
                 <button class="fav-btn" onclick="openNewRequest()">Request</button>
@@ -4416,7 +4553,7 @@ function closeFilterDrawer() {
               <div class="fav-avatar" style="background:linear-gradient(135deg,#f97316,#facc15);">JT</div>
               <div class="fav-info">
                 <div class="fav-name">James Torres</div>
-                <div class="fav-details">ASL · Legal, Government · ⭐ 4.6 · On-site (WA, OR)</div>
+                <div class="fav-details">ASL · Legal, Government · On-site (WA, OR)</div>
               </div>
               <div class="fav-actions">
                 <button class="fav-btn" onclick="openNewRequest()">Request</button>
@@ -4428,7 +4565,7 @@ function closeFilterDrawer() {
               <div class="fav-avatar" style="background:linear-gradient(135deg,#a78bfa,#f472b6);">AL</div>
               <div class="fav-info">
                 <div class="fav-name">Amara Lewandowski</div>
-                <div class="fav-details">ASL, BSL · Conference, Education · ⭐ 4.8 · Remote + On-site</div>
+                <div class="fav-details">ASL, BSL · Conference, Education · Remote + On-site</div>
               </div>
               <div class="fav-actions">
                 <button class="fav-btn" onclick="openNewRequest()">Request</button>
@@ -4440,7 +4577,7 @@ function closeFilterDrawer() {
               <div class="fav-avatar" style="background:linear-gradient(135deg,#34d399,#60a5fa);">CW</div>
               <div class="fav-info">
                 <div class="fav-name">Casey Wren</div>
-                <div class="fav-details">ASL · Workplace, Social · ⭐ 4.5 · On-site (Seattle)</div>
+                <div class="fav-details">ASL · Workplace, Social · On-site (Seattle)</div>
               </div>
               <div class="fav-actions">
                 <button class="fav-btn" onclick="openNewRequest()">Request</button>
@@ -4452,7 +4589,7 @@ function closeFilterDrawer() {
               <div class="fav-avatar" style="background:linear-gradient(135deg,#fb923c,#ff4d6d);">RJ</div>
               <div class="fav-info">
                 <div class="fav-name">Rena Jacobi</div>
-                <div class="fav-details">ASL, DGS · Medical, Mental Health · ⭐ 4.9 · Remote</div>
+                <div class="fav-details">ASL, DGS · Medical, Mental Health · Remote</div>
               </div>
               <div class="fav-actions">
                 <button class="fav-btn" onclick="openNewRequest()">Request</button>
@@ -4464,7 +4601,7 @@ function closeFilterDrawer() {
               <div class="fav-avatar" style="background:linear-gradient(135deg,#7b61ff,#fb923c);">TN</div>
               <div class="fav-info">
                 <div class="fav-name">Tomas Nakamura</div>
-                <div class="fav-details">ASL, JSL · Education, Conference · ⭐ 4.7 · On-site + Remote</div>
+                <div class="fav-details">ASL, JSL · Education, Conference · On-site + Remote</div>
               </div>
               <div class="fav-actions">
                 <button class="fav-btn" onclick="openNewRequest()">Request</button>
@@ -4513,6 +4650,62 @@ function closeFilterDrawer() {
         </div>
       </div>
 
+      <div class="dash-panel" id="panel-inbox">
+        <div class="dash-page-title">Inbox</div>
+        <div class="dash-page-subtitle">Messages from your interpreters.</div>
+        <div style="display:flex;flex-direction:column;gap:12px;max-width:720px;">
+
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;cursor:pointer;transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(0,229,255,0.35)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div class="dash-avatar" style="width:36px;height:36px;font-size:0.8rem;background:linear-gradient(135deg,#7b61ff,#00e5ff);flex-shrink:0;">SR</div>
+                <div>
+                  <div style="font-weight:600;font-size:0.9rem;">Sofia Reyes</div>
+                  <div style="color:var(--muted);font-size:0.75rem;">Re: March 15 appointment</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+                <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;"></span>
+                <span style="font-size:0.75rem;color:var(--muted);">2h ago</span>
+              </div>
+            </div>
+            <p style="color:var(--muted);font-size:0.84rem;line-height:1.5;margin:0;padding-left:46px;">Hi Alex, I've confirmed the date. Could you share any prep materials ahead of time?</p>
+          </div>
+
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;cursor:pointer;transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(0,229,255,0.35)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div class="dash-avatar" style="width:36px;height:36px;font-size:0.8rem;background:linear-gradient(135deg,#ff4d6d,#7b61ff);flex-shrink:0;">JM</div>
+                <div>
+                  <div style="font-weight:600;font-size:0.9rem;">Jordan Miller</div>
+                  <div style="color:var(--muted);font-size:0.75rem;">Re: Legal deposition — April 3</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+                <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;"></span>
+                <span style="font-size:0.75rem;color:var(--muted);">Yesterday</span>
+              </div>
+            </div>
+            <p style="color:var(--muted);font-size:0.84rem;line-height:1.5;margin:0;padding-left:46px;">I'm available for the April 3rd deposition. Do you have a start time confirmed yet?</p>
+          </div>
+
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;cursor:pointer;transition:border-color 0.2s;opacity:0.75;" onmouseover="this.style.borderColor='rgba(0,229,255,0.35)';this.style.opacity='1'" onmouseout="this.style.borderColor='var(--border)';this.style.opacity='0.75'">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div class="dash-avatar" style="width:36px;height:36px;font-size:0.8rem;background:linear-gradient(135deg,#34d399,#7b61ff);flex-shrink:0;">DW</div>
+                <div>
+                  <div style="font-weight:600;font-size:0.9rem;">Dana Whitfield</div>
+                  <div style="color:var(--muted);font-size:0.75rem;">Re: PT session — February</div>
+                </div>
+              </div>
+              <span style="font-size:0.75rem;color:var(--muted);flex-shrink:0;">3 days ago</span>
+            </div>
+            <p style="color:var(--muted);font-size:0.84rem;line-height:1.5;margin:0;padding-left:46px;">Thanks for confirming — I'll see you there. Let me know if anything changes.</p>
+          </div>
+
+        </div>
+      </div>
+
     </div><!-- /dash-main -->
   </div><!-- /dashboard-layout -->
 </div><!-- /view-requester-dashboard -->
@@ -4549,6 +4742,10 @@ function closeFilterDrawer() {
         <span class="dash-nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M4 6h8M4 9h5M10 12l-2-1.5v-2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span> Confirmed
         <span class="dash-badge" style="background:rgba(0,229,255,0.15);color:var(--accent);">3</span>
       </button>
+      <button class="dash-nav-item" onclick="showDashPanel('interp-inbox', this)">
+        <span class="dash-nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 5l6 4.5L14 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Inbox
+        <span class="dash-badge">2</span>
+      </button>
 
       <div class="dash-nav-section">My Profile</div>
       <button class="dash-nav-item" onclick="showDashPanel('interp-profile', this)">
@@ -4559,6 +4756,9 @@ function closeFilterDrawer() {
       </button>
       <button class="dash-nav-item" onclick="showDashPanel('interp-availability', this)">
         <span class="dash-nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 2v2M11 2v2M2 7h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></span> Availability
+      </button>
+      <button class="dash-nav-item" onclick="showDashPanel('interp-network', this)">
+        <span class="dash-nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="4" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="3" cy="11" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="13" cy="11" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M6 5.5L4 9M10 5.5L12 9M5.5 11h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span> Trusted Network
       </button>
 
       <div class="dash-nav-section">Account</div>
@@ -4584,13 +4784,13 @@ function closeFilterDrawer() {
             <div class="dash-stat-num">3</div>
             <div class="dash-stat-label">Confirmed This Month</div>
           </div>
-          <div class="dash-stat-card" onclick="showDashPanel('interp-profile', document.querySelector('.dash-nav-item[onclick*=\'interp-profile\']'))" title="Edit Profile">
-            <div class="dash-stat-num">✓ Live</div>
-            <div class="dash-stat-label">Profile Status</div>
+          <div class="dash-stat-card" onclick="showDashPanel('interp-network', document.querySelector('.dash-nav-item[onclick*=\'interp-network\']'))" title="Trusted Network">
+            <div class="dash-stat-num">4</div>
+            <div class="dash-stat-label">Interpreters in your Trusted Network</div>
           </div>
           <div class="dash-stat-card" onclick="showDashPanel('interp-availability', document.querySelector('.dash-nav-item[onclick*=\'interp-availability\']'))" title="Manage Availability">
-            <div class="dash-stat-num">4 days</div>
-            <div class="dash-stat-label">Available This Week</div>
+            <div class="dash-stat-num">4</div>
+            <div class="dash-stat-label">Days Available This Week</div>
           </div>
         </div>
 
@@ -5125,9 +5325,126 @@ function closeFilterDrawer() {
         <button class="btn-primary" onclick="saveAvailability()">Save Availability</button>
       </div>
 
+      <div class="dash-panel" id="panel-interp-inbox">
+        <div class="dash-page-title">Inbox</div>
+        <div class="dash-page-subtitle">Messages from requesters.</div>
+        <div style="display:flex;flex-direction:column;gap:12px;max-width:720px;">
+
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;cursor:pointer;transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(0,229,255,0.35)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div class="dash-avatar" style="width:36px;height:36px;font-size:0.8rem;background:linear-gradient(135deg,#00e5ff,#7b61ff);flex-shrink:0;">AR</div>
+                <div>
+                  <div style="font-weight:600;font-size:0.9rem;">Alex Rivera</div>
+                  <div style="color:var(--muted);font-size:0.75rem;">Re: March 15 appointment</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+                <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;"></span>
+                <span style="font-size:0.75rem;color:var(--muted);">1h ago</span>
+              </div>
+            </div>
+            <p style="color:var(--muted);font-size:0.84rem;line-height:1.5;margin:0;padding-left:46px;">Thanks Sofia! I'll send over the agenda and glossary by end of day.</p>
+          </div>
+
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;cursor:pointer;transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(0,229,255,0.35)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div class="dash-avatar" style="width:36px;height:36px;font-size:0.8rem;background:linear-gradient(135deg,#ff9500,#ff4d6d);flex-shrink:0;">PH</div>
+                <div>
+                  <div style="font-weight:600;font-size:0.9rem;">Pacific Health Clinic</div>
+                  <div style="color:var(--muted);font-size:0.75rem;">New request — April 8</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+                <span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;"></span>
+                <span style="font-size:0.75rem;color:var(--muted);">4h ago</span>
+              </div>
+            </div>
+            <p style="color:var(--muted);font-size:0.84rem;line-height:1.5;margin:0;padding-left:46px;">We have a medical consult on April 8th, 2:00–3:30 PM. ASL needed. Are you available?</p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- TRUSTED NETWORK PANEL -->
+      <div class="dash-panel" id="panel-interp-network">
+        <div class="dash-page-title">Trusted Network</div>
+        <div class="dash-page-subtitle">Interpreters you love working with. Add them here so they're easy to team up with when a job calls for a partner.</div>
+
+        <p style="margin:0 0 28px;font-size:0.84rem;color:var(--muted);line-height:1.6;"><a href="#" onclick="showInviteToast(event)" style="color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(0,229,255,0.3);padding-bottom:1px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='rgba(0,229,255,0.3)'">Don't see an interpreter here who you love working with? Click here to invite them to join the signpost community.</a></p>
+
+        <!-- Network cards -->
+        <div style="display:flex;flex-direction:column;gap:12px;max-width:680px;margin-bottom:28px;">
+
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;display:flex;align-items:center;gap:16px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(0,229,255,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div class="dash-avatar" style="width:44px;height:44px;font-size:0.9rem;background:linear-gradient(135deg,#7b61ff,#00e5ff);flex-shrink:0;">MK</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;font-size:0.92rem;">Marcus Kim</div>
+              <div style="font-size:0.78rem;color:var(--muted);margin-top:2px;">ASL · Medical, Legal · Portland, OR</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;">
+                <span style="font-size:0.7rem;background:rgba(123,97,255,0.12);border:1px solid rgba(123,97,255,0.25);color:#a78bfa;padding:2px 9px;border-radius:20px;">RID NIC</span>
+                <span style="font-size:0.7rem;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);color:var(--accent);padding:2px 9px;border-radius:20px;">✓ Verified</span>
+              </div>
+            </div>
+            <button onclick="removeTrustedInterp(this)" style="background:none;border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--muted);font-size:0.75rem;padding:5px 12px;cursor:pointer;white-space:nowrap;transition:all 0.2s;font-family:'DM Sans',sans-serif;" onmouseover="this.style.borderColor='rgba(255,80,80,0.4)';this.style.color='#f87171'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Remove</button>
+          </div>
+
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;display:flex;align-items:center;gap:16px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(0,229,255,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div class="dash-avatar" style="width:44px;height:44px;font-size:0.9rem;background:linear-gradient(135deg,#00e5ff,#34d399);flex-shrink:0;">PN</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;font-size:0.92rem;">Priya Nair</div>
+              <div style="font-size:0.78rem;color:var(--muted);margin-top:2px;">ASL · Medical, Mental Health · Chicago, IL</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;">
+                <span style="font-size:0.7rem;background:rgba(123,97,255,0.12);border:1px solid rgba(123,97,255,0.25);color:#a78bfa;padding:2px 9px;border-radius:20px;">RID CI/CT</span>
+                <span style="font-size:0.7rem;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);color:var(--accent);padding:2px 9px;border-radius:20px;">✓ Verified</span>
+              </div>
+            </div>
+            <button onclick="removeTrustedInterp(this)" style="background:none;border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--muted);font-size:0.75rem;padding:5px 12px;cursor:pointer;white-space:nowrap;transition:all 0.2s;font-family:'DM Sans',sans-serif;" onmouseover="this.style.borderColor='rgba(255,80,80,0.4)';this.style.color='#f87171'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Remove</button>
+          </div>
+
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;display:flex;align-items:center;gap:16px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(0,229,255,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div class="dash-avatar" style="width:44px;height:44px;font-size:0.9rem;background:linear-gradient(135deg,#f97316,#facc15);flex-shrink:0;">DW</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;font-size:0.92rem;">Devon Walsh</div>
+              <div style="font-size:0.78rem;color:var(--muted);margin-top:2px;">ASL, PSE · Conference, Education · Seattle, WA</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;">
+                <span style="font-size:0.7rem;background:rgba(123,97,255,0.12);border:1px solid rgba(123,97,255,0.25);color:#a78bfa;padding:2px 9px;border-radius:20px;">RID NIC-Advanced</span>
+              </div>
+            </div>
+            <button onclick="removeTrustedInterp(this)" style="background:none;border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--muted);font-size:0.75rem;padding:5px 12px;cursor:pointer;white-space:nowrap;transition:all 0.2s;font-family:'DM Sans',sans-serif;" onmouseover="this.style.borderColor='rgba(255,80,80,0.4)';this.style.color='#f87171'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Remove</button>
+          </div>
+
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;display:flex;align-items:center;gap:16px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(0,229,255,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div class="dash-avatar" style="width:44px;height:44px;font-size:0.9rem;background:linear-gradient(135deg,#a78bfa,#f472b6);flex-shrink:0;">AL</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:600;font-size:0.92rem;">Amara Lewandowski</div>
+              <div style="font-size:0.78rem;color:var(--muted);margin-top:2px;">ASL, BSL · Conference, Performing Arts · New York, NY</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;">
+                <span style="font-size:0.7rem;background:rgba(123,97,255,0.12);border:1px solid rgba(123,97,255,0.25);color:#a78bfa;padding:2px 9px;border-radius:20px;">RID NIC-Master</span>
+                <span style="font-size:0.7rem;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);color:var(--accent);padding:2px 9px;border-radius:20px;">✓ Verified</span>
+              </div>
+            </div>
+            <button onclick="removeTrustedInterp(this)" style="background:none;border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--muted);font-size:0.75rem;padding:5px 12px;cursor:pointer;white-space:nowrap;transition:all 0.2s;font-family:'DM Sans',sans-serif;" onmouseover="this.style.borderColor='rgba(255,80,80,0.4)';this.style.color='#f87171'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Remove</button>
+          </div>
+
+        </div>
+
+        <button onclick="showView('directory')" style="display:inline-flex;align-items:center;gap:9px;background:transparent;border:1.5px dashed var(--border);border-radius:var(--radius);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:0.88rem;padding:13px 22px;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(0,229,255,0.4)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Browse directory to add interpreters
+        </button>
+
+        <!-- Invite toast -->
+        <div id="invite-toast" style="display:none;position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:var(--card-bg);border:1px solid rgba(0,229,255,0.4);border-radius:var(--radius);padding:20px 28px;box-shadow:0 8px 40px rgba(0,0,0,0.5);z-index:9999;max-width:400px;text-align:center;">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9rem;color:var(--accent);margin-bottom:8px;">Invite an interpreter</div>
+          <p style="color:var(--muted);font-size:0.82rem;line-height:1.6;margin:0 0 14px;">In the full product, you'd send a personalized invite link. For now, point them to signpost.com to create a free interpreter profile.</p>
+          <button onclick="document.getElementById('invite-toast').style.display='none'" style="background:var(--accent);color:#000;border:none;border-radius:var(--radius-sm);padding:8px 20px;font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;letter-spacing:0.02em;">Got it</button>
+        </div>
+
+      </div><!-- /panel-interp-network -->
+
     </div><!-- /dash-main -->
-  </div><!-- /dashboard-layout -->
-</div><!-- /view-interpreter-dashboard -->
 
 <!-- NEW REQUEST MODAL -->
 <div class="request-form-overlay" id="request-modal">
@@ -5339,6 +5656,17 @@ function toggleChip(el) { el.classList.toggle('selected'); }
 
 // ===== REGION OPTIONS =====
 function toggleRegion(el) { el.classList.toggle('selected'); }
+
+function showInviteToast(e) {
+  e.preventDefault();
+  const t = document.getElementById('invite-toast');
+  if (t) { t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 6000); }
+}
+
+function removeTrustedInterp(btn) {
+  const card = btn.closest('[style*="background:var(--card-bg)"]');
+  if (card) { card.style.opacity = '0'; card.style.transform = 'translateX(10px)'; card.style.transition = 'all 0.25s'; setTimeout(() => card.remove(), 250); }
+}
 
 // ===== ROLE SELECTION (requester signup) =====
 function selectRole(el, role) {
