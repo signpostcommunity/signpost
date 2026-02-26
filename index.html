@@ -591,7 +591,7 @@
   /* ===== SIGNUP FORM VIEW ===== */
   .signup-view { padding: 100px 40px 60px; }
 
-  .form-container { max-width: 1000px; margin: 0 auto; }
+  .form-container { max-width: 680px; margin: 0 auto; }
 
   .form-header { margin-bottom: 48px; }
 
@@ -857,9 +857,9 @@
   .lang-picker { }
 
   .lang-picker-top-label {
-    font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px;
-    font-family: 'Syne', sans-serif;
+    font-size: 0.82rem; font-weight: 500;
+    color: var(--muted); margin-bottom: 8px;
+    font-family: 'DM Sans', sans-serif;
   }
 
   .lang-picker-continents { margin-top: 10px; }
@@ -1423,7 +1423,7 @@
   /* STATS STRIP */
   .dash-stats {
     display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 16px; margin-bottom: 32px;
+    gap: 16px; margin-bottom: 32px; align-items: stretch;
   }
 
   .dash-stat-card {
@@ -1433,6 +1433,9 @@
     padding: 20px;
     cursor: pointer;
     transition: border-color 0.18s, transform 0.18s;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
   }
   .dash-stat-card:hover {
     border-color: rgba(0,229,255,0.3);
@@ -3622,7 +3625,7 @@ function closeFilterDrawer() {
 
       <div class="form-steps" id="req-steps">
         <div class="form-step active" data-step="1" onclick="reqGoToStep(1)">1. Your Role</div>
-        <div class="form-step" data-step="2" onclick="reqGoToStep(2)">2. Account Info</div>
+        <div class="form-step" data-step="2" onclick="reqGoToStep(2)">2. Account Details</div>
         <div class="form-step" data-step="3" onclick="reqGoToStep(3)">3. First Request</div>
         <div class="form-step" data-step="4" onclick="reqGoToStep(4)">4. Find Interpreters</div>
         <div class="form-step" data-step="5" onclick="reqGoToStep(5)">5. Done</div>
@@ -3647,14 +3650,26 @@ function closeFilterDrawer() {
             </div>
           </div>
 
-          <!-- Conditional: org name -->
-          <div id="org-name-field" style="display:none;" class="form-row full">
+          <!-- Conditional org fields moved to Account Details step -->
+        </div>
+
+        <div class="form-nav">
+          <button class="btn-secondary" onclick="showView('home')">&#8592; Back to Home</button>
+          <button class="btn-primary" onclick="reqNextStep(2)">Continue →</button>
+        </div>
+      </div>
+
+      <!-- STEP 2: Account Details -->
+      <div id="req-step-2" style="display:none;">
+
+        <!-- Organization Information (shown only if org role selected) -->
+        <div id="org-info-section" style="display:none;" class="form-section">
+          <div class="form-section-title">Organization Information</div>
+          <div id="org-name-field" class="form-row three">
             <div class="form-field">
               <label>Organization Name *</label>
               <input type="text" placeholder="e.g. Pacific Northwest School for the Deaf">
             </div>
-          </div>
-          <div id="org-type-field" style="display:none;" class="form-row">
             <div class="form-field">
               <label>Organization Type</label>
               <select>
@@ -3677,25 +3692,16 @@ function closeFilterDrawer() {
           </div>
         </div>
 
-        <div class="form-nav">
-          <button class="btn-secondary" onclick="showView('home')">&#8592; Back to Home</button>
-          <button class="btn-primary" onclick="reqNextStep(2)">Continue →</button>
-        </div>
-      </div>
-
-      <!-- STEP 2: Account Info -->
-      <div id="req-step-2" style="display:none;">
+        <!-- Requester Information -->
         <div class="form-section">
-          <div class="form-section-title">Account Details</div>
-          <div class="form-row">
+          <div class="form-section-title">Requester Information</div>
+          <div class="form-row three">
             <div class="form-field"><label>First Name *</label><input type="text" placeholder="Alex"></div>
             <div class="form-field"><label>Last Name *</label><input type="text" placeholder="Rivera"></div>
-          </div>
-          <div class="form-row">
-            <div class="form-field"><label>Email Address *</label><input type="email" placeholder="alex@example.com"></div>
             <div class="form-field"><label>Phone / VP / WhatsApp</label><input type="tel" placeholder="+1 555 000 0000"></div>
           </div>
-          <div class="form-row">
+          <div class="form-row three">
+            <div class="form-field"><label>Email Address *</label><input type="email" placeholder="alex@example.com"></div>
             <div class="form-field"><label>Country *</label>
               <select>
                 <option>Select country…</option>
@@ -3750,42 +3756,12 @@ function closeFilterDrawer() {
           </label>
 
           <div id="first-request-fields">
-            <p style="color:var(--muted);font-size:0.85rem;margin-bottom:20px;">This will be saved as a draft in your dashboard. You can review and send it once you've added some interpreters.</p>
+            <p style="color:var(--muted);font-size:0.85rem;margin-bottom:28px;">This will be saved as a draft in your dashboard. You can review and send it once you've added some interpreters.</p>
 
-            <div class="form-row full">
-              <div class="form-field">
-                <label>Sign language(s) needed *</label>
-                <div id="sign-lang-picker-req" class="lang-picker" style="margin-top:8px;"></div>
-              </div>
-            </div>
+            <!-- ── SECTION 1: SCHEDULING DETAILS ── -->
+            <div class="form-section-title" style="margin-bottom:16px;">Scheduling Details</div>
 
-            <div class="form-row full">
-              <div class="form-field">
-                <label>Spoken language(s) needed</label>
-                <div id="spoken-lang-picker-req" class="lang-picker" style="margin-top:8px;"></div>
-              </div>
-            </div>
-
-            <div class="form-row full" style="margin-top:8px;">
-              <div class="form-field">
-                <label>Context / setting *</label>
-                <div class="chip-group" style="margin-top:8px;" id="req-context-chips">
-                  <span class="chip" onclick="toggleChip(this)">Medical</span>
-                  <span class="chip" onclick="toggleChip(this)">Legal</span>
-                  <span class="chip" onclick="toggleChip(this)">Mental Health</span>
-                  <span class="chip" onclick="toggleChip(this)">Education</span>
-                  <span class="chip" onclick="toggleChip(this)">Conference</span>
-                  <span class="chip" onclick="toggleChip(this)">Workplace</span>
-                  <span class="chip" onclick="toggleChip(this)">Religious</span>
-                  <span class="chip" onclick="toggleChip(this)">Social / Family</span>
-                  <span class="chip" onclick="toggleChip(this)">Performance (Music / Theatre)</span>
-                  <span class="chip chip-other-trigger" onclick="toggleChip(this);toggleOtherField(this,'req-context-other')">Other</span>
-                </div>
-                <input type="text" id="req-context-other" placeholder="Please describe…" style="display:none;margin-top:10px;">
-              </div>
-            </div>
-
-            <div class="form-row" style="margin-top:16px;">
+            <div class="form-row">
               <div class="form-field">
                 <label>Date</label>
                 <input type="text" placeholder="e.g. March 15, 2026 — or TBD">
@@ -3801,7 +3777,7 @@ function closeFilterDrawer() {
                 <label>Format</label>
                 <select>
                   <option>Select…</option>
-                  <option>In-person</option>
+                  <option selected>In-person</option>
                   <option>Remote (video)</option>
                   <option>Hybrid</option>
                 </select>
@@ -3822,32 +3798,108 @@ function closeFilterDrawer() {
                   <option>Not sure yet</option>
                 </select>
               </div>
-              <div class="form-field">
-                <label>How much notice are you giving?</label>
-                <select>
-                  <option>Same day / Emergency</option>
-                  <option>1–3 days</option>
-                  <option>1–2 weeks</option>
-                  <option>3–4 weeks</option>
-                  <option>1–3 months</option>
-                </select>
+              <div class="form-field" style="justify-content:flex-end;padding-bottom:4px;">
+                <label style="display:flex;align-items:flex-start;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;cursor:pointer;margin-top:auto;">
+                  <input type="checkbox" id="urgent-request-cb" style="width:auto;margin-top:2px;accent-color:var(--accent);flex-shrink:0;">
+                  <div>
+                    <div style="font-size:0.88rem;font-weight:500;color:var(--text);">This is an urgent request.</div>
+                    <div style="font-size:0.78rem;color:var(--muted);margin-top:2px;">Appointment start time is within 48 hours</div>
+                  </div>
+                </label>
               </div>
             </div>
 
-            <div class="form-row full" style="margin-top:4px;">
+            <!-- ── DIVIDER ── -->
+            <hr style="border:none;border-top:1px solid var(--border);margin:32px 0 28px;">
+
+            <!-- ── SECTION 2: PARTICIPANT DETAILS ── -->
+            <div class="form-section-title" style="margin-bottom:16px;">Participant Details</div>
+
+            <div class="form-row">
+              <div class="form-field">
+                <label>Name of Deaf / Hard of Hearing participant/s</label>
+                <input type="text" placeholder="e.g. Jordan Smith — or leave blank if unknown">
+                <div style="display:flex;align-items:flex-start;gap:7px;margin-top:7px;background:rgba(123,97,255,0.06);border:1px solid rgba(123,97,255,0.2);border-radius:7px;padding:8px 11px;">
+                  <svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;margin-top:1px;"><circle cx="6.5" cy="6.5" r="5.75" stroke="#a891ff" stroke-width="1.2"/><path d="M6.5 5.5v4" stroke="#a891ff" stroke-width="1.3" stroke-linecap="round"/><circle cx="6.5" cy="4" r="0.65" fill="#a891ff"/></svg>
+                  <span style="font-size:0.75rem;color:#a891ff;line-height:1.5;">This name is kept private and will not be shared with the interpreter until they are confirmed for the appointment.</span>
+                </div>
+              </div>
+              <div class="form-field" style="visibility:hidden;"></div>
+            </div>
+
+            <div class="form-row full" style="margin-top:8px;">
+              <div class="form-field">
+                <label style="font-family:'Syne',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);">Signed language/s needed *</label>
+                <div id="sign-lang-picker-req" class="lang-picker" style="margin-top:8px;"></div>
+              </div>
+            </div>
+
+            <!-- Extra breathing room between language sections (no HR) -->
+            <div style="margin-top:24px;" class="form-row full">
+              <div class="form-field">
+                <label style="font-family:'Syne',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);">Spoken language/s needed</label>
+                <div id="spoken-lang-picker-req" class="lang-picker" style="margin-top:8px;"></div>
+              </div>
+            </div>
+
+            <!-- ── DIVIDER ── -->
+            <hr style="border:none;border-top:1px solid var(--border);margin:32px 0 28px;">
+
+            <!-- ── SECTION 3: APPOINTMENT INFORMATION ── -->
+            <div class="form-section-title" style="margin-bottom:16px;">Appointment Information</div>
+
+            <div class="form-row full">
+              <div class="form-field">
+                <label>Context / setting *</label>
+                <div class="chip-group" style="margin-top:8px;" id="req-context-chips">
+                  <span class="chip" onclick="toggleChip(this)">Medical</span>
+                  <span class="chip" onclick="toggleChip(this)">Legal</span>
+                  <span class="chip" onclick="toggleChip(this)">Mental Health</span>
+                  <span class="chip" onclick="toggleChip(this)">Education</span>
+                  <span class="chip" onclick="toggleChip(this)">Conference</span>
+                  <span class="chip" onclick="toggleChip(this)">Workplace</span>
+                  <span class="chip" onclick="toggleChip(this)">Religious</span>
+                  <span class="chip" onclick="toggleChip(this)">Social / Family</span>
+                  <span class="chip" onclick="toggleChip(this)">Performance (Music / Theatre)</span>
+                  <span class="chip chip-other-trigger" onclick="toggleChip(this);toggleOtherField(this,'req-context-other')">Other</span>
+                </div>
+                <input type="text" id="req-context-other" placeholder="Please describe…" style="display:none;margin-top:10px;">
+              </div>
+            </div>
+
+            <div class="form-row full" style="margin-top:28px;">
               <div class="form-field">
                 <label>Additional context for the interpreter</label>
                 <textarea placeholder="e.g. This is a company All Hands meeting that will include financial reports and technical terminology. About 200 attendees, hybrid format, 90 minutes." style="min-height:88px;"></textarea>
               </div>
             </div>
 
-            <div class="form-row full" style="margin-top:4px;">
+            <div class="form-row full" style="margin-top:28px;">
               <div class="form-field">
                 <label>Preferred or required qualifications (optional)</label>
                 <div style="background:rgba(0,229,255,0.04);border:1px solid rgba(0,229,255,0.12);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:10px;font-size:0.8rem;color:var(--muted);line-height:1.55;">
                   signpost does not verify interpreter training or qualifications. Any requirements you list here are shared directly with interpreters when you send a request.
                 </div>
                 <textarea placeholder="e.g. Legal certification, ProTactile ASL experience, up-to-date immunizations" style="min-height:72px;"></textarea>
+              </div>
+            </div>
+
+            <div class="form-row full" style="margin-top:28px;">
+              <div class="form-field">
+                <label>Interpreter prep documents (optional)</label>
+                <p style="font-size:0.8rem;color:var(--muted);margin-bottom:10px;line-height:1.55;">Upload any materials that will help the interpreter prepare — agendas, glossaries, slides, scripts, or background reading. Shared with interpreters when you send your request.</p>
+                <label id="upload-drop-zone" for="req-doc-upload" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:28px 20px;cursor:pointer;background:var(--surface2);transition:border-color 0.2s,background 0.2s;"
+                  onmouseover="this.style.borderColor='rgba(0,229,255,0.4)';this.style.background='rgba(0,229,255,0.04)'"
+                  onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--surface2)'"
+                  ondragover="event.preventDefault();this.style.borderColor='var(--accent)';this.style.background='rgba(0,229,255,0.06)'"
+                  ondragleave="this.style.borderColor='var(--border)';this.style.background='var(--surface2)'"
+                  ondrop="handleDocDrop(event)">
+                  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M14 4v14M8 10l6-6 6 6" stroke="#00e5ff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 20v2a2 2 0 002 2h16a2 2 0 002-2v-2" stroke="#9ba3bc" stroke-width="1.4" stroke-linecap="round"/></svg>
+                  <span style="font-size:0.85rem;color:var(--muted);">Drag files here or <span style="color:var(--accent);font-weight:500;">browse</span></span>
+                  <span style="font-size:0.75rem;color:var(--muted);opacity:0.7;">PDF, Word, PowerPoint, images — up to 20 MB each</span>
+                </label>
+                <input type="file" id="req-doc-upload" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.jpg,.jpeg,.png" style="display:none;" onchange="handleDocSelect(event)">
+                <div id="req-doc-list" style="margin-top:10px;display:flex;flex-direction:column;gap:6px;"></div>
               </div>
             </div>
           </div>
@@ -4538,11 +4590,11 @@ function closeFilterDrawer() {
             <div class="dash-stat-label">Confirmed This Month</div>
           </div>
           <div class="dash-stat-card" onclick="showDashPanel('interp-profile', document.querySelector('.dash-nav-item[onclick*=\'interp-profile\']'))" title="Edit Profile">
-            <div class="dash-stat-num" style="font-size:1.5rem;">✓ Live</div>
+            <div class="dash-stat-num">✓ Live</div>
             <div class="dash-stat-label">Profile Status</div>
           </div>
           <div class="dash-stat-card" onclick="showDashPanel('interp-availability', document.querySelector('.dash-nav-item[onclick*=\'interp-availability\']'))" title="Manage Availability">
-            <div class="dash-stat-num" style="font-size:1.5rem;">4 days</div>
+            <div class="dash-stat-num">4 days</div>
             <div class="dash-stat-label">Available This Week</div>
           </div>
         </div>
@@ -5297,12 +5349,8 @@ function toggleRegion(el) { el.classList.toggle('selected'); }
 function selectRole(el, role) {
   document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
-  const orgFields = ['org-name-field','org-type-field'];
-  orgFields.forEach(id => document.getElementById(id).style.display = 'none');
-  if (role === 'organization') {
-    document.getElementById('org-name-field').style.display = 'grid';
-    document.getElementById('org-type-field').style.display = 'grid';
-  }
+  const orgSection = document.getElementById('org-info-section');
+  if (orgSection) orgSection.style.display = role === 'organization' ? 'block' : 'none';
 }
 
 // ===== REQUESTER SIGNUP STEPS =====
@@ -5669,7 +5717,7 @@ function buildLangPicker(containerId, top10, byContinent, otherId) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  let html = `<div class="lang-picker-top-label">Most Common</div>`;
+  let html = `<div class="lang-picker-top-label">Most common</div>`;
   html += `<div class="chip-group" style="margin-bottom:4px;">`;
   top10.forEach(lang => {
     html += `<span class="chip" onclick="toggleChip(this)">${lang}</span>`;
@@ -5677,7 +5725,7 @@ function buildLangPicker(containerId, top10, byContinent, otherId) {
   html += `</div>`;
 
   html += `<div class="lang-picker-continents" style="margin-top:20px;">`;
-  html += `<div class="lang-picker-top-label" style="margin-bottom:6px;">More Languages by Region</div>`;
+  html += `<div class="lang-picker-top-label" style="margin-bottom:6px;">More languages by region</div>`;
   html += `<div class="continent-accordions-grid">`;
 
   Object.entries(byContinent).forEach(([continent, langs]) => {
@@ -5725,11 +5773,9 @@ function toggleContinent(id) {
 
 // Initialize all language pickers once DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-  // Show org fields since Organization is the default selected role
-  const orgNameField = document.getElementById('org-name-field');
-  const orgTypeField = document.getElementById('org-type-field');
-  if (orgNameField) orgNameField.style.display = 'grid';
-  if (orgTypeField) orgTypeField.style.display = 'grid';
+  // Show org info section since Organization is the default selected role
+  const orgInfoSection = document.getElementById('org-info-section');
+  if (orgInfoSection) orgInfoSection.style.display = 'block';
   // Interpreter profile signup
   buildLangPicker('sign-lang-picker-profile', SIGN_LANGUAGES_TOP10, SIGN_LANGUAGES_BY_CONTINENT, 'sign-lang-other-profile');
   buildLangPicker('spoken-lang-picker-profile', SPOKEN_LANGUAGES_TOP10, SPOKEN_LANGUAGES_BY_CONTINENT, 'spoken-lang-other-profile');
@@ -6532,7 +6578,34 @@ function addDashRateProfile() {
   card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-// ===== FILTER REQUESTS: actually show/hide cards =====
+// ===== INTERPRETER PREP DOCUMENT UPLOAD =====
+function renderDocItem(file) {
+  const list = document.getElementById('req-doc-list');
+  if (!list) return;
+  const item = document.createElement('div');
+  item.style.cssText = 'display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:0.82rem;';
+  const ext = file.name.split('.').pop().toUpperCase();
+  const size = file.size < 1024*1024 ? (file.size/1024).toFixed(0)+'KB' : (file.size/1024/1024).toFixed(1)+'MB';
+  item.innerHTML = `
+    <span style="background:rgba(0,229,255,0.1);color:var(--accent);border:1px solid rgba(0,229,255,0.2);border-radius:4px;padding:2px 6px;font-size:0.7rem;font-weight:700;flex-shrink:0;">${ext}</span>
+    <span style="flex:1;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${file.name}</span>
+    <span style="color:var(--muted);flex-shrink:0;">${size}</span>
+    <button onclick="this.closest('div').remove()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;line-height:1;padding:0 2px;" title="Remove">×</button>
+  `;
+  list.appendChild(item);
+}
+function handleDocSelect(e) {
+  Array.from(e.target.files).forEach(renderDocItem);
+  e.target.value = '';
+}
+function handleDocDrop(e) {
+  e.preventDefault();
+  const zone = document.getElementById('upload-drop-zone');
+  if (zone) { zone.style.borderColor = 'var(--border)'; zone.style.background = 'var(--surface2)'; }
+  Array.from(e.dataTransfer.files).forEach(renderDocItem);
+}
+
+
 (function() {
   window.filterReqs = function(btn, filter) {
     btn.closest('div').querySelectorAll('.recur-btn').forEach(b => b.classList.remove('active'));
