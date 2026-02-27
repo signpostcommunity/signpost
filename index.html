@@ -14,10 +14,10 @@
     --surface2: #161923;
     --border: #1e2433;
     --accent: #00e5ff;
-    --accent2: #7b61ff;
-    --accent3: #ff4d6d;
+    --accent2: #9d87ff;
+    --accent3: #ff6b85;
     --text: #f0f2f8;
-    --muted: #9ba3bc;
+    --muted: #b0b8d0;
     --card-bg: #0d1220;
     --radius: 16px;
     --radius-sm: 10px;
@@ -1835,6 +1835,7 @@
   <div class="nav-links">
     <button class="nav-btn" onclick="showView('directory')">Browse Interpreter Directory</button>
     <button class="nav-btn" onclick="goToInterpreterPortalNav()">Interpreter Portal</button>
+    <button class="nav-btn" onclick="goToDeafPortal()" style="color:var(--accent2);">My Interpreter List</button>
     <button class="btn-primary" onclick="goToRequesterPortal()">Request Interpreters</button>
     <div class="lang-dropdown" id="lang-dropdown">
       <button class="lang-btn" onclick="toggleLangMenu()" aria-label="Select language">
@@ -1862,6 +1863,7 @@
   <button class="mobile-nav-close" onclick="toggleMobileNav()">✕</button>
   <button class="mobile-nav-btn" onclick="mobileNavGo('directory')">Browse Interpreter Directory</button>
   <button class="mobile-nav-btn" onclick="closeMobileNav();goToInterpreterPortalNav()">Interpreter Portal</button>
+  <button class="mobile-nav-btn" onclick="closeMobileNav();goToDeafPortal()" style="color:var(--accent2);border-color:rgba(157,135,255,0.3);">My Interpreter List</button>
   <button class="mobile-nav-btn primary" onclick="closeMobileNav();goToRequesterPortal()">Request Interpreters</button>
   <button class="mobile-nav-btn" onclick="mobileNavGo('about')" style="margin-top:8px;opacity:0.7;font-size:0.9rem;">About signpost</button>
 </div>
@@ -2164,7 +2166,7 @@
             <div class="cred-list">
               <div class="cred-item">
                 <div class="cred-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="12" r="6" stroke="#00e5ff" stroke-width="1.3"/><path d="M7.5 3.5L10 2l2.5 1.5-1 2.5h-3L7.5 3.5Z" stroke="#00e5ff" stroke-width="1.3" stroke-linejoin="round"/><path d="M10 9v2l1 1" stroke="#00e5ff" stroke-width="1.2" stroke-linecap="round"/></svg></div>
-                <div><div class="cred-name">RID “ NIC Advanced</div><div class="cred-issuer">Registry of Interpreters for the Deaf, USA · <span style="color:var(--accent);">✓ Verified</span></div></div>
+                <div><div class="cred-name">RID NIC-Advanced</div><div class="cred-issuer">Registry of Interpreters for the Deaf, USA · <span style="color:var(--accent);">✓ Verified</span></div></div>
               </div>
               <div class="cred-item">
                 <div class="cred-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="12" r="6" stroke="#00e5ff" stroke-width="1.3"/><path d="M7.5 3.5L10 2l2.5 1.5-1 2.5h-3L7.5 3.5Z" stroke="#00e5ff" stroke-width="1.3" stroke-linejoin="round"/><path d="M10 9v2l1 1" stroke="#00e5ff" stroke-width="1.2" stroke-linecap="round"/></svg></div>
@@ -2217,7 +2219,7 @@
           <div class="cred-item">
             <div class="cred-icon"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="12" r="6" stroke="#00e5ff" stroke-width="1.3"/><path d="M7.5 3.5L10 2l2.5 1.5-1 2.5h-3L7.5 3.5Z" stroke="#00e5ff" stroke-width="1.3" stroke-linejoin="round"/><path d="M10 9v2l1 1" stroke="#00e5ff" stroke-width="1.2" stroke-linecap="round"/></svg></div>
             <div style="flex:1;">
-              <div class="cred-name">RID “ NIC Advanced</div>
+              <div class="cred-name">RID NIC-Advanced</div>
               <div class="cred-issuer">Registry of Interpreters for the Deaf, USA · Issued 2015 · <a href="#" style="color:var(--accent);text-decoration:none;">View certification &#8592;—</a></div>
             </div>
             <span class="cert-badge">✓ Verified</span>
@@ -2365,11 +2367,11 @@
             <div style="font-size:0.75rem;color:var(--muted);padding:8px 0;font-family:'Syne',sans-serif;font-weight:700;">FRI</div>
             <div style="font-size:0.75rem;color:var(--muted);padding:8px 0;font-family:'Syne',sans-serif;font-weight:700;">SAT</div>
             <div style="font-size:0.75rem;color:var(--muted);padding:8px 0;font-family:'Syne',sans-serif;font-weight:700;">SUN</div>
-            <div style="background:rgba(0,229,255,0.12);border:1px solid rgba(0,229,255,0.25);border-radius:8px;padding:10px 4px;font-size:0.75rem;color:var(--accent);">09“18</div>
-            <div style="background:rgba(0,229,255,0.12);border:1px solid rgba(0,229,255,0.25);border-radius:8px;padding:10px 4px;font-size:0.75rem;color:var(--accent);">09“18</div>
+            <div style="background:rgba(0,229,255,0.12);border:1px solid rgba(0,229,255,0.25);border-radius:8px;padding:10px 4px;font-size:0.75rem;color:var(--accent);">9–6</div>
+            <div style="background:rgba(0,229,255,0.12);border:1px solid rgba(0,229,255,0.25);border-radius:8px;padding:10px 4px;font-size:0.75rem;color:var(--accent);">9–6</div>
             <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 4px;font-size:0.75rem;color:var(--muted);">—</div>
-            <div style="background:rgba(0,229,255,0.12);border:1px solid rgba(0,229,255,0.25);border-radius:8px;padding:10px 4px;font-size:0.75rem;color:var(--accent);">09“18</div>
-            <div style="background:rgba(0,229,255,0.12);border:1px solid rgba(0,229,255,0.25);border-radius:8px;padding:10px 4px;font-size:0.75rem;color:var(--accent);">09“18</div>
+            <div style="background:rgba(0,229,255,0.12);border:1px solid rgba(0,229,255,0.25);border-radius:8px;padding:10px 4px;font-size:0.75rem;color:var(--accent);">9–6</div>
+            <div style="background:rgba(0,229,255,0.12);border:1px solid rgba(0,229,255,0.25);border-radius:8px;padding:10px 4px;font-size:0.75rem;color:var(--accent);">9–6</div>
             <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 4px;font-size:0.75rem;color:var(--muted);">—</div>
             <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 4px;font-size:0.75rem;color:var(--muted);">—</div>
           </div>
@@ -3138,8 +3140,9 @@ function showView(view) {
   if (view === 'signup') setUserRole('interpreter');
   if (view === 'requester-signup' || view === 'requester-dashboard') setUserRole('requester');
   if (view === 'interpreter-dashboard') setUserRole('interpreter');
+  if (view === 'deaf-dashboard') { currentUserRole = 'deaf'; renderDeafDashboard(); }
   // Show footer on browsing views, hide on forms and dashboards
-  const noFooterViews = ['signup','requester-signup','requester-portal','requester-login','requester-dashboard','interpreter-dashboard','interpreter-portal','interpreter-login'];
+  const noFooterViews = ['signup','requester-signup','requester-portal','requester-login','requester-dashboard','interpreter-dashboard','interpreter-portal','interpreter-login','deaf-portal','deaf-dashboard'];
   const footer = document.getElementById('site-footer');
   if (footer) footer.style.display = noFooterViews.includes(view) ? 'none' : 'flex';
 }
@@ -3204,14 +3207,6 @@ function openProfile(id) {
 }
 
 // ============ TABS ============
-function switchTab(btn, tab) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  ['overview','credentials','rates','availability'].forEach(t => {
-    const el = document.getElementById('tab-'+t);
-    if (el) el.style.display = t===tab ? (t==='overview'?'grid':'block') : 'none';
-  });
-}
 
 // ============ RATE PROFILES ============
 let rateProfileCount = 3;
@@ -3564,11 +3559,11 @@ function closeFilterDrawer() {
             <p style="color:var(--muted);font-size:0.875rem;line-height:1.65;">Build a profile that shows who you really are. It takes around 10 minutes and puts you in front of requesters worldwide.</p>
           </div>
           <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;margin:0;padding:0;">
-            <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:#7b61ff;font-size:1rem;">✓</span> Languages &amp; specializations</li>
-            <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:#7b61ff;font-size:1rem;">✓</span> Credentials &amp; certifications</li>
-            <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:#7b61ff;font-size:1rem;">✓</span> Rates, availability &amp; intro video</li>
+            <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:#9d87ff;font-size:1rem;">✓</span> Languages &amp; specializations</li>
+            <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:#9d87ff;font-size:1rem;">✓</span> Credentials &amp; certifications</li>
+            <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:#9d87ff;font-size:1rem;">✓</span> Rates, availability &amp; intro video</li>
           </ul>
-          <button class="btn-primary" onclick="showView('signup')" style="background:#7b61ff;margin-top:auto;text-align:center;" onmouseover="this.style.background='#6a52e0'" onmouseout="this.style.background='#7b61ff'">Create my profile →</button>
+          <button class="btn-primary" onclick="showView('signup')" style="background:#8b72ff;margin-top:auto;text-align:center;" onmouseover="this.style.background='#7b61ff'" onmouseout="this.style.background='#8b72ff'">Create my profile →</button>
         </div>
 
         <!-- Sign in card -->
@@ -3712,7 +3707,7 @@ function closeFilterDrawer() {
             <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:#a78bfa;font-size:1rem;">✓</span> Message your interpreters</li>
             <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:#a78bfa;font-size:1rem;">✓</span> Access your full booking history</li>
           </ul>
-          <button class="btn-primary" onclick="showView('requester-login')" style="background:#7b61ff;margin-top:auto;text-align:center;" onmouseover="this.style.background='#6a52e0'" onmouseout="this.style.background='#7b61ff'">Sign in to my portal →</button>
+          <button class="btn-primary" onclick="showView('requester-login')" style="background:#8b72ff;margin-top:auto;text-align:center;" onmouseover="this.style.background='#7b61ff'" onmouseout="this.style.background='#8b72ff'">Sign in to my portal →</button>
         </div>
 
       </div>
@@ -4079,80 +4074,10 @@ function closeFilterDrawer() {
       <!-- STEP 4: Find Interpreters -->
       <div id="req-step-4" style="display:none;">
         <div class="form-section">
-          <div class="form-section-title">Add Interpreters to Your Favorites</div>
-          <p style="color:var(--muted);font-size:0.85rem;margin-bottom:24px;">Save a few interpreters now — they'll appear in your dashboard when you're ready to send your first request. You can always browse more later.</p>
+          <div class="form-section-title" id="step4-title">Add Interpreters to Your Favorites</div>
+          <p id="step4-subtitle" style="color:var(--muted);font-size:0.85rem;margin-bottom:24px;">Save a few interpreters now — they'll appear in your dashboard when you're ready to send your first request. You can always browse more later.</p>
 
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:20px;">
-
-            <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:18px;">
-              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-                <div class="avatar" style="background:linear-gradient(135deg,#7b61ff,#00e5ff);">SR</div>
-                <div>
-                  <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;">Sofia Reyes</div>
-                  <div style="color:var(--muted);font-size:0.78rem;">Madrid, Spain · 14 yrs exp</div>
-                </div>
-              </div>
-              <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;">
-                <span class="lang-tag">ASL</span><span class="lang-tag">IS</span><span class="spec-tag">Medical</span><span class="spec-tag">Conference</span>
-              </div>
-              <div style="display:flex;align-items:center;justify-content:space-between;">
-                <span style="color:var(--muted);font-size:0.78rem;">RID Certified</span>
-                <button class="add-btn" style="width:auto;padding:6px 14px;font-size:0.8rem;" onclick="toggleSignupFav(this)">+ Favorite</button>
-              </div>
-            </div>
-
-            <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:18px;">
-              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-                <div class="avatar" style="background:linear-gradient(135deg,#ff4d6d,#7b61ff);">JT</div>
-                <div>
-                  <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;">James Thornton</div>
-                  <div style="color:var(--muted);font-size:0.78rem;">London, UK · 11 yrs exp</div>
-                </div>
-              </div>
-              <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;">
-                <span class="lang-tag">BSL</span><span class="lang-tag">IS</span><span class="spec-tag">Legal</span><span class="spec-tag">Mental Health</span>
-              </div>
-              <div style="display:flex;align-items:center;justify-content:space-between;">
-                <span style="color:var(--muted);font-size:0.78rem;">NRSLI</span>
-                <button class="add-btn" style="width:auto;padding:6px 14px;font-size:0.8rem;" onclick="toggleSignupFav(this)">+ Favorite</button>
-              </div>
-            </div>
-
-            <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:18px;">
-              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-                <div class="avatar" style="background:linear-gradient(135deg,#00e5ff,#7b61ff);">AW</div>
-                <div>
-                  <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;">Amara Wilson</div>
-                  <div style="color:var(--muted);font-size:0.78rem;">New York, USA · 16 yrs exp</div>
-                </div>
-              </div>
-              <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;">
-                <span class="lang-tag">ASL</span><span class="lang-tag">IS</span><span class="spec-tag">Medical</span><span class="spec-tag">Academic</span>
-              </div>
-              <div style="display:flex;align-items:center;justify-content:space-between;">
-                <span style="color:var(--muted);font-size:0.78rem;">RID Certified</span>
-                <button class="add-btn" style="width:auto;padding:6px 14px;font-size:0.8rem;" onclick="toggleSignupFav(this)">+ Favorite</button>
-              </div>
-            </div>
-
-            <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:18px;">
-              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-                <div class="avatar" style="background:linear-gradient(135deg,#34d399,#00e5ff);">GM</div>
-                <div>
-                  <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;">Grace Mensah</div>
-                  <div style="color:var(--muted);font-size:0.78rem;">Accra, Ghana · 8 yrs exp</div>
-                </div>
-              </div>
-              <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;">
-                <span class="lang-tag">ASL</span><span class="lang-tag">IS</span><span class="spec-tag">Education</span><span class="spec-tag">Religious</span>
-              </div>
-              <div style="display:flex;align-items:center;justify-content:space-between;">
-                <span style="color:var(--muted);font-size:0.78rem;">RID Certified</span>
-                <button class="add-btn" style="width:auto;padding:6px 14px;font-size:0.8rem;" onclick="toggleSignupFav(this)">+ Favorite</button>
-              </div>
-            </div>
-
-          </div>
+          <div id="suggested-interp-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:20px;"></div>
 
           <button class="add-btn" onclick="showView('directory')" style="font-size:0.85rem;">Browse the full directory →</button>
         </div>
@@ -4391,7 +4316,8 @@ function closeFilterDrawer() {
           <button class="recur-btn" onclick="filterReqs(this,'sent')">Sent</button>
         </div>
 
-        <div class="request-card" data-status="pending">
+        <div id="requests-card-list">
+          <div class="request-card" data-status="pending">
           <div class="request-card-header">
             <div>
               <div class="request-title">Cardiology Appointment</div>
@@ -4434,7 +4360,7 @@ function closeFilterDrawer() {
           </div>
           <div class="request-actions">
             <button class="fav-btn" onclick="viewRequestDetails(this, 'legal-001')">View Details</button>
-            <button class="fav-btn" onclick="showToast('Messaging coming soon — this feature requires backend setup.')">Message Sofia</button>
+            <button class="fav-btn" onclick="openMessaging('Sofia Reyes')">Message Sofia</button>
             <div class="cal-dropdown-wrap">
               <button class="fav-btn" style="color:var(--accent);border-color:rgba(0,229,255,0.3);" onclick="toggleCalDropdown(this)">
                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="margin-right:4px;vertical-align:middle;"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4 1v2M9 1v2M1 5h11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
@@ -4480,15 +4406,16 @@ function closeFilterDrawer() {
             <button class="fav-btn" onclick="editRequest(this)">Edit</button>
           </div>
         </div>
-      </div>
+        </div><!-- /requests-card-list -->
+      </div><!-- /panel-requests -->
 
       <!-- NEW REQUEST PANEL -->
       <div class="dash-panel" id="panel-new-request">
         <div class="dash-page-title">Create a New Request</div>
         <div class="dash-page-subtitle">Fill in the details and choose who to send it to. No spam — you pick every recipient.</div>
-        <div id="inline-request-form">
-          <!-- reuses the modal form inline -->
-          <script>document.addEventListener('DOMContentLoaded',()=>{ document.getElementById('inline-request-form').innerHTML = buildRequestForm(true); });</script>
+        <div id="inline-request-form" style="padding:20px 0;">
+          <p style="color:var(--muted);font-size:0.88rem;margin-bottom:20px;line-height:1.6;">Ready to find an interpreter? Fill in your appointment details and choose who to send it to.</p>
+          <button class="btn-primary" onclick="openNewRequest()">Create New Request →</button>
         </div>
       </div>
 
@@ -4524,13 +4451,14 @@ function closeFilterDrawer() {
 
         <div class="favorites-tier">
           <div class="favorites-tier-header">
-            <div class="tier-title">
-              ⭐ Preferred Interpreters
-              <span class="tier-badge tier-primary">Priority Tier</span>
-            </div>
             <button class="fav-btn" onclick="showView('directory')">+ Add from Directory</button>
           </div>
           <div class="favorites-list" id="goto-fav-list">
+            <div class="fav-item">
+              <div class="fav-avatar" style="background:linear-gradient(135deg,#7b61ff,#00e5ff);">SR</div>
+              <div class="fav-info">
+                <div class="fav-name">Sofia Reyes</div>
+                <div class="fav-details">ASL · Medical, Legal · On-site (Seattle)</div>
               </div>
               <div class="fav-actions">
                 <button class="fav-btn" onclick="openNewRequest()">Request</button>
@@ -4579,10 +4507,6 @@ function closeFilterDrawer() {
 
         <div class="favorites-tier">
           <div class="favorites-tier-header">
-            <div class="tier-title">
-              🔖 Secondary Tier Interpreters
-              <span class="tier-badge tier-extended">Secondary Tier Interpreters</span>
-            </div>
             <button class="fav-btn" onclick="showView('directory')">+ Add from Directory</button>
           </div>
           <div class="favorites-list" id="extended-fav-list">
@@ -4669,7 +4593,7 @@ function closeFilterDrawer() {
                 <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;">Alex Rivera</div>
                 <div style="color:var(--accent);font-size:0.8rem;font-weight:600;margin-top:2px;">Deaf Individual</div>
               </div>
-              <button class="fav-btn" style="margin-left:auto;">Edit Profile</button>
+              <button class="fav-btn" style="margin-left:auto;" onclick="showToast('Profile editor coming soon — this will let you update your preferences and contact details.')">Edit Profile</button>
             </div>
             <div class="info-row"><span class="info-label">Location</span><span class="info-val">Seattle, WA</span></div>
             <div class="info-row"><span class="info-label">Sign Language</span><span class="info-val">ASL</span></div>
@@ -4682,7 +4606,7 @@ function closeFilterDrawer() {
           <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
             <div style="font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Note to interpreters</div>
             <p style="color:var(--muted);font-size:0.88rem;line-height:1.7;">I prefer interpreters with experience in Deaf culture and natural ASL. For medical and mental health settings, please be aware that I may use ASL-specific constructs and visual vernacular. I value consistency and prefer long-term working relationships with my interpreters.</p>
-            <button class="fav-btn" style="margin-top:16px;">Edit Note</button>
+            <button class="fav-btn" style="margin-top:16px;" onclick="editNote(this)">Edit Note</button>
           </div>
         </div>
       </div>
@@ -5066,7 +4990,7 @@ function closeFilterDrawer() {
               <span>Seattle, WA — On-site</span>
             </div>
             <div class="request-actions">
-              <button class="fav-btn">View Details</button>
+              <button class="fav-btn" onclick="viewInquiryDetails(this)">View Details</button>
               <div class="cal-dropdown-wrap">
                 <button class="fav-btn" style="color:var(--accent);border-color:rgba(0,229,255,0.3);" onclick="toggleCalDropdown(this)">
                   <svg width="12" height="12" viewBox="0 0 13 13" fill="none" style="margin-right:4px;vertical-align:middle;"><rect x="1" y="2" width="11" height="10" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M4 1v2M9 1v2M1 5h11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>Add to Calendar
@@ -5092,7 +5016,7 @@ function closeFilterDrawer() {
               <span class="request-status status-confirmed">Confirmed</span>
             </div>
             <div class="request-meta"><span>Mar 4, 2026</span><span>2:00 – 4:00 PM</span><span>Seattle Medical Center</span><span>On-site</span></div>
-            <div class="request-actions"><button class="fav-btn">View Details</button></div>
+            <div class="request-actions"><button class="fav-btn" onclick="viewInquiryDetails(this)">View Details</button></div>
           </div>
           <div class="request-card" data-booking="Weekly Therapy Sessions Mar 5 Maria Chen Remote Mental Health Recurring">
             <div class="request-card-header">
@@ -5103,7 +5027,7 @@ function closeFilterDrawer() {
               <span class="request-status status-confirmed">Confirmed</span>
             </div>
             <div class="request-meta"><span>Starting Mar 5, 2026</span><span>Thursdays 3:00 – 4:00 PM</span><span>Remote</span></div>
-            <div class="request-actions"><button class="fav-btn">View Details</button></div>
+            <div class="request-actions"><button class="fav-btn" onclick="viewInquiryDetails(this)">View Details</button></div>
           </div>
           <div class="request-card" data-booking="Conference Keynote Mar 12 UN Symposium Geneva On-site Conference">
             <div class="request-card-header">
@@ -5114,7 +5038,7 @@ function closeFilterDrawer() {
               <span class="request-status status-confirmed">Confirmed</span>
             </div>
             <div class="request-meta"><span>Mar 12–14, 2026</span><span>Full days</span><span>Geneva, Switzerland — On-site</span></div>
-            <div class="request-actions"><button class="fav-btn">View Details</button></div>
+            <div class="request-actions"><button class="fav-btn" onclick="viewInquiryDetails(this)">View Details</button></div>
           </div>
           <div id="bookings-no-results" style="display:none;padding:32px;text-align:center;color:var(--muted);font-size:0.88rem;">No bookings match your search.</div>
         </div>
@@ -5337,7 +5261,7 @@ function closeFilterDrawer() {
             <div style="font-family:'Syne',sans-serif;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:4px;">Your Timezone</div>
             <div style="font-size:0.9rem;color:var(--text);">Central European Time (UTC+1)</div>
           </div>
-          <button class="fav-btn" style="font-size:0.8rem;">Change Timezone</button>
+          <button class="fav-btn" style="font-size:0.8rem;" onclick="changeTimezone(this)">Change Timezone</button>
         </div>
 
         <!-- Legend -->
@@ -5604,6 +5528,22 @@ function closeFilterDrawer() {
         </div>
       </div>
 
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+        <div class="form-field">
+          <label>Number of interpreters needed</label>
+          <select id="modal-interp-count" onchange="updateInterpSlots(this)">
+            <option value="1" selected>1</option>
+            <option value="2">2 (team interpretation)</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5+">5 or more</option>
+          </select>
+        </div>
+        <div class="form-field" id="interp-slots-info" style="display:flex;align-items:flex-end;padding-bottom:2px;">
+          <p style="font-size:0.8rem;color:var(--muted);line-height:1.5;margin:0;" id="interp-slots-msg">One booking request will be created.</p>
+        </div>
+      </div>
+
       <div class="form-field" style="margin-bottom:16px;">
         <label>Additional Context for the Interpreter</label>
         <textarea placeholder="Describe what the interpreter should know: specific terminology, format, any relevant background, cultural considerations, room setup, number of participants…" style="min-height:80px;"></textarea>
@@ -5754,6 +5694,113 @@ function selectRole(el, role) {
 }
 
 // ===== REQUESTER SIGNUP STEPS =====
+// ===== SUGGESTED INTERPRETER POOL =====
+const SUGGESTED_INTERP_POOL = [
+  { initials:'SR', name:'Sofia Reyes',      location:'Madrid, Spain',       exp:14, langs:['ASL','IS'],      specs:['Medical','Conference'],          cert:'RID Certified',       gradient:'135deg,#7b61ff,#00e5ff' },
+  { initials:'JT', name:'James Thornton',   location:'London, UK',          exp:11, langs:['BSL','IS'],      specs:['Legal','Mental Health'],         cert:'NRSLI',               gradient:'135deg,#ff4d6d,#7b61ff' },
+  { initials:'AW', name:'Amara Wilson',     location:'New York, USA',       exp:16, langs:['ASL','IS'],      specs:['Medical','Academic'],            cert:'RID Certified',       gradient:'135deg,#00e5ff,#7b61ff' },
+  { initials:'GM', name:'Grace Mensah',     location:'Accra, Ghana',        exp:8,  langs:['ASL','IS'],      specs:['Education','Religious'],         cert:'RID Certified',       gradient:'135deg,#34d399,#00e5ff' },
+  { initials:'MK', name:'Marcus Kim',       location:'Portland, USA',       exp:13, langs:['ASL'],           specs:['Legal','Medical'],               cert:'RID NIC',             gradient:'135deg,#7b61ff,#00e5ff' },
+  { initials:'PN', name:'Priya Nair',       location:'Chicago, USA',        exp:9,  langs:['ASL'],           specs:['Mental Health','Medical'],       cert:'RID CI/CT',           gradient:'135deg,#00e5ff,#34d399' },
+  { initials:'DW', name:'Devon Walsh',      location:'Seattle, USA',        exp:12, langs:['ASL','PSE'],     specs:['Conference','Education','Workplace'], cert:'RID NIC-Advanced', gradient:'135deg,#f97316,#facc15' },
+  { initials:'LB', name:'Leila Bashir',     location:'Toronto, Canada',     exp:7,  langs:['ASL','LSQ'],     specs:['Education','Social / Family'],   cert:'AVLIC Certified',     gradient:'135deg,#a78bfa,#f472b6' },
+  { initials:'CL', name:'Carlos Lemos',     location:'São Paulo, Brazil',   exp:10, langs:['Libras','IS'],   specs:['Conference','Workplace'],        cert:'FENEIS Certified',    gradient:'135deg,#34d399,#7b61ff' },
+  { initials:'RO', name:'Riku Oshiro',      location:'Tokyo, Japan',        exp:15, langs:['JSL','IS'],      specs:['Conference','Education'],        cert:'JASLI Certified',     gradient:'135deg,#ff4d6d,#f97316' },
+  { initials:'HF', name:'Hannah Fischer',   location:'Berlin, Germany',     exp:6,  langs:['DGS','IS'],      specs:['Education','Mental Health'],     cert:'BGSD Certified',      gradient:'135deg,#60a5fa,#a78bfa' },
+  { initials:'NP', name:'Nadia Petrov',     location:'Paris, France',       exp:11, langs:['LSF','IS'],      specs:['Legal','Conference'],            cert:'ANFP Certified',      gradient:'135deg,#f472b6,#fb923c' },
+  { initials:'TM', name:'Tara Mahoney',     location:'Dublin, Ireland',     exp:9,  langs:['ISL','BSL'],     specs:['Medical','Education'],           cert:'IASLI Certified',     gradient:'135deg,#4ade80,#60a5fa' },
+  { initials:'BK', name:'Ben Kimani',       location:'Nairobi, Kenya',      exp:8,  langs:['KSL','IS'],      specs:['Education','Religious'],         cert:'KNAD Certified',      gradient:'135deg,#fbbf24,#34d399' },
+  { initials:'AS', name:'Ayasha Swiftwind', location:'Phoenix, USA',        exp:14, langs:['ASL'],           specs:['Mental Health','Social / Family','Medical'], cert:'RID NIC-Master', gradient:'135deg,#818cf8,#34d399' },
+  { initials:'FO', name:'Fatou Ouédraogo',  location:'Dakar, Senegal',      exp:5,  langs:['LSF','IS'],      specs:['Education','Social / Family'],   cert:'ANASURD Certified',   gradient:'135deg,#fb923c,#f472b6' },
+  { initials:'EV', name:'Elena Vasquez',    location:'Buenos Aires, Argentina', exp:12, langs:['LSA','IS'],  specs:['Legal','Mental Health'],         cert:'FEVSORBIN Certified', gradient:'135deg,#a78bfa,#60a5fa' },
+  { initials:'OA', name:'Olumide Adeyemi',  location:'Lagos, Nigeria',      exp:10, langs:['NSL','IS'],      specs:['Conference','Workplace','Education'], cert:'NUD Certified',    gradient:'135deg,#4ade80,#f472b6' },
+];
+
+// Normalise a string for comparison
+function normStr(s) { return s.toLowerCase().replace(/[\s\-\/]/g,''); }
+
+function renderSuggestedInterpreters() {
+  const grid = document.getElementById('suggested-interp-grid');
+  const titleEl = document.getElementById('step4-title');
+  const subtitleEl = document.getElementById('step4-subtitle');
+  if (!grid) return;
+
+  // Gather selected sign languages (chips use class 'chip selected')
+  const selectedLangs = [];
+  document.querySelectorAll('#sign-lang-picker-req .chip.selected').forEach(chip => {
+    const txt = chip.textContent.trim();
+    if (txt && txt !== 'Other') selectedLangs.push(txt);
+  });
+
+  // Gather selected context/specialization chips
+  const selectedSpecs = [];
+  document.querySelectorAll('#req-context-chips .chip.selected').forEach(chip => {
+    selectedSpecs.push(chip.textContent.trim());
+  });
+
+  // Skip-request checked? Show generic pool
+  const skipped = document.getElementById('skip-request-cb') && document.getElementById('skip-request-cb').checked;
+
+  let matches = [];
+  let isFiltered = false;
+
+  if (!skipped && (selectedLangs.length > 0 || selectedSpecs.length > 0)) {
+    isFiltered = true;
+    // Score each interpreter
+    const scored = SUGGESTED_INTERP_POOL.map(interp => {
+      let score = 0;
+      // Language match (weighted higher)
+      selectedLangs.forEach(lang => {
+        if (interp.langs.some(l => normStr(l) === normStr(lang))) score += 3;
+      });
+      // Spec match
+      selectedSpecs.forEach(spec => {
+        if (interp.specs.some(s => normStr(s) === normStr(spec))) score += 2;
+      });
+      return { interp, score };
+    });
+    // Sort by score, take top 4 with score > 0; if fewer than 2 match, include closest non-zero
+    scored.sort((a, b) => b.score - a.score);
+    const withScore = scored.filter(x => x.score > 0);
+    matches = (withScore.length >= 2 ? withScore.slice(0, 4) : scored.slice(0, 4)).map(x => x.interp);
+  } else {
+    // No filters — show first 4 as default
+    matches = SUGGESTED_INTERP_POOL.slice(0, 4);
+  }
+
+  // Update heading
+  if (isFiltered && selectedLangs.length + selectedSpecs.length > 0) {
+    const parts = [];
+    if (selectedLangs.length) parts.push(selectedLangs.join(', '));
+    if (selectedSpecs.length) parts.push(selectedSpecs.join(', '));
+    titleEl.textContent = 'Interpreters matching your request';
+    subtitleEl.innerHTML = `These interpreters match what you're looking for: <strong style="color:var(--text);">${parts.join(' · ')}</strong>. Add favorites now, or browse more below.`;
+  } else {
+    titleEl.textContent = 'Add Interpreters to Your Favorites';
+    subtitleEl.textContent = 'Save a few interpreters now — they\'ll appear in your dashboard when you\'re ready to send your first request. You can always browse more later.';
+  }
+
+  // Render cards
+  grid.innerHTML = matches.map(interp => `
+    <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:18px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+        <div class="avatar" style="background:linear-gradient(${interp.gradient});">${interp.initials}</div>
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.95rem;">${interp.name}</div>
+          <div style="color:var(--muted);font-size:0.78rem;">${interp.location} · ${interp.exp} yrs exp</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;">
+        ${interp.langs.map(l => `<span class="lang-tag">${l}</span>`).join('')}${interp.specs.map(s => `<span class="spec-tag">${s}</span>`).join('')}
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="color:var(--muted);font-size:0.78rem;">${interp.cert}</span>
+        <button class="add-btn" style="width:auto;padding:6px 14px;font-size:0.8rem;" onclick="toggleSignupFav(this)">+ Favorite</button>
+      </div>
+    </div>
+  `).join('');
+}
+
 function reqNextStep(step) {
   for (let i = 1; i <= 5; i++) {
     const el = document.getElementById('req-step-' + i);
@@ -5764,6 +5811,8 @@ function reqNextStep(step) {
     if (idx + 1 === step) s.classList.add('active');
     else if (idx + 1 < step) s.classList.add('done');
   });
+  // When advancing to step 4, render matched interpreters
+  if (step === 4) renderSuggestedInterpreters();
 }
 
 // Allow clicking on completed (done) steps to go back
@@ -5840,12 +5889,95 @@ function toggleSendTarget(btn, target) {
 function togglePickItem(el) { el.classList.toggle('checked'); }
 
 // ===== SEND / SAVE ACTIONS =====
+function updateInterpSlots(sel) {
+  const msgEl = document.getElementById('interp-slots-msg');
+  if (!msgEl) return;
+  const val = sel.value;
+  if (val === '1') {
+    msgEl.textContent = 'One booking request will be created.';
+  } else if (val === '5+') {
+    msgEl.innerHTML = '<strong style="color:var(--accent);">5+ slots</strong> will be created — one per interpreter needed.';
+  } else {
+    msgEl.innerHTML = `<strong style="color:var(--accent);">${val} separate slots</strong> will be created — one per interpreter needed.`;
+  }
+}
+
 function sendRequest(type) {
   const labels = { goto:'Preferred Interpreters', extended:'Secondary Tier Interpreters', selected:'selected interpreters' };
+
+  // Read form values
+  const modal = document.getElementById('request-modal');
+  const titleInput = modal.querySelector('input[placeholder*="Cardiology"]') || modal.querySelector('.form-field input');
+  const title = titleInput ? (titleInput.value.trim() || 'New Request') : 'New Request';
+
+  const contextChips = Array.from(modal.querySelectorAll('#modal-context-chips .chip.selected')).map(c => c.textContent.trim());
+  const context = contextChips[0] || 'General';
+
+  const dateInput = modal.querySelector('input[placeholder="MM/DD/YYYY"]');
+  const timeInput = modal.querySelector('input[placeholder*="2:00 PM"]');
+  const dateVal = dateInput ? (dateInput.value.trim() || 'TBD') : 'TBD';
+  const timeVal = timeInput ? (timeInput.value.trim() || 'TBD') : 'TBD';
+
+  const countSel = document.getElementById('modal-interp-count');
+  const rawCount = countSel ? countSel.value : '1';
+  const count = rawCount === '5+' ? 5 : parseInt(rawCount, 10);
+
+  const today = new Date();
+  const createdStr = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
   closeNewRequest();
-  showDashPanel('requests', document.querySelector('.dash-nav-item[onclick*="requests"]'));
+
+  // Navigate to requests panel
+  const navBtn = document.querySelector('.dash-nav-item[onclick*="\'requests\'"]');
+  showDashPanel('requests', navBtn);
   goToDashboard();
-  setTimeout(() => alert(`&#10003; Request sent to your ${labels[type] || 'interpreters'}. You'll be notified when they respond.`), 200);
+
+  // Insert N new job slot cards into the requests list
+  const cardList = document.getElementById('requests-card-list');
+  if (cardList) {
+    const teamLabel = count > 1 ? ` · Slot {n} of ${count}` : '';
+
+    for (let i = count; i >= 1; i--) {
+      const slotLabel = count > 1 ? ` <span style="background:rgba(123,97,255,0.15);color:#a891ff;border-radius:20px;padding:1px 8px;font-size:0.72rem;font-weight:600;margin-left:6px;">Slot ${i} of ${count}</span>` : '';
+      const sentToLabel = labels[type] || 'interpreters';
+
+      const card = document.createElement('div');
+      card.className = 'request-card';
+      card.dataset.status = 'pending';
+      card.style.cssText = 'opacity:0;transform:translateY(-8px);transition:opacity 0.3s,transform 0.3s;';
+      card.innerHTML = `
+        <div class="request-card-header">
+          <div>
+            <div class="request-title">${title}${slotLabel}</div>
+            <div style="font-size:0.78rem;color:var(--muted);margin-top:3px;">Created ${createdStr} · ${context}</div>
+          </div>
+          <span class="request-status status-pending">Pending Response</span>
+        </div>
+        <div class="request-meta">
+          <span>📅 ${dateVal}</span>
+          <span>🕐 ${timeVal}</span>
+          <span>🔁 One-time</span>
+        </div>
+        <div style="font-size:0.83rem;color:var(--muted);border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
+          Sent to: <strong style="color:var(--text);">${sentToLabel}</strong>
+        </div>
+        <div class="request-actions">
+          <button class="fav-btn" onclick="viewRequestDetails(this, null)">View Details</button>
+          <button class="fav-btn" onclick="editRequest(this)">Edit</button>
+          <button class="fav-btn" style="color:var(--accent3);border-color:rgba(255,77,109,0.25);" onclick="cancelRequest(this)">Cancel</button>
+        </div>`;
+
+      cardList.insertBefore(card, cardList.firstChild);
+      // Animate in with a stagger
+      setTimeout((() => {
+        const c = card;
+        return () => { c.style.opacity = '1'; c.style.transform = 'translateY(0)'; };
+      })(), (count - i) * 80);
+    }
+  }
+
+  const slotWord = count === 1 ? 'request' : `${count} requests (one per interpreter slot)`;
+  showToast(`✓ ${slotWord} sent to your ${labels[type] || 'interpreters'}. You'll be notified when they respond.`);
 }
 
 function saveDraft() {
@@ -6632,22 +6764,132 @@ function submitInterpreterProfile() {
 
 // ===== EDIT REQUEST =====
 function editRequest(btn) {
-  openNewRequest();
-  showToast('Edit mode — changes will update your request.');
+  const card = btn.closest('.request-card');
+  const title = card.querySelector('.request-title')?.textContent || '';
+  const metaSpans = card.querySelectorAll('.request-meta span');
+  const meta = Array.from(metaSpans).map(s => s.textContent.replace(/^[^\w]+/, '').trim());
+
+  // Build a simple edit modal with the card's current data pre-filled
+  const overlay = document.getElementById('detail-modal-overlay');
+  document.getElementById('detail-modal-title').textContent = 'Edit Request';
+  document.getElementById('detail-modal-status-badge').innerHTML = '';
+
+  document.getElementById('detail-modal-body').innerHTML = `
+    <p style="color:var(--muted);font-size:0.83rem;margin-bottom:20px;line-height:1.55;">
+      Update the details for this request. Changes will be shared with any interpreters who have already received it.
+    </p>
+    <div class="detail-section">
+      <div class="detail-section-label">Appointment Title</div>
+      <input type="text" value="${title.replace(/"/g,'&quot;')}" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+    </div>
+    <div class="detail-section" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div>
+        <div class="detail-section-label">Date</div>
+        <input type="text" value="${(meta[0]||'').replace('📅','').trim()}" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+      </div>
+      <div>
+        <div class="detail-section-label">Time</div>
+        <input type="text" value="${(meta[1]||'').replace('🕐','').trim()}" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+      </div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-label">Location / Format</div>
+      <input type="text" value="${(meta[2]||'').replace('📍','').replace('💻','').trim()}" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-label">Additional Notes</div>
+      <textarea style="width:100%;min-height:72px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;resize:vertical;box-sizing:border-box;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" placeholder="Any updates for the interpreter…"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button class="btn-primary" style="font-size:0.88rem;" onclick="closeDetailModal();showToast('Request updated.')">Save Changes</button>
+      <button class="btn-secondary" style="font-size:0.88rem;" onclick="closeDetailModal()">Cancel</button>
+    </div>
+  `;
+  overlay.classList.add('open');
 }
+
+function editNote(btn) {
+  const noteEl = btn.previousElementSibling;
+  if (btn.textContent === 'Edit Note') {
+    const current = noteEl.textContent.trim();
+    const ta = document.createElement('textarea');
+    ta.value = current;
+    ta.style.cssText = 'width:100%;min-height:96px;background:var(--surface2);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:9px 14px;color:var(--text);font-family:\'DM Sans\',sans-serif;font-size:0.88rem;outline:none;resize:vertical;box-sizing:border-box;margin-bottom:10px;';
+    noteEl.replaceWith(ta);
+    btn.textContent = 'Save Note';
+    ta.focus();
+  } else {
+    const ta = btn.previousElementSibling;
+    const p = document.createElement('p');
+    p.textContent = ta.value;
+    p.style.cssText = 'color:var(--muted);font-size:0.88rem;line-height:1.7;';
+    ta.replaceWith(p);
+    btn.textContent = 'Edit Note';
+    showToast('Note updated.');
+  }
+}
+
+function openMessaging(interpName) {
+  // Navigate to the requester inbox panel
+  const reqDash = document.getElementById('view-requester-dashboard');
+  const isReqVisible = reqDash && getComputedStyle(reqDash).display !== 'none';
+  if (isReqVisible) {
+    const navBtn = document.querySelector('#view-requester-dashboard .dash-nav-item[onclick*="inbox"]');
+    showDashPanel('inbox', navBtn);
+  } else {
+    const navBtn = document.querySelector('#view-interpreter-dashboard .dash-nav-item[onclick*="interp-inbox"]');
+    showDashPanel('interp-inbox', navBtn);
+  }
+  if (interpName) showToast('Opening messages with ' + interpName);
+}
+
+
+function changeTimezone(btn) {
+  const tzZones = ['Pacific Time (UTC−8)', 'Mountain Time (UTC−7)', 'Central Time (UTC−6)', 'Eastern Time (UTC−5)', 'GMT (UTC+0)', 'Central European Time (UTC+1)', 'East Africa Time (UTC+3)', 'India Standard Time (UTC+5:30)', 'Japan Standard Time (UTC+9)', 'Australian Eastern Time (UTC+10)'];
+  const displayEl = btn.previousElementSibling.querySelector('div:last-child');
+  const current = displayEl ? displayEl.textContent : '';
+  const sel = document.createElement('select');
+  sel.style.cssText = 'background:var(--surface2);border:1px solid var(--accent);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text);font-family:\'DM Sans\',sans-serif;font-size:0.9rem;outline:none;cursor:pointer;';
+  tzZones.forEach(tz => {
+    const opt = document.createElement('option');
+    opt.value = tz; opt.textContent = tz;
+    if (tz === current) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  sel.onchange = () => {
+    if (displayEl) displayEl.textContent = sel.value;
+    sel.replaceWith(document.createTextNode(''));
+    btn.textContent = 'Change Timezone';
+    showToast('Timezone updated to ' + sel.value);
+  };
+  btn.textContent = 'Cancel';
+  btn.onclick = () => { sel.replaceWith(document.createTextNode('')); btn.textContent = 'Change Timezone'; btn.onclick = () => changeTimezone(btn); };
+  if (displayEl) displayEl.replaceWith(sel);
+}
+
 
 // ===== CANCEL REQUEST =====
 function cancelRequest(btn) {
   const card = btn.closest('.request-card');
   const actions = card.querySelector('.request-actions');
   if (actions.querySelector('.cancel-confirm')) return;
-  const originalHTML = actions.innerHTML;
+  // Stash original nodes so we can restore cleanly
+  const originalNodes = Array.from(actions.childNodes).map(n => n.cloneNode(true));
+  actions._cancelOriginalNodes = originalNodes;
   actions.innerHTML = `
     <span class="cancel-confirm" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <span style="font-size:0.82rem;color:var(--muted);">Cancel this request? Interpreters will be notified.</span>
       <button class="fav-btn" style="color:var(--accent3);border-color:rgba(255,77,109,0.4);font-size:0.8rem;padding:6px 14px;" onclick="confirmCancelRequest(this)">Yes, cancel</button>
-      <button class="fav-btn" style="font-size:0.8rem;padding:6px 14px;" onclick="this.closest('.request-actions').innerHTML = \`${originalHTML.replace(/`/g,"'")}\`">Keep it</button>
+      <button class="fav-btn" style="font-size:0.8rem;padding:6px 14px;" onclick="restoreCancelActions(this)">Keep it</button>
     </span>`;
+}
+
+function restoreCancelActions(btn) {
+  const actions = btn.closest('.request-actions');
+  if (!actions || !actions._cancelOriginalNodes) return;
+  actions.innerHTML = '';
+  actions._cancelOriginalNodes.forEach(n => actions.appendChild(n.cloneNode(true)));
+  delete actions._cancelOriginalNodes;
 }
 
 function confirmCancelRequest(btn) {
@@ -6664,13 +6906,22 @@ function deleteDraft(btn) {
   const card = btn.closest('.request-card');
   const actions = card.querySelector('.request-actions');
   if (actions.querySelector('.delete-confirm')) return;
-  const originalHTML = actions.innerHTML;
+  const originalNodes = Array.from(actions.childNodes).map(n => n.cloneNode(true));
+  actions._deleteOriginalNodes = originalNodes;
   actions.innerHTML = `
     <span class="delete-confirm" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <span style="font-size:0.82rem;color:var(--muted);">Delete this draft? This cannot be undone.</span>
       <button class="fav-btn" style="color:var(--accent3);border-color:rgba(255,77,109,0.4);font-size:0.8rem;padding:6px 14px;" onclick="confirmDeleteDraft(this)">Yes, delete</button>
-      <button class="fav-btn" style="font-size:0.8rem;padding:6px 14px;" onclick="this.closest('.request-actions').innerHTML = \`${originalHTML.replace(/`/g,"'")}\`">Keep it</button>
+      <button class="fav-btn" style="font-size:0.8rem;padding:6px 14px;" onclick="restoreDeleteActions(this)">Keep it</button>
     </span>`;
+}
+
+function restoreDeleteActions(btn) {
+  const actions = btn.closest('.request-actions');
+  if (!actions || !actions._deleteOriginalNodes) return;
+  actions.innerHTML = '';
+  actions._deleteOriginalNodes.forEach(n => actions.appendChild(n.cloneNode(true)));
+  delete actions._deleteOriginalNodes;
 }
 
 function confirmDeleteDraft(btn) {
@@ -6754,7 +7005,7 @@ function filterDirectory() {
 // ===== AVAILABILITY CELL TOGGLE =====
 function toggleAvailCell(cell) {
   const isActive = cell.classList.toggle('active');
-  cell.textContent = isActive ? '09–18' : '—';
+  cell.textContent = isActive ? '9–6' : '—';
 }
 
 // ===== AVAILABILITY DAY ROWS =====
@@ -6928,16 +7179,8 @@ function showCalDay(dateStr, hasBooking) {
   };
 })();
 
-// ===== OVERRIDE SENDREQUST to use toast instead of alert =====
+// ===== OVERRIDE SAVDRAFT to use toast instead of alert =====
 (function() {
-  window.sendRequest = function(type) {
-    const labels = { goto:'Preferred Interpreters', extended:'Secondary Tier Interpreters', selected:'selected interpreters' };
-    closeNewRequest();
-    const navBtn = document.querySelector('.dash-nav-item[onclick*="requests"]');
-    showDashPanel('requests', navBtn);
-    showToast('✓ Request sent to your ' + (labels[type] || 'interpreters') + '. You\'ll be notified when they respond.', 'success');
-  };
-
   window.saveDraft = function() {
     closeNewRequest();
     const navBtn = document.querySelector('.dash-nav-item[onclick*="drafts"]');
@@ -7256,7 +7499,492 @@ function formatCardNumber(input) {
   let v = input.value.replace(/\D/g,'').substring(0,16);
   input.value = v.replace(/(.{4})/g,'$1 ').trim();
 }
+
+// ===== DEAF PORTAL ROUTING =====
+function goToDeafPortal() {
+  if (currentUserRole === 'deaf') {
+    showView('deaf-dashboard');
+  } else {
+    showView('deaf-portal');
+  }
+}
+
+// ===== DEAF USER STATE =====
+let deafProfile = {
+  name: 'Jordan Rivera',
+  email: 'jordan@example.com',
+  pronouns: 'they/them',
+  prefs: {
+    signingStyle: ['ASL — natural/colloquial'],
+    domains: ['Mental Health', 'Medical'],
+    notes: 'I use PSE (Pidgin Signed English) when working with hearing family members. I prefer interpreters who will check in with me at breaks.',
+    teamInterp: true,
+    cdiPreferred: false,
+  },
+  interpreters: [
+    { id: 1, name: 'Maya Chen', initials: 'MC', color: 'linear-gradient(135deg,#00e5ff,#7b61ff)', tier: 'preferred', domains: ['Medical','Legal'], certs: 'RID NIC-Advanced', note: 'Best for medical — very clear signing, always confirms terminology with me beforehand.', dnb: false },
+    { id: 2, name: 'Takeshi Nara', initials: 'TN', color: 'linear-gradient(135deg,#f59e0b,#ef4444)', tier: 'preferred', domains: ['Conference','Education'], certs: 'RID CI+CT', note: 'Prefer for conferences and large events.', dnb: false },
+    { id: 3, name: 'Dana Whitfield', initials: 'DW', color: 'linear-gradient(135deg,#34d399,#7b61ff)', tier: 'approved', domains: ['General'], certs: 'RID NIC', note: 'Good general interpreter. Works well for routine meetings.', dnb: false },
+    { id: 4, name: 'Chris Harmon', initials: 'CH', color: 'linear-gradient(135deg,#ff6b85,#9d87ff)', tier: 'dnb', domains: ['Legal'], certs: 'BEI Advanced', note: 'Significant communication mismatch. Do not book.', dnb: true },
+  ],
+  requesters: [
+    { email: 'hr@valleyhealth.org', name: 'Valley Health HR', addedDate: 'Feb 2026', lastActive: '3 days ago' },
+    { email: 'events@techconf.io', name: 'TechConf Events', addedDate: 'Jan 2026', lastActive: '2 weeks ago' },
+  ]
+};
+
+// ===== DEAF DASHBOARD RENDER =====
+function renderDeafDashboard() {
+  const preferred = deafProfile.interpreters.filter(i => i.tier === 'preferred');
+  const approved = deafProfile.interpreters.filter(i => i.tier === 'approved');
+  const dnb = deafProfile.interpreters.filter(i => i.tier === 'dnb');
+
+  function interpCard(interp, showTierControl = true) {
+    const tierBadge = interp.tier === 'preferred'
+      ? `<span style="background:rgba(0,229,255,0.12);border:1px solid rgba(0,229,255,0.3);color:var(--accent);border-radius:20px;padding:2px 10px;font-size:0.72rem;font-weight:600;">★ Preferred</span>`
+      : interp.tier === 'approved'
+      ? `<span style="background:rgba(123,97,255,0.12);border:1px solid rgba(123,97,255,0.3);color:#a78bfa;border-radius:20px;padding:2px 10px;font-size:0.72rem;font-weight:600;">✓ Approved</span>`
+      : `<span style="background:rgba(255,77,109,0.1);border:1px solid rgba(255,77,109,0.3);color:#ff8099;border-radius:20px;padding:2px 10px;font-size:0.72rem;font-weight:600;">✕ Do Not Book</span>`;
+
+    return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;gap:16px;align-items:flex-start;" id="icard-${interp.id}">
+      <div style="width:44px;height:44px;border-radius:50%;background:${interp.color};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0;">${interp.initials}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
+          <span style="font-weight:600;font-size:0.95rem;">${interp.name}</span>
+          ${tierBadge}
+        </div>
+        <div style="color:var(--muted);font-size:0.8rem;margin-bottom:6px;">${interp.certs} · ${interp.domains.join(', ')}</div>
+        ${interp.note ? `<div style="font-size:0.82rem;color:var(--muted);font-style:italic;background:rgba(255,255,255,0.03);border-radius:8px;padding:8px 12px;margin-bottom:8px;">"${interp.note}"</div>` : ''}
+        ${showTierControl ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+          ${interp.tier !== 'preferred' ? `<button onclick="setInterpTier(${interp.id},'preferred')" style="background:rgba(0,229,255,0.07);border:1px solid rgba(0,229,255,0.2);color:var(--accent);border-radius:8px;padding:4px 12px;font-size:0.75rem;cursor:pointer;">★ Set Preferred</button>` : ''}
+          ${interp.tier !== 'approved' ? `<button onclick="setInterpTier(${interp.id},'approved')" style="background:rgba(123,97,255,0.07);border:1px solid rgba(123,97,255,0.2);color:#a78bfa;border-radius:8px;padding:4px 12px;font-size:0.75rem;cursor:pointer;">✓ Set Approved</button>` : ''}
+          ${interp.tier !== 'dnb' ? `<button onclick="setInterpTier(${interp.id},'dnb')" style="background:rgba(255,77,109,0.06);border:1px solid rgba(255,77,109,0.2);color:#ff8099;border-radius:8px;padding:4px 12px;font-size:0.75rem;cursor:pointer;">✕ Do Not Book</button>` : ''}
+          <button onclick="editInterpNote(${interp.id})" style="background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:4px 12px;font-size:0.75rem;cursor:pointer;">Edit note</button>
+          <button onclick="removeInterp(${interp.id})" style="background:none;border:none;color:var(--muted);font-size:0.75rem;cursor:pointer;opacity:0.6;padding:4px 8px;">Remove</button>
+        </div>` : ''}
+      </div>
+    </div>`;
+  }
+
+  document.getElementById('deaf-dash-content').innerHTML = `
+  <div style="max-width:900px;margin:0 auto;padding:100px 24px 60px;">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:48px;flex-wrap:wrap;">
+      <div>
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(157,135,255,0.1);border:1px solid rgba(157,135,255,0.25);border-radius:100px;padding:6px 14px;font-size:0.8rem;color:var(--accent2);margin-bottom:16px;font-weight:500;">My Communication Profile</div>
+        <h1 style="font-family:'Syne',sans-serif;font-size:clamp(1.6rem,3vw,2.2rem);font-weight:800;letter-spacing:-0.04em;line-height:1.1;margin-bottom:8px;">Hi, ${deafProfile.name} <span style="font-weight:400;opacity:0.5;font-size:0.65em;">${deafProfile.pronouns}</span></h1>
+        <p style="color:var(--muted);font-size:0.9rem;">Your interpreter roster and preferences. Share this profile with any requester so they always know who to contact — and who not to.</p>
+      </div>
+      <button onclick="showShareModal()" class="btn-primary" style="white-space:nowrap;display:flex;align-items:center;gap:8px;padding:10px 20px;">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M15 13.333a2.667 2.667 0 1 0 0 5.334 2.667 2.667 0 0 0 0-5.334zm0 0V6.667M5 6.667a2.667 2.667 0 1 0 0-5.334 2.667 2.667 0 0 0 0 5.334zm0 0v6.666M5 13.333a2.667 2.667 0 1 0 0 5.334 2.667 2.667 0 0 0 0-5.334z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Share my profile
+      </button>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:36px;width:fit-content;">
+      <button id="ddtab-roster" onclick="showDeafTab('roster')" style="background:var(--surface2);color:var(--text);border:none;border-radius:9px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-size:0.88rem;font-weight:600;cursor:pointer;">My Roster</button>
+      <button id="ddtab-prefs" onclick="showDeafTab('prefs')" style="background:none;color:var(--muted);border:none;border-radius:9px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-size:0.88rem;cursor:pointer;">Communication Preferences</button>
+      <button id="ddtab-requesters" onclick="showDeafTab('requesters')" style="background:none;color:var(--muted);border:none;border-radius:9px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-size:0.88rem;cursor:pointer;">My Requesters</button>
+    </div>
+
+    <!-- ROSTER TAB -->
+    <div id="ddpanel-roster">
+
+      <!-- Preferred -->
+      <div style="margin-bottom:36px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:2px;">★ Preferred Interpreters</div>
+            <div style="color:var(--muted);font-size:0.8rem;">Contact these first. Strong fit based on my communication style and history.</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          ${preferred.length ? preferred.map(i => interpCard(i)).join('') : `<div style="color:var(--muted);font-size:0.88rem;padding:16px;background:var(--surface);border-radius:10px;border:1px dashed var(--border);">No preferred interpreters yet. Add from directory or promote an approved interpreter.</div>`}
+        </div>
+      </div>
+
+      <!-- Approved -->
+      <div style="margin-bottom:36px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:2px;">✓ Approved Interpreters</div>
+            <div style="color:var(--muted);font-size:0.8rem;">Good alternatives. Use when preferred interpreters are unavailable.</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          ${approved.length ? approved.map(i => interpCard(i)).join('') : `<div style="color:var(--muted);font-size:0.88rem;padding:16px;background:var(--surface);border-radius:10px;border:1px dashed var(--border);">No approved interpreters yet.</div>`}
+        </div>
+      </div>
+
+      <!-- DNB -->
+      <div style="margin-bottom:36px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:2px;color:#ff8099;">✕ Do Not Book</div>
+            <div style="color:var(--muted);font-size:0.8rem;">Visible to your requesters. Reason notes help them understand without requiring explanation.</div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          ${dnb.length ? dnb.map(i => interpCard(i)).join('') : `<div style="color:var(--muted);font-size:0.88rem;padding:16px;background:var(--surface);border-radius:10px;border:1px dashed var(--border);">No do-not-book entries.</div>`}
+        </div>
+      </div>
+
+      <!-- Add from directory -->
+      <div style="background:rgba(0,229,255,0.04);border:1px dashed rgba(0,229,255,0.2);border-radius:12px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+        <div>
+          <div style="font-weight:600;font-size:0.9rem;margin-bottom:4px;">Add an interpreter to your roster</div>
+          <div style="color:var(--muted);font-size:0.82rem;">Browse the directory and add interpreters directly from their profile.</div>
+        </div>
+        <button onclick="showView('directory')" class="btn-primary" style="padding:9px 20px;font-size:0.85rem;">Browse Directory →</button>
+      </div>
+
+    </div>
+
+    <!-- PREFERENCES TAB -->
+    <div id="ddpanel-prefs" style="display:none;">
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:32px;margin-bottom:24px;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:4px;">Communication Preferences</div>
+        <div style="color:var(--muted);font-size:0.82rem;margin-bottom:28px;">These preferences are shared with interpreters when they confirm a booking. You'll be notified each time they're shared. <span style="color:var(--accent);">You control this.</span></div>
+
+        <div style="display:flex;flex-direction:column;gap:20px;">
+
+          <div>
+            <label style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:10px;">Signing style preferences</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;" id="signing-style-chips">
+              ${['ASL — natural/colloquial','ASL — more English-influenced (PSE)','Tactile ASL','Sim-Com acceptable','Contact signing OK'].map(s => {
+                const active = deafProfile.prefs.signingStyle.includes(s);
+                return `<button onclick="togglePrefChip(this,'signingStyle','${s}')" style="background:${active ? 'rgba(0,229,255,0.12)' : 'var(--surface2)'};border:1px solid ${active ? 'rgba(0,229,255,0.35)' : 'var(--border)'};color:${active ? 'var(--accent)' : 'var(--muted)'};border-radius:20px;padding:6px 14px;font-size:0.8rem;cursor:pointer;font-family:'DM Sans',sans-serif;" data-pref="signingStyle" data-val="${s}">${s}</button>`;
+              }).join('')}
+            </div>
+          </div>
+
+          <div>
+            <label style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:10px;">Domain specializations needed</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              ${['Medical','Mental Health','Legal','Education','Conference','Technical/STEM','Religious','DeafBlind'].map(s => {
+                const active = deafProfile.prefs.domains.includes(s);
+                return `<button onclick="togglePrefChip(this,'domains','${s}')" style="background:${active ? 'rgba(123,97,255,0.12)' : 'var(--surface2)'};border:1px solid ${active ? 'rgba(123,97,255,0.35)' : 'var(--border)'};color:${active ? '#a78bfa' : 'var(--muted)'};border-radius:20px;padding:6px 14px;font-size:0.8rem;cursor:pointer;font-family:'DM Sans',sans-serif;">${s}</button>`;
+              }).join('')}
+            </div>
+          </div>
+
+          <div style="display:flex;gap:16px;flex-wrap:wrap;">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.85rem;">
+              <input type="checkbox" ${deafProfile.prefs.teamInterp ? 'checked' : ''} onchange="deafProfile.prefs.teamInterp=this.checked" style="width:16px;height:16px;accent-color:var(--accent);"> I need team interpreting (2+ interpreters) for assignments over 2 hours
+            </label>
+          </div>
+
+          <div style="display:flex;gap:16px;flex-wrap:wrap;">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.85rem;">
+              <input type="checkbox" ${deafProfile.prefs.cdiPreferred ? 'checked' : ''} onchange="deafProfile.prefs.cdiPreferred=this.checked" style="width:16px;height:16px;accent-color:var(--accent);"> I strongly prefer a Certified Deaf Interpreter (CDI) when available
+            </label>
+          </div>
+
+          <div>
+            <label style="display:block;font-size:0.85rem;font-weight:600;margin-bottom:8px;">Additional notes for interpreters</label>
+            <textarea id="deaf-pref-notes" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;resize:vertical;min-height:100px;outline:none;line-height:1.6;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">${deafProfile.prefs.notes}</textarea>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:6px;">This note is shared with the interpreter when they confirm a job. You'll receive a notification when it's sent.</div>
+          </div>
+
+          <div style="padding:14px 16px;background:rgba(157,135,255,0.07);border:1px solid rgba(157,135,255,0.2);border-radius:10px;font-size:0.82rem;color:var(--muted);line-height:1.6;">
+            <span style="color:var(--accent2);font-weight:600;">🔒 Privacy note:</span> Your preferences are only shared when a booking is confirmed — never at the browsing or inquiry stage. You'll receive a notification each time they're shared with an interpreter.
+          </div>
+
+          <button onclick="saveDeafPrefs()" class="btn-primary" style="width:fit-content;padding:10px 28px;">Save preferences</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- REQUESTERS TAB -->
+    <div id="ddpanel-requesters" style="display:none;">
+      <div style="margin-bottom:24px;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;margin-bottom:4px;">People who can see your roster</div>
+        <div style="color:var(--muted);font-size:0.82rem;line-height:1.6;">When you add a requester, they get a live link to your profile — your preferred, approved, and do-not-book list — that updates automatically when you make changes. They cannot edit anything. Only you can.</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;" id="requester-list">
+        ${deafProfile.requesters.map((r,i) => `
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+          <div>
+            <div style="font-weight:600;font-size:0.9rem;">${r.name}</div>
+            <div style="color:var(--muted);font-size:0.8rem;">${r.email} · Added ${r.addedDate} · Last active ${r.lastActive}</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button onclick="copyRequesterLink('${r.email}')" style="background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 12px;font-size:0.78rem;cursor:pointer;">Copy link</button>
+            <button onclick="removeRequester(${i})" style="background:none;border:none;color:var(--muted);font-size:0.78rem;cursor:pointer;opacity:0.5;">Remove</button>
+          </div>
+        </div>`).join('')}
+      </div>
+
+      <!-- Add requester form -->
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:28px;">
+        <div style="font-weight:600;margin-bottom:16px;font-size:0.95rem;">Add a requester</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+          <input id="new-req-name" type="text" placeholder="Organization or person name" style="flex:1;min-width:180px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+          <input id="new-req-email" type="email" placeholder="their@email.com" style="flex:1;min-width:180px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+          <button onclick="addRequester()" class="btn-primary" style="padding:10px 20px;font-size:0.88rem;">Send invite</button>
+        </div>
+        <div style="font-size:0.78rem;color:var(--muted);line-height:1.6;">They'll receive an email with a read-only link to your interpreter roster. You can revoke access at any time.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Share Modal -->
+  <div id="deaf-share-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:24px;">
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:36px;max-width:480px;width:100%;position:relative;">
+      <button onclick="closeShareModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;">✕</button>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.15rem;margin-bottom:8px;">Share your interpreter roster</div>
+      <p style="color:var(--muted);font-size:0.85rem;line-height:1.65;margin-bottom:24px;">Anyone with this link can view your preferred, approved, and do-not-book interpreters. The view is read-only and updates live when you make changes.</p>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <span style="font-size:0.82rem;color:var(--muted);flex:1;word-break:break-all;">signpost.com/roster/jordan-rivera-a8f3b</span>
+        <button onclick="copyShareLink()" id="share-copy-btn" style="background:var(--accent);color:#000;border:none;border-radius:8px;padding:6px 14px;font-size:0.8rem;font-weight:600;cursor:pointer;white-space:nowrap;">Copy</button>
+      </div>
+      <div style="font-weight:600;font-size:0.88rem;margin-bottom:12px;">Or send directly to a requester →</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <input id="share-email-input" type="email" placeholder="requester@org.com" style="flex:1;min-width:180px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.85rem;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        <button onclick="sendShareEmail()" class="btn-primary" style="padding:10px 20px;font-size:0.85rem;">Send →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Note edit modal -->
+  <div id="note-edit-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:24px;">
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:32px;max-width:440px;width:100%;position:relative;">
+      <button onclick="closeNoteModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;">✕</button>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:6px;">Edit note for <span id="note-modal-name"></span></div>
+      <div style="color:var(--muted);font-size:0.8rem;margin-bottom:16px;">Visible to requesters to help them understand your preference.</div>
+      <textarea id="note-modal-text" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;resize:vertical;min-height:90px;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button onclick="saveInterpNote()" class="btn-primary" style="padding:9px 22px;">Save note</button>
+        <button onclick="closeNoteModal()" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 18px;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;">Cancel</button>
+      </div>
+    </div>
+  </div>
+  `;
+}
+
+function showDeafTab(tab) {
+  ['roster','prefs','requesters'].forEach(t => {
+    document.getElementById('ddpanel-' + t).style.display = t === tab ? 'block' : 'none';
+    const btn = document.getElementById('ddtab-' + t);
+    if (btn) {
+      btn.style.background = t === tab ? 'var(--surface2)' : 'none';
+      btn.style.color = t === tab ? 'var(--text)' : 'var(--muted)';
+    }
+  });
+}
+
+function setInterpTier(id, tier) {
+  const interp = deafProfile.interpreters.find(i => i.id === id);
+  if (interp) { interp.tier = tier; interp.dnb = (tier === 'dnb'); }
+  renderDeafDashboard();
+  showDeafTab('roster');
+  showToast(tier === 'dnb' ? '✕ Added to Do Not Book list' : tier === 'preferred' ? '★ Set as Preferred' : '✓ Set as Approved', 'success');
+}
+
+function removeInterp(id) {
+  deafProfile.interpreters = deafProfile.interpreters.filter(i => i.id !== id);
+  renderDeafDashboard();
+  showDeafTab('roster');
+  showToast('Interpreter removed from roster.', '');
+}
+
+let editingNoteId = null;
+function editInterpNote(id) {
+  const interp = deafProfile.interpreters.find(i => i.id === id);
+  if (!interp) return;
+  editingNoteId = id;
+  document.getElementById('note-modal-name').textContent = interp.name;
+  document.getElementById('note-modal-text').value = interp.note || '';
+  document.getElementById('note-edit-modal').style.display = 'flex';
+}
+function closeNoteModal() {
+  document.getElementById('note-edit-modal').style.display = 'none';
+  editingNoteId = null;
+}
+function saveInterpNote() {
+  const interp = deafProfile.interpreters.find(i => i.id === editingNoteId);
+  if (interp) interp.note = document.getElementById('note-modal-text').value;
+  closeNoteModal();
+  renderDeafDashboard();
+  showDeafTab('roster');
+  showToast('Note saved.', 'success');
+}
+
+function togglePrefChip(btn, key, val) {
+  const arr = deafProfile.prefs[key];
+  const idx = arr.indexOf(val);
+  if (idx > -1) {
+    arr.splice(idx, 1);
+    btn.style.background = 'var(--surface2)';
+    btn.style.borderColor = 'var(--border)';
+    btn.style.color = 'var(--muted)';
+  } else {
+    arr.push(val);
+    if (key === 'signingStyle') {
+      btn.style.background = 'rgba(0,229,255,0.12)';
+      btn.style.borderColor = 'rgba(0,229,255,0.35)';
+      btn.style.color = 'var(--accent)';
+    } else {
+      btn.style.background = 'rgba(123,97,255,0.12)';
+      btn.style.borderColor = 'rgba(123,97,255,0.35)';
+      btn.style.color = '#a78bfa';
+    }
+  }
+}
+
+function saveDeafPrefs() {
+  deafProfile.prefs.notes = document.getElementById('deaf-pref-notes').value;
+  showToast('✓ Preferences saved. Interpreters will receive these when they confirm a booking.', 'success');
+}
+
+function addRequester() {
+  const name = document.getElementById('new-req-name').value.trim();
+  const email = document.getElementById('new-req-email').value.trim();
+  if (!name || !email) { showToast('Please enter a name and email.', ''); return; }
+  deafProfile.requesters.push({ email, name, addedDate: 'Feb 2026', lastActive: 'Just now' });
+  document.getElementById('new-req-name').value = '';
+  document.getElementById('new-req-email').value = '';
+  renderDeafDashboard();
+  showDeafTab('requesters');
+  showToast(`✓ Invite sent to ${email}. They can now view your interpreter roster.`, 'success');
+}
+
+function removeRequester(i) {
+  deafProfile.requesters.splice(i, 1);
+  renderDeafDashboard();
+  showDeafTab('requesters');
+  showToast('Requester removed. Their link is no longer active.', '');
+}
+
+function copyRequesterLink(email) {
+  showToast(`Link copied for ${email}`, 'success');
+}
+
+function showShareModal() {
+  document.getElementById('deaf-share-modal').style.display = 'flex';
+}
+function closeShareModal() {
+  document.getElementById('deaf-share-modal').style.display = 'none';
+}
+function copyShareLink() {
+  document.getElementById('share-copy-btn').textContent = '✓ Copied!';
+  setTimeout(() => { document.getElementById('share-copy-btn').textContent = 'Copy'; }, 2000);
+  showToast('Link copied to clipboard.', 'success');
+}
+function sendShareEmail() {
+  const email = document.getElementById('share-email-input').value.trim();
+  if (!email) return;
+  deafProfile.requesters.push({ email, name: email, addedDate: 'Feb 2026', lastActive: 'Just invited' });
+  showToast(`✓ Roster link sent to ${email}`, 'success');
+  closeShareModal();
+}
+
+function handleDeafLogin() {
+  const email = document.getElementById('deaf-login-email').value.trim();
+  const pw = document.getElementById('deaf-login-password').value;
+  if (!email || !pw) { document.getElementById('deaf-login-error').style.display = 'block'; return; }
+  document.getElementById('deaf-login-error').style.display = 'none';
+  currentUserRole = 'deaf';
+  showView('deaf-dashboard');
+}
+
+function handleDeafSignup() {
+  const name = document.getElementById('deaf-signup-name').value.trim();
+  const email = document.getElementById('deaf-signup-email').value.trim();
+  const pw = document.getElementById('deaf-signup-password').value;
+  if (!name || !email || !pw) { document.getElementById('deaf-signup-error').style.display = 'block'; return; }
+  deafProfile.name = name;
+  deafProfile.email = email;
+  currentUserRole = 'deaf';
+  showView('deaf-dashboard');
+}
+
 </script>
+
+<!-- =========================================
+     DEAF USER PORTAL VIEW
+     ========================================= -->
+<div class="view" id="view-deaf-portal">
+  <div class="signup-view" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:100px 24px 60px;">
+    <div style="max-width:960px;width:100%;margin:0 auto;">
+
+      <button class="back-btn" onclick="showView('home')" style="margin-bottom:40px;">&#8592; Back to Home</button>
+
+      <div style="margin-bottom:48px;">
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(157,135,255,0.1);border:1px solid rgba(157,135,255,0.25);border-radius:100px;padding:6px 14px;font-size:0.8rem;color:var(--accent2);margin-bottom:24px;font-weight:500;">For Deaf Individuals</div>
+        <h1 style="font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-0.04em;line-height:1.1;margin-bottom:16px;">Your interpreter list,<br><em style="font-style:normal;background:linear-gradient(135deg,#9d87ff,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">always in your hands.</em></h1>
+        <p style="color:var(--muted);font-size:1rem;line-height:1.75;max-width:560px;">Build your personal roster of preferred, approved, and do-not-book interpreters. Share it with employers, clinics, or event organizers — so they always know exactly who to contact, and who not to. No explaining required.</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:40px;">
+
+        <!-- Create profile -->
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:36px;display:flex;flex-direction:column;gap:20px;" onmouseover="this.style.borderColor='rgba(157,135,255,0.4)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="width:52px;height:52px;background:rgba(157,135,255,0.1);border:1px solid rgba(157,135,255,0.25);border-radius:14px;display:flex;align-items:center;justify-content:center;">
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><circle cx="13" cy="9" r="4.5" stroke="#9d87ff" stroke-width="1.5"/><path d="M4 22c0-4.97 4.03-9 9-9s9 4.03 9 9" stroke="#9d87ff" stroke-width="1.5" stroke-linecap="round"/><path d="M19 4v6M16 7h6" stroke="#00e5ff" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:8px;">Create your free profile</div>
+            <p style="color:var(--muted);font-size:0.875rem;line-height:1.65;">Set up your interpreter roster and communication preferences. Share a live link with anyone who books interpreting services for you.</p>
+          </div>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;margin:0;padding:0;">
+            <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:#9d87ff;font-size:1rem;">✓</span> Build your preferred interpreter list</li>
+            <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:#9d87ff;font-size:1rem;">✓</span> Mark do-not-book with a private note</li>
+            <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:#9d87ff;font-size:1rem;">✓</span> Share a live link with your requesters</li>
+            <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:#9d87ff;font-size:1rem;">✓</span> Your communication preferences travel with every booking</li>
+          </ul>
+          <button onclick="document.getElementById('deaf-signup-panel').style.display='flex';document.getElementById('deaf-login-panel').style.display='none';" class="btn-primary" style="background:#8b72ff;margin-top:auto;" onmouseover="this.style.background='#7b61ff'" onmouseout="this.style.background='#8b72ff'">Create my profile →</button>
+        </div>
+
+        <!-- Sign in -->
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:36px;display:flex;flex-direction:column;gap:20px;" onmouseover="this.style.borderColor='rgba(0,229,255,0.4)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="width:52px;height:52px;background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.2);border-radius:14px;display:flex;align-items:center;justify-content:center;">
+            <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><rect x="4" y="4" width="18" height="18" rx="4" stroke="#00e5ff" stroke-width="1.5"/><path d="M9 13h8M14 10l3 3-3 3" stroke="#00e5ff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:8px;">Sign in to your profile</div>
+            <p style="color:var(--muted);font-size:0.875rem;line-height:1.65;">Update your roster, manage your requesters, and review your communication preferences.</p>
+          </div>
+          <button onclick="document.getElementById('deaf-login-panel').style.display='flex';document.getElementById('deaf-signup-panel').style.display='none';" class="btn-primary" style="margin-top:auto;">Sign in →</button>
+        </div>
+
+      </div>
+
+      <!-- Login panel -->
+      <div id="deaf-login-panel" style="display:none;flex-direction:column;gap:20px;max-width:440px;margin:0 auto;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:32px;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.2rem;">Sign in</div>
+        <div style="background:rgba(0,229,255,0.06);border:1px solid rgba(0,229,255,0.2);border-radius:8px;padding:12px 16px;font-size:0.78rem;color:var(--accent);font-weight:600;">Demo mode — enter any text to sign in.</div>
+        <input id="deaf-login-email" type="email" placeholder="you@example.com" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" onkeydown="if(event.key==='Enter')handleDeafLogin()">
+        <input id="deaf-login-password" type="password" placeholder="••••••••" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" onkeydown="if(event.key==='Enter')handleDeafLogin()">
+        <div id="deaf-login-error" style="display:none;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.25);border-radius:8px;padding:10px 14px;font-size:0.83rem;color:#ff8099;">Please enter your email and password.</div>
+        <button class="btn-primary" onclick="handleDeafLogin()" style="width:100%;padding:13px;">Sign in →</button>
+      </div>
+
+      <!-- Signup panel -->
+      <div id="deaf-signup-panel" style="display:none;flex-direction:column;gap:20px;max-width:440px;margin:0 auto;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:32px;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.2rem;">Create your free profile</div>
+        <input id="deaf-signup-name" type="text" placeholder="Your name" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        <input id="deaf-signup-email" type="email" placeholder="you@example.com" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        <input id="deaf-signup-password" type="password" placeholder="Create a password" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+        <div id="deaf-signup-error" style="display:none;background:rgba(255,77,109,0.08);border:1px solid rgba(255,77,109,0.25);border-radius:8px;padding:10px 14px;font-size:0.83rem;color:#ff8099;">Please fill in all fields.</div>
+        <button class="btn-primary" onclick="handleDeafSignup()" style="background:#8b72ff;width:100%;padding:13px;" onmouseover="this.style.background='#7b61ff'" onmouseout="this.style.background='#8b72ff'">Create my profile →</button>
+        <div style="text-align:center;font-size:0.82rem;color:var(--muted);">Always free for Deaf individuals. <span style="color:var(--accent);cursor:pointer;" onclick="document.getElementById('deaf-login-panel').style.display='flex';document.getElementById('deaf-signup-panel').style.display='none';">Already have an account →</span></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- =========================================
+     DEAF USER DASHBOARD VIEW
+     ========================================= -->
+<div class="view" id="view-deaf-dashboard">
+  <div id="deaf-dash-content"></div>
+</div>
 
 </body>
 </html>
