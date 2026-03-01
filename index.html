@@ -6,6 +6,11 @@
 <title>signpost — find your interpreter, anywhere</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <style>
+  @keyframes payerPanelIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
@@ -258,6 +263,7 @@
     font-size: 0.78rem; cursor: pointer;
     color: var(--muted); transition: all 0.15s;
     white-space: nowrap; line-height: 1;
+    min-width: 0; overflow: hidden; text-overflow: ellipsis;
   }
 
   .chip:hover { border-color: var(--accent); color: var(--text); }
@@ -645,6 +651,53 @@
     .form-row, .form-row.three { grid-template-columns: 1fr; }
   }
 
+  /* ===== RESPONSIVE FORM GRIDS ===== */
+  /* Modal and dashboard inline request form */
+  @media (max-width: 600px) {
+    .request-form-overlay { padding: 0; align-items: flex-end; }
+    .request-form-modal { border-radius: 20px 20px 0 0; max-width: 100%; }
+    .modal-body { padding: 20px; }
+    .modal-header { padding: 20px; }
+    .modal-footer { padding: 16px 20px; flex-direction: column; align-items: stretch; }
+    .modal-footer .send-options { flex-direction: column; }
+    .modal-footer .send-btn-tier,
+    .modal-footer .send-btn-primary,
+    .modal-footer .send-btn-draft { width: 100%; text-align: center; }
+
+    /* Collapse all inline multi-col grids inside modal and dashboard forms */
+    .modal-body [style*="grid-template-columns"],
+    #panel-new-request [style*="grid-template-columns"],
+    .dash-panel [style*="grid-template-columns"] {
+      grid-template-columns: 1fr !important;
+    }
+
+    /* Payer details grid */
+    #payer-details-panel [style*="grid-template-columns"] {
+      grid-template-columns: 1fr !important;
+    }
+
+    /* Profile info grids */
+    #ddpanel-profile [style*="grid-template-columns"] {
+      grid-template-columns: 1fr !important;
+    }
+
+    /* Preferred comm method radio row */
+    #pref-comm-email-label,
+    #pref-comm-text-label { min-width: unset; flex: 1 1 100%; }
+  }
+
+  @media (max-width: 760px) {
+    /* Collapse 3-col grids to 2-col at medium widths */
+    .modal-body [style*="1fr 1fr 1fr"],
+    #panel-new-request [style*="1fr 1fr 1fr"] {
+      grid-template-columns: 1fr 1fr !important;
+    }
+    /* Collapse 2fr 1fr to 1fr at medium widths */
+    .modal-body [style*="2fr 1fr"] {
+      grid-template-columns: 1fr !important;
+    }
+  }
+
   .form-field { display: flex; flex-direction: column; gap: 6px; }
 
   label {
@@ -852,7 +905,7 @@
   .region-badge[style*="--rc:#f472b6"] { background: rgba(244,114,182,0.1); border-color: rgba(244,114,182,0.35); color: #f472b6; }
   .region-badge[style*="--rc:#facc15"] { background: rgba(250,204,21,0.1); border-color: rgba(250,204,21,0.35); color: #facc15; }
   /* ===== LANGUAGE PICKER ===== */
-  .lang-picker { }
+  .lang-picker { width: 100%; min-width: 0; overflow: hidden; }
 
   .lang-picker-top-label {
     font-size: 0.82rem; font-weight: 500;
@@ -1203,6 +1256,11 @@
   .cal-dropdown a:hover { background: var(--surface2); }
   .cal-dropdown a svg { flex-shrink: 0; }
   .status-pending { background: rgba(250,204,21,0.1); color: #facc15; border: 1px solid rgba(250,204,21,0.25); }
+  .status-pending-payment { background: rgba(255,107,133,0.1); color: #ff8099; border: 1px solid rgba(255,107,133,0.3); animation: pendingPaymentPulse 2.5s ease-in-out infinite; }
+  @keyframes pendingPaymentPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255,107,133,0); }
+    50% { box-shadow: 0 0 0 3px rgba(255,107,133,0.15); }
+  }
 
   .request-meta {
     display: flex; flex-wrap: wrap; gap: 16px;
@@ -1306,6 +1364,7 @@
     border-radius: 20px;
     width: 100%; max-width: 720px;
     overflow: hidden;
+    overflow-x: hidden;
     box-shadow: 0 40px 80px rgba(0,0,0,0.5);
   }
 
@@ -1873,14 +1932,14 @@
 <body>
 
 <!-- ===== MOCK LOGIN SWITCHER (prototype only) ===== -->
-<div id="mock-login-bar" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;background:var(--surface2);border:1px solid var(--border);border-radius:40px;padding:8px 16px;display:flex;align-items:center;gap:10px;backdrop-filter:blur(12px);box-shadow:0 4px 24px rgba(0,0,0,0.4);">
-  <span style="font-size:0.72rem;color:var(--muted);font-family:'DM Sans',sans-serif;white-space:nowrap;">Demo user:</span>
-  <span id="mock-role-label" style="font-size:0.78rem;font-weight:700;color:var(--accent);font-family:'DM Sans',sans-serif;min-width:110px;">Logged out</span>
-  <div style="width:1px;height:18px;background:var(--border);"></div>
-  <button class="mock-role-btn" data-role="null" onclick="currentUserRole=null;updateMockLoginUI();" style="font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:600;border:1px solid var(--border);border-radius:20px;padding:4px 12px;cursor:pointer;transition:all 0.15s;background:rgba(0,229,255,0.18);color:var(--accent);border-color:rgba(0,229,255,0.4);">Logged out</button>
-  <button class="mock-role-btn" data-role="deaf" onclick="setMockUser('deaf');" style="font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:600;border:1px solid var(--border);border-radius:20px;padding:4px 12px;cursor:pointer;transition:all 0.15s;background:transparent;color:var(--muted);">Deaf/HoH</button>
-  <button class="mock-role-btn" data-role="org" onclick="setMockUser('org');" style="font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:600;border:1px solid var(--border);border-radius:20px;padding:4px 12px;cursor:pointer;transition:all 0.15s;background:transparent;color:var(--muted);">Org/Institution</button>
-  <button class="mock-role-btn" data-role="interpreter" onclick="setMockUser('interpreter');" style="font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:600;border:1px solid var(--border);border-radius:20px;padding:4px 12px;cursor:pointer;transition:all 0.15s;background:transparent;color:var(--muted);">Interpreter</button>
+<div id="mock-login-bar" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:9999;background:#3d1f00;border:1.5px solid #c45c00;border-radius:40px;padding:8px 16px;display:flex;align-items:center;gap:10px;backdrop-filter:blur(12px);box-shadow:0 4px 28px rgba(180,80,0,0.45);">
+  <span style="font-size:0.65rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#f97316;font-family:'DM Sans',sans-serif;white-space:nowrap;">🧪 Demo user:</span>
+  <span id="mock-role-label" style="font-size:0.78rem;font-weight:700;color:#fb923c;font-family:'DM Sans',sans-serif;min-width:110px;">Logged out</span>
+  <div style="width:1px;height:18px;background:#7c3a00;"></div>
+  <button class="mock-role-btn" data-role="null" onclick="currentUserRole=null;updateMockLoginUI();" style="font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:600;border:1.5px solid #c45c00;border-radius:20px;padding:4px 12px;cursor:pointer;transition:all 0.15s;background:rgba(249,115,22,0.25);color:#fb923c;">Logged out</button>
+  <button class="mock-role-btn" data-role="deaf" onclick="setMockUser('deaf');" style="font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:600;border:1.5px solid #7c3a00;border-radius:20px;padding:4px 12px;cursor:pointer;transition:all 0.15s;background:transparent;color:#a16207;">Deaf/HoH</button>
+  <button class="mock-role-btn" data-role="org" onclick="setMockUser('org');" style="font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:600;border:1.5px solid #7c3a00;border-radius:20px;padding:4px 12px;cursor:pointer;transition:all 0.15s;background:transparent;color:#a16207;">Org/Institution</button>
+  <button class="mock-role-btn" data-role="interpreter" onclick="setMockUser('interpreter');" style="font-family:'DM Sans',sans-serif;font-size:0.75rem;font-weight:600;border:1.5px solid #7c3a00;border-radius:20px;padding:4px 12px;cursor:pointer;transition:all 0.15s;background:transparent;color:#a16207;">Interpreter</button>
 </div>
 
 <!-- NAV -->
@@ -3169,9 +3228,9 @@ function updateMockLoginUI() {
   document.getElementById('mock-role-label').textContent = currentUserRole ? (labels[currentUserRole] || currentUserRole) : 'Logged out';
   // Highlight active button
   bar.querySelectorAll('.mock-role-btn').forEach(b => {
-    b.style.background = b.dataset.role === (currentUserRole || 'null') ? 'rgba(0,229,255,0.18)' : 'transparent';
-    b.style.color = b.dataset.role === (currentUserRole || 'null') ? 'var(--accent)' : 'var(--muted)';
-    b.style.borderColor = b.dataset.role === (currentUserRole || 'null') ? 'rgba(0,229,255,0.4)' : 'var(--border)';
+    b.style.background = b.dataset.role === (currentUserRole || 'null') ? 'rgba(249,115,22,0.25)' : 'transparent';
+    b.style.color = b.dataset.role === (currentUserRole || 'null') ? '#fb923c' : '#a16207';
+    b.style.borderColor = b.dataset.role === (currentUserRole || 'null') ? '#c45c00' : '#7c3a00';
   });
 }
 
@@ -4512,6 +4571,34 @@ function closeFilterDrawer() {
           </div>
         </div>
 
+        <div class="request-card" data-status="pending" style="border-color:rgba(255,107,133,0.25);">
+          <div class="request-card-header">
+            <div>
+              <div class="request-title">IEP Meeting — Northgate Elementary</div>
+              <div style="font-size:0.78rem;color:var(--muted);margin-top:3px;">Created Feb 25 · Education</div>
+            </div>
+            <span class="request-status status-pending-payment">⚠ Action Required: Payment Info Needed</span>
+          </div>
+          <div class="request-meta">
+            <span>📅 March 10, 2026</span>
+            <span>🕐 9:00 – 11:00 AM</span>
+            <span>📍 Northgate Elementary, Room 14</span>
+            <span>🔁 One-time</span>
+          </div>
+          <div style="background:rgba(255,107,133,0.06);border:1px solid rgba(255,107,133,0.2);border-radius:8px;padding:10px 14px;margin-top:4px;font-size:0.82rem;">
+            <div style="font-weight:600;color:#ff8099;margin-bottom:4px;">Waiting on payer to confirm</div>
+            <div style="color:var(--muted);line-height:1.5;">A payment link was sent to <strong style="color:var(--text);"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="3b5952575752555c7b485e5a4f4f575e485853545457481554495c">[email&#160;protected]</a></strong> (Seattle School District). Reminder sent Feb 26. If not resolved by Mar 1, you'll be notified to intervene.</div>
+          </div>
+          <div style="font-size:0.83rem;color:var(--muted);border-top:1px solid var(--border);padding-top:12px;margin-top:12px;">
+            Interpreter: <strong style="color:var(--text);">Jordan Lee</strong> — accepted pending payment confirmation
+          </div>
+          <div class="request-actions">
+            <button class="fav-btn" onclick="viewRequestDetails(this,'iep-001')">View Details</button>
+            <button class="fav-btn" style="color:#ff8099;border-color:rgba(255,107,133,0.3);" onclick="showToast('A new payment reminder has been sent to billing@seattleschools.org.','success')">Resend Reminder</button>
+            <button class="fav-btn" onclick="showToast('You can now enter a different payment method to take over the booking.','')">Pay Myself Instead</button>
+          </div>
+        </div>
+
         <div class="request-card" data-status="confirmed">
           <div class="request-card-header">
             <div>
@@ -4773,7 +4860,8 @@ function closeFilterDrawer() {
                 </div>
                 <div style="flex:1;">
                   <div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:4px;">Payment method required to send</div>
-                  <div style="font-size:0.78rem;color:var(--muted);line-height:1.5;margin-bottom:10px;">A <strong style="color:var(--text);">$15 platform fee</strong> applies when a booking is confirmed. Your card is <strong style="color:var(--text);">not charged</strong> until you accept an interpreter's rate and terms.</div>
+                  <div style="font-size:0.78rem;color:var(--muted);line-height:1.5;margin-bottom:10px;">A <strong style="color:var(--text);">$15 platform fee per interpreter, per occurrence</strong> applies when a booking is confirmed. Your card is <strong style="color:var(--text);">not charged</strong> until you review and accept each interpreter's rate and terms.
+                  <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:0.76rem;color:var(--muted);line-height:1.6;">Unlike traditional agencies, we don't charge an hourly percentage on top of the interpreter's rate. The interpreter receives <strong style="color:var(--text);">100% of what they charge</strong> — our flat fee just helps cover the cost of running this platform.</div></div>
                   <div id="payment-capture-area" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                     <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:8px 14px;display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(0,229,255,0.4)'" onmouseout="this.style.borderColor='var(--border)'" onclick="openPaymentEntry()">
                       <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="1.5" stroke="var(--muted)" stroke-width="1.3"/><path d="M1 6h14" stroke="var(--muted)" stroke-width="1.3"/></svg>
@@ -5825,118 +5913,143 @@ function closeFilterDrawer() {
     </div>
     <div class="modal-body">
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-        <div class="form-field">
-          <label>Job Title / Description *</label>
-          <input type="text" placeholder="e.g. Cardiology Appointment, IEP Meeting…">
-        </div>
-        <div class="form-field">
-          <label>Context / Setting *</label>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px;" id="modal-context-chips">
-            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Medical</span>
-            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Mental Health</span>
-            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Legal</span>
-            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Education / IEP</span>
-            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Workplace</span>
-            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Conference / Event</span>
-            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Government</span>
-            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Religious</span>
-            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Social / Family</span>
-            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Performance (Music / Theatre)</span>
-            <span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this)">Entertainment</span>
-            <span class="chip chip-other-trigger" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;" onclick="toggleChip(this);toggleOtherField(this,'modal-context-other')">Other</span>
-          </div>
-          <input type="text" id="modal-context-other" placeholder="Please describe…" style="display:none;margin-top:10px;">
-        </div>
-      </div>
-
-      <div style="margin-bottom:16px;">
-        <div class="form-field">
-          <label>Sign language(s) needed *</label>
-          <div id="sign-lang-picker-modal-legacy" class="lang-picker" style="margin-top:8px;"></div>
-        </div>
-      </div>
-
-      <div style="margin-bottom:16px;">
-        <div class="form-field">
-          <label>Spoken language(s) needed</label>
-          <div id="spoken-lang-picker-modal-legacy" class="lang-picker" style="margin-top:8px;"></div>
-        </div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+      <!-- Row 1: Date / Start Time / End Time -->
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:16px;">
         <div class="form-field">
           <label>Date *</label>
-          <input type="text" placeholder="MM/DD/YYYY">
+          <input type="date" style="color-scheme:dark;">
         </div>
         <div class="form-field">
           <label>Start Time *</label>
-          <input type="text" placeholder="e.g. 2:00 PM">
+          <input type="time" style="color-scheme:dark;">
         </div>
         <div class="form-field">
-          <label>Duration</label>
+          <label>End Time</label>
+          <input type="time" style="color-scheme:dark;">
+        </div>
+      </div>
+
+      <!-- Row 2: Recurrence / Mode / Location / # Interpreters -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;">
+        <div class="form-field">
+          <label>Recurrence</label>
           <select>
-            <option>Select…</option>
-            <option>30 minutes</option>
-            <option>1 hour</option>
-            <option>1.5 hours</option>
-            <option>2 hours</option>
-            <option>Half day (4 hrs)</option>
-            <option>Full day (8 hrs)</option>
-            <option>Multi-day</option>
-            <option>TBD / Flexible</option>
+            <option>One-time</option>
+            <option>Daily</option>
+            <option>Weekly</option>
+            <option>Bi-weekly</option>
+            <option>Monthly</option>
+            <option>Custom</option>
           </select>
         </div>
-      </div>
-
-      <div class="form-field" style="margin-bottom:16px;">
-        <label>Recurrence</label>
-        <div class="recurrence-row" style="margin-top:8px;">
-          <button class="recur-btn active" onclick="setRecur(this,'one-time')">One-time</button>
-          <button class="recur-btn" onclick="setRecur(this,'daily')">Daily</button>
-          <button class="recur-btn" onclick="setRecur(this,'weekly')">Weekly</button>
-          <button class="recur-btn" onclick="setRecur(this,'biweekly')">Bi-weekly</button>
-          <button class="recur-btn" onclick="setRecur(this,'monthly')">Monthly</button>
-          <button class="recur-btn" onclick="setRecur(this,'custom')">Custom</button>
-        </div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
         <div class="form-field">
           <label>Mode *</label>
           <select>
             <option>In-person / On-site</option>
-            <option>Remote (Video)</option>
-            <option>Flexible</option>
+            <option>Remote (VRI)</option>
+            <option>Hybrid / Flexible</option>
           </select>
         </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:16px;">
         <div class="form-field">
           <label>Location / Platform</label>
           <input type="text" placeholder="Address or Zoom/video link…">
         </div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
         <div class="form-field">
-          <label>Number of interpreters needed</label>
+          <label>Interpreters Needed</label>
           <select id="modal-interp-count" onchange="updateInterpSlots(this)">
             <option value="1" selected>1</option>
-            <option value="2">2 (team interpretation)</option>
+            <option value="2">2 (team)</option>
             <option value="3">3</option>
             <option value="4">4</option>
-            <option value="5+">5 or more</option>
+            <option value="5+">5+</option>
           </select>
         </div>
-        <div class="form-field" id="interp-slots-info" style="display:flex;align-items:flex-end;padding-bottom:2px;">
-          <p style="font-size:0.8rem;color:var(--muted);line-height:1.5;margin:0;" id="interp-slots-msg">One booking request will be created.</p>
-        </div>
       </div>
 
+      <!-- Context / Setting dropdown -->
+      <div class="form-field" style="margin-bottom:16px;">
+        <label>Context / Setting *</label>
+        <select style="margin-top:6px;">
+          <option value="">Select context…</option>
+          <optgroup label="Medical & Wellness">
+            <option>Doctor / Specialist appointment</option>
+            <option>Mental health session</option>
+            <option>Hospital / Emergency</option>
+            <option>Dental / Vision</option>
+          </optgroup>
+          <optgroup label="Legal & Civic">
+            <option>Court hearing / Deposition</option>
+            <option>Police / Law enforcement</option>
+            <option>Government / DMV / Benefits</option>
+            <option>Notary / Document signing</option>
+          </optgroup>
+          <optgroup label="Work & Education">
+            <option>Job interview</option>
+            <option>Workplace meeting</option>
+            <option>Conference / Seminar</option>
+            <option>Classroom / Lecture</option>
+            <option>Training / Workshop</option>
+            <option>IEP / Parent-teacher meeting</option>
+          </optgroup>
+          <optgroup label="Arts & Performance">
+            <option>Theatre / Play</option>
+            <option>Concert / Music performance</option>
+            <option>Dance performance</option>
+            <option>Film / Screening</option>
+            <option>Comedy / Stand-up</option>
+          </optgroup>
+          <optgroup label="Personal / Life Events">
+            <option>Wedding</option>
+            <option>Funeral / Memorial</option>
+            <option>Baby shower / Birth announcement</option>
+            <option>Birthday / Family celebration</option>
+            <option>Religious service / Ceremony</option>
+          </optgroup>
+          <optgroup label="Other">
+            <option>Other (describe in notes)</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <!-- Job Description -->
+      <div class="form-field" style="margin-bottom:16px;">
+        <label>Job Description *</label>
+        <input type="text" placeholder="e.g. Cardiology Dept — follow-up, Annual IEP review, Q3 all-hands…">
+      </div>
+
+      <!-- Sign Languages -->
+      <div class="form-field" style="margin-bottom:16px;">
+        <label>Sign Language(s) Needed *</label>
+        <div id="sign-lang-picker-modal-legacy" class="lang-picker" style="margin-top:8px;"></div>
+      </div>
+
+      <!-- Spoken Languages -->
+      <div class="form-field" style="margin-bottom:16px;">
+        <label>Spoken Language(s) Needed</label>
+        <div id="spoken-lang-picker-modal-legacy" class="lang-picker" style="margin-top:8px;"></div>
+      </div>
+
+      <!-- Additional context -->
       <div class="form-field" style="margin-bottom:16px;">
         <label>Additional Context for the Interpreter</label>
-        <textarea placeholder="Describe what the interpreter should know: specific terminology, format, any relevant background, cultural considerations, room setup, number of participants…" style="min-height:80px;"></textarea>
+        <textarea placeholder="Specific terminology, room setup, number of participants, cultural considerations, format notes…" style="min-height:80px;"></textarea>
       </div>
 
+      <!-- Prep materials upload -->
+      <div class="form-field" style="margin-bottom:16px;">
+        <label>Prep Materials <span style="font-weight:400;text-transform:none;font-size:0.78rem;color:var(--muted);letter-spacing:0;">— agendas, glossaries, scripts, slides</span></label>
+        <div style="border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:18px 20px;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;margin-top:8px;" onmouseover="this.style.borderColor='rgba(0,229,255,0.4)';this.style.background='rgba(0,229,255,0.03)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='transparent'" onclick="document.getElementById('modal-prep-file').click()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style="margin-bottom:6px;opacity:0.5;"><path d="M12 16V8m0 0l-3 3m3-3l3 3" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="3" width="18" height="18" rx="3" stroke="var(--muted)" stroke-width="1.3"/></svg>
+          <div style="font-size:0.82rem;color:var(--muted);">Click to upload or drag files here</div>
+          <div style="font-size:0.73rem;color:var(--muted);margin-top:3px;opacity:0.6;">PDF, Word, PowerPoint, images — up to 25 MB each</div>
+        </div>
+        <input type="file" id="modal-prep-file" multiple accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png" style="display:none;">
+      </div>
+
+      <!-- Send To -->
       <div class="form-field" style="margin-bottom:8px;">
         <label>Send to</label>
         <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
@@ -5944,44 +6057,19 @@ function closeFilterDrawer() {
           <button class="recur-btn" id="send-extended-toggle" onclick="toggleSendTarget(this,'extended')">🔖 Secondary Tier Interpreters (5)</button>
           <button class="recur-btn" id="send-select-toggle" onclick="toggleSendTarget(this,'select')">👤 Select Specific</button>
         </div>
-
         <div class="recipient-picker" id="recipient-picker">
           <p style="font-size:0.78rem;color:var(--muted);margin-bottom:12px;">Choose individual interpreters to contact. You can mix from your favorites or browse the directory.</p>
           <div style="margin-bottom:12px;">
             <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:700;margin-bottom:6px;font-family:'Syne',sans-serif;">From Your Preferred Interpreters</div>
-            <div class="interp-pick-item checked" onclick="togglePickItem(this)">
-              <div class="interp-pick-check">&#10003;</div>
-              <div class="fav-avatar" style="width:30px;height:30px;font-size:0.7rem;background:linear-gradient(135deg,#7b61ff,#00e5ff);">SR</div>
-              <div>Sofia Reyes <span style="color:var(--muted);font-size:0.78rem;">· ASL · Medical, Legal</span></div>
-            </div>
-            <div class="interp-pick-item" onclick="togglePickItem(this)">
-              <div class="interp-pick-check"></div>
-              <div class="fav-avatar" style="width:30px;height:30px;font-size:0.7rem;background:linear-gradient(135deg,#ff4d6d,#7b61ff);">MK</div>
-              <div>Marcus Kim <span style="color:var(--muted);font-size:0.78rem;">· ASL · Mental Health</span></div>
-            </div>
-            <div class="interp-pick-item" onclick="togglePickItem(this)">
-              <div class="interp-pick-check"></div>
-              <div class="fav-avatar" style="width:30px;height:30px;font-size:0.7rem;background:linear-gradient(135deg,#00e5ff,#34d399);">PN</div>
-              <div>Priya Nair <span style="color:var(--muted);font-size:0.78rem;">· ASL · Medical</span></div>
-            </div>
+            <div class="interp-pick-item checked" onclick="togglePickItem(this)"><div class="interp-pick-check">&#10003;</div><div class="fav-avatar" style="width:30px;height:30px;font-size:0.7rem;background:linear-gradient(135deg,#7b61ff,#00e5ff);">SR</div><div>Sofia Reyes <span style="color:var(--muted);font-size:0.78rem;">· ASL · Medical, Legal</span></div></div>
+            <div class="interp-pick-item" onclick="togglePickItem(this)"><div class="interp-pick-check"></div><div class="fav-avatar" style="width:30px;height:30px;font-size:0.7rem;background:linear-gradient(135deg,#ff4d6d,#7b61ff);">MK</div><div>Marcus Kim <span style="color:var(--muted);font-size:0.78rem;">· ASL · Mental Health</span></div></div>
+            <div class="interp-pick-item" onclick="togglePickItem(this)"><div class="interp-pick-check"></div><div class="fav-avatar" style="width:30px;height:30px;font-size:0.7rem;background:linear-gradient(135deg,#00e5ff,#34d399);">PN</div><div>Priya Nair <span style="color:var(--muted);font-size:0.78rem;">· ASL · Medical</span></div></div>
           </div>
           <div style="margin-bottom:12px;">
             <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);font-weight:700;margin-bottom:6px;font-family:'Syne',sans-serif;">From Your Secondary Tier Interpreters</div>
-            <div class="interp-pick-item" onclick="togglePickItem(this)">
-              <div class="interp-pick-check"></div>
-              <div class="fav-avatar" style="width:30px;height:30px;font-size:0.7rem;background:linear-gradient(135deg,#f97316,#facc15);">JT</div>
-              <div>James Torres <span style="color:var(--muted);font-size:0.78rem;">· ASL · Legal</span></div>
-            </div>
-            <div class="interp-pick-item" onclick="togglePickItem(this)">
-              <div class="interp-pick-check"></div>
-              <div class="fav-avatar" style="width:30px;height:30px;font-size:0.7rem;background:linear-gradient(135deg,#a78bfa,#f472b6);">AL</div>
-              <div>Amara Lewandowski <span style="color:var(--muted);font-size:0.78rem;">· ASL, BSL · Conference</span></div>
-            </div>
-            <div class="interp-pick-item" onclick="togglePickItem(this)">
-              <div class="interp-pick-check"></div>
-              <div class="fav-avatar" style="width:30px;height:30px;font-size:0.7rem;background:linear-gradient(135deg,#34d399,#60a5fa);">CW</div>
-              <div>Casey Wren <span style="color:var(--muted);font-size:0.78rem;">· ASL · Workplace</span></div>
-            </div>
+            <div class="interp-pick-item" onclick="togglePickItem(this)"><div class="interp-pick-check"></div><div class="fav-avatar" style="width:30px;height:30px;font-size:0.7rem;background:linear-gradient(135deg,#f97316,#facc15);">JT</div><div>James Torres <span style="color:var(--muted);font-size:0.78rem;">· ASL · Legal</span></div></div>
+            <div class="interp-pick-item" onclick="togglePickItem(this)"><div class="interp-pick-check"></div><div class="fav-avatar" style="width:30px;height:30px;font-size:0.7rem;background:linear-gradient(135deg,#a78bfa,#f472b6);">AL</div><div>Amara Lewandowski <span style="color:var(--muted);font-size:0.78rem;">· ASL, BSL · Conference</span></div></div>
+            <div class="interp-pick-item" onclick="togglePickItem(this)"><div class="interp-pick-check"></div><div class="fav-avatar" style="width:30px;height:30px;font-size:0.7rem;background:linear-gradient(135deg,#34d399,#60a5fa);">CW</div><div>Casey Wren <span style="color:var(--muted);font-size:0.78rem;">· ASL · Workplace</span></div></div>
           </div>
           <button class="add-btn" onclick="showView('directory')" style="font-size:0.8rem;">+ Browse directory to add more</button>
         </div>
@@ -5995,7 +6083,8 @@ function closeFilterDrawer() {
         </div>
         <div style="flex:1;">
           <div style="font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:4px;">Payment method required to send</div>
-          <div style="font-size:0.78rem;color:var(--muted);line-height:1.5;margin-bottom:10px;">A <strong style="color:var(--text);">$15 platform fee</strong> applies when a booking is confirmed by both parties. Your card will <strong style="color:var(--text);">not be charged</strong> until you review and accept an interpreter's rate and terms. No charge for unanswered or declined requests.</div>
+          <div style="font-size:0.78rem;color:var(--muted);line-height:1.5;margin-bottom:10px;">A <strong style="color:var(--text);">$15 platform fee per interpreter, per occurrence</strong> applies when a booking is confirmed by both parties. Your card will <strong style="color:var(--text);">not be charged</strong> until you review and accept each interpreter's rate and terms. No charge for unanswered or declined requests.
+          <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:0.76rem;color:var(--muted);line-height:1.6;">Unlike traditional agencies, we don't charge an hourly percentage on top of the interpreter's rate. The interpreter receives <strong style="color:var(--text);">100% of what they charge</strong> — our flat fee just helps cover the cost of running this platform.</div></div>
           <div id="payment-capture-area" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
             <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:8px 14px;display:flex;align-items:center;gap:8px;font-size:0.82rem;cursor:pointer;transition:border-color 0.2s;" onmouseover="this.style.borderColor='rgba(0,229,255,0.4)'" onmouseout="this.style.borderColor='var(--border)'" onclick="openPaymentEntry()">
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="1.5" stroke="var(--muted)" stroke-width="1.3"/><path d="M1 6h14" stroke="var(--muted)" stroke-width="1.3"/></svg>
@@ -6018,7 +6107,7 @@ function closeFilterDrawer() {
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ===== COLLAPSIBLE RATE CARDS =====
 function toggleRateCard(bodyId, chevronId) {
   const body = document.getElementById(bodyId);
@@ -6646,9 +6735,9 @@ function buildLangPicker(containerId, top6, byContinent, otherId) {
 
   // Top 6 chips
   let html = `<div class="lang-picker-top-label">Most common</div>`;
-  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px;">`;
+  html += `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px;margin-bottom:4px;">`;
   top6.forEach(lang => {
-    html += `<span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;width:100%;box-sizing:border-box;" onclick="toggleChip(this)">${lang}</span>`;
+    html += `<span class="chip" style="justify-content:flex-start;padding:0 14px;border-radius:var(--radius-sm);height:36px;width:100%;box-sizing:border-box;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" onclick="toggleChip(this)">${lang}</span>`;
   });
   html += `</div>`;
 
@@ -6715,6 +6804,8 @@ document.addEventListener('DOMContentLoaded', function() {
   // New request modal
   buildLangPicker('sign-lang-picker-modal', SIGN_LANGUAGES_TOP10, SIGN_LANGUAGES_BY_CONTINENT, 'sign-lang-other-modal');
   buildLangPicker('spoken-lang-picker-modal', SPOKEN_LANGUAGES_TOP10, SPOKEN_LANGUAGES_BY_CONTINENT, 'spoken-lang-other-modal');
+  buildLangPicker('sign-lang-picker-modal-legacy', SIGN_LANGUAGES_TOP10, SIGN_LANGUAGES_BY_CONTINENT, 'sign-lang-other-modal-legacy');
+  buildLangPicker('spoken-lang-picker-modal-legacy', SPOKEN_LANGUAGES_TOP10, SPOKEN_LANGUAGES_BY_CONTINENT, 'spoken-lang-other-modal-legacy');
   // Interpreter availability day rows
   renderAvailDays();
 });
@@ -8192,21 +8283,84 @@ function renderDeafDashboard() {
             <div style="font-size:0.8rem;color:var(--muted);margin-bottom:14px;">This helps the interpreter understand the payment arrangement before accepting.</div>
             <div style="display:flex;flex-direction:column;gap:10px;">
               <label style="display:flex;align-items:flex-start;gap:14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 18px;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='rgba(0,229,255,0.3)'" onmouseout="this.style.borderColor=this.querySelector('input').checked?'rgba(0,229,255,0.4)':'var(--border)'">
-                <input type="radio" name="cost-coverage" value="self" style="width:17px;height:17px;accent-color:var(--accent);flex-shrink:0;margin-top:2px;cursor:pointer;" onchange="document.querySelectorAll('.cost-option').forEach(l=>l.style.borderColor='var(--border)');this.closest('label').style.borderColor='rgba(0,229,255,0.4)'" class="cost-option-input">
+                <input type="radio" name="cost-coverage-deaf" value="self" style="width:17px;height:17px;accent-color:var(--accent);flex-shrink:0;margin-top:2px;cursor:pointer;" onchange="handleCostCoverageChange(this)" class="cost-option-input">
                 <div>
                   <div style="font-weight:600;font-size:0.9rem;margin-bottom:2px;">I am paying</div>
                   <div style="color:var(--muted);font-size:0.82rem;">I will pay the interpreter directly out of pocket.</div>
                 </div>
               </label>
+
               <label style="display:flex;align-items:flex-start;gap:14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 18px;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='rgba(0,229,255,0.3)'" onmouseout="this.style.borderColor=this.querySelector('input').checked?'rgba(0,229,255,0.4)':'var(--border)'">
-                <input type="radio" name="cost-coverage" value="third-party" style="width:17px;height:17px;accent-color:var(--accent);flex-shrink:0;margin-top:2px;cursor:pointer;" onchange="document.querySelectorAll('.cost-option-input').forEach(i=>i.closest('label').style.borderColor='var(--border)');this.closest('label').style.borderColor='rgba(0,229,255,0.4)'" class="cost-option-input">
-                <div>
+                <input type="radio" name="cost-coverage-deaf" value="third-party" style="width:17px;height:17px;accent-color:var(--accent);flex-shrink:0;margin-top:2px;cursor:pointer;" onchange="handleCostCoverageChange(this)" class="cost-option-input">
+                <div style="flex:1;">
                   <div style="font-weight:600;font-size:0.9rem;margin-bottom:2px;">Someone else is paying</div>
                   <div style="color:var(--muted);font-size:0.82rem;">I'll connect the interpreter with the payer (employer, clinic, agency, etc.).</div>
                 </div>
               </label>
+
+              <!-- Payer Details Panel — revealed when "someone else" is selected -->
+              <div id="payer-details-panel" style="display:none;margin-top:-4px;margin-left:0;">
+                <div style="background:rgba(0,229,255,0.04);border:1px solid rgba(0,229,255,0.2);border-radius:12px;padding:20px 22px;position:relative;overflow:hidden;">
+                  <!-- Subtle top accent line -->
+                  <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:0.5;"></div>
+
+                  <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;gap:7px;">
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M1 6h14" stroke="currentColor" stroke-width="1.4"/><rect x="3" y="9" width="3" height="1.5" rx="0.5" fill="currentColor" opacity="0.8"/></svg>
+                    Payer Contact Information
+                  </div>
+
+                  <!-- Known payer lookup hint -->
+                  <div id="payer-lookup-hint" style="background:rgba(157,135,255,0.07);border:1px solid rgba(157,135,255,0.2);border-radius:8px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+                    <div style="font-size:0.8rem;color:var(--muted);">Has this payer been used before?</div>
+                    <div style="display:flex;gap:8px;">
+                      <button onclick="selectKnownPayer('Acme Corp — billing@acmecorp.com')" style="background:rgba(157,135,255,0.12);border:1px solid rgba(157,135,255,0.3);border-radius:6px;padding:5px 12px;color:#b8a8ff;font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:600;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='rgba(157,135,255,0.22)'" onmouseout="this.style.background='rgba(157,135,255,0.12)'">Acme Corp</button>
+                      <button onclick="selectKnownPayer('Seattle Hearing Center — accounts@seattlehearing.org')" style="background:rgba(157,135,255,0.12);border:1px solid rgba(157,135,255,0.3);border-radius:6px;padding:5px 12px;color:#b8a8ff;font-family:'DM Sans',sans-serif;font-size:0.78rem;font-weight:600;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='rgba(157,135,255,0.22)'" onmouseout="this.style.background='rgba(157,135,255,0.12)'">Seattle Hearing Center</button>
+                    </div>
+                  </div>
+
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                    <div>
+                      <label style="display:block;font-size:0.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Payer Name / Organization</label>
+                      <input id="payer-name" type="text" placeholder="e.g. Acme Corp, Dr. Smith's Office" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;box-sizing:border-box;transition:border-color 0.15s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+                    </div>
+                    <div>
+                      <label style="display:block;font-size:0.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Contact Name</label>
+                      <input id="payer-contact" type="text" placeholder="e.g. Sarah in Billing" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;box-sizing:border-box;transition:border-color 0.15s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+                    </div>
+                  </div>
+                  <div style="margin-bottom:12px;">
+                    <label style="display:block;font-size:0.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Payer Email <span style="color:var(--accent);">*</span></label>
+                    <input id="payer-email" type="email" placeholder="billing@organization.com" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;box-sizing:border-box;transition:border-color 0.15s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+                  </div>
+                  <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:0.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Phone (optional)</label>
+                    <input id="payer-phone" type="tel" placeholder="+1 (206) 555-0100" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 13px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;box-sizing:border-box;transition:border-color 0.15s;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+                  </div>
+
+                  <!-- What happens next callout -->
+                  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;">
+                    <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:10px;">What happens next</div>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                      <div style="display:flex;align-items:flex-start;gap:10px;font-size:0.8rem;color:var(--muted);">
+                        <div style="width:20px;height:20px;border-radius:50%;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.25);display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;color:var(--accent);flex-shrink:0;margin-top:1px;">1</div>
+                        <span>Your request is submitted. The interpreter sees the payer's org name and that payment will come from a third party.</span>
+                      </div>
+                      <div style="display:flex;align-items:flex-start;gap:10px;font-size:0.8rem;color:var(--muted);">
+                        <div style="width:20px;height:20px;border-radius:50%;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.25);display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;color:var(--accent);flex-shrink:0;margin-top:1px;">2</div>
+                        <span>The payer receives an email with a secure link — no account required. They enter their payment info directly.</span>
+                      </div>
+                      <div style="display:flex;align-items:flex-start;gap:10px;font-size:0.8rem;color:var(--muted);">
+                        <div style="width:20px;height:20px;border-radius:50%;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.25);display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;color:var(--accent);flex-shrink:0;margin-top:1px;">3</div>
+                        <span>Once confirmed, the interpreter is notified and the booking is fully activated. If no response in 24 hrs, reminders go out automatically.</span>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
               <label style="display:flex;align-items:flex-start;gap:14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 18px;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='rgba(0,229,255,0.3)'" onmouseout="this.style.borderColor=this.querySelector('input').checked?'rgba(0,229,255,0.4)':'var(--border)'">
-                <input type="radio" name="cost-coverage" value="pro-bono" style="width:17px;height:17px;accent-color:var(--accent);flex-shrink:0;margin-top:2px;cursor:pointer;" onchange="document.querySelectorAll('.cost-option-input').forEach(i=>i.closest('label').style.borderColor='var(--border)');this.closest('label').style.borderColor='rgba(0,229,255,0.4)'" class="cost-option-input">
+                <input type="radio" name="cost-coverage-deaf" value="pro-bono" style="width:17px;height:17px;accent-color:var(--accent);flex-shrink:0;margin-top:2px;cursor:pointer;" onchange="handleCostCoverageChange(this)" class="cost-option-input">
                 <div>
                   <div style="font-weight:600;font-size:0.9rem;margin-bottom:2px;">Requesting pro bono services</div>
                   <div style="color:var(--muted);font-size:0.82rem;">I am requesting that the interpreter volunteer their services for this assignment.</div>
@@ -8339,8 +8493,27 @@ function renderDeafDashboard() {
               <input id="profile-email-input" type="email" value="${deafProfile.email}" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
             </div>
             <div>
-              <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:7px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">Phone (optional)</label>
+              <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:7px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">Phone/Text Number</label>
               <input id="profile-phone-input" type="tel" value="${deafProfile.phone}" placeholder="For urgent coordination only" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+            </div>
+          </div>
+          <div>
+            <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">Preferred Communication Method</label>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <label id="pref-comm-email-label" style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid rgba(0,229,255,0.4);border-radius:10px;padding:11px 16px;cursor:pointer;transition:border-color 0.15s;flex:1;min-width:160px;">
+                <input type="radio" name="pref-comm-method" value="email" checked style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;cursor:pointer;" onchange="updatePrefCommLabel(this)">
+                <div>
+                  <div style="font-weight:600;font-size:0.88rem;">Email</div>
+                  <div style="color:var(--muted);font-size:0.77rem;">I prefer updates and coordination by email.</div>
+                </div>
+              </label>
+              <label id="pref-comm-text-label" style="display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 16px;cursor:pointer;transition:border-color 0.15s;flex:1;min-width:160px;">
+                <input type="radio" name="pref-comm-method" value="text" style="width:16px;height:16px;accent-color:var(--accent);flex-shrink:0;cursor:pointer;" onchange="updatePrefCommLabel(this)">
+                <div>
+                  <div style="font-weight:600;font-size:0.88rem;">Text / SMS</div>
+                  <div style="color:var(--muted);font-size:0.77rem;">I prefer updates sent to my phone number.</div>
+                </div>
+              </label>
             </div>
           </div>
           <div>
@@ -8655,12 +8828,75 @@ function clearAllRosterInterps() {
   if (countEl) countEl.textContent = '0 selected';
 }
 
+function updatePrefCommLabel(radio) {
+  document.querySelectorAll('input[name="pref-comm-method"]').forEach(r => {
+    r.closest('label').style.borderColor = 'var(--border)';
+  });
+  radio.closest('label').style.borderColor = 'rgba(0,229,255,0.4)';
+}
+
+// ===== PAYER DETAILS PANEL =====
+function handleCostCoverageChange(radio) {
+  // Reset all option borders
+  document.querySelectorAll('.cost-option-input').forEach(i => {
+    const lbl = i.closest('label');
+    if (lbl) lbl.style.borderColor = 'var(--border)';
+  });
+  // Highlight selected
+  const lbl = radio.closest('label');
+  if (lbl) lbl.style.borderColor = 'rgba(0,229,255,0.4)';
+
+  // Show/hide payer panel
+  const panel = document.getElementById('payer-details-panel');
+  if (panel) {
+    if (radio.value === 'third-party') {
+      panel.style.display = 'block';
+      panel.style.animation = 'payerPanelIn 0.28s cubic-bezier(0.16,1,0.3,1) both';
+    } else {
+      panel.style.display = 'none';
+    }
+  }
+}
+
+function selectKnownPayer(payerString) {
+  // payerString format: "Org Name — email@domain.com"
+  const parts = payerString.split(' — ');
+  const orgName = parts[0] || '';
+  const email   = parts[1] || '';
+  const nameInput  = document.getElementById('payer-name');
+  const emailInput = document.getElementById('payer-email');
+  if (nameInput)  { nameInput.value  = orgName; nameInput.style.borderColor = 'var(--accent)'; setTimeout(() => nameInput.style.borderColor = 'var(--border)', 1200); }
+  if (emailInput) { emailInput.value = email;   emailInput.style.borderColor = 'var(--accent)'; setTimeout(() => emailInput.style.borderColor = 'var(--border)', 1200); }
+  showToast('✓ Payer info filled in from your history.', 'success');
+}
+
 function submitDeafRequest() {
   const selected = document.querySelectorAll('#req-interp-selector input[type=checkbox]:checked');
   if (selected.length === 0) {
     showToast('Please select at least one interpreter to send the request to.', '');
     return;
   }
+
+  // Check if "someone else is paying" and validate payer email
+  const coverageRadio = document.querySelector('input[name="cost-coverage-deaf"]:checked');
+  if (coverageRadio && coverageRadio.value === 'third-party') {
+    const payerEmail = (document.getElementById('payer-email') || {}).value || '';
+    if (!payerEmail || !payerEmail.includes('@')) {
+      showToast('Please enter a valid payer email address.', '');
+      const emailInput = document.getElementById('payer-email');
+      if (emailInput) { emailInput.style.borderColor = 'var(--accent3)'; emailInput.focus(); setTimeout(() => emailInput.style.borderColor = 'var(--border)', 2000); }
+      return;
+    }
+    const payerName = (document.getElementById('payer-name') || {}).value || 'the payer';
+    const names = [...selected].map(cb => {
+      const interp = deafProfile.interpreters.find(i => i.id === parseInt(cb.value));
+      return interp ? interp.name : '';
+    }).filter(Boolean);
+    showToast('✓ Request sent to ' + names.join(', ') + '. A payment link has been emailed to ' + payerEmail + '. The booking shows as Pending Payment until they confirm.', 'success');
+    showDeafTab('roster');
+    return;
+  }
+
   const names = [...selected].map(cb => {
     const interp = deafProfile.interpreters.find(i => i.id === parseInt(cb.value));
     return interp ? interp.name : '';
@@ -8768,12 +9004,4 @@ document.addEventListener('keydown', function(e) {
 
 // Open a profile from the SUGGESTED_INTERP_POOL (requester signup step 4)
 function openSuggestedProfile(name) {
-  const data = SUGGESTED_INTERP_POOL.find(i => i.name === name);
-  if (!data) return;
-  openProfileModal({ ...data, isRoster: false });
-}
-
-// Open a profile from the deaf roster
-function openRosterProfile(id) {
-  const interp = deafProfile.interpreters.find(i => i.id === id);
-  if (!inter
+  const data = SUGGESTED_INTERP_POOL.find(i => i.nam
