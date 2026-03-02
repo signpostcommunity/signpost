@@ -1311,6 +1311,7 @@
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     transition: all 0.15s;
+    flex-wrap: wrap;
   }
 
   .fav-item:hover { border-color: rgba(0,229,255,0.2); }
@@ -1345,6 +1346,313 @@
   }
 
   .empty-state-icon { font-size: 2rem; margin-bottom: 10px; opacity: 0.5; }
+
+  /* APPROVAL CHECKBOXES */
+  .fav-approvals {
+    width: 100%;
+    display: flex; gap: 10px; align-items: center;
+    padding-top: 10px;
+    margin-top: 4px;
+    border-top: 1px solid var(--border);
+  }
+  .fav-approvals-label {
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); font-weight: 700; font-family: 'Syne', sans-serif;
+    white-space: nowrap; margin-right: 2px;
+  }
+  .approval-check {
+    display: flex; align-items: center; gap: 6px; cursor: pointer;
+  }
+  .approval-check input[type="checkbox"] {
+    appearance: none; -webkit-appearance: none;
+    width: 15px; height: 15px; border-radius: 4px;
+    border: 1.5px solid var(--border);
+    background: var(--surface); cursor: pointer;
+    transition: all 0.15s; position: relative; flex-shrink: 0;
+  }
+  .approval-check input[type="checkbox"]:checked {
+    background: var(--accent); border-color: var(--accent);
+  }
+  .approval-check input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute; top: 1px; left: 4px;
+    width: 4px; height: 7px;
+    border: 2px solid #000; border-top: none; border-left: none;
+    transform: rotate(45deg);
+  }
+  .approval-check input.personal-cb:checked {
+    background: var(--accent2); border-color: var(--accent2);
+  }
+  .approval-check-label {
+    font-size: 0.75rem; color: var(--muted);
+    user-select: none; white-space: nowrap;
+    transition: color 0.15s;
+  }
+  .approval-check:has(input:checked) .approval-check-label {
+    color: var(--text);
+  }
+
+  /* CARD ADD BUTTON */
+  .card-add-btn {
+    position: absolute; top: 12px; right: 12px;
+    width: 32px; height: 32px; border-radius: 50%;
+    background: rgba(0,0,0,0.55); border: 1.5px solid rgba(255,255,255,0.2);
+    color: #fff; font-size: 1.2rem; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; backdrop-filter: blur(6px);
+    transition: all 0.2s; z-index: 5;
+  }
+  .card-add-btn:hover {
+    background: var(--accent); border-color: var(--accent); color: #000;
+    transform: scale(1.12);
+  }
+
+  /* ADD TO LIST MODAL */
+  .add-list-modal {
+    display: none; position: fixed; inset: 0; z-index: 400;
+    background: rgba(7,9,16,0.88); backdrop-filter: blur(18px);
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .add-list-modal.open { display: flex; }
+  .add-list-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); max-width: 520px; width: 100%;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.7);
+    max-height: 90vh; overflow-y: auto;
+  }
+  .add-list-header {
+    padding: 28px 28px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-start; gap: 16px;
+  }
+  .add-list-avatar {
+    width: 48px; height: 48px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem;
+    color: #fff; flex-shrink: 0;
+  }
+  .add-list-name {
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem;
+    margin-bottom: 3px;
+  }
+  .add-list-sub { color: var(--muted); font-size: 0.82rem; }
+  .add-list-body { padding: 24px 28px; display: flex; flex-direction: column; gap: 20px; }
+
+  .add-list-section-title {
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.72rem;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  /* Tier options */
+  .tier-option {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 16px 18px; border-radius: var(--radius-sm);
+    border: 2px solid var(--border); background: var(--card-bg);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .tier-option:hover { border-color: rgba(0,229,255,0.35); }
+  .tier-option.selected-preferred { border-color: var(--accent); background: rgba(0,229,255,0.05); }
+  .tier-option.selected-secondary { border-color: var(--accent2); background: rgba(157,135,255,0.05); }
+  .tier-radio {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid var(--border); flex-shrink: 0; margin-top: 1px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .tier-option.selected-preferred .tier-radio { border-color: var(--accent); }
+  .tier-option.selected-secondary .tier-radio { border-color: var(--accent2); }
+  .tier-radio-dot {
+    width: 8px; height: 8px; border-radius: 50%; opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .tier-option.selected-preferred .tier-radio-dot { background: var(--accent); opacity: 1; }
+  .tier-option.selected-secondary .tier-radio-dot { background: var(--accent2); opacity: 1; }
+  .tier-label { font-weight: 600; font-size: 0.9rem; margin-bottom: 3px; }
+  .tier-desc { color: var(--muted); font-size: 0.78rem; line-height: 1.55; }
+
+  /* Approval checkboxes in modal */
+  .modal-approval-row {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .modal-approval-opt {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 14px 16px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border); background: var(--card-bg);
+    cursor: pointer; transition: border-color 0.15s;
+  }
+  .modal-approval-opt:hover { border-color: rgba(0,229,255,0.3); }
+  .modal-approval-opt.checked-work { border-color: var(--accent); background: rgba(0,229,255,0.04); }
+  .modal-approval-opt.checked-personal { border-color: var(--accent2); background: rgba(157,135,255,0.04); }
+  .modal-cb {
+    appearance: none; -webkit-appearance: none;
+    width: 18px; height: 18px; border-radius: 5px; flex-shrink: 0; margin-top: 1px;
+    border: 1.5px solid var(--border); background: var(--surface);
+    cursor: pointer; transition: all 0.15s; position: relative;
+  }
+  .modal-cb:checked { background: var(--accent); border-color: var(--accent); }
+  .modal-cb.personal:checked { background: var(--accent2); border-color: var(--accent2); }
+  .modal-cb:checked::after {
+    content: '';
+    position: absolute; top: 2px; left: 5px;
+    width: 5px; height: 9px;
+    border: 2px solid #000; border-top: none; border-left: none;
+    transform: rotate(45deg);
+  }
+  .modal-approval-text { flex: 1; }
+  .modal-approval-label { font-weight: 600; font-size: 0.87rem; margin-bottom: 2px; }
+  .modal-approval-desc { color: var(--muted); font-size: 0.77rem; line-height: 1.5; }
+
+  .add-list-footer {
+    padding: 20px 28px; border-top: 1px solid var(--border);
+    display: flex; gap: 10px; justify-content: flex-end;
+  }
+  .add-list-cancel {
+    background: none; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 10px 20px; color: var(--muted); font-family: 'DM Sans', sans-serif;
+    font-size: 0.87rem; cursor: pointer; transition: all 0.15s;
+  }
+  .add-list-cancel:hover { border-color: var(--accent3); color: var(--accent3); }
+  .add-list-confirm {
+    background: var(--accent); color: #000; border: none;
+    border-radius: var(--radius-sm); padding: 10px 24px;
+    font-weight: 700; font-size: 0.87rem; cursor: pointer;
+    transition: opacity 0.15s; font-family: 'DM Sans', sans-serif;
+  }
+  .add-list-confirm:disabled { opacity: 0.35; cursor: not-allowed; }
+  .add-list-confirm:not(:disabled):hover { opacity: 0.85; }
+
+  /* Profile page Add to List button */
+  .btn-add-list {
+    background: rgba(0,229,255,0.08); border: 1.5px solid rgba(0,229,255,0.35);
+    color: var(--accent); border-radius: var(--radius-sm);
+    padding: 10px 20px; font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem; font-weight: 600; cursor: pointer;
+    transition: all 0.2s; display: flex; align-items: center; gap: 8px;
+  }
+  .btn-add-list:hover { background: rgba(0,229,255,0.15); border-color: var(--accent); }
+
+  /* Approval tags on deaf portal interp cards */
+  /* ── Client list collapsible cards ── */
+  .client-list-card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: var(--radius); margin-bottom: 16px; overflow: hidden;
+  }
+  .client-list-header {
+    padding: 18px 22px; display: flex; align-items: center;
+    justify-content: space-between; gap: 16px; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .client-list-header:hover { background: rgba(255,255,255,0.02); }
+  .client-list-chevron {
+    color: var(--muted); flex-shrink: 0; transition: transform 0.2s;
+  }
+  .client-list-card.collapsed .client-list-chevron { transform: rotate(-90deg); }
+  .client-list-body {
+    padding: 4px 22px 22px; border-top: 1px solid var(--border);
+  }
+  .client-list-card.collapsed .client-list-body { display: none; }
+  .client-list-section-label {
+    font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); font-weight: 700; font-family: 'Syne', sans-serif;
+    margin: 16px 0 10px;
+  }
+  .client-interp-row {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px; display: flex;
+    align-items: flex-start; gap: 12px;
+  }
+  .ro-pill {
+    font-size: 0.7rem; font-weight: 700; padding: 2px 9px;
+    border-radius: 20px; border: 1.5px solid;
+  }
+  .ro-pill.approved {
+    background: rgba(0,229,255,0.1); border-color: rgba(0,229,255,0.3); color: var(--accent);
+  }
+  .ro-pill.not-approved {
+    background: rgba(255,77,109,0.07); border-color: rgba(255,77,109,0.25); color: #ff8099;
+  }
+    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;
+  }
+  .approval-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 0.73rem; font-weight: 700; padding: 3px 11px 3px 8px;
+    border-radius: 20px; cursor: pointer; user-select: none;
+    transition: all 0.15s; border: 1.5px solid;
+  }
+  .approval-pill .pill-icon {
+    font-size: 0.8rem; font-style: normal; line-height: 1;
+  }
+  /* Approved state */
+  .approval-pill.approved-work {
+    background: rgba(0,229,255,0.1); border-color: rgba(0,229,255,0.35); color: var(--accent);
+  }
+  .approval-pill.approved-personal {
+    background: rgba(0,229,255,0.1); border-color: rgba(0,229,255,0.35); color: var(--accent);
+  }
+  /* Not approved state */
+  .approval-pill.not-approved {
+    background: rgba(255,77,109,0.07); border-color: rgba(255,77,109,0.25); color: #ff8099;
+  }
+  .approval-pill:hover { filter: brightness(1.15); }
+
+  /* SHARE LIST MODAL */
+  .share-list-modal {
+    display: none; position: fixed; inset: 0; z-index: 300;
+    background: rgba(7,9,16,0.85); backdrop-filter: blur(16px);
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .share-list-modal.open { display: flex; }
+  .share-list-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 36px; max-width: 460px; width: 100%;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+  }
+  .share-list-title {
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.15rem;
+    margin-bottom: 6px;
+  }
+  .share-list-sub {
+    color: var(--muted); font-size: 0.83rem; line-height: 1.6; margin-bottom: 28px;
+  }
+  .share-scope-options {
+    display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px;
+  }
+  .share-scope-btn {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 16px 18px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border); background: var(--card-bg);
+    cursor: pointer; transition: all 0.15s; text-align: left;
+  }
+  .share-scope-btn:hover { border-color: rgba(0,229,255,0.35); }
+  .share-scope-btn.selected { border-color: var(--accent); background: rgba(0,229,255,0.05); }
+  .share-scope-btn.selected .scope-icon { color: var(--accent); }
+  .share-scope-btn.selected-personal { border-color: var(--accent2); background: rgba(157,135,255,0.05); }
+  .share-scope-btn.selected-personal .scope-icon { color: var(--accent2); }
+  .scope-icon { font-size: 1.3rem; margin-top: 1px; flex-shrink: 0; }
+  .scope-label { font-weight: 600; font-size: 0.88rem; margin-bottom: 2px; }
+  .scope-desc { color: var(--muted); font-size: 0.77rem; line-height: 1.5; }
+  .share-link-row {
+    display: flex; gap: 10px; margin-bottom: 20px;
+  }
+  .share-link-input {
+    flex: 1; background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px; color: var(--muted);
+    font-size: 0.82rem; font-family: 'DM Sans', sans-serif;
+  }
+  .share-copy-btn {
+    background: var(--accent); color: #000; border: none;
+    border-radius: 8px; padding: 10px 18px; font-weight: 700;
+    font-size: 0.82rem; cursor: pointer; transition: opacity 0.15s;
+    white-space: nowrap;
+  }
+  .share-copy-btn:hover { opacity: 0.85; }
+  .share-modal-close {
+    display: block; width: 100%; background: none; border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px; color: var(--muted); font-size: 0.85rem;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .share-modal-close:hover { border-color: var(--accent3); color: var(--accent3); }
 
   /* NEW REQUEST FORM */
   .request-form-overlay {
@@ -2013,8 +2321,8 @@
         <p>No need to pay high agency fees, or wait through slow response times. Connect with and book sign language interpreters <b>directly.</b> <br>Browse real profiles, watch intro videos, and choose the right interpreter for your job.</p>
         <div class="hero-ctas">
           <button class="btn-primary btn-large" onclick="goToRequesterPortal()" style="width:100%;text-align:center;">Need an interpreter?<br>Submit a request →</button>
-          <button class="btn-large" onclick="showView('interpreter-portal')" style="width:100%;text-align:center;background:none;border:1.5px solid var(--border);color:var(--text);" onmouseover="this.style.borderColor='rgba(0,229,255,0.4)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">Are you an interpreter?<br>Create your free profile →</button>
           <button class="btn-large" onclick="goToDeafPortal()" style="width:100%;text-align:center;background:none;border:1.5px solid rgba(157,135,255,0.35);color:var(--accent2);" onmouseover="this.style.borderColor='rgba(157,135,255,0.7)';this.style.color='#c4b5ff'" onmouseout="this.style.borderColor='rgba(157,135,255,0.35)';this.style.color='var(--accent2)'">Deaf or Hard of Hearing?<br>Build your preferred interpreter list →</button>
+          <button class="btn-large" onclick="showView('interpreter-portal')" style="width:100%;text-align:center;background:none;border:1.5px solid var(--border);color:var(--text);" onmouseover="this.style.borderColor='rgba(0,229,255,0.4)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">Are you an interpreter?<br>Create your free profile →</button>
         </div>
       </div>
     </div>
@@ -2225,6 +2533,10 @@
           </div>
           <div class="profile-actions">
             <button class="btn-primary" onclick="initiateBooking()">Request Booking</button>
+            <button class="btn-add-list" id="profile-add-list-btn" onclick="openAddToListFromProfile()">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Add to my list
+            </button>
             <button class="btn-secondary" onclick="showToast('Messaging coming soon — this feature requires backend setup.')">Send Message</button>
           </div>
         </div>
@@ -3361,10 +3673,11 @@ function renderGrid() {
       </div>
       <div class="card-body">
         <div class="card-avatar-row">
-          <div>
+          <div style="flex:1;min-width:0;">
             <div class="card-name">${i.name}</div>
             <div class="card-location" style="display:flex;align-items:center;gap:4px;"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M5 1C3.34 1 2 2.34 2 4C2 6.5 5 9 5 9C5 9 8 6.5 8 4C8 2.34 6.66 1 5 1ZM5 5.5C4.17 5.5 3.5 4.83 3.5 4C3.5 3.17 4.17 2.5 5 2.5C5.83 2.5 6.5 3.17 6.5 4C6.5 4.83 5.83 5.5 5 5.5Z" fill="var(--muted)"/></svg> ${i.location}</div>
           </div>
+          <button onclick="event.stopPropagation();openAddToListModal(${i.id})" title="Add to my preferred interpreter list" style="background:rgba(0,229,255,0.08);border:1.5px solid rgba(0,229,255,0.3);color:var(--accent);border-radius:8px;padding:5px 12px;font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all 0.15s;font-family:'DM Sans',sans-serif;" onmouseover="this.style.background='rgba(0,229,255,0.18)'" onmouseout="this.style.background='rgba(0,229,255,0.08)'">+ Add to my list</button>
         </div>
         <div class="card-langs">
           ${i.signLangs.map(l=>'<span class="lang-tag'+(l==='PTASL'?' tactile':'')+'">'+ l+'</span>').join('')}
@@ -3402,6 +3715,7 @@ function openProfile(id) {
   document.getElementById('profile-name').textContent = interp.name;
   // Remember where we came from so back button works correctly
   window._profileOrigin = currentUserRole === 'deaf' ? 'deaf-dashboard' : 'directory';
+  window._currentProfileId = id;
   // Update back button label
   const backBtn = document.querySelector('#view-profile .back-btn');
   if (backBtn) {
@@ -3420,10 +3734,50 @@ function openProfile(id) {
       bookBtn.onclick = () => initiateBooking();
     }
   }
+  // Show "Add to my list" for all users — deaf, requester, interpreter, and logged out
+  const addListBtn = document.getElementById('profile-add-list-btn');
+  if (addListBtn) {
+    addListBtn.style.display = 'flex';
+  }
   showView('profile');
 }
 
 // ============ TABS ============
+
+// openRosterProfile — called from deaf portal interpreter cards.
+// These interpreters may not exist in the main `interpreters` directory array
+// (they could have been added manually), so we try to match by name as a fallback.
+function openRosterProfile(id) {
+  // First try matching in the main directory by id
+  let interp = interpreters.find(i => i.id === id);
+
+  // If not found by id, try matching via deafProfile by id then by name cross-reference
+  if (!interp && typeof deafProfile !== 'undefined') {
+    const rosterEntry = deafProfile.interpreters.find(i => i.id === id);
+    if (rosterEntry) {
+      interp = interpreters.find(i => i.name === rosterEntry.name);
+    }
+  }
+
+  if (interp) {
+    // Set origin so back button returns to the right place
+    const origin = currentUserRole === 'deaf' ? 'deaf-dashboard'
+                 : currentUserRole === 'requester' ? 'requester-dashboard'
+                 : currentUserRole === 'interpreter' ? 'interpreter-dashboard'
+                 : 'directory';
+    window._profileOrigin = origin;
+    openProfile(interp.id);
+    // Override back button text for dashboard origins
+    const backBtn = document.querySelector('#view-profile .back-btn');
+    if (backBtn && origin !== 'directory') {
+      backBtn.textContent = '← Back to My Portal';
+      backBtn.onclick = () => showView(origin);
+    }
+  } else {
+    // Interpreter isn't in the directory (e.g. manually added) — show a toast
+    showToast('Full profile not available for this interpreter — they may not have a signpost listing yet.', '');
+  }
+}
 
 // ============ RATE PROFILES ============
 let rateProfileCount = 3;
@@ -3884,7 +4238,7 @@ function closeFilterDrawer() {
       <div style="margin-bottom:56px;">
         <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(157,135,255,0.1);border:1px solid rgba(157,135,255,0.25);border-radius:100px;padding:6px 14px;font-size:0.8rem;color:var(--accent2);margin-bottom:24px;font-weight:500;">For Deaf & Hard of Hearing Individuals</div>
         <h1 style="font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3rem);font-weight:800;letter-spacing:-0.04em;line-height:1.1;margin-bottom:16px;">Your portal. Your preferences.<br><em style="font-style:normal;background:linear-gradient(135deg,#9d87ff,#00e5ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Your interpreters.</em></h1>
-        <p style="color:var(--muted);font-size:1rem;line-height:1.75;max-width:560px;">Request interpreters directly, build your roster of preferred and do-not-book interpreters, and share your communication preferences — so every booking starts with the right context. Always free for Deaf individuals.</p>
+        <p style="color:var(--muted);font-size:1rem;line-height:1.75;max-width:560px;">Request interpreters directly, build your preferred interpreter list, and share your communication preferences — so every booking starts with the right context. Always free for Deaf individuals.</p>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:48px;">
@@ -3898,7 +4252,7 @@ function closeFilterDrawer() {
             <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:0;">New to signpost?</div>
           </div>
           <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;margin:0;padding:0;">
-            <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:#9d87ff;font-size:1rem;">✓</span> Build your preferred interpreter roster</li>
+            <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:#9d87ff;font-size:1rem;">✓</span> Build your preferred interpreter list</li>
             <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:#9d87ff;font-size:1rem;">✓</span> Share your communication preferences</li>
             <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:#9d87ff;font-size:1rem;">✓</span> Request interpreters directly — always free</li>
           </ul>
@@ -3914,7 +4268,7 @@ function closeFilterDrawer() {
             <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:0;">Already have a profile?</div>
           </div>
           <ul style="list-style:none;display:flex;flex-direction:column;gap:8px;margin:0;padding:0;">
-            <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:var(--accent);font-size:1rem;">✓</span> View &amp; update your interpreter roster</li>
+            <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:var(--accent);font-size:1rem;">✓</span> View &amp; update your preferred interpreter list</li>
             <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:var(--accent);font-size:1rem;">✓</span> Manage your communication preferences</li>
             <li style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:0.83rem;"><span style="color:var(--accent);font-size:1rem;">✓</span> Review &amp; track your booking requests</li>
           </ul>
@@ -4472,6 +4826,10 @@ function closeFilterDrawer() {
       <button class="dash-nav-item" onclick="showDashPanel('extended', this)">
         <span class="dash-nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 2H12V14L8 11L4 14V2Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg></span> Secondary Tier Interpreters
         <span class="dash-badge" style="background:rgba(123,97,255,0.15);color:#a891ff;">5</span>
+      </button>
+      <button class="dash-nav-item" onclick="showDashPanel('client-lists', this)">
+        <span class="dash-nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.2" stroke="currentColor" stroke-width="1.3"/><path d="M1.5 13.5c0-2.5 2-4.5 4.5-4.5s4.5 2 4.5 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10.5 7.5h4M12.5 5.5v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></span> Client Interpreter Lists
+        <span class="dash-badge" style="background:rgba(0,229,255,0.12);color:var(--accent);">2</span>
       </button>
 
       <div class="dash-nav-section">Account</div>
@@ -5096,33 +5454,138 @@ function closeFilterDrawer() {
         </div>
       </div>
 
+      <!-- CLIENT INTERPRETER LISTS PANEL -->
+      <div class="dash-panel" id="panel-client-lists">
+        <div class="dash-page-title">Client Interpreter Lists</div>
+        <div class="dash-page-subtitle">When a Deaf or Hard of Hearing client shares their preferred interpreter list with you, it appears here. These lists are set by the client — you cannot edit them. Use them to know which interpreters to contact, and for which type of appointment.</div>
+
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;margin-bottom:20px;">
+          <p style="color:var(--muted);font-size:0.83rem;line-height:1.7;margin:0;">
+            <strong style="color:var(--text);">These lists belong to your clients.</strong> They update automatically when the client makes changes. The work/personal designations are set by the client — they indicate which interpreter they want you to use in which context. Always honor them.
+          </p>
+        </div>
+        <div class="client-list-card" id="clcard-req-1">
+          <div class="client-list-header" onclick="toggleClientCard('clcard-req-1')">
+            <div style="display:flex;align-items:center;gap:14px;">
+              <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#9d87ff,#00e5ff);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;color:#fff;flex-shrink:0;">JR</div>
+              <div>
+                <div style="font-weight:600;font-size:0.95rem;">Jordan Rivera</div>
+                <div style="font-size:0.78rem;color:var(--muted);">3 interpreters · Updated 2 days ago</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:0.72rem;font-weight:600;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.25);color:var(--accent);border-radius:6px;padding:2px 9px;">Live · Read-only</span>
+              <svg class="client-list-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+          <div class="client-list-body">
+            <div class="client-list-section-label">★ Preferred Interpreters</div>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+              <div class="client-interp-row">
+                <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#00e5ff,#7b61ff);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;flex-shrink:0;">MC</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-weight:600;font-size:0.88rem;margin-bottom:2px;">Maya Chen</div>
+                  <div style="font-size:0.76rem;color:var(--muted);margin-bottom:6px;">RID NIC-Advanced · Medical, Legal</div>
+                  <div style="font-size:0.78rem;color:var(--muted);font-style:italic;margin-bottom:8px;">"Best for medical — very clear signing, always confirms terminology beforehand."</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <span class="ro-pill not-approved">✕ Work settings</span>
+                    <span class="ro-pill approved">✓ Personal / medical</span>
+                  </div>
+                </div>
+              </div>
+              <div class="client-interp-row">
+                <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#ef4444);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;flex-shrink:0;">TN</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-weight:600;font-size:0.88rem;margin-bottom:2px;">Takeshi Nara</div>
+                  <div style="font-size:0.76rem;color:var(--muted);margin-bottom:6px;">RID CI+CT · Conference, Education</div>
+                  <div style="font-size:0.78rem;color:var(--muted);font-style:italic;margin-bottom:8px;">"Prefer for conferences and large events."</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <span class="ro-pill approved">✓ Work settings</span>
+                    <span class="ro-pill not-approved">✕ Personal / medical</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="client-list-section-label">✓ Secondary Tier</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div class="client-interp-row">
+                <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#34d399,#7b61ff);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;flex-shrink:0;">DW</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-weight:600;font-size:0.88rem;margin-bottom:2px;">Dana Whitfield</div>
+                  <div style="font-size:0.76rem;color:var(--muted);margin-bottom:6px;">RID NIC · General</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <span class="ro-pill approved">✓ Work settings</span>
+                    <span class="ro-pill approved">✓ Personal / medical</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Collapsible client card 2 (starts collapsed) -->
+        <div class="client-list-card collapsed" id="clcard-req-2">
+          <div class="client-list-header" onclick="toggleClientCard('clcard-req-2')">
+            <div style="display:flex;align-items:center;gap:14px;">
+              <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#f97316,#facc15);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;color:#fff;flex-shrink:0;">MS</div>
+              <div>
+                <div style="font-weight:600;font-size:0.95rem;">Marcus Steele</div>
+                <div style="font-size:0.78rem;color:var(--muted);">1 interpreter · Updated 1 week ago</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:0.72rem;font-weight:600;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.25);color:var(--accent);border-radius:6px;padding:2px 9px;">Live · Read-only</span>
+              <svg class="client-list-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+          <div class="client-list-body">
+            <div class="client-list-section-label">★ Preferred Interpreters</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div class="client-interp-row">
+                <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#7b61ff,#00e5ff);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;flex-shrink:0;">SR</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-weight:600;font-size:0.88rem;margin-bottom:2px;">Sofia Reyes</div>
+                  <div style="font-size:0.76rem;color:var(--muted);margin-bottom:6px;">RID, EFSLI · Medical, Conference, Legal</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <span class="ro-pill approved">✓ Work settings</span>
+                    <span class="ro-pill approved">✓ Personal / medical</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /panel-client-lists -->
+
       <!-- PROFILE PANEL -->
       <div class="dash-panel" id="panel-profile">
         <div class="dash-page-title">My Profile</div>
-        <div class="dash-page-subtitle">Your requester profile — visible to interpreters when you send them a request.</div>
+        <div class="dash-page-subtitle">Visible to interpreters when you send them a request. Keep this accurate so they know who they're working with.</div>
 
         <div style="max-width:640px;">
           <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:32px;margin-bottom:20px;">
             <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
-              <div class="dash-avatar" style="width:60px;height:60px;font-size:1.3rem;">AR</div>
+              <div class="dash-avatar" style="width:60px;height:60px;font-size:1.3rem;background:linear-gradient(135deg,#7b61ff,#00e5ff);">NW</div>
               <div>
-                <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;">Alex Rivera</div>
-                <div style="color:var(--accent);font-size:0.8rem;font-weight:600;margin-top:2px;">Deaf Individual</div>
+                <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;">Northwest Hospital</div>
+                <div style="color:var(--muted);font-size:0.8rem;font-weight:600;margin-top:2px;">Healthcare Organization</div>
               </div>
-              <button class="fav-btn" style="margin-left:auto;" onclick="showToast('Profile editor coming soon — this will let you update your preferences and contact details.')">Edit Profile</button>
+              <button class="fav-btn" style="margin-left:auto;" onclick="showToast('Profile editor coming soon — this will let you update your contact details and preferences.')">Edit Profile</button>
             </div>
+            <div class="info-row"><span class="info-label">Primary Contact</span><span class="info-val">Alex Rivera</span></div>
+            <div class="info-row"><span class="info-label">Role</span><span class="info-val">Interpreter Coordinator</span></div>
+            <div class="info-row"><span class="info-label">Email</span><span class="info-val"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="167738647f6073647756787964627e617365627e7965667f62777a38796471">[email&#160;protected]</a></span></div>
+            <div class="info-row"><span class="info-label">Phone / Text</span><span class="info-val">(206) 555-0142</span></div>
             <div class="info-row"><span class="info-label">Location</span><span class="info-val">Seattle, WA</span></div>
-            <div class="info-row"><span class="info-label">Sign Language</span><span class="info-val">ASL</span></div>
-            <div class="info-row"><span class="info-label">Typical Contexts</span><span class="info-val">Medical, Legal, Mental Health</span></div>
-            <div class="info-row"><span class="info-label">Preferred Mode</span><span class="info-val">Both</span></div>
-            <div class="info-row"><span class="info-label">Preferred Contact</span><span class="info-val">Email, VP</span></div>
-            <div class="info-row" style="border-bottom:none;"><span class="info-label">Typical Notice</span><span class="info-val">1–2 weeks</span></div>
+            <div class="info-row"><span class="info-label">Typical Settings</span><span class="info-val">Medical, Mental Health, Legal</span></div>
+            <div class="info-row" style="border-bottom:none;"><span class="info-label">Preferred Mode</span><span class="info-val">On-site + Remote</span></div>
           </div>
 
           <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
             <div style="font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Note to interpreters</div>
-            <p style="color:var(--muted);font-size:0.88rem;line-height:1.7;">I prefer interpreters with experience in Deaf culture and natural ASL. For medical and mental health settings, please be aware that I may use ASL-specific constructs and visual vernacular. I value consistency and prefer long-term working relationships with my interpreters.</p>
-            <button class="fav-btn" style="margin-top:16px;" onclick="editNote(this)">Edit Note</button>
+            <p style="color:var(--muted);font-size:0.88rem;line-height:1.7;margin:0 0 16px;">We serve a diverse patient population across cardiology, oncology, and behavioral health. Interpreters should be comfortable with high-stakes medical settings, patient confidentiality protocols, and working alongside clinical staff. HIPAA familiarity required.</p>
+            <button class="fav-btn" onclick="showToast('Note editor coming soon.')">Edit Note</button>
           </div>
         </div>
       </div>
@@ -5265,7 +5728,11 @@ function closeFilterDrawer() {
         <span class="dash-nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 2v2M11 2v2M2 7h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></span> Availability
       </button>
       <button class="dash-nav-item" onclick="showDashPanel('interp-network', this)">
-        <span class="dash-nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="4" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="3" cy="11" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="13" cy="11" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M6 5.5L4 9M10 5.5L12 9M5.5 11h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span> Trusted Network
+        <span class="dash-nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="4" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="3" cy="11" r="2" stroke="currentColor" stroke-width="1.3"/><circle cx="13" cy="11" r="2" stroke="currentColor" stroke-width="1.3"/><path d="M6 5.5L4 9M10 5.5L12 9M5.5 11h5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span> Preferred Team Interpreters
+      </button>
+      <button class="dash-nav-item" onclick="showDashPanel('interp-client-lists', this)">
+        <span class="dash-nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.2" stroke="currentColor" stroke-width="1.3"/><path d="M1.5 13.5c0-2.5 2-4.5 4.5-4.5s4.5 2 4.5 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M10.5 7.5h4M12.5 5.5v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></span> Client Interpreter Lists
+        <span class="dash-badge" style="background:rgba(0,229,255,0.12);color:var(--accent);">1</span>
       </button>
 
       <div class="dash-nav-section">Account</div>
@@ -5291,9 +5758,9 @@ function closeFilterDrawer() {
             <div class="dash-stat-num">3</div>
             <div class="dash-stat-label">Confirmed This Month</div>
           </div>
-          <div class="dash-stat-card" onclick="showDashPanel('interp-network', document.querySelector('.dash-nav-item[onclick*=\'interp-network\']'))" title="Trusted Network">
+          <div class="dash-stat-card" onclick="showDashPanel('interp-network', document.querySelector('.dash-nav-item[onclick*=\'interp-network\']'))" title="Preferred Team Interpreters">
             <div class="dash-stat-num">4</div>
-            <div class="dash-stat-label">Interpreters in your Trusted Network</div>
+            <div class="dash-stat-label">Interpreters in your Preferred Team</div>
           </div>
           <div class="dash-stat-card" onclick="showDashPanel('interp-availability', document.querySelector('.dash-nav-item[onclick*=\'interp-availability\']'))" title="Manage Availability">
             <div class="dash-stat-num">4</div>
@@ -5571,11 +6038,54 @@ function closeFilterDrawer() {
 
       <!-- EDIT PROFILE PANEL -->
       <div class="dash-panel" id="panel-interp-profile">
-        <div class="dash-page-title">Edit Profile</div>
-        <div class="dash-page-subtitle">Changes appear live on your public profile.</div>
-        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:28px;">
-          <div style="font-size:0.82rem;color:var(--muted);margin-bottom:20px;">Your full profile creation flow is available at any time.</div>
-          <button class="btn-primary" onclick="showView('signup')">Open Profile Editor</button>
+        <div class="dash-page-title">My Profile</div>
+        <div class="dash-page-subtitle">This is what requesters see when they view your listing. Keep it current — your profile is your first impression.</div>
+
+        <div style="max-width:640px;">
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:32px;margin-bottom:20px;">
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:24px;">
+              <div class="dash-avatar" style="width:60px;height:60px;font-size:1.3rem;background:linear-gradient(135deg,#7b61ff,#00e5ff);">SR</div>
+              <div style="flex:1;">
+                <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;">Sofia Reyes</div>
+                <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+                  <span style="font-size:0.72rem;font-weight:700;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.25);color:var(--accent);border-radius:6px;padding:2px 8px;">✓ Verified</span>
+                  <span style="font-size:0.72rem;color:var(--muted);">RID, EFSLI</span>
+                </div>
+              </div>
+              <button class="fav-btn" style="flex-shrink:0;" onclick="showView('signup')">Edit Profile</button>
+            </div>
+            <div class="info-row"><span class="info-label">Location</span><span class="info-val">Seattle, WA</span></div>
+            <div class="info-row"><span class="info-label">Sign Languages</span><span class="info-val">ASL, LSF</span></div>
+            <div class="info-row"><span class="info-label">Specializations</span><span class="info-val">Medical, Legal, Conference, Mental Health</span></div>
+            <div class="info-row"><span class="info-label">Mode</span><span class="info-val">On-site + Remote</span></div>
+            <div class="info-row"><span class="info-label">Service Area</span><span class="info-val">Pacific Northwest · National (remote)</span></div>
+            <div class="info-row" style="border-bottom:none;"><span class="info-label">Profile visibility</span><span class="info-val" style="color:var(--accent);">● Public</span></div>
+          </div>
+
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px;">
+            <div style="font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;">Bio</div>
+            <p style="color:var(--muted);font-size:0.88rem;line-height:1.7;margin:0 0 16px;">Certified ASL interpreter with 12 years of experience in medical, legal, and conference settings. I bring deep cultural fluency, strong preparation practices, and a commitment to accuracy under pressure. Available for both on-site and remote assignments throughout the Pacific Northwest.</p>
+            <button class="fav-btn" onclick="showView('signup')">Edit Bio</button>
+          </div>
+
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;">
+            <div style="font-family:'Syne',sans-serif;font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px;">Credentials</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:0.88rem;">RID NIC-Master</span>
+                <span style="font-size:0.75rem;color:var(--accent);font-weight:600;">✓ Verified</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:0.88rem;">EFSLI Member</span>
+                <span style="font-size:0.75rem;color:var(--accent);font-weight:600;">✓ Verified</span>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span style="font-size:0.88rem;">WA State Interpreter License</span>
+                <span style="font-size:0.75rem;color:var(--accent);font-weight:600;">✓ Verified</span>
+              </div>
+            </div>
+            <button class="fav-btn" style="margin-top:16px;" onclick="showView('signup')">Manage Credentials</button>
+          </div>
         </div>
       </div>
 
@@ -5876,7 +6386,7 @@ function closeFilterDrawer() {
 
       <!-- TRUSTED NETWORK PANEL -->
       <div class="dash-panel" id="panel-interp-network">
-        <div class="dash-page-title">Trusted Network</div>
+        <div class="dash-page-title">Preferred Team Interpreters</div>
         <div class="dash-page-subtitle">Interpreters you love working with. Add them here so they're easy to team up with when a job calls for a partner.</div>
 
         <p style="margin:0 0 28px;font-size:0.84rem;color:var(--muted);line-height:1.6;"><a href="#" onclick="showInviteToast(event)" style="color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(0,229,255,0.3);padding-bottom:1px;transition:border-color 0.2s;" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='rgba(0,229,255,0.3)'">Don't see an interpreter here who you love working with? Click here to invite them to join the signpost community.</a></p>
@@ -5950,6 +6460,78 @@ function closeFilterDrawer() {
         </div>
 
       </div><!-- /panel-interp-network -->
+
+      <!-- CLIENT INTERPRETER LISTS PANEL (interpreter view) -->
+      <div class="dash-panel" id="panel-interp-client-lists">
+        <div class="dash-page-title">Client Interpreter Lists</div>
+        <div class="dash-page-subtitle">When a Deaf or Hard of Hearing client shares their preferred interpreter list with you, it appears here — usually when you're helping them coordinate or working closely with them. These lists are set by the client. You cannot edit them.</div>
+
+        <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:18px 22px;margin-bottom:20px;">
+          <p style="color:var(--muted);font-size:0.83rem;line-height:1.7;margin:0;">
+            <strong style="color:var(--text);">These lists belong to your clients.</strong> They update automatically when the client makes changes. The work/personal designations reflect the client's preferences — use them to understand which interpreters they trust in which contexts, especially when helping coordinate a team.
+          </p>
+        </div>
+
+        <div class="client-list-card" id="clcard-interp-1">
+          <div class="client-list-header" onclick="toggleClientCard('clcard-interp-1')">
+            <div style="display:flex;align-items:center;gap:14px;">
+              <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#9d87ff,#00e5ff);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;color:#fff;flex-shrink:0;">JR</div>
+              <div>
+                <div style="font-weight:600;font-size:0.95rem;">Jordan Rivera</div>
+                <div style="font-size:0.78rem;color:var(--muted);">3 interpreters · Updated 2 days ago</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:0.72rem;font-weight:600;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.25);color:var(--accent);border-radius:6px;padding:2px 9px;">Live · Read-only</span>
+              <svg class="client-list-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+          <div class="client-list-body">
+            <div class="client-list-section-label">★ Preferred Interpreters</div>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+              <div class="client-interp-row">
+                <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#00e5ff,#7b61ff);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;flex-shrink:0;">MC</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-weight:600;font-size:0.88rem;margin-bottom:2px;">Maya Chen</div>
+                  <div style="font-size:0.76rem;color:var(--muted);margin-bottom:6px;">RID NIC-Advanced · Medical, Legal</div>
+                  <div style="font-size:0.78rem;color:var(--muted);font-style:italic;margin-bottom:8px;">"Best for medical — very clear signing, always confirms terminology beforehand."</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <span class="ro-pill not-approved">✕ Work settings</span>
+                    <span class="ro-pill approved">✓ Personal / medical</span>
+                  </div>
+                </div>
+              </div>
+              <div class="client-interp-row">
+                <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#f59e0b,#ef4444);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;flex-shrink:0;">TN</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-weight:600;font-size:0.88rem;margin-bottom:2px;">Takeshi Nara</div>
+                  <div style="font-size:0.76rem;color:var(--muted);margin-bottom:6px;">RID CI+CT · Conference, Education</div>
+                  <div style="font-size:0.78rem;color:var(--muted);font-style:italic;margin-bottom:8px;">"Prefer for conferences and large events."</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <span class="ro-pill approved">✓ Work settings</span>
+                    <span class="ro-pill not-approved">✕ Personal / medical</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="client-list-section-label">✓ Secondary Tier</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <div class="client-interp-row">
+                <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#34d399,#7b61ff);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;flex-shrink:0;">DW</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-weight:600;font-size:0.88rem;margin-bottom:2px;">Dana Whitfield</div>
+                  <div style="font-size:0.76rem;color:var(--muted);margin-bottom:6px;">RID NIC · General</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <span class="ro-pill approved">✓ Work settings</span>
+                    <span class="ro-pill approved">✓ Personal / medical</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /panel-interp-client-lists -->
 
     </div><!-- /dash-main -->
   </div><!-- /dashboard-layout -->
@@ -6158,7 +6740,7 @@ function closeFilterDrawer() {
   </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ===== COLLAPSIBLE RATE CARDS =====
 function toggleRateCard(bodyId, chevronId) {
   const body = document.getElementById(bodyId);
@@ -8147,14 +8729,14 @@ let deafProfile = {
     cdiPreferred: false,
   },
   interpreters: [
-    { id: 1, name: 'Maya Chen', initials: 'MC', color: 'linear-gradient(135deg,#00e5ff,#7b61ff)', tier: 'preferred', domains: ['Medical','Legal'], certs: 'RID NIC-Advanced', note: 'Best for medical — very clear signing, always confirms terminology with me beforehand.', dnb: false },
-    { id: 2, name: 'Takeshi Nara', initials: 'TN', color: 'linear-gradient(135deg,#f59e0b,#ef4444)', tier: 'preferred', domains: ['Conference','Education'], certs: 'RID CI+CT', note: 'Prefer for conferences and large events.', dnb: false },
-    { id: 3, name: 'Dana Whitfield', initials: 'DW', color: 'linear-gradient(135deg,#34d399,#7b61ff)', tier: 'approved', domains: ['General'], certs: 'RID NIC', note: 'Good general interpreter. Works well for routine meetings.', dnb: false },
-    { id: 4, name: 'Chris Harmon', initials: 'CH', color: 'linear-gradient(135deg,#ff6b85,#9d87ff)', tier: 'dnb', domains: ['Legal'], certs: 'BEI Advanced', note: 'Significant communication mismatch. Do not book.', dnb: true },
+    { id: 1, name: 'Maya Chen', initials: 'MC', color: 'linear-gradient(135deg,#00e5ff,#7b61ff)', tier: 'preferred', domains: ['Medical','Legal'], certs: 'RID NIC-Advanced', note: 'Best for medical — very clear signing, always confirms terminology with me beforehand.', dnb: false, approveWork: false, approvePersonal: true },
+    { id: 2, name: 'Takeshi Nara', initials: 'TN', color: 'linear-gradient(135deg,#f59e0b,#ef4444)', tier: 'preferred', domains: ['Conference','Education'], certs: 'RID CI+CT', note: 'Prefer for conferences and large events.', dnb: false, approveWork: true, approvePersonal: false },
+    { id: 3, name: 'Dana Whitfield', initials: 'DW', color: 'linear-gradient(135deg,#34d399,#7b61ff)', tier: 'approved', domains: ['General'], certs: 'RID NIC', note: 'Good general interpreter. Works well for routine meetings.', dnb: false, approveWork: true, approvePersonal: true },
+    { id: 4, name: 'Chris Harmon', initials: 'CH', color: 'linear-gradient(135deg,#ff6b85,#9d87ff)', tier: 'dnb', domains: ['Legal'], certs: 'BEI Advanced', note: 'Significant communication mismatch. Do not book.', dnb: true, approveWork: false, approvePersonal: false },
   ],
   requesters: [
-    { email: 'hr@valleyhealth.org', name: 'Valley Health HR', addedDate: 'Feb 2026', lastActive: '3 days ago' },
-    { email: 'events@techconf.io', name: 'TechConf Events', addedDate: 'Jan 2026', lastActive: '2 weeks ago' },
+    { email: 'hr@valleyhealth.org', name: 'Valley Health HR', addedDate: 'Feb 2026', lastActive: '3 days ago', shareWork: true, sharePersonal: false },
+    { email: 'events@techconf.io', name: 'TechConf Events', addedDate: 'Jan 2026', lastActive: '2 weeks ago', shareWork: true, sharePersonal: true },
   ]
 };
 
@@ -8180,10 +8762,18 @@ function renderDeafDashboard() {
         </div>
         <div style="color:var(--muted);font-size:0.8rem;margin-bottom:6px;">${interp.certs} · ${interp.domains.join(', ')}</div>
         ${interp.note ? `<div style="font-size:0.82rem;color:var(--muted);font-style:italic;background:rgba(255,255,255,0.03);border-radius:8px;padding:8px 12px;margin-bottom:8px;">"${interp.note}"</div>` : ''}
-        ${showTierControl ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;" onclick="event.stopPropagation()">
+        <div class="interp-approvals" onclick="event.stopPropagation()">
+          <span class="approval-pill ${interp.approveWork ? 'approved-work' : 'not-approved'}" id="pill-work-${interp.id}" onclick="toggleInterpApproval(${interp.id},'work')">
+            <em class="pill-icon">${interp.approveWork ? '✓' : '✕'}</em> Work settings
+          </span>
+          <span class="approval-pill ${interp.approvePersonal ? 'approved-personal' : 'not-approved'}" id="pill-personal-${interp.id}" onclick="toggleInterpApproval(${interp.id},'personal')">
+            <em class="pill-icon">${interp.approvePersonal ? '✓' : '✕'}</em> Personal / medical
+          </span>
+        </div>
+        ${showTierControl ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;" onclick="event.stopPropagation()">
           ${interp.tier !== 'preferred' ? `<button onclick="setInterpTier(${interp.id},'preferred')" style="background:rgba(0,229,255,0.07);border:1px solid rgba(0,229,255,0.2);color:var(--accent);border-radius:8px;padding:4px 12px;font-size:0.75rem;cursor:pointer;">★ Move to Preferred Tier</button>` : ''}
           ${interp.tier !== 'approved' ? `<button onclick="setInterpTier(${interp.id},'approved')" style="background:rgba(123,97,255,0.07);border:1px solid rgba(123,97,255,0.2);color:#a78bfa;border-radius:8px;padding:4px 12px;font-size:0.75rem;cursor:pointer;">↓ Move to Secondary Tier</button>` : ''}
-          ${interp.tier !== 'dnb' ? `<button onclick="setInterpTier(${interp.id},'dnb')" style="background:rgba(255,77,109,0.06);border:1px solid rgba(255,77,109,0.2);color:#ff8099;border-radius:8px;padding:4px 12px;font-size:0.75rem;cursor:pointer;">✕ Do Not Book</button>` : ''}
+          ${interp.tier !== 'dnb' ? `<button onclick="setInterpTier(${interp.id},'dnb')" style="background:transparent;border:1px dashed rgba(255,77,109,0.35);color:#ff8099;border-radius:8px;padding:4px 12px;font-size:0.75rem;cursor:pointer;letter-spacing:0.01em;" onmouseover="this.style.borderColor='rgba(255,77,109,0.7)';this.style.background='rgba(255,77,109,0.06)'" onmouseout="this.style.borderColor='rgba(255,77,109,0.35)';this.style.background='transparent'">Move to Do Not Book</button>` : ''}
           <button onclick="editInterpNote(${interp.id})" style="background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:4px 12px;font-size:0.75rem;cursor:pointer;">Edit note</button>
           <button onclick="removeInterp(${interp.id})" style="background:none;border:none;color:var(--muted);font-size:0.75rem;cursor:pointer;opacity:0.6;padding:4px 8px;">Remove</button>
         </div>` : ''}
@@ -8208,7 +8798,7 @@ function renderDeafDashboard() {
 
       <div class="dash-nav-section">Overview</div>
       <button class="dash-nav-item" id="ddtab-roster" onclick="showDeafTab('roster')">
-        <span class="dash-nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="2" rx="1" fill="currentColor" opacity=".7"/><rect x="2" y="7" width="12" height="2" rx="1" fill="currentColor" opacity=".7"/><rect x="2" y="11" width="8" height="2" rx="1" fill="currentColor" opacity=".7"/></svg></span> My Roster
+        <span class="dash-nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="2" rx="1" fill="currentColor" opacity=".7"/><rect x="2" y="7" width="12" height="2" rx="1" fill="currentColor" opacity=".7"/><rect x="2" y="11" width="8" height="2" rx="1" fill="currentColor" opacity=".7"/></svg></span> My Preferred Interpreters
         <span class="dash-badge" style="background:rgba(0,229,255,0.15);color:var(--accent);">${preferred.length + approved.length}</span>
       </button>
       <button class="dash-nav-item" id="ddtab-request" onclick="showDeafTab('request')">
@@ -8225,7 +8815,7 @@ function renderDeafDashboard() {
       </button>
 
       <button class="dash-nav-item" onclick="showShareModal()" style="margin-top:8px;">
-        <span class="dash-nav-icon"><svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M15 13.333a2.667 2.667 0 1 0 0 5.334 2.667 2.667 0 0 0 0-5.334zm0 0V6.667M5 6.667a2.667 2.667 0 1 0 0-5.334 2.667 2.667 0 0 0 0 5.334zm0 0v6.666M5 13.333a2.667 2.667 0 1 0 0 5.334 2.667 2.667 0 0 0 0-5.334z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span> Share Profile
+        <span class="dash-nav-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M8.7 10.7l6.6-3.4M8.7 13.3l6.6 3.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span> Share My List
       </button>
 
       <div class="dash-nav-section" style="margin-top:auto;"></div>
@@ -8423,7 +9013,7 @@ function renderDeafDashboard() {
           <!-- Interpreter multi-select -->
           <div>
             <label style="display:block;font-size:0.82rem;font-weight:600;margin-bottom:4px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;">Send Request To</label>
-            <div style="font-size:0.8rem;color:var(--muted);margin-bottom:14px;">Select one or more interpreters from your roster to send this request to. Each interpreter will respond with their availability, rates, and terms. You review their responses and confirm who you'd like to book.</div>
+            <div style="font-size:0.8rem;color:var(--muted);margin-bottom:14px;">Select one or more interpreters from your preferred list to send this request to. Each interpreter will respond with their availability, rates, and terms. You review their responses and confirm who you'd like to book.</div>
             <div style="display:flex;flex-direction:column;gap:8px;" id="req-interp-selector">
               ${[...preferred, ...approved].length ? [...preferred, ...approved].map(i => `
                 <label style="display:flex;align-items:center;gap:14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 16px;cursor:pointer;transition:border-color 0.15s;" onmouseover="this.style.borderColor='rgba(0,229,255,0.3)'" onmouseout="if(!this.querySelector('input').checked)this.style.borderColor='var(--border)'" onclick="">
@@ -8435,7 +9025,7 @@ function renderDeafDashboard() {
                   </div>
                   <span style="font-size:0.72rem;font-weight:600;padding:2px 10px;border-radius:20px;${i.tier==='preferred'?'background:rgba(0,229,255,0.1);color:var(--accent);border:1px solid rgba(0,229,255,0.25);':'background:rgba(123,97,255,0.1);color:#a78bfa;border:1px solid rgba(123,97,255,0.25);'}">${i.tier==='preferred'?'★ Preferred':'Secondary'}</span>
                 </label>
-              `).join('') : `<div style="color:var(--muted);font-size:0.88rem;padding:16px;background:var(--surface);border-radius:10px;border:1px dashed var(--border);">No roster interpreters yet. <span style="color:var(--accent);cursor:pointer;" onclick="showDeafTab('roster')">Add from the directory first →</span></div>`}
+              `).join('') : `<div style="color:var(--muted);font-size:0.88rem;padding:16px;background:var(--surface);border-radius:10px;border:1px dashed var(--border);">No interpreters on your preferred list yet. <span style="color:var(--accent);cursor:pointer;" onclick="showDeafTab('roster')">Add from the directory first →</span></div>`}
             </div>
             ${[...preferred, ...approved].length ? `
             <div style="margin-top:10px;font-size:0.8rem;color:var(--muted);">
@@ -8465,13 +9055,21 @@ function renderDeafDashboard() {
 
       <!-- ROSTER PANEL -->
       <div class="dash-panel" id="ddpanel-roster">
-        <div class="dash-page-title">My Interpreter Roster</div>
-        <div class="dash-page-subtitle">Your preferred, secondary tier, and do-not-book interpreters. Share this roster with requesters so they always know who to contact.</div>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:4px;">
+          <div>
+            <div class="dash-page-title" style="margin-bottom:0;">My Preferred Interpreter List</div>
+            <div class="dash-page-subtitle">Your preferred, secondary tier, and do-not-book interpreters. Share your list with requesters so they always know who to contact.</div>
+          </div>
+          <button onclick="showShareModal()" style="display:inline-flex;align-items:center;gap:7px;flex-shrink:0;margin-top:6px;background:transparent;border:1.5px solid rgba(0,229,255,0.3);border-radius:8px;color:var(--accent);font-family:'DM Sans',sans-serif;font-size:0.82rem;font-weight:700;padding:7px 14px;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='rgba(0,229,255,0.08)';this.style.borderColor='rgba(0,229,255,0.6)'" onmouseout="this.style.background='transparent';this.style.borderColor='rgba(0,229,255,0.3)'">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="1.7"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="1.7"/><path d="M8.7 10.7l6.6-3.4M8.7 13.3l6.6 3.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            Share my list
+          </button>
+        </div>
 
       <!-- Add from directory -->
       <div style="background:rgba(0,229,255,0.04);border:1px dashed rgba(0,229,255,0.2);border-radius:12px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:32px;">
         <div>
-          <div style="font-weight:600;font-size:0.9rem;margin-bottom:4px;">Add an interpreter to your roster</div>
+          <div style="font-weight:600;font-size:0.9rem;margin-bottom:4px;">Add an interpreter to your preferred list</div>
           <div style="color:var(--muted);font-size:0.82rem;">Browse the directory and add interpreters directly from their profile.</div>
         </div>
         <button onclick="showView('directory')" class="btn-primary" style="padding:9px 20px;font-size:0.85rem;">Browse Directory →</button>
@@ -8632,17 +9230,23 @@ function renderDeafDashboard() {
     <!-- REQUESTERS PANEL -->
     <div class="dash-panel" id="ddpanel-requesters">
       <div class="dash-page-title">My Requesters</div>
-      <div class="dash-page-subtitle">People and organizations who can see your interpreter roster. When you add a requester, they get a live read-only link to your profile that updates automatically. Only you can edit it.</div>
+      <div class="dash-page-subtitle">People and organizations who can see your preferred interpreter list. When you add a requester, they get a live read-only link to your profile that updates automatically. Only you can edit it.</div>
       <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px;" id="requester-list">
         ${deafProfile.requesters.map((r,i) => `
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
-          <div>
-            <div style="font-weight:600;font-size:0.9rem;">${r.name}</div>
-            <div style="color:var(--muted);font-size:0.8rem;">${r.email} · Added ${r.addedDate} · Last active ${r.lastActive}</div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:10px;">
+            <div>
+              <div style="font-weight:600;font-size:0.9rem;">${r.name}</div>
+              <div style="color:var(--muted);font-size:0.8rem;">${r.email} · Added ${r.addedDate} · Last active ${r.lastActive}</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button onclick="copyRequesterLink('${r.email}')" style="background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 12px;font-size:0.78rem;cursor:pointer;">Copy link</button>
+              <button onclick="removeRequester(${i})" style="background:none;border:none;color:var(--muted);font-size:0.78rem;cursor:pointer;opacity:0.5;">Remove</button>
+            </div>
           </div>
-          <div style="display:flex;gap:8px;">
-            <button onclick="copyRequesterLink('${r.email}')" style="background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:5px 12px;font-size:0.78rem;cursor:pointer;">Copy link</button>
-            <button onclick="removeRequester(${i})" style="background:none;border:none;color:var(--muted);font-size:0.78rem;cursor:pointer;opacity:0.5;">Remove</button>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            ${r.shareWork ? `<span style="font-size:0.7rem;font-weight:700;padding:2px 10px;border-radius:20px;background:rgba(0,229,255,0.1);border:1.5px solid rgba(0,229,255,0.3);color:var(--accent);">✓ Work list</span>` : `<span style="font-size:0.7rem;font-weight:700;padding:2px 10px;border-radius:20px;background:rgba(255,77,109,0.07);border:1.5px solid rgba(255,77,109,0.25);color:#ff8099;">✕ Work list</span>`}
+            ${r.sharePersonal ? `<span style="font-size:0.7rem;font-weight:700;padding:2px 10px;border-radius:20px;background:rgba(0,229,255,0.1);border:1.5px solid rgba(0,229,255,0.3);color:var(--accent);">✓ Personal / medical list</span>` : `<span style="font-size:0.7rem;font-weight:700;padding:2px 10px;border-radius:20px;background:rgba(255,77,109,0.07);border:1.5px solid rgba(255,77,109,0.25);color:#ff8099;">✕ Personal / medical list</span>`}
           </div>
         </div>`).join('')}
       </div>
@@ -8650,12 +9254,27 @@ function renderDeafDashboard() {
       <!-- Add requester form -->
       <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:28px;">
         <div style="font-weight:600;margin-bottom:16px;font-size:0.95rem;">Add a requester</div>
-        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
           <input id="new-req-name" type="text" placeholder="Organization or person name" style="flex:1;min-width:180px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
           <input id="new-req-email" type="email" placeholder="their@email.com" style="flex:1;min-width:180px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
-          <button onclick="addRequester()" class="btn-primary" style="padding:10px 20px;font-size:0.88rem;">Send invite</button>
         </div>
-        <div style="font-size:0.78rem;color:var(--muted);line-height:1.6;">They'll receive an email with a read-only link to your interpreter roster. You can revoke access at any time.</div>
+        <div style="margin-bottom:16px;">
+          <div style="font-size:0.8rem;font-weight:600;color:var(--muted);margin-bottom:8px;">Share which list(s)?</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.85rem;padding:8px 14px;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;transition:border-color 0.15s;" id="new-req-work-label">
+              <input type="checkbox" id="new-req-work" checked style="width:15px;height:15px;accent-color:var(--accent);" onchange="document.getElementById('new-req-work-label').style.borderColor=this.checked?'rgba(0,229,255,0.5)':'var(--border)'">
+              💼 Work list
+            </label>
+            <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.85rem;padding:8px 14px;background:var(--surface2);border:1.5px solid rgba(0,229,255,0.5);border-radius:8px;transition:border-color 0.15s;" id="new-req-personal-label">
+              <input type="checkbox" id="new-req-personal" checked style="width:15px;height:15px;accent-color:var(--accent);" onchange="document.getElementById('new-req-personal-label').style.borderColor=this.checked?'rgba(0,229,255,0.5)':'var(--border)'">
+              🏥 Personal / medical list
+            </label>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <button onclick="addRequester()" class="btn-primary" style="padding:10px 20px;font-size:0.88rem;">Send invite</button>
+          <div style="font-size:0.78rem;color:var(--muted);line-height:1.5;">They'll receive an email with a read-only link to the lists you selected. You can change access or revoke at any time.</div>
+        </div>
       </div>
     </div><!-- /ddpanel-requesters -->
 
@@ -8664,14 +9283,29 @@ function renderDeafDashboard() {
 
   <!-- Share Modal -->
   <div id="deaf-share-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:24px;">
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:36px;max-width:480px;width:100%;position:relative;">
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:36px;max-width:500px;width:100%;position:relative;">
       <button onclick="closeShareModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;">✕</button>
-      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.15rem;margin-bottom:8px;">Share your interpreter roster</div>
-      <p style="color:var(--muted);font-size:0.85rem;line-height:1.65;margin-bottom:24px;">Anyone with this link can view your preferred, secondary tier, and do-not-book interpreters. The view is read-only and updates live when you make changes.</p>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.15rem;margin-bottom:8px;">Share your preferred interpreter list</div>
+      <p style="color:var(--muted);font-size:0.85rem;line-height:1.65;margin-bottom:20px;">The link is read-only and updates live when you make changes. Choose which list(s) to share.</p>
+
+      <!-- List selector -->
+      <div style="display:flex;gap:10px;margin-bottom:20px;">
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.85rem;padding:8px 14px;background:var(--surface);border:1.5px solid rgba(0,229,255,0.5);border-radius:8px;flex:1;transition:border-color 0.15s;" id="share-work-label">
+          <input type="checkbox" id="share-work-cb" checked style="width:15px;height:15px;accent-color:var(--accent);" onchange="updateShareLink()">
+          Work-related settings interpreter list
+        </label>
+        <label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:0.85rem;padding:8px 14px;background:var(--surface);border:1.5px solid rgba(0,229,255,0.5);border-radius:8px;flex:1;transition:border-color 0.15s;" id="share-personal-label">
+          <input type="checkbox" id="share-personal-cb" checked style="width:15px;height:15px;accent-color:var(--accent);" onchange="updateShareLink()">
+          Personal/medical settings interpreter list
+        </label>
+      </div>
+
+      <!-- Generated link -->
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:20px;">
-        <span style="font-size:0.82rem;color:var(--muted);flex:1;word-break:break-all;">signpost.com/roster/jordan-rivera-a8f3b</span>
+        <span style="font-size:0.82rem;color:var(--muted);flex:1;word-break:break-all;" id="share-link-display">signpost.com/roster/jordan-rivera-a8f3b?lists=work,personal</span>
         <button onclick="copyShareLink()" id="share-copy-btn" style="background:var(--accent);color:#000;border:none;border-radius:8px;padding:6px 14px;font-size:0.8rem;font-weight:600;cursor:pointer;white-space:nowrap;">Copy</button>
       </div>
+
       <div style="font-weight:600;font-size:0.88rem;margin-bottom:12px;">Or send directly to a requester →</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <input id="share-email-input" type="email" placeholder="requester@org.com" style="flex:1;min-width:180px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.85rem;outline:none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
@@ -8721,7 +9355,7 @@ function removeInterp(id) {
   deafProfile.interpreters = deafProfile.interpreters.filter(i => i.id !== id);
   renderDeafDashboard();
   showDeafTab('roster');
-  showToast('Interpreter removed from roster.', '');
+  showToast('Interpreter removed from your preferred list.', '');
 }
 
 let editingNoteId = null;
@@ -8790,12 +9424,15 @@ function addRequester() {
   const name = document.getElementById('new-req-name').value.trim();
   const email = document.getElementById('new-req-email').value.trim();
   if (!name || !email) { showToast('Please enter a name and email.', ''); return; }
-  deafProfile.requesters.push({ email, name, addedDate: 'Feb 2026', lastActive: 'Just now' });
+  const shareWork = document.getElementById('new-req-work').checked;
+  const sharePersonal = document.getElementById('new-req-personal').checked;
+  if (!shareWork && !sharePersonal) { showToast('Please select at least one list to share.', ''); return; }
+  deafProfile.requesters.push({ email, name, addedDate: 'Feb 2026', lastActive: 'Just now', shareWork, sharePersonal });
   document.getElementById('new-req-name').value = '';
   document.getElementById('new-req-email').value = '';
   renderDeafDashboard();
   showDeafTab('requesters');
-  showToast(`✓ Invite sent to ${email}. They can now view your interpreter roster.`, 'success');
+  showToast(`✓ Invite sent to ${email}. They can now view your preferred interpreter list.`, 'success');
 }
 
 function removeRequester(i) {
@@ -8809,8 +9446,22 @@ function copyRequesterLink(email) {
   showToast(`Link copied for ${email}`, 'success');
 }
 
+function updateShareLink() {
+  const work = document.getElementById('share-work-cb')?.checked;
+  const personal = document.getElementById('share-personal-cb')?.checked;
+  const workLabel = document.getElementById('share-work-label');
+  const personalLabel = document.getElementById('share-personal-label');
+  if (workLabel) workLabel.style.borderColor = work ? 'rgba(0,229,255,0.5)' : 'var(--border)';
+  if (personalLabel) personalLabel.style.borderColor = personal ? 'rgba(0,229,255,0.5)' : 'var(--border)';
+  const scope = [work && 'work', personal && 'personal'].filter(Boolean).join(',');
+  const base = 'signpost.com/roster/jordan-rivera-a8f3b';
+  const display = document.getElementById('share-link-display');
+  if (display) display.textContent = scope ? `${base}?lists=${scope}` : base;
+}
+
 function showShareModal() {
   document.getElementById('deaf-share-modal').style.display = 'flex';
+  updateShareLink();
 }
 function closeShareModal() {
   document.getElementById('deaf-share-modal').style.display = 'none';
@@ -8824,7 +9475,7 @@ function sendShareEmail() {
   const email = document.getElementById('share-email-input').value.trim();
   if (!email) return;
   deafProfile.requesters.push({ email, name: email, addedDate: 'Feb 2026', lastActive: 'Just invited' });
-  showToast(`✓ Roster link sent to ${email}`, 'success');
+  showToast(`✓ Preferred interpreter list link sent to ${email}`, 'success');
   closeShareModal();
 }
 
@@ -8956,10 +9607,437 @@ function submitDeafRequest() {
   showDeafTab('roster');
 }
 
+// ===== SHARE LIST MODAL =====
+function openShareModal() {
+  // Reset state
+  document.querySelectorAll('.share-scope-btn').forEach(b => {
+    b.classList.remove('selected','selected-personal');
+  });
+  document.getElementById('share-link-row').style.display = 'none';
+  document.getElementById('share-list-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeShareModal() {
+  document.getElementById('share-list-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function selectShareScope(btn, scope) {
+  document.querySelectorAll('.share-scope-btn').forEach(b => {
+    b.classList.remove('selected','selected-personal');
+  });
+  if (scope === 'personal') {
+    btn.classList.add('selected-personal');
+  } else {
+    btn.classList.add('selected');
+  }
+  const linkRow = document.getElementById('share-link-row');
+  const linkInput = document.getElementById('share-link-input');
+  const token = Math.random().toString(36).substr(2, 8);
+  const scopeParam = scope === 'both' ? 'all' : scope;
+  linkInput.value = `https://signpost.app/list/${scopeParam}/${token}`;
+  linkRow.style.display = 'flex';
+}
+
+function copyShareLink() {
+  const input = document.getElementById('share-link-input');
+  navigator.clipboard.writeText(input.value).then(() => {
+    showToast('✓ Link copied to clipboard', 'success');
+    closeShareModal();
+  }).catch(() => {
+    input.select();
+    document.execCommand('copy');
+    showToast('✓ Link copied to clipboard', 'success');
+    closeShareModal();
+  });
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeShareModal();
+});
+
+// ===== ADD TO LIST MODAL =====
+let _atlCurrentId = null;
+let _atlSelectedTier = null;
+
+// Role-specific modal configurations
+const ATL_CONFIGS = {
+  deaf: {
+    step1Label: 'Step 1 of 2 — Which list should they go on?',
+    tiers: [
+      {
+        id: 'preferred',
+        label: '★ Preferred Interpreter',
+        desc: 'Your first call. These are interpreters you trust and want contacted before anyone else. Requesters and medical providers will see this as your primary list.',
+        className: 'selected-preferred'
+      },
+      {
+        id: 'secondary',
+        label: '✓ Secondary Tier Interpreter',
+        desc: 'Good alternatives — contacted if your Preferred list isn\'t available. Still part of your approved pool. Not a lesser endorsement, just a backup.',
+        className: 'selected-secondary'
+      }
+    ],
+    showApprovals: true,
+    step2Label: 'Step 2 of 2 — Approved for which settings?',
+    step2Desc: 'Interpreter skills vary widely, and many Deaf people prefer different interpreters for different situations. This helps requesters and providers know who to call and when. You can approve an interpreter for one or both settings.',
+    workLabel: '💼 Approved for work settings',
+    workDesc: 'This interpreter will appear on your work list when you share it — visible to employers, HR teams, vocational rehab coordinators, and other professional requesters.',
+    personalLabel: '🏥 Approved for personal and medical settings',
+    personalDesc: 'This interpreter will appear on your personal/medical list when you share it — visible to doctors, hospitals, social services, and other non-work requesters.',
+    noteLabel: 'Personal note (optional)',
+    notePlaceholder: '"Best for medical — very clear signing, always confirms terminology with me beforehand."',
+    confirmLabel: 'Add to my list →',
+    requireApproval: true,
+  },
+  requester: {
+    step1Label: 'Step 1 of 2 — Which list should they go on?',
+    tiers: [
+      {
+        id: 'preferred',
+        label: '★ Preferred Interpreter',
+        desc: 'Your first call for this client or context. When you send a request, Preferred interpreters are contacted before anyone else.',
+        className: 'selected-preferred'
+      },
+      {
+        id: 'secondary',
+        label: '✓ Secondary Tier Interpreter',
+        desc: 'Reliable alternatives. These interpreters are contacted when your Preferred list isn\'t available. Useful for keeping a broader pool without losing your priorities.',
+        className: 'selected-secondary'
+      }
+    ],
+    showApprovals: true,
+    step2Label: 'Step 2 of 2 — Approved for which assignment types?',
+    step2Desc: 'Some interpreters have narrower specializations. Marking which types of assignments they\'re right for helps you filter correctly when sending requests.',
+    workLabel: '💼 Approved for professional / workplace assignments',
+    workDesc: 'This interpreter can be assigned to employment-related work: workplace meetings, HR conversations, job training, professional conferences, and similar settings.',
+    personalLabel: '🏥 Approved for medical and personal assignments',
+    personalDesc: 'This interpreter can be assigned to personal-context work: medical appointments, hospital visits, social services, mental health sessions, and similar settings.',
+    noteLabel: 'Note (optional)',
+    notePlaceholder: '"Excellent for high-stakes medical settings. Always arrives early and reviews materials in advance."',
+    confirmLabel: 'Add to my list →',
+    requireApproval: true,
+  },
+  interpreter: {
+    step1Label: 'Which role do they play in your team?',
+    tiers: [
+      {
+        id: 'preferred',
+        label: '★ Go-to Team Interpreter',
+        desc: 'Interpreters you actively seek out for team assignments. When you need a partner for a job, these are your first calls.',
+        className: 'selected-preferred'
+      },
+      {
+        id: 'secondary',
+        label: '✓ Available Team Interpreter',
+        desc: 'Colleagues you\'re open to teaming with. A good pool to draw from when your go-to interpreters aren\'t available for a particular job.',
+        className: 'selected-secondary'
+      }
+    ],
+    showApprovals: false,
+    step2Label: '',
+    step2Desc: '',
+    workLabel: '',
+    workDesc: '',
+    personalLabel: '',
+    personalDesc: '',
+    noteLabel: 'Note (optional)',
+    notePlaceholder: '"Great partner for conference work — excellent at relay and pacing."',
+    confirmLabel: 'Add to Preferred Team →',
+    requireApproval: false,
+  },
+  default: { // logged out or unknown role
+    step1Label: 'Step 1 of 2 — Which list should they go on?',
+    tiers: [
+      {
+        id: 'preferred',
+        label: '★ Preferred Interpreter',
+        desc: 'Your first call. These are interpreters you trust and want contacted before anyone else.',
+        className: 'selected-preferred'
+      },
+      {
+        id: 'secondary',
+        label: '✓ Secondary Tier Interpreter',
+        desc: 'Good alternatives when your Preferred list isn\'t available.',
+        className: 'selected-secondary'
+      }
+    ],
+    showApprovals: true,
+    step2Label: 'Step 2 of 2 — Approved for which settings?',
+    step2Desc: 'You can approve an interpreter for one or both settings. This determines which list they appear on when you share your interpreter list with others.',
+    workLabel: '💼 Approved for work settings',
+    workDesc: 'This interpreter will appear on your work list when you share it.',
+    personalLabel: '🏥 Approved for personal and medical settings',
+    personalDesc: 'This interpreter will appear on your personal/medical list when you share it.',
+    noteLabel: 'Personal note (optional)',
+    notePlaceholder: '"Best for medical — very clear signing."',
+    confirmLabel: 'Add to my list →',
+    requireApproval: true,
+  }
+};
+
+function openAddToListModal(interpId) {
+  const interp = interpreters.find(i => i.id === interpId);
+  if (!interp) return;
+
+  _atlCurrentId = interpId;
+  _atlSelectedTier = null;
+
+  // Determine config based on role
+  const role = currentUserRole || 'default';
+  const cfg = ATL_CONFIGS[role] || ATL_CONFIGS.default;
+
+  // Populate header
+  document.getElementById('atl-avatar').textContent = interp.initials;
+  document.getElementById('atl-avatar').style.background = interp.color;
+  document.getElementById('atl-name').textContent = interp.name;
+  document.getElementById('atl-details').textContent = [interp.signLangs.join(', '), interp.specs.slice(0,2).join(', '), interp.location].filter(Boolean).join(' · ');
+
+  // Step 1 label
+  document.getElementById('atl-step1-label').textContent = cfg.step1Label;
+
+  // Build tier options
+  const tierContainer = document.getElementById('atl-tier-options');
+  tierContainer.innerHTML = cfg.tiers.map(t => `
+    <div class="tier-option" id="tier-opt-${t.id}" onclick="selectTier('${t.id}','${t.className}')">
+      <div class="tier-radio"><div class="tier-radio-dot"></div></div>
+      <div>
+        <div class="tier-label">${t.label}</div>
+        <div class="tier-desc">${t.desc}</div>
+      </div>
+    </div>
+  `).join('');
+
+  // Step 2 — approvals
+  const step2Wrap = document.getElementById('atl-step2-wrap');
+  step2Wrap.style.display = cfg.showApprovals ? 'block' : 'none';
+  if (cfg.showApprovals) {
+    document.getElementById('atl-step2-label').textContent = cfg.step2Label;
+    document.getElementById('atl-step2-description').textContent = cfg.step2Desc;
+    document.getElementById('atl-work-label').textContent = cfg.workLabel;
+    document.getElementById('atl-work-desc').textContent = cfg.workDesc;
+    document.getElementById('atl-personal-label').textContent = cfg.personalLabel;
+    document.getElementById('atl-personal-desc').textContent = cfg.personalDesc;
+  }
+
+  // Note label and placeholder
+  document.getElementById('atl-note-label').textContent = cfg.noteLabel;
+  document.getElementById('atl-note').placeholder = cfg.notePlaceholder;
+
+  // Confirm button label
+  document.getElementById('atl-confirm-btn').textContent = cfg.confirmLabel;
+
+  // Reset state
+  document.getElementById('atl-work-cb').checked = false;
+  document.getElementById('atl-personal-cb').checked = false;
+  document.getElementById('atl-work-opt').className = 'modal-approval-opt';
+  document.getElementById('atl-personal-opt').className = 'modal-approval-opt';
+  document.getElementById('atl-note').value = '';
+  document.getElementById('atl-confirm-btn').disabled = true;
+
+  document.getElementById('add-list-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function openAddToListFromProfile() {
+  if (window._currentProfileId) {
+    openAddToListModal(window._currentProfileId);
+  } else {
+    openAddToListModal(1);
+  }
+}
+
+function closeAddToListModal() {
+  document.getElementById('add-list-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function selectTier(tier, cssClass) {
+  _atlSelectedTier = tier;
+  // Reset all tier options
+  document.querySelectorAll('#atl-tier-options .tier-option').forEach(el => {
+    el.className = 'tier-option';
+  });
+  const opt = document.getElementById('tier-opt-' + tier);
+  if (opt) opt.className = 'tier-option ' + (cssClass || '');
+  checkAtlCanConfirm();
+}
+
+function updateApprovalStyle(type) {
+  const workCb = document.getElementById('atl-work-cb');
+  const personalCb = document.getElementById('atl-personal-cb');
+  document.getElementById('atl-work-opt').className = 'modal-approval-opt' + (workCb.checked ? ' checked-work' : '');
+  document.getElementById('atl-personal-opt').className = 'modal-approval-opt' + (personalCb.checked ? ' checked-personal' : '');
+  checkAtlCanConfirm();
+}
+
+function checkAtlCanConfirm() {
+  const role = currentUserRole || 'default';
+  const cfg = ATL_CONFIGS[role] || ATL_CONFIGS.default;
+  const workCb = document.getElementById('atl-work-cb').checked;
+  const personalCb = document.getElementById('atl-personal-cb').checked;
+  const approvalOk = !cfg.requireApproval || (workCb || personalCb);
+  document.getElementById('atl-confirm-btn').disabled = !(_atlSelectedTier && approvalOk);
+}
+
+function confirmAddToList() {
+  if (!_atlCurrentId || !_atlSelectedTier) return;
+  const interp = interpreters.find(i => i.id === _atlCurrentId);
+  if (!interp) return;
+
+  const workCb = document.getElementById('atl-work-cb').checked;
+  const personalCb = document.getElementById('atl-personal-cb').checked;
+  const note = document.getElementById('atl-note').value.trim();
+  const tierKey = _atlSelectedTier === 'preferred' ? 'preferred' : 'approved';
+  const role = currentUserRole || 'default';
+  const cfg = ATL_CONFIGS[role] || ATL_CONFIGS.default;
+
+  // Add to deafProfile if deaf user and not already there
+  if ((role === 'deaf' || role === 'default') && typeof deafProfile !== 'undefined') {
+    const existing = deafProfile.interpreters.find(i => i.name === interp.name);
+    if (!existing) {
+      deafProfile.interpreters.push({
+        id: Date.now(), name: interp.name, initials: interp.initials,
+        color: interp.color, tier: tierKey,
+        domains: interp.specs, certs: interp.certs[0] || 'Certified',
+        note: note, dnb: false, approveWork: workCb, approvePersonal: personalCb
+      });
+    }
+  }
+
+  const tierLabels = { preferred: cfg.tiers[0].label, secondary: cfg.tiers[1]?.label || '✓ Secondary' };
+  showToast(`✓ ${interp.name} added — ${tierLabels[_atlSelectedTier] || _atlSelectedTier}`, 'success');
+  closeAddToListModal();
+}
+
+function toggleClientCard(id) {
+  const card = document.getElementById(id);
+  if (card) card.classList.toggle('collapsed');
+}
+
+function toggleInterpApproval(id, type) {
+  if (typeof deafProfile === 'undefined') return;
+  const interp = deafProfile.interpreters.find(i => i.id === id);
+  if (!interp) return;
+  if (type === 'work') interp.approveWork = !interp.approveWork;
+  if (type === 'personal') interp.approvePersonal = !interp.approvePersonal;
+
+  // Update the pill visually without re-rendering the whole card
+  const pill = document.getElementById(`pill-${type}-${id}`);
+  if (!pill) return;
+  const approved = type === 'work' ? interp.approveWork : interp.approvePersonal;
+  const approvedClass = type === 'work' ? 'approved-work' : 'approved-personal';
+  pill.className = `approval-pill ${approved ? approvedClass : 'not-approved'}`;
+  pill.querySelector('.pill-icon').textContent = approved ? '✓' : '✕';
+}
+
 </script>
 
 <!-- =========================================
-     PROFILE MODAL (used by signup step 4 + deaf roster)
+     ADD TO LIST MODAL
+     ========================================= -->
+<div class="add-list-modal" id="add-list-modal" onclick="if(event.target===this)closeAddToListModal()">
+  <div class="add-list-box">
+
+    <div class="add-list-header">
+      <div class="add-list-avatar" id="atl-avatar" style="background:linear-gradient(135deg,#7b61ff,#00e5ff);">SR</div>
+      <div>
+        <div class="add-list-name" id="atl-name">Sofia Reyes</div>
+        <div class="add-list-sub" id="atl-details">ASL · Medical, Legal · On-site (Seattle)</div>
+      </div>
+    </div>
+
+    <div class="add-list-body">
+
+      <!-- Step 1: Tier — populated dynamically -->
+      <div>
+        <div class="add-list-section-title" id="atl-step1-label">Step 1 of 2 — Which list should they go on?</div>
+        <div style="display:flex;flex-direction:column;gap:10px;" id="atl-tier-options">
+          <!-- Injected by openAddToListModal() based on role -->
+        </div>
+      </div>
+
+      <!-- Step 2: Approval settings — shown for deaf + requester, hidden for interpreter -->
+      <div id="atl-step2-wrap">
+        <div class="add-list-section-title" id="atl-step2-label">Step 2 of 2 — Approved for which settings?</div>
+        <div id="atl-step2-description" style="color:var(--muted);font-size:0.81rem;line-height:1.6;margin-bottom:12px;"></div>
+        <div class="modal-approval-row">
+          <label class="modal-approval-opt" id="atl-work-opt">
+            <input type="checkbox" class="modal-cb" id="atl-work-cb" onchange="updateApprovalStyle('work')">
+            <div class="modal-approval-text">
+              <div class="modal-approval-label" id="atl-work-label">💼 Approved for work settings</div>
+              <div class="modal-approval-desc" id="atl-work-desc">This interpreter can be shared with your employer, HR, vocational rehab coordinator, or other professional requesters.</div>
+            </div>
+          </label>
+          <label class="modal-approval-opt" id="atl-personal-opt">
+            <input type="checkbox" class="modal-cb personal" id="atl-personal-cb" onchange="updateApprovalStyle('personal')">
+            <div class="modal-approval-text">
+              <div class="modal-approval-label" id="atl-personal-label">🏥 Approved for personal and medical settings</div>
+              <div class="modal-approval-desc" id="atl-personal-desc">This interpreter can be shared with medical providers, hospitals, social services, or other personal-context requesters.</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Optional note -->
+      <div>
+        <div class="add-list-section-title" style="margin-bottom:8px;" id="atl-note-label">Personal note (optional)</div>
+        <textarea id="atl-note" placeholder='e.g. "Best for medical — very clear signing, always confirms terminology."' style="width:100%;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.85rem;resize:vertical;min-height:72px;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+      </div>
+
+    </div>
+
+    <div class="add-list-footer">
+      <button class="add-list-cancel" onclick="closeAddToListModal()">Cancel</button>
+      <button class="add-list-confirm" id="atl-confirm-btn" onclick="confirmAddToList()" disabled>Add to my list →</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================
+     SHARE LIST MODAL
+     ========================================= -->
+<div class="share-list-modal" id="share-list-modal" onclick="if(event.target===this)closeShareModal()">
+  <div class="share-list-box">
+    <div class="share-list-title">Share your interpreter list</div>
+    <div class="share-list-sub">Choose which list to share. The recipient will only see interpreters approved for that setting — not your full list.</div>
+
+    <div class="share-scope-options" id="share-scope-options">
+      <div class="share-scope-btn" onclick="selectShareScope(this,'work')" data-scope="work">
+        <div class="scope-icon">💼</div>
+        <div>
+          <div class="scope-label">Work settings only</div>
+          <div class="scope-desc">Share interpreters marked "Approved for work settings." Best for HR, employers, or vocational rehab coordinators.</div>
+        </div>
+      </div>
+      <div class="share-scope-btn" onclick="selectShareScope(this,'personal')" data-scope="personal">
+        <div class="scope-icon">🏥</div>
+        <div>
+          <div class="scope-label">Personal / medical only</div>
+          <div class="scope-desc">Share interpreters marked "Approved for personal / medical." Best for doctors, hospitals, or social services.</div>
+        </div>
+      </div>
+      <div class="share-scope-btn" onclick="selectShareScope(this,'both')" data-scope="both">
+        <div class="scope-icon">✦</div>
+        <div>
+          <div class="scope-label">Both lists</div>
+          <div class="scope-desc">Share the full picture — each interpreter shown with which settings they're approved for.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="share-link-row" id="share-link-row" style="display:none;">
+      <input class="share-link-input" id="share-link-input" readonly value="https://signpost.app/list/…">
+      <button class="share-copy-btn" onclick="copyShareLink()">Copy link</button>
+    </div>
+
+    <button class="share-modal-close" onclick="closeShareModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- =========================================
+     PROFILE MODAL (used by signup step 4 + deaf preferred list)
      ========================================= -->
 <div id="profile-modal-overlay" onclick="closeProfileModal(event)">
   <div id="profile-modal">
@@ -9049,10 +10127,4 @@ function closeProfileModal(e) {
   document.body.style.overflow = '';
 }
 
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeProfileModal();
-});
-
-// Open a profile from the SUGGESTED_INTERP_POOL (requester signup step 4)
-function openSuggestedProfile(name) {
-  const data = SUGGESTED_INTERP_POOL.find(i => i.nam
+document.addEventListener('
