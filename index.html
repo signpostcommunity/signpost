@@ -9284,7 +9284,7 @@ function renderDeafDashboard() {
   <!-- Share Modal -->
   <div id="deaf-share-modal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:24px;">
     <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:36px;max-width:500px;width:100%;position:relative;">
-      <button onclick="closeShareModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;">✕</button>
+      <button onclick="closeDeafShareModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;">✕</button>
       <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.15rem;margin-bottom:8px;">Share your preferred interpreter list</div>
       <p style="color:var(--muted);font-size:0.85rem;line-height:1.65;margin-bottom:20px;">The link is read-only and updates live when you make changes. Choose which list(s) to share.</p>
 
@@ -9463,7 +9463,7 @@ function showShareModal() {
   document.getElementById('deaf-share-modal').style.display = 'flex';
   updateShareLink();
 }
-function closeShareModal() {
+function closeDeafShareModal() {
   document.getElementById('deaf-share-modal').style.display = 'none';
 }
 function copyShareLink() {
@@ -9476,7 +9476,7 @@ function sendShareEmail() {
   if (!email) return;
   deafProfile.requesters.push({ email, name: email, addedDate: 'Feb 2026', lastActive: 'Just invited' });
   showToast(`✓ Preferred interpreter list link sent to ${email}`, 'success');
-  closeShareModal();
+  closeDeafShareModal();
 }
 
 function handleDeafLogin() {
