@@ -1945,11 +1945,19 @@
 <!-- NAV -->
 <nav>
   <div class="nav-logo wordmark" onclick="showView('home')">sign<span>post</span></div>
-  <div class="nav-links">
-    <button class="nav-btn" onclick="showView('directory')">Browse Interpreter Directory</button>
-    <button class="nav-btn" onclick="goToInterpreterPortalNav()">Interpreter Portal</button>
-    <button class="nav-btn" onclick="goToDeafPortal()" style="color:var(--accent2);">Deaf Portal</button>
-    <button class="btn-primary" onclick="goToRequesterPortal()">Request Interpreters</button>
+  <div class="nav-links" id="main-nav-links">
+    <!-- Logged-out nav (default) -->
+    <span id="nav-loggedout" style="display:flex;gap:8px;align-items:center;">
+      <button class="nav-btn" onclick="showView('directory')">Browse Interpreter Directory</button>
+      <button class="nav-btn" onclick="goToInterpreterPortalNav()">Interpreter Portal</button>
+      <button class="nav-btn" onclick="goToDeafPortal()" style="color:var(--accent2);">Deaf or Hard of Hearing?</button>
+      <button class="btn-primary" onclick="goToRequesterPortal()">Request Interpreters</button>
+    </span>
+    <!-- Logged-in nav (shown when authenticated) -->
+    <span id="nav-loggedin" style="display:none;gap:8px;align-items:center;">
+      <button class="nav-btn" onclick="showView('directory')">Browse Interpreter Directory</button>
+      <button class="btn-primary" id="nav-my-portal-btn" onclick="goToMyPortal()">My Portal</button>
+    </span>
     <div class="lang-dropdown" id="lang-dropdown">
       <button class="lang-btn" onclick="toggleLangMenu()" aria-label="Select language">
         <span class="lang-globe">🌐</span>
@@ -1974,10 +1982,18 @@
 <!-- MOBILE NAV DRAWER -->
 <div class="mobile-nav" id="mobile-nav">
   <button class="mobile-nav-close" onclick="toggleMobileNav()">✕</button>
-  <button class="mobile-nav-btn" onclick="mobileNavGo('directory')">Browse Interpreter Directory</button>
-  <button class="mobile-nav-btn" onclick="closeMobileNav();goToInterpreterPortalNav()">Interpreter Portal</button>
-  <button class="mobile-nav-btn" onclick="closeMobileNav();goToDeafPortal()" style="color:var(--accent2);border-color:rgba(157,135,255,0.3);">Deaf Portal</button>
-  <button class="mobile-nav-btn primary" onclick="closeMobileNav();goToRequesterPortal()">Request Interpreters</button>
+  <!-- Mobile logged-out nav -->
+  <span id="mobile-nav-loggedout">
+    <button class="mobile-nav-btn" onclick="mobileNavGo('directory')">Browse Interpreter Directory</button>
+    <button class="mobile-nav-btn" onclick="closeMobileNav();goToInterpreterPortalNav()">Interpreter Portal</button>
+    <button class="mobile-nav-btn" onclick="closeMobileNav();goToDeafPortal()" style="color:var(--accent2);border-color:rgba(157,135,255,0.3);">Deaf or Hard of Hearing?</button>
+    <button class="mobile-nav-btn primary" onclick="closeMobileNav();goToRequesterPortal()">Request Interpreters</button>
+  </span>
+  <!-- Mobile logged-in nav -->
+  <span id="mobile-nav-loggedin" style="display:none;">
+    <button class="mobile-nav-btn" onclick="mobileNavGo('directory')">Browse Interpreter Directory</button>
+    <button class="mobile-nav-btn primary" id="mobile-nav-my-portal-btn" onclick="closeMobileNav();goToMyPortal()">My Portal</button>
+  </span>
   <button class="mobile-nav-btn" onclick="mobileNavGo('about')" style="margin-top:8px;opacity:0.7;font-size:0.9rem;">About signpost</button>
 </div>
 
@@ -1998,6 +2014,7 @@
         <div class="hero-ctas">
           <button class="btn-primary btn-large" onclick="goToRequesterPortal()" style="width:100%;text-align:center;">Need an interpreter?<br>Submit a request →</button>
           <button class="btn-large" onclick="showView('interpreter-portal')" style="width:100%;text-align:center;background:none;border:1.5px solid var(--border);color:var(--text);" onmouseover="this.style.borderColor='rgba(0,229,255,0.4)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">Are you an interpreter?<br>Create your free profile →</button>
+          <button class="btn-large" onclick="goToDeafPortal()" style="width:100%;text-align:center;background:none;border:1.5px solid rgba(157,135,255,0.35);color:var(--accent2);" onmouseover="this.style.borderColor='rgba(157,135,255,0.7)';this.style.color='#c4b5ff'" onmouseout="this.style.borderColor='rgba(157,135,255,0.35)';this.style.color='var(--accent2)'">Deaf or Hard of Hearing?<br>Build your preferred interpreter list →</button>
         </div>
       </div>
     </div>
@@ -3232,6 +3249,40 @@ function updateMockLoginUI() {
     b.style.color = b.dataset.role === (currentUserRole || 'null') ? '#fb923c' : '#a16207';
     b.style.borderColor = b.dataset.role === (currentUserRole || 'null') ? '#c45c00' : '#7c3a00';
   });
+
+  // Toggle nav between logged-out and logged-in state
+  const loggedOut = document.getElementById('nav-loggedout');
+  const loggedIn = document.getElementById('nav-loggedin');
+  const mobileLoggedOut = document.getElementById('mobile-nav-loggedout');
+  const mobileLoggedIn = document.getElementById('mobile-nav-loggedin');
+  const portalBtn = document.getElementById('nav-my-portal-btn');
+  const mobilePortalBtn = document.getElementById('mobile-nav-my-portal-btn');
+
+  if (currentUserRole) {
+    // Logged in: show simplified nav
+    if (loggedOut) loggedOut.style.display = 'none';
+    if (loggedIn) loggedIn.style.display = 'flex';
+    if (mobileLoggedOut) mobileLoggedOut.style.display = 'none';
+    if (mobileLoggedIn) mobileLoggedIn.style.display = 'block';
+  } else {
+    // Logged out: show full nav
+    if (loggedOut) loggedOut.style.display = 'flex';
+    if (loggedIn) loggedIn.style.display = 'none';
+    if (mobileLoggedOut) mobileLoggedOut.style.display = 'block';
+    if (mobileLoggedIn) mobileLoggedIn.style.display = 'none';
+  }
+}
+
+function goToMyPortal() {
+  if (currentUserRole === 'interpreter') {
+    showView('interpreter-dashboard');
+  } else if (currentUserRole === 'deaf') {
+    showView('deaf-dashboard');
+  } else if (currentUserRole === 'requester' || currentUserRole === 'org') {
+    showView('requester-dashboard');
+  } else {
+    showView('home');
+  }
 }
 
 function goToInterpreterPortalNav() {
