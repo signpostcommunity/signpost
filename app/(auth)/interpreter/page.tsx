@@ -8,15 +8,13 @@ export default function InterpreterPage() {
       style={{
         minHeight: '100vh',
         background: 'var(--bg)',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '60px 24px',
+        padding: '40px 48px 80px',
+        maxWidth: 1200,
+        margin: '0 auto',
       }}
     >
       {/* Back link */}
-      <div style={{ width: '100%', maxWidth: 900, marginBottom: '32px' }}>
+      <div style={{ marginBottom: '28px' }}>
         <Link
           href="/"
           style={{
@@ -51,14 +49,14 @@ export default function InterpreterPage() {
       </div>
 
       {/* Hero headline */}
-      <div style={{ textAlign: 'center', marginBottom: '16px', maxWidth: 700 }}>
+      <div style={{ marginBottom: '16px' }}>
         <h1
           style={{
             fontFamily: 'var(--font-syne)',
-            fontSize: 'clamp(2rem, 5vw, 3.2rem)',
+            fontSize: 'clamp(2.4rem, 4.5vw, 3.8rem)',
             fontWeight: 800,
             letterSpacing: '-0.03em',
-            lineHeight: 1.1,
+            lineHeight: 1.05,
             margin: 0,
           }}
         >
@@ -81,10 +79,8 @@ export default function InterpreterPage() {
         style={{
           color: 'var(--muted)',
           fontSize: '1rem',
-          textAlign: 'center',
-          maxWidth: 480,
           lineHeight: 1.6,
-          marginBottom: '48px',
+          marginBottom: '40px',
         }}
       >
         Join the signpost community, for free. No commission. No agency fees.
@@ -96,10 +92,10 @@ export default function InterpreterPage() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
           gap: '16px',
           width: '100%',
-          maxWidth: 900,
+          maxWidth: 860,
         }}
       >
         {/* New to signpost */}
@@ -245,7 +241,6 @@ export default function InterpreterPage() {
             Sign in to my portal →
           </Link>
         </div>
-      </div>
     </div>
   );
 }
