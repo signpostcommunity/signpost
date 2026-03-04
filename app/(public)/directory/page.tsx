@@ -23,8 +23,22 @@ export default function DirectoryPage() {
 
   const filtered = useMemo(() => {
     return interpreters.filter((i) => {
-      if (filters.search && !i.name.toLowerCase().includes(filters.search.toLowerCase())) return false;
-      if (filters.availability === 'available' && !i.available) return false;
+      // Search across name, location, state, sign languages, spoken languages, specs
+      if (filters.search) {
+        const q = filters.search.toLowerCase();
+        const searchable = [
+          i.name,
+          i.location,
+          i.state,
+          ...i.signLangs,
+          ...i.spokenLangs,
+          ...i.specs,
+          ...i.regions,
+        ]
+          .join(' ')
+          .toLowerCase();
+        if (!searchable.includes(q)) return false;
+      }
       if (filters.signLangs.length > 0 && !filters.signLangs.some((l) => i.signLangs.includes(l))) return false;
       if (filters.spokenLangs.length > 0 && !filters.spokenLangs.some((l) => i.spokenLangs.includes(l))) return false;
       if (filters.specs.length > 0 && !filters.specs.some((s) => i.specs.includes(s))) return false;
@@ -36,55 +50,10 @@ export default function DirectoryPage() {
 
   return (
     <div style={{ minHeight: '100vh' }}>
-      {/* Header */}
+      {/* Body — full width */}
       <div
         style={{
-          borderBottom: '1px solid var(--border)',
-          padding: '32px 40px 24px',
-          background: 'var(--surface)',
-        }}
-      >
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              background: 'rgba(0,229,255,0.08)',
-              border: '1px solid rgba(0,229,255,0.2)',
-              borderRadius: '100px',
-              padding: '6px 16px',
-              fontSize: '0.78rem',
-              color: 'var(--accent)',
-              marginBottom: '12px',
-              fontWeight: 500,
-            }}
-          >
-            Global Directory
-          </div>
-          <h1
-            style={{
-              fontFamily: 'var(--font-syne)',
-              fontSize: 'clamp(1.4rem, 3vw, 2rem)',
-              fontWeight: 800,
-              letterSpacing: '-0.04em',
-              marginBottom: '6px',
-            }}
-          >
-            Browse Sign Language Interpreters
-          </h1>
-          <p style={{ color: 'var(--muted)', fontSize: '0.95rem' }}>
-            {filtered.length} interpreter{filtered.length !== 1 ? 's' : ''} found
-          </p>
-        </div>
-      </div>
-
-      {/* Body */}
-      <div
-        style={{
-          maxWidth: 1200,
-          margin: '0 auto',
-          padding: '32px 40px',
+          padding: '100px 32px 32px',
           display: 'flex',
           gap: '32px',
           alignItems: 'flex-start',
@@ -97,6 +66,14 @@ export default function DirectoryPage() {
 
         {/* Main content */}
         <div style={{ flex: 1, minWidth: 0 }}>
+          {/* Results count */}
+          <div style={{ marginBottom: '20px' }}>
+            <p style={{ color: 'var(--muted)', fontSize: '0.95rem' }}>
+              <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{filtered.length}</span>{' '}
+              interpreter{filtered.length !== 1 ? 's' : ''} found
+            </p>
+          </div>
+
           {/* Mobile filter toggle */}
           <div className="filter-mobile-toggle" style={{ marginBottom: '16px' }}>
             <button

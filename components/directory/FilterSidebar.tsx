@@ -8,6 +8,13 @@ interface Props {
   onChange: (filters: FilterState) => void;
 }
 
+const RADIUS_OPTIONS = [
+  { label: 'Within 25 mi', value: '25' },
+  { label: 'Within 50 mi', value: '50' },
+  { label: 'Within 100 mi', value: '100' },
+  { label: 'Any distance', value: 'any' },
+];
+
 export default function FilterSidebar({ filters, onChange }: Props) {
   function toggle(key: keyof FilterState, value: string) {
     const current = filters[key] as string[];
@@ -45,10 +52,11 @@ export default function FilterSidebar({ filters, onChange }: Props) {
         width: 240,
         flexShrink: 0,
         position: 'sticky',
-        top: 93,
-        maxHeight: 'calc(100vh - 110px)',
+        top: 80,
+        maxHeight: 'calc(100vh - 96px)',
         overflowY: 'auto',
-        paddingRight: '4px',
+        paddingRight: '8px',
+        paddingBottom: '40px',
       }}
     >
       {/* Header */}
@@ -70,7 +78,7 @@ export default function FilterSidebar({ filters, onChange }: Props) {
             color: 'var(--muted)',
           }}
         >
-          Filters
+          Search
         </span>
         {hasFilters && (
           <button
@@ -88,11 +96,11 @@ export default function FilterSidebar({ filters, onChange }: Props) {
         )}
       </div>
 
-      {/* Search */}
+      {/* Search — searches across name, location, state, languages */}
       <div style={{ marginBottom: '20px' }}>
         <input
           type="text"
-          placeholder="Search by name..."
+          placeholder="Name, location, state, language..."
           value={filters.search}
           onChange={(e) => onChange({ ...filters, search: e.target.value })}
           style={{
@@ -102,58 +110,96 @@ export default function FilterSidebar({ filters, onChange }: Props) {
             borderRadius: '8px',
             padding: '9px 12px',
             color: 'var(--text)',
-            fontSize: '0.85rem',
+            fontSize: '0.82rem',
             outline: 'none',
           }}
         />
       </div>
 
-      {/* Availability */}
-      <FilterGroup label="Availability">
-        {['Available now', 'Any'].map((opt) => (
-          <FilterChip
-            key={opt}
-            label={opt}
-            selected={
-              opt === 'Available now'
-                ? filters.availability === 'available'
-                : filters.availability === null
-            }
-            onClick={() =>
-              onChange({
-                ...filters,
-                availability: opt === 'Available now' ? 'available' : null,
-              })
-            }
-          />
-        ))}
-      </FilterGroup>
+      <Divider />
 
-      {/* Sign Languages */}
-      <FilterGroup label="Sign Language">
+      {/* Sign Languages — cyan pills */}
+      <FilterGroup label="Sign Languages">
         {ALL_SIGN_LANGS.map((lang) => (
           <FilterChip
             key={lang}
             label={lang}
             selected={filters.signLangs.includes(lang)}
             onClick={() => toggle('signLangs', lang)}
+            colorScheme="cyan"
           />
         ))}
       </FilterGroup>
 
-      {/* Spoken Languages */}
-      <FilterGroup label="Spoken Language">
+      <Divider />
+
+      {/* Spoken Languages — default pills */}
+      <FilterGroup label="Spoken Languages">
         {ALL_SPOKEN_LANGS.map((lang) => (
           <FilterChip
             key={lang}
             label={lang}
             selected={filters.spokenLangs.includes(lang)}
             onClick={() => toggle('spokenLangs', lang)}
+            colorScheme="default"
           />
         ))}
       </FilterGroup>
 
-      {/* Specializations */}
+      <Divider />
+
+      {/* Region Available */}
+      <FilterGroup label="Region Available">
+        {ALL_REGIONS.map((region) => (
+          <FilterChip
+            key={region}
+            label={region}
+            selected={filters.regions.includes(region)}
+            onClick={() => toggle('regions', region)}
+            colorScheme="green"
+          />
+        ))}
+      </FilterGroup>
+
+      <Divider />
+
+      {/* Distance / Radius */}
+      <FilterGroup label="Distance">
+        <select
+          value={filters.country || 'any'}
+          onChange={(e) => {
+            // Using the 'country' field as a temporary holder for radius selection
+            // TODO: wire up to actual geolocation filtering when Supabase has zip/lat-lng
+            onChange({ ...filters, country: e.target.value === 'any' ? '' : e.target.value });
+          }}
+          style={{
+            width: '100%',
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: '8px',
+            padding: '8px 12px',
+            color: 'var(--text)',
+            fontSize: '0.82rem',
+            outline: 'none',
+            cursor: 'pointer',
+            appearance: 'none',
+            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23b0b8d0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'right 12px center',
+            paddingRight: '32px',
+          }}
+        >
+          {RADIUS_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </FilterGroup>
+
+      <Divider />
+
+      {/* Specializations — purple pills */}
       <FilterGroup label="Specialization">
         {ALL_SPECS.map((spec) => (
           <FilterChip
@@ -161,11 +207,14 @@ export default function FilterSidebar({ filters, onChange }: Props) {
             label={spec}
             selected={filters.specs.includes(spec)}
             onClick={() => toggle('specs', spec)}
+            colorScheme="purple"
           />
         ))}
       </FilterGroup>
 
-      {/* Certifications */}
+      <Divider />
+
+      {/* Certifications — orange/warm pills */}
       <FilterGroup label="Certification">
         {ALL_CERTS.map((cert) => (
           <FilterChip
@@ -173,18 +222,7 @@ export default function FilterSidebar({ filters, onChange }: Props) {
             label={cert}
             selected={filters.certs.includes(cert)}
             onClick={() => toggle('certs', cert)}
-          />
-        ))}
-      </FilterGroup>
-
-      {/* Regions */}
-      <FilterGroup label="Region">
-        {ALL_REGIONS.map((region) => (
-          <FilterChip
-            key={region}
-            label={region}
-            selected={filters.regions.includes(region)}
-            onClick={() => toggle('regions', region)}
+            colorScheme="warm"
           />
         ))}
       </FilterGroup>
@@ -192,9 +230,23 @@ export default function FilterSidebar({ filters, onChange }: Props) {
   );
 }
 
+/* ── Divider ── */
+function Divider() {
+  return (
+    <div
+      style={{
+        height: '1px',
+        background: 'var(--border)',
+        margin: '4px 0 16px',
+      }}
+    />
+  );
+}
+
+/* ── Filter group ── */
 function FilterGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div style={{ marginBottom: '20px' }}>
+    <div style={{ marginBottom: '16px' }}>
       <div
         style={{
           fontFamily: 'var(--font-syne)',
@@ -215,15 +267,65 @@ function FilterGroup({ label, children }: { label: string; children: React.React
   );
 }
 
+/* ── Color-coded filter chip ── */
+type ColorScheme = 'cyan' | 'purple' | 'green' | 'warm' | 'default';
+
+const chipColors: Record<ColorScheme, { border: string; bg: string; color: string; selectedBorder: string; selectedBg: string; selectedColor: string }> = {
+  cyan: {
+    border: 'var(--border)',
+    bg: 'var(--surface)',
+    color: 'var(--muted)',
+    selectedBorder: 'rgba(0,229,255,0.5)',
+    selectedBg: 'rgba(0,229,255,0.12)',
+    selectedColor: '#00e5ff',
+  },
+  purple: {
+    border: 'var(--border)',
+    bg: 'var(--surface)',
+    color: 'var(--muted)',
+    selectedBorder: 'rgba(123,97,255,0.5)',
+    selectedBg: 'rgba(123,97,255,0.12)',
+    selectedColor: '#9d87ff',
+  },
+  green: {
+    border: 'var(--border)',
+    bg: 'var(--surface)',
+    color: 'var(--muted)',
+    selectedBorder: 'rgba(52,211,153,0.5)',
+    selectedBg: 'rgba(52,211,153,0.12)',
+    selectedColor: '#34d399',
+  },
+  warm: {
+    border: 'var(--border)',
+    bg: 'var(--surface)',
+    color: 'var(--muted)',
+    selectedBorder: 'rgba(255,149,0,0.5)',
+    selectedBg: 'rgba(255,149,0,0.12)',
+    selectedColor: '#ff9500',
+  },
+  default: {
+    border: 'var(--border)',
+    bg: 'var(--surface)',
+    color: 'var(--muted)',
+    selectedBorder: 'rgba(240,242,248,0.3)',
+    selectedBg: 'rgba(240,242,248,0.08)',
+    selectedColor: 'var(--text)',
+  },
+};
+
 function FilterChip({
   label,
   selected,
   onClick,
+  colorScheme = 'default',
 }: {
   label: string;
   selected: boolean;
   onClick: () => void;
+  colorScheme?: ColorScheme;
 }) {
+  const scheme = chipColors[colorScheme];
+
   return (
     <button
       onClick={onClick}
@@ -234,12 +336,11 @@ function FilterChip({
         padding: '4px 11px',
         fontSize: '0.75rem',
         cursor: 'pointer',
-        border: selected
-          ? '1px solid rgba(0,229,255,0.5)'
-          : '1px solid var(--border)',
-        background: selected ? 'rgba(0,229,255,0.12)' : 'var(--surface)',
-        color: selected ? 'var(--accent)' : 'var(--muted)',
+        border: `1px solid ${selected ? scheme.selectedBorder : scheme.border}`,
+        background: selected ? scheme.selectedBg : scheme.bg,
+        color: selected ? scheme.selectedColor : scheme.color,
         transition: 'all 0.15s',
+        fontFamily: "'DM Sans', sans-serif",
       }}
     >
       {label}

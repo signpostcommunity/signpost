@@ -1,7 +1,5 @@
 import Link from 'next/link';
 import type { Interpreter } from '@/lib/types';
-import RatingStars from '@/components/ui/RatingStars';
-import Chip from '@/components/ui/Chip';
 
 export default function InterpreterCard({ interpreter: i }: { interpreter: Interpreter }) {
   return (
@@ -18,12 +16,14 @@ export default function InterpreterCard({ interpreter: i }: { interpreter: Inter
           overflow: 'hidden',
           cursor: 'pointer',
           transition: 'border-color 0.2s, transform 0.15s',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
         {/* Card header / visual */}
         <div
           style={{
-            height: 180,
+            height: 170,
             background: i.color,
             position: 'relative',
             overflow: 'hidden',
@@ -33,8 +33,8 @@ export default function InterpreterCard({ interpreter: i }: { interpreter: Inter
           }}
         >
           <svg
-            width="120"
-            height="140"
+            width="110"
+            height="130"
             viewBox="0 0 120 140"
             fill="none"
             style={{ opacity: 0.35, flexShrink: 0 }}
@@ -65,132 +65,168 @@ export default function InterpreterCard({ interpreter: i }: { interpreter: Inter
           >
             ▶ Intro
           </button>
-
-          {/* Available badge */}
-          {i.available && (
-            <div
-              style={{
-                position: 'absolute',
-                top: 10,
-                left: 10,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px',
-                background: 'rgba(0,0,0,0.5)',
-                border: '1px solid rgba(52,211,153,0.4)',
-                borderRadius: '100px',
-                padding: '4px 10px',
-                fontSize: '0.7rem',
-                color: '#34d399',
-                backdropFilter: 'blur(4px)',
-              }}
-            >
-              <span
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: '50%',
-                  background: '#34d399',
-                  boxShadow: '0 0 6px #34d399',
-                  display: 'inline-block',
-                }}
-              />
-              Available
-            </div>
-          )}
         </div>
 
         {/* Card body */}
-        <div style={{ padding: '16px' }}>
-          <div style={{ marginBottom: '10px' }}>
-            <div
-              style={{
-                fontFamily: 'var(--font-syne)',
-                fontWeight: 700,
-                fontSize: '1rem',
-                marginBottom: '3px',
-              }}
-            >
-              {i.name}
-            </div>
-            <div
-              style={{
-                color: 'var(--muted)',
-                fontSize: '0.82rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-              }}
-            >
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <path
-                  d="M5 1C3.34 1 2 2.34 2 4C2 6.5 5 9 5 9C5 9 8 6.5 8 4C8 2.34 6.66 1 5 1ZM5 5.5C4.17 5.5 3.5 4.83 3.5 4C3.5 3.17 4.17 2.5 5 2.5C5.83 2.5 6.5 3.17 6.5 4C6.5 4.83 5.83 5.5 5 5.5Z"
-                  fill="var(--muted)"
-                />
-              </svg>
-              {i.location}
-            </div>
-          </div>
-
-          {/* Rating */}
+        <div style={{ padding: '14px 16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+          {/* Name + Add to my list */}
           <div
             style={{
               display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              marginBottom: '10px',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              gap: '8px',
+              marginBottom: '4px',
             }}
           >
-            <RatingStars rating={i.rating} />
-            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)' }}>
-              {i.rating.toFixed(1)}
-            </span>
-            <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
-              ({i.reviews})
-            </span>
+            <div>
+              <div
+                style={{
+                  fontFamily: 'var(--font-syne)',
+                  fontWeight: 700,
+                  fontSize: '1rem',
+                  lineHeight: 1.2,
+                  marginBottom: '3px',
+                }}
+              >
+                {i.name}
+              </div>
+              <div
+                style={{
+                  color: 'var(--muted)',
+                  fontSize: '0.8rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                }}
+              >
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                  <path
+                    d="M5 1C3.34 1 2 2.34 2 4C2 6.5 5 9 5 9C5 9 8 6.5 8 4C8 2.34 6.66 1 5 1ZM5 5.5C4.17 5.5 3.5 4.83 3.5 4C3.5 3.17 4.17 2.5 5 2.5C5.83 2.5 6.5 3.17 6.5 4C6.5 4.83 5.83 5.5 5 5.5Z"
+                    fill="var(--muted)"
+                  />
+                </svg>
+                {i.location}
+              </div>
+            </div>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // TODO: hook up to saved list / Supabase
+              }}
+              className="add-to-list-btn"
+            >
+              + Add to my list
+            </button>
           </div>
 
           {/* Sign languages */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '10px' }}>
             {i.signLangs.map((lang) => (
-              <Chip key={lang} label={lang} variant="accent" size="sm" />
+              <span
+                key={lang}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  borderRadius: '100px',
+                  padding: '3px 9px',
+                  fontSize: '0.7rem',
+                  border: '1px solid rgba(0,229,255,0.35)',
+                  background: 'rgba(0,229,255,0.08)',
+                  color: 'var(--accent)',
+                }}
+              >
+                {lang}
+              </span>
+            ))}
+            {i.spokenLangs.map((lang) => (
+              <span
+                key={lang}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  borderRadius: '100px',
+                  padding: '3px 9px',
+                  fontSize: '0.7rem',
+                  border: '1px solid var(--border)',
+                  background: 'var(--surface)',
+                  color: 'var(--muted)',
+                }}
+              >
+                {lang}
+              </span>
             ))}
           </div>
 
           {/* Specializations */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
-            {i.specs.slice(0, 3).map((spec) => (
-              <Chip key={spec} label={spec} size="sm" />
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px' }}>
+            {i.specs.map((spec) => (
+              <span
+                key={spec}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  borderRadius: '100px',
+                  padding: '3px 9px',
+                  fontSize: '0.7rem',
+                  border: '1px solid var(--border)',
+                  background: 'var(--surface2)',
+                  color: 'var(--text)',
+                }}
+              >
+                {spec}
+              </span>
             ))}
           </div>
 
-          {/* Certs */}
+          {/* Regions + Certs — pushed to bottom */}
           <div
             style={{
-              marginTop: '10px',
+              marginTop: 'auto',
               paddingTop: '10px',
-              borderTop: '1px solid var(--border)',
               display: 'flex',
-              flexWrap: 'wrap',
-              gap: '4px',
               alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '6px',
+              borderTop: '1px solid var(--border)',
             }}
           >
-            {i.certs.map((cert) => (
-              <span
-                key={cert}
-                style={{
-                  fontSize: '0.68rem',
-                  color: 'var(--muted)',
-                  background: 'var(--surface2)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '4px',
-                  padding: '2px 6px',
-                }}
-              >
-                {cert}
-              </span>
-            ))}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+              {i.regions.map((region) => (
+                <span
+                  key={region}
+                  style={{
+                    fontSize: '0.68rem',
+                    color: 'var(--muted)',
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '4px',
+                    padding: '2px 6px',
+                  }}
+                >
+                  {region}
+                </span>
+              ))}
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'flex-end' }}>
+              {i.certs.map((cert) => (
+                <span
+                  key={cert}
+                  style={{
+                    fontSize: '0.68rem',
+                    color: 'var(--accent)',
+                    background: 'rgba(0,229,255,0.08)',
+                    border: '1px solid rgba(0,229,255,0.25)',
+                    borderRadius: '4px',
+                    padding: '2px 6px',
+                    fontWeight: 600,
+                  }}
+                >
+                  {cert}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -198,6 +234,24 @@ export default function InterpreterCard({ interpreter: i }: { interpreter: Inter
           .interp-card:hover {
             border-color: rgba(0,229,255,0.3);
             transform: translateY(-2px);
+          }
+          .add-to-list-btn {
+            flex-shrink: 0;
+            background: none;
+            border: 1px solid rgba(0,229,255,0.4);
+            border-radius: 100px;
+            padding: 4px 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--accent);
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            font-family: 'DM Sans', sans-serif;
+          }
+          .add-to-list-btn:hover {
+            background: rgba(0,229,255,0.1);
+            border-color: var(--accent);
           }
         `}</style>
       </div>
