@@ -241,6 +241,7 @@ export default function InterpreterPage() {
             Sign in to my portal →
           </Link>
         </div>
+      </div>
     </div>
   );
 }
