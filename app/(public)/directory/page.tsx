@@ -65,6 +65,7 @@ export default function DirectoryPage() {
 
       // Deaf interpreter
       if (filters.isDeafInterpreter && !i.isDeafInterpreter) return false;
+      if (filters.availability === 'hearing' && i.isDeafInterpreter) return false;
 
       // Affinities (LGBTQ+, Deaf-parented, BIPOC)
       // For each selected affinity, interpreter must match

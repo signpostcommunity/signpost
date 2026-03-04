@@ -69,6 +69,7 @@ export default function FilterSidebar({ filters, onChange }: Props) {
     (filters.country !== '' && filters.country !== 'any') ||
     filters.gender !== '' ||
     filters.isDeafInterpreter ||
+    filters.availability === 'hearing' ||
     filters.affinities.length > 0 ||
     filters.racialIdentity.length > 0 ||
     filters.religiousAffiliation.length > 0;
@@ -152,22 +153,7 @@ export default function FilterSidebar({ filters, onChange }: Props) {
           onChange={(e) => {
             onChange({ ...filters, country: e.target.value === 'any' ? '' : e.target.value });
           }}
-          style={{
-            width: '100%',
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: '8px',
-            padding: '8px 12px',
-            color: 'var(--text)',
-            fontSize: '0.82rem',
-            outline: 'none',
-            cursor: 'pointer',
-            appearance: 'none',
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23b0b8d0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'right 12px center',
-            paddingRight: '32px',
-          }}
+          style={selectStyle}
         >
           {RADIUS_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -181,13 +167,24 @@ export default function FilterSidebar({ filters, onChange }: Props) {
 
       {/* 3. Interpreter Type */}
       <CollapsibleSection label="Interpreter Type">
-        {/* Deaf Interpreter toggle */}
-        <ToggleRow
-          label="Deaf interpreter"
-          checked={filters.isDeafInterpreter}
-          onChange={() => onChange({ ...filters, isDeafInterpreter: !filters.isDeafInterpreter })}
-        />
-        <div style={{ height: 8 }} />
+        {/* Hearing / Deaf dropdown */}
+        <select
+          value={filters.isDeafInterpreter ? 'deaf' : filters.availability === 'hearing' ? 'hearing' : 'all'}
+          onChange={(e) => {
+            const val = e.target.value;
+            onChange({
+              ...filters,
+              isDeafInterpreter: val === 'deaf',
+              availability: val === 'hearing' ? 'hearing' : null,
+            });
+          }}
+          style={{ ...selectStyle, marginBottom: '8px' }}
+        >
+          <option value="all">View All</option>
+          <option value="hearing">Hearing Interpreter</option>
+          <option value="deaf">Deaf Interpreter</option>
+        </select>
+
         {/* Certified Only toggle */}
         <ToggleRow
           label="Certified only"
@@ -205,7 +202,7 @@ export default function FilterSidebar({ filters, onChange }: Props) {
             lineHeight: 1.4,
           }}
         >
-          Many countries don&apos;t have formal certification.
+          Many countries don&apos;t have formal certification. Turning this on may limit results.
         </p>
       </CollapsibleSection>
 
@@ -216,22 +213,7 @@ export default function FilterSidebar({ filters, onChange }: Props) {
         <select
           value={filters.gender}
           onChange={(e) => onChange({ ...filters, gender: e.target.value })}
-          style={{
-            width: '100%',
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: '8px',
-            padding: '8px 12px',
-            color: 'var(--text)',
-            fontSize: '0.82rem',
-            outline: 'none',
-            cursor: 'pointer',
-            appearance: 'none',
-            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23b0b8d0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: 'right 12px center',
-            paddingRight: '32px',
-          }}
+          style={selectStyle}
         >
           {GENDER_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -284,7 +266,7 @@ export default function FilterSidebar({ filters, onChange }: Props) {
           checked={filters.affinities.includes('BIPOC')}
           onChange={() => toggleArray('affinities', 'BIPOC')}
         />
-        {/* Racial identity sub-options — only show when BIPOC is toggled on */}
+        {/* Racial identity sub-options */}
         {filters.affinities.includes('BIPOC') && (
           <div
             style={{
@@ -316,7 +298,7 @@ export default function FilterSidebar({ filters, onChange }: Props) {
           checked={filters.affinities.includes('Religious')}
           onChange={() => toggleArray('affinities', 'Religious')}
         />
-        {/* Religion sub-options — only show when Religious is toggled on */}
+        {/* Religion sub-options */}
         {filters.affinities.includes('Religious') && (
           <div
             style={{
@@ -395,6 +377,24 @@ export default function FilterSidebar({ filters, onChange }: Props) {
     </aside>
   );
 }
+
+/* ── Shared select style ── */
+const selectStyle: React.CSSProperties = {
+  width: '100%',
+  background: 'var(--surface)',
+  border: '1px solid var(--border)',
+  borderRadius: '8px',
+  padding: '8px 12px',
+  color: 'var(--text)',
+  fontSize: '0.82rem',
+  outline: 'none',
+  cursor: 'pointer',
+  appearance: 'none',
+  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23b0b8d0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+  backgroundRepeat: 'no-repeat',
+  backgroundPosition: 'right 12px center',
+  paddingRight: '32px',
+};
 
 /* ── Divider ── */
 function Divider() {
