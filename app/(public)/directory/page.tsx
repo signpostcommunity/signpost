@@ -23,7 +23,7 @@ export default function DirectoryPage() {
 
   const filtered = useMemo(() => {
     return interpreters.filter((i) => {
-      // Search across name, location, state, sign languages, spoken languages, specs
+      // Search across name, location, state, sign languages, spoken languages, specs, regions
       if (filters.search) {
         const q = filters.search.toLowerCase();
         const searchable = [
@@ -42,7 +42,8 @@ export default function DirectoryPage() {
       if (filters.signLangs.length > 0 && !filters.signLangs.some((l) => i.signLangs.includes(l))) return false;
       if (filters.spokenLangs.length > 0 && !filters.spokenLangs.some((l) => i.spokenLangs.includes(l))) return false;
       if (filters.specs.length > 0 && !filters.specs.some((s) => i.specs.includes(s))) return false;
-      if (filters.certs.length > 0 && !filters.certs.some((c) => i.certs.includes(c))) return false;
+      // Certification toggle: if __any_cert__ is set, require at least one cert
+      if (filters.certs.includes('__any_cert__') && i.certs.length === 0) return false;
       if (filters.regions.length > 0 && !filters.regions.some((r) => i.regions.includes(r))) return false;
       return true;
     });
