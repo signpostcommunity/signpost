@@ -53,7 +53,7 @@ export default function InterpreterPage() {
         <h1
           style={{
             fontFamily: 'var(--font-syne)',
-            fontSize: 'clamp(2.4rem, 4.5vw, 3.8rem)',
+            fontSize: 'clamp(1.8rem, 3.2vw, 2.6rem)',
             fontWeight: 800,
             letterSpacing: '-0.03em',
             lineHeight: 1.05,
