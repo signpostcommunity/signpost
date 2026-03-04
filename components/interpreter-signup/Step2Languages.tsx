@@ -330,32 +330,37 @@ function RegionSelect({ regions, selected, onSelect }: {
   onSelect: (id: string) => void;
 }) {
   return (
-    <select
-      value=""
-      onChange={(e) => {
-        if (e.target.value) onSelect(e.target.value);
-      }}
-      style={{
-        width: '100%',
-        background: 'var(--surface2)',
-        border: '1px solid var(--border)',
-        borderRadius: '10px',
-        padding: '11px 14px',
-        color: 'var(--muted)',
-        fontSize: '0.85rem',
-        outline: 'none',
-      }}
-    >
-      <option value="">More languages by region</option>
-      {Object.entries(regions).map(([region, langs]) => (
-        <optgroup key={region} label={region}>
-          {langs.map((lang) => (
-            <option key={lang.id} value={lang.id}>
-              {selected.includes(lang.id) ? `\u2713 ${lang.label}` : lang.label}
-            </option>
-          ))}
-        </optgroup>
-      ))}
-    </select>
+    <div>
+      <div style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: '8px' }}>
+        More languages by region
+      </div>
+      <select
+        value=""
+        onChange={(e) => {
+          if (e.target.value) onSelect(e.target.value);
+        }}
+        style={{
+          width: '100%',
+          background: 'var(--surface2)',
+          border: '1px solid var(--border)',
+          borderRadius: '10px',
+          padding: '11px 14px',
+          color: 'var(--text)',
+          fontSize: '0.85rem',
+          outline: 'none',
+        }}
+      >
+        <option value="" style={{ color: 'var(--text)' }}>Select a language…</option>
+        {Object.entries(regions).map(([region, langs]) => (
+          <optgroup key={region} label={region}>
+            {langs.map((lang) => (
+              <option key={lang.id} value={lang.id}>
+                {selected.includes(lang.id) ? `\u2713 ${lang.label}` : lang.label}
+              </option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
+    </div>
   );
 }
