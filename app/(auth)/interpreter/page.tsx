@@ -61,6 +61,7 @@ export default function InterpreterPage() {
           }}
         >
           Your interpreter profile,{' '}
+          <br />
           <span
             style={{
               background: 'linear-gradient(90deg, var(--accent2), var(--accent))',
