@@ -27,6 +27,9 @@ export interface FormData {
   currency: string;
   minBooking: string;
   cancellationPolicy: string;
+  otherSignLang: string;
+  otherSpokenLang: string;
+  otherSpec: string;
   videoUrl: string;
   videoDesc: string;
   agreeTerms: boolean;
@@ -40,6 +43,7 @@ export const defaultForm: FormData = {
   website: '', linkedin: '',
   regions: [], eventCoordination: false, coordinationBio: '',
   signLangs: [], spokenLangs: [], specs: [], certs: [],
+  otherSignLang: '', otherSpokenLang: '', otherSpec: '',
   hourlyRate: '', currency: 'USD', minBooking: '60', cancellationPolicy: '48 hours notice required',
   videoUrl: '', videoDesc: '',
   agreeTerms: false, agreeDirectory: false,
