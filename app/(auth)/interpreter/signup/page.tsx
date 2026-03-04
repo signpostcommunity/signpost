@@ -1,548 +1,251 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import { ALL_SIGN_LANGS, ALL_SPOKEN_LANGS, ALL_SPECS, ALL_REGIONS, ALL_CERTS } from '@/lib/data/seed';
+import Link from 'next/link';
 
-const TOTAL_STEPS = 6;
-
-interface FormData {
-  // Step 1: Personal
-  name: string;
-  email: string;
-  password: string;
-  location: string;
-  country: string;
-  state: string;
-  interpreterType: string;
-  workMode: string;
-  yearsExp: string;
-  // Step 2: Languages
-  signLangs: string[];
-  spokenLangs: string[];
-  specs: string[];
-  regions: string[];
-  // Step 3: Credentials (certs)
-  certs: string[];
-  // Step 4: Rates
-  hourlyRate: string;
-  currency: string;
-  minBooking: string;
-  cancellationPolicy: string;
-  // Step 5: Video
-  videoUrl: string;
-  videoDesc: string;
-  bio: string;
-  // Step 6: Review
-  agreeTerms: boolean;
-  agreeDirectory: boolean;
-}
-
-const defaultForm: FormData = {
-  name: '', email: '', password: '', location: '', country: '', state: '',
-  interpreterType: 'freelance', workMode: 'both', yearsExp: '',
-  signLangs: [], spokenLangs: [], specs: [], regions: [], certs: [],
-  hourlyRate: '', currency: 'USD', minBooking: '60', cancellationPolicy: '48 hours notice required',
-  videoUrl: '', videoDesc: '', bio: '',
-  agreeTerms: false, agreeDirectory: false,
-};
-
-export default function InterpreterSignupPage() {
-  const router = useRouter();
-  const [step, setStep] = useState(1);
-  const [form, setForm] = useState<FormData>(defaultForm);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  function update(field: keyof FormData, value: unknown) {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  }
-
-  function toggleArrayItem(field: keyof FormData, value: string) {
-    const current = form[field] as string[];
-    update(field, current.includes(value) ? current.filter((v) => v !== value) : [...current, value]);
-  }
-
-  function canContinue() {
-    if (step === 1) return form.name && form.email && form.password && form.country;
-    if (step === 2) return form.signLangs.length > 0;
-    if (step === 6) return form.agreeTerms && form.agreeDirectory;
-    return true;
-  }
-
-  async function handleSubmit() {
-    setError('');
-    setLoading(true);
-
-    const supabase = createClient();
-
-    // Create auth user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: form.email,
-      password: form.password,
-    });
-
-    if (authError || !authData.user) {
-      setError(authError?.message || 'Failed to create account');
-      setLoading(false);
-      return;
-    }
-
-    const userId = authData.user.id;
-
-    // Insert user_profiles row
-    const { error: profileError } = await supabase
-      .from('user_profiles')
-      .insert({ id: userId, role: 'interpreter' });
-
-    if (profileError) {
-      setError(profileError.message);
-      setLoading(false);
-      return;
-    }
-
-    // Insert interpreter_profiles row
-    const { data: interpData, error: interpError } = await supabase
-      .from('interpreter_profiles')
-      .insert({
-        user_id: userId,
-        name: form.name,
-        location: `${form.state ? form.state + ', ' : ''}${form.country}`,
-        country: form.country,
-        state: form.state,
-        interpreter_type: form.interpreterType,
-        work_mode: form.workMode,
-        years_experience: form.yearsExp ? parseInt(form.yearsExp) : null,
-        bio: form.bio,
-        video_url: form.videoUrl,
-        video_desc: form.videoDesc,
-        status: 'pending',
-      })
-      .select()
-      .single();
-
-    if (interpError || !interpData) {
-      setError(interpError?.message || 'Failed to create interpreter profile');
-      setLoading(false);
-      return;
-    }
-
-    const interpId = interpData.id;
-
-    // Insert sub-table data in parallel
-    await Promise.all([
-      form.signLangs.length > 0 && supabase.from('interpreter_sign_languages').insert(
-        form.signLangs.map((l) => ({ interpreter_id: interpId, language: l }))
-      ),
-      form.spokenLangs.length > 0 && supabase.from('interpreter_spoken_languages').insert(
-        form.spokenLangs.map((l) => ({ interpreter_id: interpId, language: l }))
-      ),
-      form.specs.length > 0 && supabase.from('interpreter_specializations').insert(
-        form.specs.map((s) => ({ interpreter_id: interpId, specialization: s }))
-      ),
-      form.regions.length > 0 && supabase.from('interpreter_regions').insert(
-        form.regions.map((r) => ({ interpreter_id: interpId, region: r }))
-      ),
-      form.certs.length > 0 && supabase.from('interpreter_certifications').insert(
-        form.certs.map((c) => ({ interpreter_id: interpId, name: c }))
-      ),
-      form.hourlyRate && supabase.from('interpreter_rate_profiles').insert({
-        interpreter_id: interpId,
-        label: 'Standard Rate',
-        is_default: true,
-        hourly_rate: parseFloat(form.hourlyRate),
-        currency: form.currency,
-        min_booking: parseInt(form.minBooking),
-        cancellation_policy: form.cancellationPolicy,
-      }),
-    ]);
-
-    router.push('/interpreter/dashboard');
-  }
-
+export default function InterpreterPage() {
   return (
     <div
       style={{
-        maxWidth: 600,
-        margin: '0 auto',
-        padding: '40px 24px 80px',
+        minHeight: '100vh',
+        background: 'var(--bg)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '60px 24px',
       }}
     >
-      {/* Step indicator */}
-      <div style={{ marginBottom: '32px' }}>
-        <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
-          {Array.from({ length: TOTAL_STEPS }).map((_, idx) => (
-            <div
-              key={idx}
-              style={{
-                flex: 1,
-                height: 3,
-                borderRadius: '2px',
-                background: idx < step ? 'var(--accent)' : 'var(--border)',
-                transition: 'background 0.3s',
-              }}
-            />
-          ))}
-        </div>
-        <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-          Step {step} of {TOTAL_STEPS}
-        </div>
-      </div>
-
-      {/* Step content */}
-      {step === 1 && (
-        <StepWrapper title="Personal Information" subtitle="Tell us about yourself.">
-          <FormField label="Full Name">
-            <TextInput value={form.name} onChange={(v) => update('name', v)} placeholder="Sofia Reyes" />
-          </FormField>
-          <FormField label="Email">
-            <TextInput type="email" value={form.email} onChange={(v) => update('email', v)} placeholder="you@example.com" />
-          </FormField>
-          <FormField label="Password">
-            <TextInput type="password" value={form.password} onChange={(v) => update('password', v)} placeholder="Minimum 8 characters" />
-          </FormField>
-          <FormField label="Country">
-            <TextInput value={form.country} onChange={(v) => update('country', v)} placeholder="Spain" />
-          </FormField>
-          <FormField label="State / Region">
-            <TextInput value={form.state} onChange={(v) => update('state', v)} placeholder="Community of Madrid" />
-          </FormField>
-          <FormField label="Interpreter Type">
-            <SelectInput
-              value={form.interpreterType}
-              onChange={(v) => update('interpreterType', v)}
-              options={[
-                { value: 'freelance', label: 'Freelance' },
-                { value: 'agency', label: 'Agency Staff' },
-                { value: 'staff', label: 'In-house Staff' },
-              ]}
-            />
-          </FormField>
-          <FormField label="Work Mode">
-            <SelectInput
-              value={form.workMode}
-              onChange={(v) => update('workMode', v)}
-              options={[
-                { value: 'both', label: 'In-person & Remote' },
-                { value: 'in_person', label: 'In-person only' },
-                { value: 'remote', label: 'Remote only' },
-              ]}
-            />
-          </FormField>
-          <FormField label="Years of Experience">
-            <TextInput type="number" value={form.yearsExp} onChange={(v) => update('yearsExp', v)} placeholder="e.g. 8" />
-          </FormField>
-        </StepWrapper>
-      )}
-
-      {step === 2 && (
-        <StepWrapper title="Languages & Specializations" subtitle="Select all that apply.">
-          <FormField label="Sign Languages">
-            <ChipPicker items={ALL_SIGN_LANGS} selected={form.signLangs} onToggle={(v) => toggleArrayItem('signLangs', v)} />
-          </FormField>
-          <FormField label="Spoken Languages">
-            <ChipPicker items={ALL_SPOKEN_LANGS} selected={form.spokenLangs} onToggle={(v) => toggleArrayItem('spokenLangs', v)} />
-          </FormField>
-          <FormField label="Specializations">
-            <ChipPicker items={ALL_SPECS} selected={form.specs} onToggle={(v) => toggleArrayItem('specs', v)} />
-          </FormField>
-          <FormField label="Regions Served">
-            <ChipPicker items={ALL_REGIONS} selected={form.regions} onToggle={(v) => toggleArrayItem('regions', v)} />
-          </FormField>
-        </StepWrapper>
-      )}
-
-      {step === 3 && (
-        <StepWrapper title="Credentials" subtitle="Add your certifications.">
-          <FormField label="Certifications">
-            <ChipPicker items={ALL_CERTS} selected={form.certs} onToggle={(v) => toggleArrayItem('certs', v)} />
-          </FormField>
-          <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '8px' }}>
-            You can add education details from your dashboard after signup.
-          </p>
-        </StepWrapper>
-      )}
-
-      {step === 4 && (
-        <StepWrapper title="Rates" subtitle="Set your standard rate. You can add more rate profiles later.">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <FormField label="Hourly Rate">
-              <TextInput type="number" value={form.hourlyRate} onChange={(v) => update('hourlyRate', v)} placeholder="120" />
-            </FormField>
-            <FormField label="Currency">
-              <SelectInput
-                value={form.currency}
-                onChange={(v) => update('currency', v)}
-                options={[
-                  { value: 'USD', label: 'USD' },
-                  { value: 'EUR', label: 'EUR' },
-                  { value: 'GBP', label: 'GBP' },
-                  { value: 'AUD', label: 'AUD' },
-                  { value: 'BRL', label: 'BRL' },
-                ]}
-              />
-            </FormField>
-          </div>
-          <FormField label="Minimum Booking (minutes)">
-            <TextInput type="number" value={form.minBooking} onChange={(v) => update('minBooking', v)} placeholder="60" />
-          </FormField>
-          <FormField label="Cancellation Policy">
-            <TextInput value={form.cancellationPolicy} onChange={(v) => update('cancellationPolicy', v)} placeholder="48 hours notice required" />
-          </FormField>
-        </StepWrapper>
-      )}
-
-      {step === 5 && (
-        <StepWrapper title="Video & Bio" subtitle="Help clients get to know you.">
-          <FormField label="Bio">
-            <textarea
-              value={form.bio}
-              onChange={(e) => update('bio', e.target.value)}
-              placeholder="Tell clients about your experience, specializations, and what makes you the right interpreter for the job."
-              rows={5}
-              style={{
-                width: '100%',
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
-                borderRadius: '8px',
-                padding: '12px 14px',
-                color: 'var(--text)',
-                fontSize: '0.95rem',
-                outline: 'none',
-                resize: 'vertical',
-                fontFamily: 'var(--font-dm)',
-              }}
-            />
-          </FormField>
-          <FormField label="Intro Video URL (optional)">
-            <TextInput value={form.videoUrl} onChange={(v) => update('videoUrl', v)} placeholder="https://vimeo.com/..." />
-          </FormField>
-          <FormField label="Video Description (optional)">
-            <TextInput value={form.videoDesc} onChange={(v) => update('videoDesc', v)} placeholder="A short description of your intro video" />
-          </FormField>
-        </StepWrapper>
-      )}
-
-      {step === 6 && (
-        <StepWrapper title="Review & Submit" subtitle="Almost there. Please review and agree to proceed.">
-          {/* Summary */}
-          <div
-            style={{
-              background: 'var(--surface2)',
-              border: '1px solid var(--border)',
-              borderRadius: '10px',
-              padding: '20px',
-              marginBottom: '24px',
-            }}
-          >
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '0.85rem' }}>
-              <SummaryRow label="Name" value={form.name} />
-              <SummaryRow label="Email" value={form.email} />
-              <SummaryRow label="Country" value={form.country} />
-              <SummaryRow label="Type" value={form.interpreterType} />
-              <SummaryRow label="Sign Languages" value={form.signLangs.join(', ') || '—'} />
-              <SummaryRow label="Certifications" value={form.certs.join(', ') || '—'} />
-              <SummaryRow label="Rate" value={form.hourlyRate ? `${form.currency} ${form.hourlyRate}/hr` : '—'} />
-            </div>
-          </div>
-
-          <CheckboxItem
-            checked={form.agreeTerms}
-            onChange={(v) => update('agreeTerms', v)}
-            label="I agree to the signpost Terms of Service and Privacy Policy."
-          />
-          <CheckboxItem
-            checked={form.agreeDirectory}
-            onChange={(v) => update('agreeDirectory', v)}
-            label="I consent to my profile being listed in the public interpreter directory once approved."
-          />
-
-          {error && (
-            <div
-              style={{
-                background: 'rgba(255,107,133,0.1)',
-                border: '1px solid rgba(255,107,133,0.3)',
-                borderRadius: '8px',
-                padding: '12px 16px',
-                color: 'var(--accent3)',
-                fontSize: '0.85rem',
-                marginTop: '16px',
-              }}
-            >
-              {error}
-            </div>
-          )}
-        </StepWrapper>
-      )}
-
-      {/* Navigation */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px' }}>
-        <button
-          onClick={() => setStep((s) => s - 1)}
-          disabled={step === 1}
+      {/* Back link */}
+      <div style={{ width: '100%', maxWidth: 900, marginBottom: '32px' }}>
+        <Link
+          href="/"
           style={{
-            background: 'none',
-            border: '1px solid var(--border)',
-            borderRadius: '8px',
-            padding: '10px 20px',
-            color: step === 1 ? 'var(--border)' : 'var(--muted)',
-            fontSize: '0.9rem',
-            cursor: step === 1 ? 'not-allowed' : 'pointer',
-          }}
-        >
-          ← Back
-        </button>
-
-        {step < TOTAL_STEPS ? (
-          <button
-            onClick={() => setStep((s) => s + 1)}
-            disabled={!canContinue()}
-            className="btn-primary"
-            style={{ opacity: canContinue() ? 1 : 0.4, padding: '10px 24px' }}
-          >
-            Continue →
-          </button>
-        ) : (
-          <button
-            onClick={handleSubmit}
-            disabled={!canContinue() || loading}
-            className="btn-primary"
-            style={{ opacity: canContinue() && !loading ? 1 : 0.4, padding: '10px 24px' }}
-          >
-            {loading ? 'Creating profile…' : 'Create Profile →'}
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// Helpers
-function StepWrapper({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <h1
-        style={{
-          fontFamily: 'var(--font-syne)',
-          fontSize: '1.6rem',
-          fontWeight: 800,
-          letterSpacing: '-0.03em',
-          marginBottom: '6px',
-        }}
-      >
-        {title}
-      </h1>
-      <p style={{ color: 'var(--muted)', marginBottom: '28px', fontSize: '0.9rem' }}>{subtitle}</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>{children}</div>
-    </div>
-  );
-}
-
-function FormField({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 500, color: 'var(--muted)', marginBottom: '6px' }}>
-        {label}
-      </label>
-      {children}
-    </div>
-  );
-}
-
-function TextInput({ type = 'text', value, onChange, placeholder }: { type?: string; value: string; onChange: (v: string) => void; placeholder: string }) {
-  return (
-    <input
-      type={type}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      style={{
-        width: '100%',
-        background: 'var(--surface)',
-        border: '1px solid var(--border)',
-        borderRadius: '8px',
-        padding: '12px 14px',
-        color: 'var(--text)',
-        fontSize: '0.95rem',
-        outline: 'none',
-      }}
-      onFocus={(e) => (e.target.style.borderColor = 'rgba(0,229,255,0.5)')}
-      onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
-    />
-  );
-}
-
-function SelectInput({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
-  return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      style={{
-        width: '100%',
-        background: 'var(--surface)',
-        border: '1px solid var(--border)',
-        borderRadius: '8px',
-        padding: '12px 14px',
-        color: 'var(--text)',
-        fontSize: '0.95rem',
-        outline: 'none',
-      }}
-    >
-      {options.map((o) => (
-        <option key={o.value} value={o.value}>{o.label}</option>
-      ))}
-    </select>
-  );
-}
-
-function ChipPicker({ items, selected, onToggle }: { items: string[]; selected: string[]; onToggle: (v: string) => void }) {
-  return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-      {items.map((item) => (
-        <button
-          key={item}
-          type="button"
-          onClick={() => onToggle(item)}
-          style={{
+            fontSize: '0.85rem',
+            color: 'var(--muted)',
+            textDecoration: 'none',
             display: 'inline-flex',
             alignItems: 'center',
-            borderRadius: '100px',
-            padding: '6px 14px',
-            fontSize: '0.82rem',
-            cursor: 'pointer',
-            border: selected.includes(item) ? '1px solid rgba(0,229,255,0.5)' : '1px solid var(--border)',
-            background: selected.includes(item) ? 'rgba(0,229,255,0.12)' : 'var(--surface)',
-            color: selected.includes(item) ? 'var(--accent)' : 'var(--muted)',
-            transition: 'all 0.15s',
+            gap: '4px',
           }}
         >
-          {item}
-        </button>
-      ))}
-    </div>
-  );
-}
+          ← Back to Home
+        </Link>
+      </div>
 
-function SummaryRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <div style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '2px' }}>{label}</div>
-      <div style={{ color: 'var(--text)', fontWeight: 500 }}>{value || '—'}</div>
-    </div>
-  );
-}
+      {/* For Interpreters pill */}
+      <div style={{ marginBottom: '20px' }}>
+        <span
+          style={{
+            display: 'inline-block',
+            background: 'rgba(157,135,255,0.15)',
+            border: '1px solid rgba(157,135,255,0.3)',
+            borderRadius: '100px',
+            padding: '5px 14px',
+            fontSize: '0.8rem',
+            color: 'var(--accent2)',
+            fontWeight: 500,
+          }}
+        >
+          For Interpreters
+        </span>
+      </div>
 
-function CheckboxItem({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
-  return (
-    <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', marginBottom: '12px' }}>
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        style={{ marginTop: '2px', accentColor: 'var(--accent)' }}
-      />
-      <span style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.5 }}>{label}</span>
-    </label>
+      {/* Hero headline */}
+      <div style={{ textAlign: 'center', marginBottom: '16px', maxWidth: 700 }}>
+        <h1
+          style={{
+            fontFamily: 'var(--font-syne)',
+            fontSize: 'clamp(2rem, 5vw, 3.2rem)',
+            fontWeight: 800,
+            letterSpacing: '-0.03em',
+            lineHeight: 1.1,
+            margin: 0,
+          }}
+        >
+          Your interpreter profile,{' '}
+          <span
+            style={{
+              background: 'linear-gradient(90deg, var(--accent2), var(--accent))',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          >
+            working for you.
+          </span>
+        </h1>
+      </div>
+
+      {/* Subheadline */}
+      <p
+        style={{
+          color: 'var(--muted)',
+          fontSize: '1rem',
+          textAlign: 'center',
+          maxWidth: 480,
+          lineHeight: 1.6,
+          marginBottom: '48px',
+        }}
+      >
+        Join the signpost community, for free. No commission. No agency fees.
+        <br />
+        Book and manage your interpreting work in one place.
+      </p>
+
+      {/* Two-column cards */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: '16px',
+          width: '100%',
+          maxWidth: 900,
+        }}
+      >
+        {/* New to signpost */}
+        <div
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius)',
+            padding: '32px',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {/* Icon */}
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: '10px',
+              background: 'rgba(157,135,255,0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '20px',
+              fontSize: '1.2rem',
+            }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
+          </div>
+
+          <h2
+            style={{
+              fontFamily: 'var(--font-syne)',
+              fontSize: '1.2rem',
+              fontWeight: 700,
+              marginBottom: '16px',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            New to signpost?
+          </h2>
+
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {['Languages & specializations', 'Credentials & certifications', 'Rates, availability & intro video'].map((item) => (
+              <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: 'var(--muted)' }}>
+                <span style={{ color: 'var(--accent2)', fontWeight: 700, fontSize: '0.85rem' }}>✓</span>
+                {item}
+              </li>
+            ))}
+          </ul>
+
+          <Link
+            href="/interpreter/signup"
+            style={{
+              display: 'block',
+              width: '100%',
+              background: 'var(--accent2)',
+              color: '#000',
+              borderRadius: '8px',
+              padding: '13px 0',
+              textAlign: 'center',
+              fontWeight: 700,
+              fontSize: '0.95rem',
+              textDecoration: 'none',
+              marginTop: 'auto',
+            }}
+          >
+            Create my profile →
+          </Link>
+        </div>
+
+        {/* Already have a profile */}
+        <div
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius)',
+            padding: '32px',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {/* Icon */}
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: '10px',
+              background: 'rgba(0,229,255,0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '20px',
+            }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+              <polyline points="10 17 15 12 10 7" />
+              <line x1="15" y1="12" x2="3" y2="12" />
+            </svg>
+          </div>
+
+          <h2
+            style={{
+              fontFamily: 'var(--font-syne)',
+              fontSize: '1.2rem',
+              fontWeight: 700,
+              marginBottom: '16px',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Already have a profile?
+          </h2>
+
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {['View & edit your live profile', 'Manage availability & calendar', 'Review & respond to requests'].map((item) => (
+              <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: 'var(--muted)' }}>
+                <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '0.85rem' }}>✓</span>
+                {item}
+              </li>
+            ))}
+          </ul>
+
+          <Link
+            href="/interpreter/login"
+            style={{
+              display: 'block',
+              width: '100%',
+              background: 'var(--accent)',
+              color: '#000',
+              borderRadius: '8px',
+              padding: '13px 0',
+              textAlign: 'center',
+              fontWeight: 700,
+              fontSize: '0.95rem',
+              textDecoration: 'none',
+              marginTop: 'auto',
+            }}
+          >
+            Sign in to my portal →
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }
