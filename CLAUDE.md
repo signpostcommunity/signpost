@@ -59,7 +59,7 @@ app/
 │           ├── page.tsx               # generateStaticParams + metadata
 │           └── ProfileClient.tsx      # 4-tab profile (Overview, Credentials, Rates, Availability)
 ├── (auth)/
-│   ├── layout.tsx                     # Minimal centered layout, no nav
+│   ├── layout.tsx                     # Nav + Footer wrapper (same as public)
 │   ├── interpreter/
 │   │   ├── page.tsx                   # Interpreter portal landing
 │   │   ├── login/page.tsx
@@ -265,3 +265,23 @@ npm run seed       # Seed 10 demo interpreters into Supabase
 - **Seed script excluded from build**: `lib/data/seed-script.ts` is in `tsconfig.json` `exclude` because it imports `dotenv` which isn't in Next.js deps.
 - **Route groups**: The `(public)`, `(auth)`, `(dashboard)` directories are Next.js route groups — they don't appear in the URL path.
 - **D/HH routes**: All Deaf/Hard-of-Hearing routes use `/dhh` — not `/deaf`. `user_profiles.role` still stores `'deaf'` as the role value.
+
+---
+
+## Session Handoff
+
+### Session 4 — March 3, 2026
+
+**Completed:**
+- ✅ Claude Code installed and configured on Chromebook Linux environment
+- ✅ GitHub auth configured with personal access token on remote URL
+- ✅ `app/(auth)/interpreter/page.tsx` — full redesign matching prototype: left-aligned layout, correct headline "Your interpreter profile, working for you." with purple→cyan gradient, two-column cards with icon squares, full-width CTA buttons
+- ✅ `app/(auth)/interpreter/signup/page.tsx` — restored correct 6-step form (was accidentally overwritten with landing page content), then rewrote Step 1 to match prototype: 3-column field grids, Professional Bio, Interpreter Type/Mode/Work/Years dropdowns, Website/LinkedIn fields, Regions travel grid with colored dot tiles, Event Coordination checkbox with conditional reveal
+- ✅ `app/(auth)/layout.tsx` — replaced minimal wordmark header with full Nav component and Footer
+
+**In progress / pick up here next session:**
+- Interpreter signup Steps 2–6 audit vs prototype
+- Deaf/HoH signup flow audit
+- Requester signup flow audit
+- Footer component — confirm it exists and is wired up correctly
+- Platform Policies doc expansions (due Mar 6–7): HIPAA-adjacent medical booking language, interpreter sub-finding responsibility, data privacy and retention policy
