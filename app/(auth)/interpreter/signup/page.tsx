@@ -7,20 +7,43 @@ import { ALL_SIGN_LANGS, ALL_SPOKEN_LANGS, ALL_SPECS, ALL_REGIONS, ALL_CERTS } f
 
 const TOTAL_STEPS = 6;
 
+const REGION_TILES = [
+  { id: 'Worldwide', label: '\u{1F310} Worldwide', color: '#00e5ff' },
+  { id: 'NA', label: 'NA \u2014 North America', color: '#f97316' },
+  { id: 'LATAM', label: 'LATAM \u2014 Latin America & Caribbean', color: '#a78bfa' },
+  { id: 'EU', label: 'EU \u2014 Europe', color: '#00e5ff' },
+  { id: 'AF', label: 'AF \u2014 Africa', color: '#22c55e' },
+  { id: 'ME', label: 'ME \u2014 Middle East', color: '#eab308' },
+  { id: 'SA', label: 'SA \u2014 South & Central Asia', color: '#f472b6' },
+  { id: 'EA', label: 'EA \u2014 East & Southeast Asia', color: '#eab308' },
+  { id: 'OC', label: 'OC \u2014 Oceania & Pacific', color: '#2dd4bf' },
+];
+
+const COUNTRIES = [
+  'United States', 'United Kingdom', 'Spain', 'Australia', 'Germany',
+  'France', 'Japan', 'Brazil', 'Canada', 'Other',
+];
+
 interface FormData {
-  name: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
   email: string;
   password: string;
-  location: string;
   country: string;
-  state: string;
+  city: string;
+  bio: string;
   interpreterType: string;
   workMode: string;
   yearsExp: string;
+  website: string;
+  linkedin: string;
+  regions: string[];
+  eventCoordination: boolean;
+  coordinationBio: string;
   signLangs: string[];
   spokenLangs: string[];
   specs: string[];
-  regions: string[];
   certs: string[];
   hourlyRate: string;
   currency: string;
@@ -28,17 +51,19 @@ interface FormData {
   cancellationPolicy: string;
   videoUrl: string;
   videoDesc: string;
-  bio: string;
   agreeTerms: boolean;
   agreeDirectory: boolean;
 }
 
 const defaultForm: FormData = {
-  name: '', email: '', password: '', location: '', country: '', state: '',
-  interpreterType: 'freelance', workMode: 'both', yearsExp: '',
-  signLangs: [], spokenLangs: [], specs: [], regions: [], certs: [],
+  firstName: '', lastName: '', phone: '', email: '', password: '',
+  country: '', city: '', bio: '',
+  interpreterType: '', workMode: '', yearsExp: '',
+  website: '', linkedin: '',
+  regions: [], eventCoordination: false, coordinationBio: '',
+  signLangs: [], spokenLangs: [], specs: [], certs: [],
   hourlyRate: '', currency: 'USD', minBooking: '60', cancellationPolicy: '48 hours notice required',
-  videoUrl: '', videoDesc: '', bio: '',
+  videoUrl: '', videoDesc: '',
   agreeTerms: false, agreeDirectory: false,
 };
 
@@ -59,7 +84,7 @@ export default function InterpreterSignupPage() {
   }
 
   function canContinue() {
-    if (step === 1) return form.name && form.email && form.password && form.country;
+    if (step === 1) return form.firstName && form.lastName && form.email && form.password && form.country;
     if (step === 2) return form.signLangs.length > 0;
     if (step === 6) return form.agreeTerms && form.agreeDirectory;
     return true;
@@ -98,10 +123,10 @@ export default function InterpreterSignupPage() {
       .from('interpreter_profiles')
       .insert({
         user_id: userId,
-        name: form.name,
-        location: `${form.state ? form.state + ', ' : ''}${form.country}`,
+        name: `${form.firstName} ${form.lastName}`.trim(),
+        location: `${form.city ? form.city + ', ' : ''}${form.country}`,
         country: form.country,
-        state: form.state,
+        state: form.city,
         interpreter_type: form.interpreterType,
         work_mode: form.workMode,
         years_experience: form.yearsExp ? parseInt(form.yearsExp) : null,
@@ -152,7 +177,7 @@ export default function InterpreterSignupPage() {
   }
 
   return (
-    <div style={{ maxWidth: 600, margin: '0 auto', padding: '40px 24px 80px' }}>
+    <div style={{ maxWidth: 780, margin: '0 auto', padding: '40px 24px 80px' }}>
       <div style={{ marginBottom: '32px' }}>
         <div style={{ display: 'flex', gap: '6px', marginBottom: '12px' }}>
           {Array.from({ length: TOTAL_STEPS }).map((_, idx) => (
@@ -175,46 +200,203 @@ export default function InterpreterSignupPage() {
 
       {step === 1 && (
         <StepWrapper title="Personal Information" subtitle="Tell us about yourself.">
-          <FormField label="Full Name">
-            <TextInput value={form.name} onChange={(v) => update('name', v)} placeholder="Sofia Reyes" />
-          </FormField>
-          <FormField label="Email">
-            <TextInput type="email" value={form.email} onChange={(v) => update('email', v)} placeholder="you@example.com" />
-          </FormField>
-          <FormField label="Password">
+          {/* Row 1: First Name | Last Name | Phone */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+            <FormField label="First Name *">
+              <TextInput value={form.firstName} onChange={(v) => update('firstName', v)} placeholder="Sofia" />
+            </FormField>
+            <FormField label="Last Name *">
+              <TextInput value={form.lastName} onChange={(v) => update('lastName', v)} placeholder="Reyes" />
+            </FormField>
+            <FormField label="Phone / WhatsApp">
+              <TextInput type="tel" value={form.phone} onChange={(v) => update('phone', v)} placeholder="+1 555 000 0000" />
+            </FormField>
+          </div>
+
+          {/* Row 2: Email | Country | City */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+            <FormField label="Email Address *">
+              <TextInput type="email" value={form.email} onChange={(v) => update('email', v)} placeholder="sofia@example.com" />
+            </FormField>
+            <FormField label="Country *">
+              <SelectInput
+                value={form.country}
+                onChange={(v) => update('country', v)}
+                options={[
+                  { value: '', label: 'Select country\u2026' },
+                  ...COUNTRIES.map((c) => ({ value: c, label: c })),
+                ]}
+              />
+            </FormField>
+            <FormField label="City / Region *">
+              <TextInput value={form.city} onChange={(v) => update('city', v)} placeholder="Madrid" />
+            </FormField>
+          </div>
+
+          {/* Password */}
+          <FormField label="Password *">
             <TextInput type="password" value={form.password} onChange={(v) => update('password', v)} placeholder="Minimum 8 characters" />
           </FormField>
-          <FormField label="Country">
-            <TextInput value={form.country} onChange={(v) => update('country', v)} placeholder="Spain" />
-          </FormField>
-          <FormField label="State / Region">
-            <TextInput value={form.state} onChange={(v) => update('state', v)} placeholder="Community of Madrid" />
-          </FormField>
-          <FormField label="Interpreter Type">
-            <SelectInput
-              value={form.interpreterType}
-              onChange={(v) => update('interpreterType', v)}
-              options={[
-                { value: 'freelance', label: 'Freelance' },
-                { value: 'agency', label: 'Agency Staff' },
-                { value: 'staff', label: 'In-house Staff' },
-              ]}
+
+          {/* Bio */}
+          <FormField label="Professional Bio *">
+            <textarea
+              value={form.bio}
+              onChange={(e) => update('bio', e.target.value)}
+              placeholder="Tell the Deaf community about yourself, your background, your approach to interpreting, and what you're passionate about..."
+              rows={4}
+              style={{
+                width: '100%',
+                background: 'var(--surface)',
+                border: '1px solid var(--border)',
+                borderRadius: '8px',
+                padding: '12px 14px',
+                color: 'var(--text)',
+                fontSize: '0.95rem',
+                outline: 'none',
+                resize: 'vertical',
+                fontFamily: 'var(--font-dm)',
+              }}
             />
           </FormField>
-          <FormField label="Work Mode">
-            <SelectInput
-              value={form.workMode}
-              onChange={(v) => update('workMode', v)}
-              options={[
-                { value: 'both', label: 'In-person & Remote' },
-                { value: 'in_person', label: 'In-person only' },
-                { value: 'remote', label: 'Remote only' },
-              ]}
+
+          {/* Row 3: Interpreter Type | Mode of Work | Years of Experience */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+            <FormField label="Interpreter Type *">
+              <SelectInput
+                value={form.interpreterType}
+                onChange={(v) => update('interpreterType', v)}
+                options={[
+                  { value: '', label: 'Select\u2026' },
+                  { value: 'hearing', label: 'Hearing Interpreter' },
+                  { value: 'deaf', label: 'Deaf Interpreter' },
+                ]}
+              />
+            </FormField>
+            <FormField label="Mode of Work *">
+              <SelectInput
+                value={form.workMode}
+                onChange={(v) => update('workMode', v)}
+                options={[
+                  { value: '', label: 'Select\u2026' },
+                  { value: 'remote', label: 'Remote only' },
+                  { value: 'onsite', label: 'On-site only' },
+                  { value: 'both', label: 'Both remote & on-site' },
+                ]}
+              />
+            </FormField>
+            <FormField label="Years of Experience *">
+              <SelectInput
+                value={form.yearsExp}
+                onChange={(v) => update('yearsExp', v)}
+                options={[
+                  { value: '', label: 'Select\u2026' },
+                  { value: '0', label: 'Less than 1 year' },
+                  { value: '1', label: '1\u20132 years' },
+                  { value: '3', label: '3\u20135 years' },
+                  { value: '6', label: '6\u201310 years' },
+                  { value: '11', label: '11\u201320 years' },
+                  { value: '20', label: '20+ years' },
+                ]}
+              />
+            </FormField>
+          </div>
+
+          {/* Row 4: Website | LinkedIn */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <FormField label="Website">
+              <TextInput value={form.website} onChange={(v) => update('website', v)} placeholder="https://yoursite.com" />
+            </FormField>
+            <FormField label="LinkedIn Profile">
+              <TextInput value={form.linkedin} onChange={(v) => update('linkedin', v)} placeholder="https://linkedin.com/in/\u2026" />
+            </FormField>
+          </div>
+
+          {/* Regions */}
+          <div>
+            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '8px' }}>
+              Regions Available For Work Travel
+            </div>
+            <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginBottom: '12px', lineHeight: 1.6 }}>
+              Select all regions where you are willing and able to work on-site. Remote work is available globally regardless of selection.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+              {REGION_TILES.map((r) => {
+                const selected = form.regions.includes(r.id);
+                return (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => toggleArrayItem('regions', r.id)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                      padding: '12px 14px',
+                      borderRadius: '10px',
+                      border: selected ? `1px solid ${r.color}` : '1px solid var(--border)',
+                      background: selected ? `${r.color}12` : 'var(--surface)',
+                      color: selected ? 'var(--text)' : 'var(--muted)',
+                      cursor: 'pointer',
+                      fontSize: '0.82rem',
+                      textAlign: 'left',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: r.color, flexShrink: 0 }} />
+                    {r.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Event Coordination */}
+          <div>
+            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>
+              Event Coordination
+            </div>
+            <CheckboxItem
+              checked={form.eventCoordination}
+              onChange={(v) => update('eventCoordination', v)}
+              label="I am available to coordinate interpreter teams for complex and/or large-scale events (conferences, summits, multi-day institutional events, and more)"
             />
-          </FormField>
-          <FormField label="Years of Experience">
-            <TextInput type="number" value={form.yearsExp} onChange={(v) => update('yearsExp', v)} placeholder="e.g. 8" />
-          </FormField>
+            {form.eventCoordination && (
+              <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{
+                  background: 'rgba(0,229,255,0.06)',
+                  border: '1px solid rgba(0,229,255,0.15)',
+                  borderRadius: '8px',
+                  padding: '12px 16px',
+                  fontSize: '0.82rem',
+                  color: 'var(--muted)',
+                  lineHeight: 1.6,
+                }}>
+                  Coordination rates are negotiated directly with the requester. You&apos;ll discuss the scope, team size, and your fee once an inquiry comes in.
+                </div>
+                <FormField label="Brief description of your coordination experience">
+                  <textarea
+                    value={form.coordinationBio}
+                    onChange={(e) => update('coordinationBio', e.target.value)}
+                    placeholder="Describe your experience coordinating interpreter teams..."
+                    rows={3}
+                    style={{
+                      width: '100%',
+                      background: 'var(--surface)',
+                      border: '1px solid var(--border)',
+                      borderRadius: '8px',
+                      padding: '12px 14px',
+                      color: 'var(--text)',
+                      fontSize: '0.95rem',
+                      outline: 'none',
+                      resize: 'vertical',
+                      fontFamily: 'var(--font-dm)',
+                    }}
+                  />
+                </FormField>
+              </div>
+            )}
+          </div>
         </StepWrapper>
       )}
 
@@ -316,7 +498,7 @@ export default function InterpreterSignupPage() {
             marginBottom: '24px',
           }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '0.85rem' }}>
-              <SummaryRow label="Name" value={form.name} />
+              <SummaryRow label="Name" value={`${form.firstName} ${form.lastName}`.trim()} />
               <SummaryRow label="Email" value={form.email} />
               <SummaryRow label="Country" value={form.country} />
               <SummaryRow label="Type" value={form.interpreterType} />
