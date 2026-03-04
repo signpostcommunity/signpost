@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { interpreters } from '@/lib/data/seed';
 import type { FilterState } from '@/lib/types';
 import FilterSidebar from '@/components/directory/FilterSidebar';
@@ -25,6 +26,10 @@ const defaultFilters: FilterState = {
 export default function DirectoryPage() {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [filterOpen, setFilterOpen] = useState(false);
+
+  // TODO: Replace with real Supabase auth check when login is hooked up.
+  // Set to true to preview the logged-in directory.
+  const isLoggedIn = false;
 
   const filtered = useMemo(() => {
     return interpreters.filter((i) => {
@@ -68,7 +73,6 @@ export default function DirectoryPage() {
       if (filters.availability === 'hearing' && i.isDeafInterpreter) return false;
 
       // Affinities (LGBTQ+, Deaf-parented, BIPOC)
-      // For each selected affinity, interpreter must match
       const affinityChecks = filters.affinities.filter((a) => a !== 'Religious');
       if (affinityChecks.length > 0 && !affinityChecks.every((a) => i.affinities.includes(a))) return false;
 
@@ -96,7 +100,7 @@ export default function DirectoryPage() {
     (filters.isDeafInterpreter ? 1 : 0);
 
   return (
-    <div style={{ minHeight: '100vh' }}>
+    <div style={{ minHeight: '100vh', position: 'relative' }}>
       {/* Body — full width */}
       <div
         style={{
@@ -104,6 +108,10 @@ export default function DirectoryPage() {
           display: 'flex',
           gap: '32px',
           alignItems: 'flex-start',
+          filter: isLoggedIn ? 'none' : 'blur(6px)',
+          pointerEvents: isLoggedIn ? 'auto' : 'none',
+          userSelect: isLoggedIn ? 'auto' : 'none',
+          transition: 'filter 0.3s',
         }}
       >
         {/* Sidebar desktop */}
@@ -175,6 +183,115 @@ export default function DirectoryPage() {
           <InterpreterGrid interpreters={filtered} />
         </div>
       </div>
+
+      {/* ── Login overlay (shown when logged out) ── */}
+      {!isLoggedIn && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 50,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+          }}
+        >
+          <div
+            style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius)',
+              padding: '40px 48px',
+              textAlign: 'center',
+              maxWidth: 440,
+              boxShadow: '0 24px 64px rgba(0,0,0,0.6)',
+              pointerEvents: 'auto',
+            }}
+          >
+            <div
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: '50%',
+                background: 'rgba(0,229,255,0.1)',
+                border: '1px solid rgba(0,229,255,0.25)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 20px',
+                fontSize: '1.4rem',
+              }}
+            >
+              🔒
+            </div>
+            <h2
+              style={{
+                fontFamily: 'var(--font-syne)',
+                fontSize: '1.3rem',
+                fontWeight: 800,
+                letterSpacing: '-0.02em',
+                marginBottom: '8px',
+              }}
+            >
+              Sign in to browse interpreters
+            </h2>
+            <p
+              style={{
+                color: 'var(--muted)',
+                fontSize: '0.9rem',
+                lineHeight: 1.6,
+                marginBottom: '24px',
+              }}
+            >
+              Create a free account to search the full directory, view interpreter profiles, and start booking.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <Link
+                href="/dhh"
+                className="btn-primary"
+                style={{
+                  display: 'block',
+                  padding: '12px 24px',
+                  borderRadius: '100px',
+                  textAlign: 'center',
+                  textDecoration: 'none',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                }}
+              >
+                Sign up — I&apos;m Deaf / Hard of Hearing
+              </Link>
+              <Link
+                href="/request"
+                style={{
+                  display: 'block',
+                  padding: '12px 24px',
+                  borderRadius: '100px',
+                  textAlign: 'center',
+                  textDecoration: 'none',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  border: '1px solid var(--border)',
+                  background: 'var(--surface2)',
+                  color: 'var(--text)',
+                }}
+              >
+                Sign up — I&apos;m booking for an organization
+              </Link>
+              <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '8px' }}>
+                Already have an account?{' '}
+                <Link
+                  href="/dhh/login"
+                  style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}
+                >
+                  Log in
+                </Link>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
         .filter-sidebar-desktop { display: block; }
