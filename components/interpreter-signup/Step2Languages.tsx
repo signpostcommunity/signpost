@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useSignupForm } from './FormContext';
 import { StepNav } from './FormFields';
 
@@ -146,8 +145,6 @@ interface Props { onNext: () => void; onBack: () => void }
 
 export default function Step2Languages({ onNext, onBack }: Props) {
   const { form, update, toggleArrayItem } = useSignupForm();
-  const [openSignRegion, setOpenSignRegion] = useState<string | null>(null);
-  const [openSpokenRegion, setOpenSpokenRegion] = useState<string | null>(null);
 
   const canContinue = form.signLangs.length > 0;
 
@@ -176,13 +173,10 @@ export default function Step2Languages({ onNext, onBack }: Props) {
           </div>
 
           {/* Regional dropdown */}
-          <RegionDropdown
-            label="More languages by region"
+          <RegionSelect
             regions={REGIONAL_SIGN_LANGS}
             selected={form.signLangs}
-            onToggle={(v) => toggleArrayItem('signLangs', v)}
-            openRegion={openSignRegion}
-            setOpenRegion={setOpenSignRegion}
+            onSelect={(v) => toggleArrayItem('signLangs', v)}
           />
 
           {/* Other free text */}
@@ -219,13 +213,10 @@ export default function Step2Languages({ onNext, onBack }: Props) {
             ))}
           </div>
 
-          <RegionDropdown
-            label="More languages by region"
+          <RegionSelect
             regions={REGIONAL_SPOKEN_LANGS}
             selected={form.spokenLangs}
-            onToggle={(v) => toggleArrayItem('spokenLangs', v)}
-            openRegion={openSpokenRegion}
-            setOpenRegion={setOpenSpokenRegion}
+            onSelect={(v) => toggleArrayItem('spokenLangs', v)}
           />
 
           <div style={{ marginTop: '12px' }}>
@@ -274,78 +265,40 @@ export default function Step2Languages({ onNext, onBack }: Props) {
   );
 }
 
-/* ── Region dropdown sub-component ── */
+/* ── Region select sub-component ── */
 
-function RegionDropdown({ label, regions, selected, onToggle, openRegion, setOpenRegion }: {
-  label: string;
+function RegionSelect({ regions, selected, onSelect }: {
   regions: Record<string, { id: string; label: string }[]>;
   selected: string[];
-  onToggle: (id: string) => void;
-  openRegion: string | null;
-  setOpenRegion: (r: string | null) => void;
+  onSelect: (id: string) => void;
 }) {
   return (
-    <div>
-      <button
-        type="button"
-        onClick={() => setOpenRegion(openRegion ? null : Object.keys(regions)[0])}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          background: 'none',
-          border: 'none',
-          color: 'var(--accent)',
-          fontSize: '0.82rem',
-          cursor: 'pointer',
-          padding: '4px 0',
-          marginBottom: openRegion ? '12px' : 0,
-        }}
-      >
-        <span style={{ transform: openRegion ? 'rotate(90deg)' : 'rotate(0)', transition: 'transform 0.2s', display: 'inline-block' }}>▸</span>
-        {label}
-      </button>
-
-      {openRegion && (
-        <div style={{ marginLeft: '4px' }}>
-          {/* Region tabs */}
-          <div style={{ display: 'flex', gap: '4px', marginBottom: '12px', flexWrap: 'wrap' }}>
-            {Object.keys(regions).map((region) => (
-              <button
-                key={region}
-                type="button"
-                onClick={() => setOpenRegion(region)}
-                style={{
-                  padding: '6px 14px',
-                  borderRadius: '100px',
-                  fontSize: '0.78rem',
-                  border: openRegion === region ? '1px solid rgba(0,229,255,0.5)' : '1px solid var(--border)',
-                  background: openRegion === region ? 'rgba(0,229,255,0.1)' : 'transparent',
-                  color: openRegion === region ? 'var(--accent)' : 'var(--muted)',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s',
-                }}
-              >
-                {region}
-              </button>
-            ))}
-          </div>
-
-          {/* Tiles for selected region */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            {regions[openRegion]?.map((lang) => (
-              <button
-                key={lang.id}
-                type="button"
-                onClick={() => onToggle(lang.id)}
-                style={tileStyle(selected.includes(lang.id))}
-              >
-                {lang.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+    <select
+      value=""
+      onChange={(e) => {
+        if (e.target.value) onSelect(e.target.value);
+      }}
+      style={{
+        width: '100%',
+        background: 'var(--surface2)',
+        border: '1px solid var(--border)',
+        borderRadius: '10px',
+        padding: '11px 14px',
+        color: 'var(--muted)',
+        fontSize: '0.85rem',
+        outline: 'none',
+      }}
+    >
+      <option value="">More languages by region</option>
+      {Object.entries(regions).map(([region, langs]) => (
+        <optgroup key={region} label={region}>
+          {langs.map((lang) => (
+            <option key={lang.id} value={lang.id}>
+              {selected.includes(lang.id) ? `\u2713 ${lang.label}` : lang.label}
+            </option>
+          ))}
+        </optgroup>
+      ))}
+    </select>
   );
 }
