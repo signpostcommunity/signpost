@@ -121,7 +121,7 @@ export default function InterpreterCard({ interpreter: i }: { interpreter: Inter
             </button>
           </div>
 
-          {/* Sign languages */}
+          {/* Sign languages + Spoken languages */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '10px' }}>
             {i.signLangs.map((lang) => (
               <span

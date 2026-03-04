@@ -25,34 +25,31 @@ export default function InterpreterGrid({ interpreters }: Props) {
   }
 
   return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: '16px',
-      }}
-    >
-      {interpreters.map((i) => (
-        <InterpreterCard key={i.id} interpreter={i} />
-      ))}
+    <>
+      <div
+        className="interp-grid"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: '16px',
+        }}
+      >
+        {interpreters.map((i) => (
+          <InterpreterCard key={i.id} interpreter={i} />
+        ))}
+      </div>
 
       <style>{`
         @media (max-width: 1400px) {
-          div[style*="grid-template-columns: repeat(4"] {
-            grid-template-columns: repeat(3, 1fr) !important;
-          }
+          .interp-grid { grid-template-columns: repeat(3, 1fr) !important; }
         }
         @media (max-width: 1024px) {
-          div[style*="grid-template-columns: repeat(4"] {
-            grid-template-columns: repeat(2, 1fr) !important;
-          }
+          .interp-grid { grid-template-columns: repeat(2, 1fr) !important; }
         }
         @media (max-width: 640px) {
-          div[style*="grid-template-columns: repeat(4"] {
-            grid-template-columns: 1fr !important;
-          }
+          .interp-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
-    </div>
+    </>
   );
 }

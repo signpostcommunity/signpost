@@ -17,6 +17,11 @@ export const interpreters: Interpreter[] = [
     color: 'linear-gradient(135deg,#7b61ff,#00e5ff)',
     regions: ['EU', 'Worldwide'],
     bio: 'Certified interpreter with 12+ years experience across medical, legal, and conference settings in Spain and internationally.',
+    gender: 'female',
+    isDeafInterpreter: false,
+    affinities: ['LGBTQ+'],
+    racialIdentity: [],
+    religiousAffiliation: [],
   },
   {
     id: 2,
@@ -34,6 +39,11 @@ export const interpreters: Interpreter[] = [
     color: 'linear-gradient(135deg,#ff4d6d,#7b61ff)',
     regions: ['UK', 'EU'],
     bio: 'NRSLI-registered BSL interpreter specialising in legal proceedings and mental health settings across the UK.',
+    gender: 'male',
+    isDeafInterpreter: false,
+    affinities: [],
+    racialIdentity: [],
+    religiousAffiliation: [],
   },
   {
     id: 3,
@@ -51,6 +61,11 @@ export const interpreters: Interpreter[] = [
     color: 'linear-gradient(135deg,#00e5ff,#7b61ff)',
     regions: ['North America'],
     bio: 'RID-certified interpreter focused on medical and academic settings. Bilingual in English and Arabic.',
+    gender: 'female',
+    isDeafInterpreter: false,
+    affinities: ['BIPOC'],
+    racialIdentity: ['Black/African American'],
+    religiousAffiliation: ['Muslim'],
   },
   {
     id: 4,
@@ -68,6 +83,11 @@ export const interpreters: Interpreter[] = [
     color: 'linear-gradient(135deg,#ff9500,#ff4d6d)',
     regions: ['Asia Pacific'],
     bio: 'JEIAD-certified JSL interpreter based in Tokyo. Specialises in technical and conference interpreting for international events.',
+    gender: 'male',
+    isDeafInterpreter: false,
+    affinities: [],
+    racialIdentity: ['Asian/Pacific Islander'],
+    religiousAffiliation: [],
   },
   {
     id: 5,
@@ -85,6 +105,11 @@ export const interpreters: Interpreter[] = [
     color: 'linear-gradient(135deg,#00e5ff,#7b61ff)',
     regions: ['EU', 'Worldwide'],
     bio: 'EFSLI member interpreting in arts, media, and conference settings across Europe. Trilingual (FR/EN/ES).',
+    gender: 'female',
+    isDeafInterpreter: false,
+    affinities: ['Deaf-parented'],
+    racialIdentity: [],
+    religiousAffiliation: [],
   },
   {
     id: 6,
@@ -102,6 +127,11 @@ export const interpreters: Interpreter[] = [
     color: 'linear-gradient(135deg,#7b61ff,#ff4d6d)',
     regions: ['Middle East', 'EU'],
     bio: 'Dual-certified (RID/EFSLI) interpreter working across diplomatic, medical, and conference settings in the Gulf and Europe.',
+    gender: 'female',
+    isDeafInterpreter: false,
+    affinities: ['BIPOC'],
+    racialIdentity: ['Middle Eastern/North African'],
+    religiousAffiliation: ['Muslim'],
   },
   {
     id: 7,
@@ -119,6 +149,11 @@ export const interpreters: Interpreter[] = [
     color: 'linear-gradient(135deg,#00e5ff,#ff9500)',
     regions: ['Latin America'],
     bio: 'FENEIS-certified LIBRAS interpreter based in São Paulo. Specialises in legal and business interpreting across Brazil and Latin America.',
+    gender: 'male',
+    isDeafInterpreter: false,
+    affinities: ['BIPOC'],
+    racialIdentity: ['Hispanic/Latino(a)'],
+    religiousAffiliation: [],
   },
   {
     id: 8,
@@ -136,6 +171,11 @@ export const interpreters: Interpreter[] = [
     color: 'linear-gradient(135deg,#ff4d6d,#00e5ff)',
     regions: ['Middle East', 'EU'],
     bio: 'Trilingual interpreter (HE/EN/AR) with dual certification. Works across medical, academic, and religious interpreting contexts.',
+    gender: 'nonbinary',
+    isDeafInterpreter: false,
+    affinities: ['LGBTQ+'],
+    racialIdentity: [],
+    religiousAffiliation: ['Jewish'],
   },
   {
     id: 9,
@@ -153,6 +193,11 @@ export const interpreters: Interpreter[] = [
     color: 'linear-gradient(135deg,#7b61ff,#ff9500)',
     regions: ['Africa', 'Worldwide'],
     bio: 'RID-certified interpreter based in Accra working across education, medical, and religious settings. One of the few trilingual (EN/FR/Twi) interpreters in West Africa.',
+    gender: 'female',
+    isDeafInterpreter: false,
+    affinities: ['BIPOC'],
+    racialIdentity: ['Black/African American'],
+    religiousAffiliation: ['Christian'],
   },
   {
     id: 10,
@@ -170,6 +215,11 @@ export const interpreters: Interpreter[] = [
     color: 'linear-gradient(135deg,#34d399,#7b61ff)',
     regions: ['North America'],
     bio: 'RID-certified interpreter specialising in ProTactile ASL for DeafBlind individuals. Also works in medical and educational settings across Washington.',
+    gender: 'female',
+    isDeafInterpreter: true,
+    affinities: ['Deaf-parented', 'LGBTQ+'],
+    racialIdentity: [],
+    religiousAffiliation: [],
   },
 ];
 
@@ -195,4 +245,23 @@ export const ALL_CERTS = [
 export const ALL_REGIONS = [
   'EU', 'UK', 'North America', 'Latin America', 'Asia Pacific',
   'Middle East', 'Africa', 'Worldwide',
+];
+
+export const ALL_RACIAL_IDENTITIES = [
+  'Black/African American',
+  'Asian/Pacific Islander',
+  'Hispanic/Latino(a)',
+  'Indigenous/Native American',
+  'Middle Eastern/North African',
+  'Multiracial',
+];
+
+export const ALL_RELIGIOUS_AFFILIATIONS = [
+  'Buddhist',
+  'Christian',
+  'Hindu',
+  'Jewish',
+  'Muslim',
+  'Sikh',
+  'Other',
 ];

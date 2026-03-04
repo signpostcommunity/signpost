@@ -18,6 +18,12 @@ export interface Interpreter {
   bio?: string;
   videoUrl?: string;
   website?: string;
+  // New identity/affinity fields
+  gender: 'male' | 'female' | 'nonbinary' | null;
+  isDeafInterpreter: boolean;
+  affinities: string[]; // e.g. ['LGBTQ+', 'Deaf-parented']
+  racialIdentity: string[]; // e.g. ['Black/African American', 'Asian/Pacific Islander']
+  religiousAffiliation: string[]; // e.g. ['Jewish', 'Muslim']
 }
 
 export interface RateProfile {
@@ -68,4 +74,10 @@ export interface FilterState {
   availability: string | null;
   search: string;
   country: string;
+  // New filter fields
+  gender: string;
+  isDeafInterpreter: boolean;
+  affinities: string[];
+  racialIdentity: string[];
+  religiousAffiliation: string[];
 }

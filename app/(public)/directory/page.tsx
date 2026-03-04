@@ -15,6 +15,11 @@ const defaultFilters: FilterState = {
   availability: null,
   search: '',
   country: '',
+  gender: '',
+  isDeafInterpreter: false,
+  affinities: [],
+  racialIdentity: [],
+  religiousAffiliation: [],
 };
 
 export default function DirectoryPage() {
@@ -39,15 +44,55 @@ export default function DirectoryPage() {
           .toLowerCase();
         if (!searchable.includes(q)) return false;
       }
+
+      // Sign languages
       if (filters.signLangs.length > 0 && !filters.signLangs.some((l) => i.signLangs.includes(l))) return false;
+
+      // Spoken languages
       if (filters.spokenLangs.length > 0 && !filters.spokenLangs.some((l) => i.spokenLangs.includes(l))) return false;
+
+      // Specializations
       if (filters.specs.length > 0 && !filters.specs.some((s) => i.specs.includes(s))) return false;
-      // Certification toggle: if __any_cert__ is set, require at least one cert
+
+      // Certification toggle — require at least one cert
       if (filters.certs.includes('__any_cert__') && i.certs.length === 0) return false;
+
+      // Regions
       if (filters.regions.length > 0 && !filters.regions.some((r) => i.regions.includes(r))) return false;
+
+      // Gender
+      if (filters.gender && i.gender !== filters.gender) return false;
+
+      // Deaf interpreter
+      if (filters.isDeafInterpreter && !i.isDeafInterpreter) return false;
+
+      // Affinities (LGBTQ+, Deaf-parented, BIPOC)
+      // For each selected affinity, interpreter must match
+      const affinityChecks = filters.affinities.filter((a) => a !== 'Religious');
+      if (affinityChecks.length > 0 && !affinityChecks.every((a) => i.affinities.includes(a))) return false;
+
+      // Racial identity (sub-filter of BIPOC)
+      if (filters.racialIdentity.length > 0 && !filters.racialIdentity.some((r) => i.racialIdentity.includes(r))) return false;
+
+      // Religious affiliation
+      if (filters.affinities.includes('Religious') && i.religiousAffiliation.length === 0) return false;
+      if (filters.religiousAffiliation.length > 0 && !filters.religiousAffiliation.some((r) => i.religiousAffiliation.includes(r))) return false;
+
       return true;
     });
   }, [filters]);
+
+  const activeFilterCount =
+    filters.signLangs.length +
+    filters.spokenLangs.length +
+    filters.specs.length +
+    filters.certs.length +
+    filters.regions.length +
+    filters.affinities.length +
+    filters.racialIdentity.length +
+    filters.religiousAffiliation.length +
+    (filters.gender ? 1 : 0) +
+    (filters.isDeafInterpreter ? 1 : 0);
 
   return (
     <div style={{ minHeight: '100vh' }}>
@@ -93,7 +138,7 @@ export default function DirectoryPage() {
               }}
             >
               ⚙ Filters
-              {(filters.signLangs.length + filters.spokenLangs.length + filters.specs.length + filters.certs.length + filters.regions.length) > 0 && (
+              {activeFilterCount > 0 && (
                 <span
                   style={{
                     background: 'var(--accent)',
@@ -104,7 +149,7 @@ export default function DirectoryPage() {
                     fontWeight: 700,
                   }}
                 >
-                  {filters.signLangs.length + filters.spokenLangs.length + filters.specs.length + filters.certs.length + filters.regions.length}
+                  {activeFilterCount}
                 </span>
               )}
             </button>
