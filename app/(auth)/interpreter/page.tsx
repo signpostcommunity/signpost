@@ -1,144 +1,251 @@
+'use client';
+
 import Link from 'next/link';
 
-export default function InterpreterPortalPage() {
+export default function InterpreterPage() {
   return (
     <div
       style={{
+        minHeight: '100vh',
+        background: 'var(--bg)',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: 'calc(100vh - 73px)',
-        padding: '40px 24px',
+        padding: '60px 24px',
       }}
     >
-      <div style={{ maxWidth: 580, width: '100%' }}>
-        {/* Badge */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+      {/* Back link */}
+      <div style={{ width: '100%', maxWidth: 900, marginBottom: '32px' }}>
+        <Link
+          href="/"
+          style={{
+            fontSize: '0.85rem',
+            color: 'var(--muted)',
+            textDecoration: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px',
+          }}
+        >
+          ← Back to Home
+        </Link>
+      </div>
+
+      {/* For Interpreters pill */}
+      <div style={{ marginBottom: '20px' }}>
+        <span
+          style={{
+            display: 'inline-block',
+            background: 'rgba(157,135,255,0.15)',
+            border: '1px solid rgba(157,135,255,0.3)',
+            borderRadius: '100px',
+            padding: '5px 14px',
+            fontSize: '0.8rem',
+            color: 'var(--accent2)',
+            fontWeight: 500,
+          }}
+        >
+          For Interpreters
+        </span>
+      </div>
+
+      {/* Hero headline */}
+      <div style={{ textAlign: 'center', marginBottom: '16px', maxWidth: 700 }}>
+        <h1
+          style={{
+            fontFamily: 'var(--font-syne)',
+            fontSize: 'clamp(2rem, 5vw, 3.2rem)',
+            fontWeight: 800,
+            letterSpacing: '-0.03em',
+            lineHeight: 1.1,
+            margin: 0,
+          }}
+        >
+          Your interpreter profile,{' '}
+          <span
+            style={{
+              background: 'linear-gradient(90deg, var(--accent2), var(--accent))',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          >
+            working for you.
+          </span>
+        </h1>
+      </div>
+
+      {/* Subheadline */}
+      <p
+        style={{
+          color: 'var(--muted)',
+          fontSize: '1rem',
+          textAlign: 'center',
+          maxWidth: 480,
+          lineHeight: 1.6,
+          marginBottom: '48px',
+        }}
+      >
+        Join the signpost community, for free. No commission. No agency fees.
+        <br />
+        Book and manage your interpreting work in one place.
+      </p>
+
+      {/* Two-column cards */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: '16px',
+          width: '100%',
+          maxWidth: 900,
+        }}
+      >
+        {/* New to signpost */}
+        <div
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius)',
+            padding: '32px',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {/* Icon */}
           <div
             style={{
-              display: 'inline-flex',
+              width: 44,
+              height: 44,
+              borderRadius: '10px',
+              background: 'rgba(157,135,255,0.15)',
+              display: 'flex',
               alignItems: 'center',
-              gap: '8px',
-              background: 'rgba(0,229,255,0.08)',
-              border: '1px solid rgba(0,229,255,0.2)',
-              borderRadius: '100px',
-              padding: '8px 20px',
-              fontSize: '0.82rem',
-              color: 'var(--accent)',
+              justifyContent: 'center',
               marginBottom: '20px',
-              fontWeight: 500,
+              fontSize: '1.2rem',
             }}
           >
-            Interpreter Portal
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
           </div>
-          <h1
+
+          <h2
             style={{
               fontFamily: 'var(--font-syne)',
-              fontSize: 'clamp(1.5rem, 3vw, 2.2rem)',
-              fontWeight: 800,
-              letterSpacing: '-0.04em',
-              marginBottom: '12px',
+              fontSize: '1.2rem',
+              fontWeight: 700,
+              marginBottom: '16px',
+              letterSpacing: '-0.02em',
             }}
           >
-            Your interpreter career, on your terms.
-          </h1>
-          <p style={{ color: 'var(--muted)', lineHeight: 1.65, fontSize: '0.95rem' }}>
-            Create your profile, set your own rates, and connect directly with clients who need your expertise.
-          </p>
-        </div>
+            New to signpost?
+          </h2>
 
-        {/* Cards */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {['Languages & specializations', 'Credentials & certifications', 'Rates, availability & intro video'].map((item) => (
+              <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: 'var(--muted)' }}>
+                <span style={{ color: 'var(--accent2)', fontWeight: 700, fontSize: '0.85rem' }}>✓</span>
+                {item}
+              </li>
+            ))}
+          </ul>
+
           <Link
             href="/interpreter/signup"
             style={{
               display: 'block',
-              padding: '28px 28px',
-              background: 'var(--surface)',
-              border: '1px solid rgba(0,229,255,0.3)',
-              borderRadius: 'var(--radius)',
+              width: '100%',
+              background: 'var(--accent2)',
+              color: '#000',
+              borderRadius: '8px',
+              padding: '13px 0',
+              textAlign: 'center',
+              fontWeight: 700,
+              fontSize: '0.95rem',
               textDecoration: 'none',
-              transition: 'border-color 0.2s, transform 0.15s',
+              marginTop: 'auto',
             }}
-            className="portal-card"
           >
-            <div
-              style={{
-                fontFamily: 'var(--font-syne)',
-                fontSize: '0.7rem',
-                fontWeight: 700,
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                color: 'var(--accent)',
-                marginBottom: '8px',
-              }}
-            >
-              New interpreter
-            </div>
-            <div
-              style={{
-                fontFamily: 'var(--font-syne)',
-                fontSize: '1.1rem',
-                fontWeight: 700,
-                color: 'var(--text)',
-                marginBottom: '6px',
-              }}
-            >
-              Create your free profile →
-            </div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6 }}>
-              Set up your profile in minutes. Add your certifications, languages, rates, and availability.
-            </div>
+            Create my profile →
           </Link>
+        </div>
+
+        {/* Already have a profile */}
+        <div
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius)',
+            padding: '32px',
+            display: 'flex',
+            flexDirection: 'column',
+          }}
+        >
+          {/* Icon */}
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: '10px',
+              background: 'rgba(0,229,255,0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '20px',
+            }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+              <polyline points="10 17 15 12 10 7" />
+              <line x1="15" y1="12" x2="3" y2="12" />
+            </svg>
+          </div>
+
+          <h2
+            style={{
+              fontFamily: 'var(--font-syne)',
+              fontSize: '1.2rem',
+              fontWeight: 700,
+              marginBottom: '16px',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Already have a profile?
+          </h2>
+
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {['View & edit your live profile', 'Manage availability & calendar', 'Review & respond to requests'].map((item) => (
+              <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: 'var(--muted)' }}>
+                <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '0.85rem' }}>✓</span>
+                {item}
+              </li>
+            ))}
+          </ul>
 
           <Link
             href="/interpreter/login"
             style={{
               display: 'block',
-              padding: '28px 28px',
-              background: 'var(--surface)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius)',
+              width: '100%',
+              background: 'var(--accent)',
+              color: '#000',
+              borderRadius: '8px',
+              padding: '13px 0',
+              textAlign: 'center',
+              fontWeight: 700,
+              fontSize: '0.95rem',
               textDecoration: 'none',
-              transition: 'border-color 0.2s',
+              marginTop: 'auto',
             }}
-            className="portal-card"
           >
-            <div
-              style={{
-                fontFamily: 'var(--font-syne)',
-                fontSize: '0.7rem',
-                fontWeight: 700,
-                letterSpacing: '0.12em',
-                textTransform: 'uppercase',
-                color: 'var(--muted)',
-                marginBottom: '8px',
-              }}
-            >
-              Existing account
-            </div>
-            <div
-              style={{
-                fontFamily: 'var(--font-syne)',
-                fontSize: '1.1rem',
-                fontWeight: 700,
-                color: 'var(--text)',
-                marginBottom: '6px',
-              }}
-            >
-              Sign in to your dashboard →
-            </div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6 }}>
-              Access your booking requests, inbox, rates, and profile settings.
-            </div>
+            Sign in to my portal →
           </Link>
         </div>
       </div>
-
-      <style>{`
-        .portal-card:hover { border-color: rgba(0,229,255,0.5) !important; transform: translateY(-2px); }
-      `}</style>
     </div>
   );
 }
