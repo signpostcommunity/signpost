@@ -26,7 +26,7 @@ export default function HomePage() {
       {/* Hero */}
       <section
         style={{
-          padding: '100px 64px 48px',
+          padding: '60px 64px 32px',
           maxWidth: 1200,
           margin: '0 auto',
           position: 'relative',
@@ -39,10 +39,10 @@ export default function HomePage() {
             <Image
               src="/hero.jpg"
               alt="signpost"
-              width={640}
-              height={640}
+              width={480}
+              height={480}
               className="hero-logo-img"
-              style={{ width: '100%', maxWidth: 640, height: 'auto', borderRadius: 12 }}
+              style={{ width: '100%', maxWidth: 480, height: 'auto', borderRadius: 12 }}
               priority
             />
           </div>
@@ -211,7 +211,7 @@ export default function HomePage() {
         .hero-split {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 40px;
+          gap: 24px;
           align-items: center;
         }
         .hero-logo-col {
