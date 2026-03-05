@@ -59,16 +59,10 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
           </FormField>
         </FormRow>
 
-        {/* Or divider */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 12, margin: '4px 0 16px',
-        }}>
-          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-          <span style={{ color: 'var(--muted)', fontSize: '0.78rem', whiteSpace: 'nowrap' }}>
-            or continue with
-          </span>
-          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-        </div>
+        {/* Or label */}
+        <p style={{ color: 'var(--muted)', fontSize: '0.78rem', textAlign: 'center', margin: '4px 0 12px' }}>
+          or continue with
+        </p>
 
         <GoogleSignInButton role="interpreter" />
       </FormSection>
@@ -205,7 +199,7 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
           <FormField>
             <FieldLabel>Professional Bio *</FieldLabel>
             <TextareaInput
-              placeholder="Tell the Deaf community about yourself, your background, your approach to interpreting, and what you're passionate about…"
+              placeholder="Tell the signpost community about yourself: your background, professional experience, specializations, etc."
               value={formData.bio}
               onChange={e => updateField('bio', e.target.value)}
             />
