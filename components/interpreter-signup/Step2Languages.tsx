@@ -226,7 +226,7 @@ export default function Step2Languages({ onBack, onContinue }: {
       {/* Specializations */}
       <FormSection>
         <SectionTitle>Specializations</SectionTitle>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 180px), 1fr))', gap: 6 }}>
           {SPECIALIZATIONS.map(spec => (
             <Chip
               key={spec}

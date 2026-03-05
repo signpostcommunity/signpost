@@ -125,7 +125,7 @@ function BusinessDocRow({ id, label, hint, doc, onChange }: {
             />
           </FormField>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, alignItems: 'end' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, alignItems: 'end' }}>
             <FormField>
               <FieldLabel>
                 Expiry date <span style={{ color: 'var(--muted)', fontWeight: 400 }}>(optional)</span>
@@ -214,7 +214,7 @@ export default function Step3Credentials({ onBack, onContinue }: {
               display: 'flex', flexDirection: 'column', gap: 10,
               width: '100%', boxSizing: 'border-box',
             }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16 }}>
                 <FormField>
                   <FieldLabel>Certification Name</FieldLabel>
                   <TextInput
@@ -266,7 +266,7 @@ export default function Step3Credentials({ onBack, onContinue }: {
               display: 'flex', flexDirection: 'column', gap: 10,
               width: '100%', boxSizing: 'border-box',
             }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16 }}>
                 <FormField>
                   <FieldLabel>Degree / Qualification</FieldLabel>
                   <TextInput

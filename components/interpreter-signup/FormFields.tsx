@@ -34,7 +34,7 @@ export function FormRow({ children, full, three, style }: {
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: full ? '1fr' : three ? '1fr 1fr 1fr' : '1fr 1fr',
+      gridTemplateColumns: full ? '1fr' : three ? 'repeat(auto-fill, minmax(min(100%, 180px), 1fr))' : 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))',
       gap: 16,
       marginBottom: 16,
       ...style,
@@ -227,39 +227,59 @@ export function FormNav({
   continueDisabled?: boolean
 }) {
   return (
-    <div style={{
-      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-      paddingTop: 32, borderTop: '1px solid var(--border)', marginTop: 40,
-    }}>
-      <button
-        onClick={onBack}
-        style={{
-          visibility: step === 1 ? 'hidden' : 'visible',
-          background: 'none', border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
-          padding: '10px 20px', cursor: 'pointer',
-          fontFamily: "'DM Sans', sans-serif", fontSize: '0.9rem',
-          transition: 'all 0.2s',
-        }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'var(--border)' }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'none' }}
-      >
-        ← Back
-      </button>
+    <>
+      <div className="signup-form-nav" style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        paddingTop: 32, borderTop: '1px solid var(--border)', marginTop: 40,
+        flexWrap: 'wrap', gap: 12,
+      }}>
+        <button
+          className="signup-nav-back"
+          onClick={onBack}
+          style={{
+            visibility: step === 1 ? 'hidden' : 'visible',
+            background: 'none', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
+            padding: '10px 20px', cursor: 'pointer',
+            fontFamily: "'DM Sans', sans-serif", fontSize: '0.9rem',
+            transition: 'all 0.2s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = 'var(--border)' }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'none' }}
+        >
+          ← Back
+        </button>
 
-      <div style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>
-        Step {step} of {totalSteps}
+        <div style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>
+          Step {step} of {totalSteps}
+        </div>
+
+        <button
+          className="btn-primary signup-nav-continue"
+          onClick={onContinue}
+          disabled={continueDisabled}
+          style={{ opacity: continueDisabled ? 0.4 : 1, pointerEvents: continueDisabled ? 'none' : 'auto' }}
+        >
+          {continueLabel || 'Continue →'}
+        </button>
       </div>
-
-      <button
-        onClick={onContinue}
-        disabled={continueDisabled}
-        className="btn-primary"
-        style={{ opacity: continueDisabled ? 0.4 : 1, pointerEvents: continueDisabled ? 'none' : 'auto' }}
-      >
-        {continueLabel || 'Continue →'}
-      </button>
-    </div>
+      <style>{`
+        @media (max-width: 640px) {
+          .signup-form-nav {
+            flex-direction: column-reverse !important;
+          }
+          .signup-nav-back,
+          .signup-nav-continue {
+            width: 100% !important;
+            text-align: center !important;
+            justify-content: center !important;
+          }
+          .signup-nav-back {
+            display: ${step === 1 ? 'none' : 'block'} !important;
+          }
+        }
+      `}</style>
+    </>
   )
 }
 

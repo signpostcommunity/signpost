@@ -27,7 +27,7 @@ export default function SignupStepper() {
       <div style={{ marginBottom: 48 }}>
         <h1 style={{
           fontFamily: "'Syne', sans-serif",
-          fontSize: '2.4rem', fontWeight: 800,
+          fontSize: 'clamp(1.5rem, 5vw, 2.4rem)', fontWeight: 800,
           letterSpacing: '-0.04em', marginBottom: 8,
         }}>
           Create Your Profile
@@ -66,8 +66,8 @@ export default function SignupStepper() {
         </div>
       </div>
 
-      {/* Step pills */}
-      <div style={{
+      {/* Step pills — desktop */}
+      <div className="signup-step-pills" style={{
         display: 'flex', gap: 0, marginBottom: 48,
         background: 'var(--surface2)', borderRadius: 12,
         padding: 6, border: '1px solid var(--border)',
@@ -100,6 +100,21 @@ export default function SignupStepper() {
           )
         })}
       </div>
+
+      {/* Step label — mobile only */}
+      <div className="signup-step-mobile" style={{
+        display: 'none', textAlign: 'center', marginBottom: 48,
+        color: 'var(--muted)', fontSize: '0.82rem',
+      }}>
+        Step {currentStep} of {STEPS.length}
+      </div>
+
+      <style>{`
+        @media (max-width: 640px) {
+          .signup-step-pills { display: none !important; }
+          .signup-step-mobile { display: block !important; }
+        }
+      `}</style>
     </div>
   )
 }
