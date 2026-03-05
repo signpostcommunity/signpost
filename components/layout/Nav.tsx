@@ -93,6 +93,21 @@ export default function Nav() {
               >
                 D/HH Portal
               </Link>
+              <Link
+                href="/interpreter/login"
+                style={{
+                  padding: '8px 18px',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-sm)',
+                  color: 'var(--muted)',
+                  fontSize: '0.9rem',
+                  fontFamily: "'DM Sans', sans-serif",
+                  textDecoration: 'none',
+                  transition: 'color 0.15s, border-color 0.15s',
+                }}
+              >
+                Log in
+              </Link>
               <Link href="/request" className="btn-primary" style={{ textDecoration: 'none' }}>
                 Request Interpreters
               </Link>
@@ -263,6 +278,14 @@ export default function Nav() {
                   style={{ color: 'var(--accent2)', textDecoration: 'none' }}
                 >
                   D/HH Portal
+                </Link>
+                <Link
+                  href="/interpreter/login"
+                  className="mobile-nav-btn"
+                  onClick={() => setMobileOpen(false)}
+                  style={{ textDecoration: 'none' }}
+                >
+                  Log in
                 </Link>
                 <Link
                   href="/request"
