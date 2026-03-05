@@ -1,173 +1,322 @@
-'use client';
+'use client'
 
-import type { ReactNode } from 'react';
+import { ReactNode, CSSProperties } from 'react'
 
-export function StepWrapper({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
-  return (
-    <div>
-      <h2 style={{
-        fontFamily: 'var(--font-syne)',
-        fontSize: '1.6rem',
-        fontWeight: 800,
-        letterSpacing: '-0.03em',
-        marginBottom: '6px',
-      }}>
-        {title}
-      </h2>
-      <p style={{ color: 'var(--muted)', marginBottom: '28px', fontSize: '0.9rem' }}>{subtitle}</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>{children}</div>
-    </div>
-  );
+// ── Wrappers ──────────────────────────────────────────────────────────────────
+
+export function StepWrapper({ children }: { children: ReactNode }) {
+  return <div>{children}</div>
 }
 
-export function FormField({ label, children }: { label: string; children: ReactNode }) {
+export function FormSection({ children, style }: { children: ReactNode; style?: CSSProperties }) {
+  return <div style={{ marginBottom: 36, ...style }}>{children}</div>
+}
+
+export function SectionTitle({ children }: { children: ReactNode }) {
   return (
-    <div>
-      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 500, color: 'var(--muted)', marginBottom: '6px' }}>
-        {label}
-      </label>
+    <div style={{
+      fontFamily: "'Syne', sans-serif",
+      fontSize: '0.7rem', fontWeight: 700,
+      letterSpacing: '0.12em', textTransform: 'uppercase',
+      color: 'var(--accent)', marginBottom: 20,
+    }}>
       {children}
     </div>
-  );
+  )
 }
 
-export function TextInput({ type = 'text', value, onChange, placeholder }: { type?: string; value: string; onChange: (v: string) => void; placeholder: string }) {
-  return (
-    <input
-      type={type}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      style={{
-        width: '100%',
-        background: 'var(--surface)',
-        border: '1px solid var(--border)',
-        borderRadius: '8px',
-        padding: '12px 14px',
-        color: 'var(--text)',
-        fontSize: '0.95rem',
-        outline: 'none',
-      }}
-      onFocus={(e) => (e.target.style.borderColor = 'rgba(0,229,255,0.5)')}
-      onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
-    />
-  );
-}
-
-export function SelectInput({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) {
-  return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      style={{
-        width: '100%',
-        background: 'var(--surface)',
-        border: '1px solid var(--border)',
-        borderRadius: '8px',
-        padding: '12px 14px',
-        color: 'var(--text)',
-        fontSize: '0.95rem',
-        outline: 'none',
-      }}
-    >
-      {options.map((o) => (
-        <option key={o.value} value={o.value}>{o.label}</option>
-      ))}
-    </select>
-  );
-}
-
-export function ChipPicker({ items, selected, onToggle }: { items: string[]; selected: string[]; onToggle: (v: string) => void }) {
-  return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-      {items.map((item) => (
-        <button
-          key={item}
-          type="button"
-          onClick={() => onToggle(item)}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            borderRadius: '100px',
-            padding: '6px 14px',
-            fontSize: '0.82rem',
-            cursor: 'pointer',
-            border: selected.includes(item) ? '1px solid rgba(0,229,255,0.5)' : '1px solid var(--border)',
-            background: selected.includes(item) ? 'rgba(0,229,255,0.12)' : 'var(--surface)',
-            color: selected.includes(item) ? 'var(--accent)' : 'var(--muted)',
-            transition: 'all 0.15s',
-          }}
-        >
-          {item}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-export function CheckboxItem({ checked, onChange, label }: { checked: boolean; onChange: (v: boolean) => void; label: string }) {
-  return (
-    <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer', marginBottom: '12px' }}>
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        style={{ marginTop: '2px', accentColor: 'var(--accent)' }}
-      />
-      <span style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.5 }}>{label}</span>
-    </label>
-  );
-}
-
-export function SummaryRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <div style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '2px' }}>{label}</div>
-      <div style={{ color: 'var(--text)', fontWeight: 500 }}>{value || '—'}</div>
-    </div>
-  );
-}
-
-export function StepNav({ onBack, onNext, nextLabel = 'Continue →', nextDisabled = false, loading = false, currentStep, totalSteps = 6 }: {
-  onBack?: () => void;
-  onNext?: () => void;
-  nextLabel?: string;
-  nextDisabled?: boolean;
-  loading?: boolean;
-  currentStep: number;
-  totalSteps?: number;
+export function FormRow({ children, full, three, style }: {
+  children: ReactNode
+  full?: boolean
+  three?: boolean
+  style?: CSSProperties
 }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px' }}>
-      {onBack ? (
-        <button
-          onClick={onBack}
-          style={{
-            background: 'none',
-            border: '1px solid var(--border)',
-            borderRadius: '8px',
-            padding: '10px 20px',
-            color: 'var(--muted)',
-            fontSize: '0.9rem',
-            cursor: 'pointer',
-          }}
-        >
-          ← Back
-        </button>
-      ) : (
-        <div />
-      )}
-      <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-        Step {currentStep} of {totalSteps}
-      </div>
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: full ? '1fr' : three ? '1fr 1fr 1fr' : '1fr 1fr',
+      gap: 16,
+      marginBottom: 16,
+      ...style,
+    }}>
+      {children}
+    </div>
+  )
+}
+
+export function FormField({ children, style }: { children: ReactNode; style?: CSSProperties }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, ...style }}>
+      {children}
+    </div>
+  )
+}
+
+export function FieldLabel({ children }: { children: ReactNode }) {
+  return (
+    <label style={{ fontSize: '0.82rem', color: 'var(--muted)', fontWeight: 500 }}>
+      {children}
+    </label>
+  )
+}
+
+// ── Inputs ────────────────────────────────────────────────────────────────────
+
+const inputStyle: CSSProperties = {
+  background: 'var(--surface2)',
+  border: '1px solid var(--border)',
+  borderRadius: 'var(--radius-sm)',
+  padding: '11px 14px',
+  color: 'var(--text)',
+  fontFamily: "'DM Sans', sans-serif",
+  fontSize: '0.9rem',
+  outline: 'none',
+  width: '100%',
+  boxSizing: 'border-box',
+}
+
+function handleFocus(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+  e.target.style.borderColor = 'var(--accent)'
+  e.target.style.boxShadow = '0 0 0 3px rgba(0,229,255,0.07)'
+}
+function handleBlur(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+  e.target.style.borderColor = 'var(--border)'
+  e.target.style.boxShadow = 'none'
+}
+
+export function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      {...props}
+      style={{ ...inputStyle, ...props.style }}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+    />
+  )
+}
+
+export function PasswordInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      type="password"
+      {...props}
+      style={{ ...inputStyle, ...props.style }}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+    />
+  )
+}
+
+export function SelectInput(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <select
+      {...props}
+      style={{ ...inputStyle, ...props.style }}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+    />
+  )
+}
+
+export function TextareaInput(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <textarea
+      {...props}
+      style={{ ...inputStyle, resize: 'vertical', minHeight: 100, ...props.style }}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+    />
+  )
+}
+
+export function UrlInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <input
+      type="url"
+      {...props}
+      style={{ ...inputStyle, ...props.style }}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
+    />
+  )
+}
+
+export function MoneyInput({ value, onChange, placeholder, style }: {
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+  style?: CSSProperties
+}) {
+  return (
+    <div style={{ position: 'relative' }}>
+      <span style={{
+        position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)',
+        color: 'var(--muted)', fontSize: '0.9rem', pointerEvents: 'none',
+      }}>$</span>
+      <input
+        type="text"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder || '0.00'}
+        style={{ ...inputStyle, paddingLeft: 28, ...style }}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+      />
+    </div>
+  )
+}
+
+// ── Buttons ───────────────────────────────────────────────────────────────────
+
+export function AddButton({ children, onClick }: { children: ReactNode; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        background: 'none', border: '1px dashed var(--border)',
+        color: 'var(--muted)', borderRadius: 'var(--radius-sm)',
+        padding: 10, width: '100%', cursor: 'pointer',
+        fontFamily: "'DM Sans', sans-serif", fontSize: '0.85rem',
+        transition: 'all 0.2s', marginTop: 10,
+      }}
+      onMouseEnter={e => {
+        const el = e.currentTarget
+        el.style.borderColor = 'var(--accent)'
+        el.style.color = 'var(--accent)'
+      }}
+      onMouseLeave={e => {
+        const el = e.currentTarget
+        el.style.borderColor = 'var(--border)'
+        el.style.color = 'var(--muted)'
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
+export function RemoveButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        background: 'rgba(255,77,109,0.1)', border: '1px solid rgba(255,77,109,0.2)',
+        color: 'var(--accent3)', borderRadius: 8,
+        padding: '8px 10px', cursor: 'pointer',
+        fontSize: '0.9rem', transition: 'all 0.2s',
+        alignSelf: 'flex-end',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,77,109,0.2)' }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,77,109,0.1)' }}
+    >
+      ✕
+    </button>
+  )
+}
+
+// ── Form Nav ──────────────────────────────────────────────────────────────────
+
+export function FormNav({
+  step, totalSteps, onBack, onContinue, continueLabel, continueDisabled,
+}: {
+  step: number
+  totalSteps: number
+  onBack: () => void
+  onContinue: () => void
+  continueLabel?: string
+  continueDisabled?: boolean
+}) {
+  return (
+    <div style={{
+      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      paddingTop: 32, borderTop: '1px solid var(--border)', marginTop: 40,
+    }}>
       <button
-        onClick={onNext}
-        disabled={nextDisabled || loading}
-        className="btn-primary"
-        style={{ opacity: !nextDisabled && !loading ? 1 : 0.4, padding: '10px 24px' }}
+        onClick={onBack}
+        style={{
+          visibility: step === 1 ? 'hidden' : 'visible',
+          background: 'none', border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
+          padding: '10px 20px', cursor: 'pointer',
+          fontFamily: "'DM Sans', sans-serif", fontSize: '0.9rem',
+          transition: 'all 0.2s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.background = 'var(--border)' }}
+        onMouseLeave={e => { e.currentTarget.style.background = 'none' }}
       >
-        {loading ? 'Creating profile…' : nextLabel}
+        ← Back
+      </button>
+
+      <div style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>
+        Step {step} of {totalSteps}
+      </div>
+
+      <button
+        onClick={onContinue}
+        disabled={continueDisabled}
+        className="btn-primary"
+        style={{ opacity: continueDisabled ? 0.4 : 1, pointerEvents: continueDisabled ? 'none' : 'auto' }}
+      >
+        {continueLabel || 'Continue →'}
       </button>
     </div>
-  );
+  )
+}
+
+// ── Toggle tile (region / travel) ─────────────────────────────────────────────
+
+export function ToggleTile({
+  label, selected, onToggle, dotColor,
+}: {
+  label: string
+  selected: boolean
+  onToggle: () => void
+  dotColor?: string
+}) {
+  return (
+    <label
+      onClick={onToggle}
+      style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '10px 14px', borderRadius: 'var(--radius-sm)',
+        border: `1px solid ${selected ? 'rgba(0,229,255,0.4)' : 'var(--border)'}`,
+        background: selected ? 'rgba(0,229,255,0.08)' : 'var(--surface2)',
+        cursor: 'pointer', transition: 'all 0.15s', userSelect: 'none',
+        gap: 8,
+      }}
+    >
+      {dotColor && (
+        <span style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
+      )}
+      <span style={{ color: selected ? 'var(--text)' : 'var(--muted)', fontSize: '0.85rem', flex: 1 }}>
+        {label}
+      </span>
+      <span style={{ color: 'var(--accent)', fontSize: '0.8rem', opacity: selected ? 1 : 0 }}>✓</span>
+    </label>
+  )
+}
+
+// ── Chip (specializations) ────────────────────────────────────────────────────
+
+export function Chip({ label, selected, onToggle }: {
+  label: string; selected: boolean; onToggle: () => void
+}) {
+  return (
+    <span
+      onClick={onToggle}
+      style={{
+        display: 'flex', alignItems: 'center',
+        justifyContent: 'flex-start',
+        padding: '0 14px', borderRadius: 'var(--radius-sm)',
+        height: 36, fontSize: '0.85rem', cursor: 'pointer',
+        transition: 'all 0.15s', userSelect: 'none',
+        border: `1px solid ${selected ? 'rgba(0,229,255,0.4)' : 'var(--border)'}`,
+        background: selected ? 'rgba(0,229,255,0.1)' : 'var(--surface2)',
+        color: selected ? 'var(--accent)' : 'var(--muted)',
+        fontFamily: "'DM Sans', sans-serif",
+      }}
+    >
+      {label}
+    </span>
+  )
 }

@@ -1,160 +1,214 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import { useSignupForm } from './FormContext';
-import { StepWrapper, CheckboxItem, SummaryRow, StepNav } from './FormFields';
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createBrowserClient } from '@supabase/ssr'
+import { useForm } from './FormContext'
+import { StepWrapper, FormNav } from './FormFields'
 
-interface Props { onBack: () => void }
+export default function Step6Review({ onBack }: { onBack: () => void }) {
+  const { formData, updateField, draftUserId } = useForm()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const router = useRouter()
 
-export default function Step6Review({ onBack }: Props) {
-  const router = useRouter();
-  const { form, update } = useSignupForm();
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const allAgreed = formData.agreeTerms && formData.agreeBooking && formData.agreeCredentials
 
-  const canSubmit = form.agreeTerms && form.agreeDirectory;
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
   async function handleSubmit() {
-    setError('');
-    setLoading(true);
+    if (!allAgreed || isSubmitting) return
+    setIsSubmitting(true)
+    setError(null)
 
-    const supabase = createClient();
+    try {
+      let userId = draftUserId
 
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: form.email,
-      password: form.password,
-    });
+      if (!userId) {
+        // Create the Supabase auth account
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+        })
+        if (signUpError) throw signUpError
+        userId = signUpData.user?.id ?? null
+        if (!userId) throw new Error('Account creation failed — no user ID returned.')
 
-    if (authError || !authData.user) {
-      setError(authError?.message || 'Failed to create account');
-      setLoading(false);
-      return;
-    }
+        // Insert user_profiles row
+        await supabase.from('user_profiles').insert({
+          id: userId,
+          role: 'interpreter',
+          email: formData.email,
+        })
+      }
 
-    const userId = authData.user.id;
-
-    const { error: profileError } = await supabase
-      .from('user_profiles')
-      .insert({ id: userId, role: 'interpreter' });
-
-    if (profileError) {
-      setError(profileError.message);
-      setLoading(false);
-      return;
-    }
-
-    const { data: interpData, error: interpError } = await supabase
-      .from('interpreter_profiles')
-      .insert({
+      // Upsert interpreter_profiles with status: pending (awaiting admin review)
+      await supabase.from('interpreter_profiles').upsert({
         user_id: userId,
-        name: `${form.firstName} ${form.lastName}`.trim(),
-        location: `${form.city ? form.city + ', ' : ''}${form.country}`,
-        country: form.country,
-        state: form.city,
-        interpreter_type: form.interpreterType,
-        work_mode: form.workMode,
-        years_experience: form.yearsExp ? parseInt(form.yearsExp) : null,
-        bio: form.bio,
-        video_url: form.videoUrl,
-        video_desc: form.videoDesc,
         status: 'pending',
-      })
-      .select()
-      .single();
+        draft_step: 6,
+        draft_data: formData,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        country: formData.country,
+        city: formData.city,
+        bio: formData.bio,
+        interpreter_type: formData.interpreterType,
+        mode_of_work: formData.modeOfWork,
+        years_experience: formData.yearsExperience,
+        website: formData.website,
+        linkedin: formData.linkedin,
+        regions: formData.regions,
+        event_coordination: formData.eventCoordination,
+        coordination_bio: formData.coordinationBio,
+        sign_languages: formData.signLanguages,
+        spoken_languages: formData.spokenLanguages,
+        specializations: formData.specializations,
+        video_url: formData.videoUrl,
+        video_description: formData.videoDescription,
+        submitted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' })
 
-    if (interpError || !interpData) {
-      setError(interpError?.message || 'Failed to create interpreter profile');
-      setLoading(false);
-      return;
+      router.push('/interpreter/dashboard')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+      setIsSubmitting(false)
     }
-
-    const interpId = interpData.id;
-
-    await Promise.all([
-      form.signLangs.length > 0 && supabase.from('interpreter_sign_languages').insert(
-        form.signLangs.map((l) => ({ interpreter_id: interpId, language: l }))
-      ),
-      form.spokenLangs.length > 0 && supabase.from('interpreter_spoken_languages').insert(
-        form.spokenLangs.map((l) => ({ interpreter_id: interpId, language: l }))
-      ),
-      form.specs.length > 0 && supabase.from('interpreter_specializations').insert(
-        form.specs.map((s) => ({ interpreter_id: interpId, specialization: s }))
-      ),
-      form.regions.length > 0 && supabase.from('interpreter_regions').insert(
-        form.regions.map((r) => ({ interpreter_id: interpId, region: r }))
-      ),
-      form.certs.length > 0 && supabase.from('interpreter_certifications').insert(
-        form.certs.map((c) => ({ interpreter_id: interpId, name: c }))
-      ),
-      form.hourlyRate && supabase.from('interpreter_rate_profiles').insert({
-        interpreter_id: interpId,
-        label: 'Standard Rate',
-        is_default: true,
-        hourly_rate: parseFloat(form.hourlyRate),
-        currency: form.currency,
-        min_booking: parseInt(form.minBooking),
-        cancellation_policy: form.cancellationPolicy,
-      }),
-    ]);
-
-    router.push('/interpreter/dashboard');
   }
 
   return (
-    <>
-      <StepWrapper title="Review & Submit" subtitle="Almost there. Please review and agree to proceed.">
+    <StepWrapper>
+      <div style={{
+        background: 'var(--card-bg)', border: '1px solid var(--border)',
+        borderRadius: 'var(--radius)', padding: 32, textAlign: 'center',
+      }}>
+        {/* Icon */}
         <div style={{
-          background: 'var(--surface2)',
-          border: '1px solid var(--border)',
-          borderRadius: '10px',
-          padding: '20px',
-          marginBottom: '24px',
+          margin: '0 auto 20px', width: 64, height: 64,
+          background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.25)',
+          borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '0.85rem' }}>
-            <SummaryRow label="Name" value={`${form.firstName} ${form.lastName}`.trim()} />
-            <SummaryRow label="Email" value={form.email} />
-            <SummaryRow label="Country" value={form.country} />
-            <SummaryRow label="Type" value={form.interpreterType} />
-            <SummaryRow label="Sign Languages" value={form.signLangs.join(', ') || '—'} />
-            <SummaryRow label="Certifications" value={form.certs.join(', ') || '—'} />
-            <SummaryRow label="Rate" value={form.hourlyRate ? `${form.currency} ${form.hourlyRate}/hr` : '—'} />
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <path d="M8 17l5 5 11-12" stroke="#00e5ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="16" cy="16" r="12" stroke="#00e5ff" strokeWidth="1.5" />
+          </svg>
+        </div>
+
+        <h2 style={{
+          fontFamily: "'Syne', sans-serif", fontWeight: 800, marginBottom: 8,
+        }}>
+          Ready to Submit
+        </h2>
+        <p style={{ color: 'var(--muted)', maxWidth: 400, margin: '0 auto 24px', lineHeight: 1.6 }}>
+          Your profile will go live once submitted. Credentials you've linked or uploaded documentation for will display a{' '}
+          <span style={{ color: 'var(--accent)', fontWeight: 600 }}>✓ Verified</span>{' '}
+          badge. You can update your profile and add verification links at any time.
+        </p>
+
+        {/* Platform Agreement */}
+        <div style={{
+          background: 'var(--surface2)', border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-sm)', padding: '20px 24px',
+          textAlign: 'left', margin: '0 auto 24px', maxWidth: 480,
+        }}>
+          <div style={{
+            fontFamily: "'Syne', sans-serif", fontSize: '0.7rem', fontWeight: 700,
+            letterSpacing: '0.1em', textTransform: 'uppercase',
+            color: 'var(--accent)', marginBottom: 14,
+          }}>
+            Platform Agreement
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <label style={{
+              display: 'flex', alignItems: 'flex-start', gap: 12,
+              cursor: 'pointer', fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6,
+            }}>
+              <input
+                type="checkbox"
+                checked={formData.agreeTerms}
+                onChange={e => updateField('agreeTerms', e.target.checked)}
+                style={{ marginTop: 3, accentColor: 'var(--accent)', flexShrink: 0, width: 'auto' }}
+              />
+              <span>
+                I have read and agree to the{' '}
+                <a href="/policies" target="_blank" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+                  Signpost Platform Policies &amp; Terms of Use
+                </a>
+                , including the limitation of liability and dispute resolution provisions.
+              </span>
+            </label>
+
+            <label style={{
+              display: 'flex', alignItems: 'flex-start', gap: 12,
+              cursor: 'pointer', fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6,
+            }}>
+              <input
+                type="checkbox"
+                checked={formData.agreeBooking}
+                onChange={e => updateField('agreeBooking', e.target.checked)}
+                style={{ marginTop: 3, accentColor: 'var(--accent)', flexShrink: 0, width: 'auto' }}
+              />
+              <span>
+                I understand that connections made through Signpost are platform connections. Work relationships that originate here — whether with a new client or a returning one — will continue to be booked through the platform. Routing bookings outside Signpost to avoid the platform fee is not permitted.
+              </span>
+            </label>
+
+            <label style={{
+              display: 'flex', alignItems: 'flex-start', gap: 12,
+              cursor: 'pointer', fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6,
+            }}>
+              <input
+                type="checkbox"
+                checked={formData.agreeCredentials}
+                onChange={e => updateField('agreeCredentials', e.target.checked)}
+                style={{ marginTop: 3, accentColor: 'var(--accent)', flexShrink: 0, width: 'auto' }}
+              />
+              <span>
+                I confirm that all credential and experience information I have provided is accurate to the best of my knowledge. I understand that misrepresentation may result in removal from the platform.
+              </span>
+            </label>
           </div>
         </div>
-        <CheckboxItem
-          checked={form.agreeTerms}
-          onChange={(v) => update('agreeTerms', v)}
-          label="I agree to the signpost Terms of Service and Privacy Policy."
-        />
-        <CheckboxItem
-          checked={form.agreeDirectory}
-          onChange={(v) => update('agreeDirectory', v)}
-          label="I consent to my profile being listed in the public interpreter directory once approved."
-        />
+
+        {/* Error message */}
         {error && (
-          <div style={{
-            background: 'rgba(255,107,133,0.1)',
-            border: '1px solid rgba(255,107,133,0.3)',
-            borderRadius: '8px',
-            padding: '12px 16px',
-            color: 'var(--accent3)',
-            fontSize: '0.85rem',
-            marginTop: '16px',
+          <p style={{
+            color: 'var(--accent3)', fontSize: '0.85rem',
+            marginBottom: 16, maxWidth: 400, margin: '0 auto 16px',
           }}>
             {error}
-          </div>
+          </p>
         )}
-      </StepWrapper>
 
-      <StepNav
+        {/* Submit button */}
+        <button
+          onClick={handleSubmit}
+          disabled={!allAgreed || isSubmitting}
+          className="btn-primary btn-large"
+          style={{
+            opacity: allAgreed && !isSubmitting ? 1 : 0.4,
+            pointerEvents: allAgreed && !isSubmitting ? 'auto' : 'none',
+          }}
+        >
+          {isSubmitting ? 'Submitting…' : 'Submit Profile for Review'}
+        </button>
+      </div>
+
+      <FormNav
+        step={6}
+        totalSteps={6}
         onBack={onBack}
-        onNext={handleSubmit}
-        nextLabel="Create Profile →"
-        nextDisabled={!canSubmit}
-        loading={loading}
-        currentStep={6}
+        onContinue={handleSubmit}
+        continueLabel={isSubmitting ? 'Submitting…' : 'Submit Profile for Review'}
+        continueDisabled={!allAgreed || isSubmitting}
       />
-    </>
-  );
+    </StepWrapper>
+  )
 }

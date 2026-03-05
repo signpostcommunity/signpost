@@ -1,63 +1,129 @@
-'use client';
+'use client'
 
-// app/(auth)/interpreter/signup/page.tsx
-// DROP THIS FILE IN — replaces the current signup page entirely.
-// Stepper + hero match prototype index.html ~line 2832–3486
+import { useState } from 'react'
+import { createBrowserClient } from '@supabase/ssr'
+import { FormProvider, useForm } from '@/components/interpreter-signup/FormContext'
+import SignupStepper from '@/components/interpreter-signup/SignupStepper'
+import Step1Personal from '@/components/interpreter-signup/Step1Personal'
+import Step2Languages from '@/components/interpreter-signup/Step2Languages'
+import Step3Credentials from '@/components/interpreter-signup/Step3Credentials'
+import Step4Rates from '@/components/interpreter-signup/Step4Rates'
+import Step5Video from '@/components/interpreter-signup/Step5Video'
+import Step6Review from '@/components/interpreter-signup/Step6Review'
 
-import { useState } from 'react';
-import { SignupFormProvider } from '@/components/interpreter-signup/FormContext';
-import SignupStepper from '@/components/interpreter-signup/SignupStepper';
-import Step1Personal from '@/components/interpreter-signup/Step1Personal';
-import Step2Languages from '@/components/interpreter-signup/Step2Languages';
-import Step3Credentials from '@/components/interpreter-signup/Step3Credentials';
-import Step4Rates from '@/components/interpreter-signup/Step4Rates';
-import Step5Video from '@/components/interpreter-signup/Step5Video';
-import Step6Review from '@/components/interpreter-signup/Step6Review';
+function SignupForm() {
+  const { currentStep, setCurrentStep, formData, updateFormData, setDraftUserId, saveDraft } = useForm()
+  const [step1Error, setStep1Error] = useState<string | null>(null)
+  const [isCreatingAccount, setIsCreatingAccount] = useState(false)
 
-const TOTAL_STEPS = 6;
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
-export default function InterpreterSignupPage() {
-  const [currentStep, setCurrentStep] = useState(1);
+  // Step 1 → 2: create account, then save draft
+  async function handleStep1Continue() {
+    setStep1Error(null)
 
-  function goToStep(step: number) {
-    if (step >= 1 && step <= TOTAL_STEPS) setCurrentStep(step);
+    if (!formData.email || !formData.password) {
+      setStep1Error('Email and password are required to save your progress.')
+      return
+    }
+    if (formData.password.length < 8) {
+      setStep1Error('Password must be at least 8 characters.')
+      return
+    }
+
+    setIsCreatingAccount(true)
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+      })
+      if (error) {
+        setStep1Error(error.message)
+        return
+      }
+
+      const userId = data.user?.id
+      if (!userId) {
+        setStep1Error('Account creation failed. Please try again.')
+        return
+      }
+
+      // Insert user_profiles row
+      await supabase.from('user_profiles').insert({
+        id: userId,
+        role: 'interpreter',
+        email: formData.email,
+      })
+
+      setDraftUserId(userId)
+
+      // Save initial draft
+      await supabase.from('interpreter_profiles').upsert({
+        user_id: userId,
+        status: 'draft',
+        draft_step: 2,
+        draft_data: formData,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' })
+
+      setCurrentStep(2)
+    } finally {
+      setIsCreatingAccount(false)
+    }
   }
 
-  function next() {
-    goToStep(currentStep + 1);
-  }
-
-  function back() {
-    goToStep(currentStep - 1);
+  async function goToStep(step: number) {
+    await saveDraft()
+    setCurrentStep(step)
   }
 
   return (
-    <SignupFormProvider>
-      <div
-        style={{
-          minHeight: '100vh',
-          padding: '100px 40px 60px',
-          background: 'var(--bg)',
-        }}
-      >
-        <div style={{ maxWidth: '680px', margin: '0 auto' }}>
+    <div style={{ padding: '100px 40px 60px' }}>
+      <div style={{ maxWidth: 680, margin: '0 auto' }}>
+        <SignupStepper />
 
-          {/* ── Hero + Step indicator — persistent across all 6 steps ── */}
-          <SignupStepper
-            currentStep={currentStep}
-            onStepClick={(step) => goToStep(step)}
-          />
-
-          {/* ── Step content ── */}
-          {currentStep === 1 && <Step1Personal onNext={next} />}
-          {currentStep === 2 && <Step2Languages onNext={next} onBack={back} />}
-          {currentStep === 3 && <Step3Credentials onNext={next} onBack={back} />}
-          {currentStep === 4 && <Step4Rates onNext={next} onBack={back} />}
-          {currentStep === 5 && <Step5Video onNext={next} onBack={back} />}
-          {currentStep === 6 && <Step6Review onBack={back} />}
-
-        </div>
+        {currentStep === 1 && (
+          <>
+            <Step1Personal onContinue={handleStep1Continue} />
+            {step1Error && (
+              <p style={{ color: 'var(--accent3)', fontSize: '0.85rem', marginTop: 12 }}>
+                {step1Error}
+              </p>
+            )}
+            {isCreatingAccount && (
+              <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: 12 }}>
+                Creating your account…
+              </p>
+            )}
+          </>
+        )}
+        {currentStep === 2 && (
+          <Step2Languages onBack={() => setCurrentStep(1)} onContinue={() => goToStep(3)} />
+        )}
+        {currentStep === 3 && (
+          <Step3Credentials onBack={() => setCurrentStep(2)} onContinue={() => goToStep(4)} />
+        )}
+        {currentStep === 4 && (
+          <Step4Rates onBack={() => setCurrentStep(3)} onContinue={() => goToStep(5)} />
+        )}
+        {currentStep === 5 && (
+          <Step5Video onBack={() => setCurrentStep(4)} onContinue={() => goToStep(6)} />
+        )}
+        {currentStep === 6 && (
+          <Step6Review onBack={() => setCurrentStep(5)} />
+        )}
       </div>
-    </SignupFormProvider>
-  );
+    </div>
+  )
+}
+
+export default function InterpreterSignupPage() {
+  return (
+    <FormProvider>
+      <SignupForm />
+    </FormProvider>
+  )
 }

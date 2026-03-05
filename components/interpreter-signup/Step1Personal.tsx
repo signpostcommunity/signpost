@@ -1,230 +1,249 @@
-'use client';
+'use client'
 
-import { useSignupForm } from './FormContext';
-import { FormField, TextInput, SelectInput, CheckboxItem, StepNav } from './FormFields';
+import { useForm } from './FormContext'
+import {
+  StepWrapper, FormSection, SectionTitle, FormRow, FormField, FieldLabel,
+  TextInput, PasswordInput, SelectInput, TextareaInput, UrlInput,
+  ToggleTile, FormNav,
+} from './FormFields'
 
-const REGION_TILES = [
-  { id: 'Worldwide', label: '\u{1F310} Worldwide', color: '#00e5ff' },
-  { id: 'NA', label: 'NA — North America', color: '#f97316' },
-  { id: 'LATAM', label: 'LATAM — Latin America & Caribbean', color: '#a78bfa' },
-  { id: 'EU', label: 'EU — Europe', color: '#00e5ff' },
-  { id: 'AF', label: 'AF — Africa', color: '#22c55e' },
-  { id: 'ME', label: 'ME — Middle East', color: '#eab308' },
-  { id: 'SA', label: 'SA — South & Central Asia', color: '#f472b6' },
-  { id: 'EA', label: 'EA — East & Southeast Asia', color: '#eab308' },
-  { id: 'OC', label: 'OC — Oceania & Pacific', color: '#2dd4bf' },
-];
+const REGIONS = [
+  { label: '🌍 Worldwide', color: '#00e5ff' },
+  { label: 'NA — North America', color: '#f97316' },
+  { label: 'LATAM — Latin America & Caribbean', color: '#a78bfa' },
+  { label: 'EU — Europe', color: '#60a5fa' },
+  { label: 'AF — Africa', color: '#34d399' },
+  { label: 'ME — Middle East', color: '#fb923c' },
+  { label: 'SA — South & Central Asia', color: '#f472b6' },
+  { label: 'EA — East & Southeast Asia', color: '#facc15' },
+  { label: 'OC — Oceania & Pacific', color: '#4dd9ac' },
+]
 
-const COUNTRIES = [
-  'United States', 'United Kingdom', 'Spain', 'Australia', 'Germany',
-  'France', 'Japan', 'Brazil', 'Canada', 'Other',
-];
+export default function Step1Personal({ onContinue }: { onContinue: () => void }) {
+  const { formData, updateField } = useForm()
 
-interface Props { onNext: () => void }
-
-export default function Step1Personal({ onNext }: Props) {
-  const { form, update, toggleArrayItem } = useSignupForm();
-
-  const canContinue = form.firstName && form.lastName && form.email && form.country;
+  function toggleRegion(label: string) {
+    const current = formData.regions
+    updateField('regions', current.includes(label)
+      ? current.filter(r => r !== label)
+      : [...current, label]
+    )
+  }
 
   return (
-    <>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-        {/* Row 1: First Name | Last Name | Phone */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
-          <FormField label="First Name *">
-            <TextInput value={form.firstName} onChange={(v) => update('firstName', v)} placeholder="Sofia" />
-          </FormField>
-          <FormField label="Last Name *">
-            <TextInput value={form.lastName} onChange={(v) => update('lastName', v)} placeholder="Reyes" />
-          </FormField>
-          <FormField label="Phone / WhatsApp">
-            <TextInput type="tel" value={form.phone} onChange={(v) => update('phone', v)} placeholder="+1 555 000 0000" />
-          </FormField>
-        </div>
-
-        {/* Row 2: Email | Country | City */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
-          <FormField label="Email Address *">
-            <TextInput type="email" value={form.email} onChange={(v) => update('email', v)} placeholder="sofia@example.com" />
-          </FormField>
-          <FormField label="Country *">
-            <SelectInput
-              value={form.country}
-              onChange={(v) => update('country', v)}
-              options={[
-                { value: '', label: 'Select country…' },
-                ...COUNTRIES.map((c) => ({ value: c, label: c })),
-              ]}
+    <StepWrapper>
+      {/* Personal Information */}
+      <FormSection>
+        <SectionTitle>Personal Information</SectionTitle>
+        <FormRow three>
+          <FormField>
+            <FieldLabel>First Name *</FieldLabel>
+            <TextInput
+              placeholder="Sofia"
+              value={formData.firstName}
+              onChange={e => updateField('firstName', e.target.value)}
             />
           </FormField>
-          <FormField label="City / Region *">
-            <TextInput value={form.city} onChange={(v) => update('city', v)} placeholder="Madrid" />
-          </FormField>
-        </div>
-
-        {/* Bio */}
-        <FormField label="Professional Bio *">
-          <textarea
-            value={form.bio}
-            onChange={(e) => update('bio', e.target.value)}
-            placeholder="Tell the Deaf community about yourself, your background, your approach to interpreting, and what you're passionate about..."
-            rows={4}
-            style={{
-              width: '100%',
-              background: 'var(--surface)',
-              border: '1px solid var(--border)',
-              borderRadius: '8px',
-              padding: '12px 14px',
-              color: 'var(--text)',
-              fontSize: '0.95rem',
-              outline: 'none',
-              resize: 'vertical',
-              fontFamily: 'var(--font-dm)',
-            }}
-          />
-        </FormField>
-
-        {/* Row 3: Interpreter Type | Mode of Work | Years of Experience */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
-          <FormField label="Interpreter Type *">
-            <SelectInput
-              value={form.interpreterType}
-              onChange={(v) => update('interpreterType', v)}
-              options={[
-                { value: '', label: 'Select…' },
-                { value: 'hearing', label: 'Hearing Interpreter' },
-                { value: 'deaf', label: 'Deaf Interpreter' },
-              ]}
+          <FormField>
+            <FieldLabel>Last Name *</FieldLabel>
+            <TextInput
+              placeholder="Reyes"
+              value={formData.lastName}
+              onChange={e => updateField('lastName', e.target.value)}
             />
           </FormField>
-          <FormField label="Mode of Work *">
-            <SelectInput
-              value={form.workMode}
-              onChange={(v) => update('workMode', v)}
-              options={[
-                { value: '', label: 'Select…' },
-                { value: 'remote', label: 'Remote only' },
-                { value: 'onsite', label: 'On-site only' },
-                { value: 'both', label: 'Both remote & on-site' },
-              ]}
+          <FormField>
+            <FieldLabel>Phone / WhatsApp</FieldLabel>
+            <TextInput
+              type="tel"
+              placeholder="+1 555 000 0000"
+              value={formData.phone}
+              onChange={e => updateField('phone', e.target.value)}
             />
           </FormField>
-          <FormField label="Years of Experience *">
-            <SelectInput
-              value={form.yearsExp}
-              onChange={(v) => update('yearsExp', v)}
-              options={[
-                { value: '', label: 'Select…' },
-                { value: '0', label: 'Less than 1 year' },
-                { value: '1', label: '1–2 years' },
-                { value: '3', label: '3–5 years' },
-                { value: '6', label: '6–10 years' },
-                { value: '11', label: '11–20 years' },
-                { value: '20', label: '20+ years' },
-              ]}
+        </FormRow>
+
+        <FormRow three>
+          <FormField>
+            <FieldLabel>Email Address *</FieldLabel>
+            <TextInput
+              type="email"
+              placeholder="sofia@example.com"
+              value={formData.email}
+              onChange={e => updateField('email', e.target.value)}
             />
           </FormField>
-        </div>
-
-        {/* Row 4: Website | LinkedIn */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-          <FormField label="Website">
-            <TextInput value={form.website} onChange={(v) => update('website', v)} placeholder="https://yoursite.com" />
+          <FormField>
+            <FieldLabel>Password *</FieldLabel>
+            <PasswordInput
+              placeholder="Create a password"
+              value={formData.password}
+              onChange={e => updateField('password', e.target.value)}
+            />
           </FormField>
-          <FormField label="LinkedIn Profile">
-            <TextInput value={form.linkedin} onChange={(v) => update('linkedin', v)} placeholder="https://linkedin.com/in/…" />
+          <FormField>
+            <FieldLabel>Country *</FieldLabel>
+            <SelectInput
+              value={formData.country}
+              onChange={e => updateField('country', e.target.value)}
+            >
+              <option value="">Select country…</option>
+              <option>United States</option>
+              <option>United Kingdom</option>
+              <option>Spain</option>
+              <option>Australia</option>
+              <option>Germany</option>
+              <option>France</option>
+              <option>Japan</option>
+              <option>Brazil</option>
+              <option>Canada</option>
+              <option>Other</option>
+            </SelectInput>
           </FormField>
-        </div>
+        </FormRow>
 
-        {/* Regions */}
-        <div>
-          <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '8px' }}>
-            Regions Available For Work Travel
-          </div>
-          <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginBottom: '12px', lineHeight: 1.6 }}>
-            Select all regions where you are willing and able to work on-site. Remote work is available globally regardless of selection.
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
-            {REGION_TILES.map((r) => {
-              const selected = form.regions.includes(r.id);
-              return (
-                <button
-                  key={r.id}
-                  type="button"
-                  onClick={() => toggleArrayItem('regions', r.id)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    padding: '12px 14px',
-                    borderRadius: '10px',
-                    border: selected ? `1px solid ${r.color}` : '1px solid var(--border)',
-                    background: selected ? `${r.color}12` : 'var(--surface)',
-                    color: selected ? 'var(--text)' : 'var(--muted)',
-                    cursor: 'pointer',
-                    fontSize: '0.82rem',
-                    textAlign: 'left',
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: r.color, flexShrink: 0 }} />
-                  {r.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <FormRow three>
+          <FormField>
+            <FieldLabel>City / Region *</FieldLabel>
+            <TextInput
+              placeholder="Madrid"
+              value={formData.city}
+              onChange={e => updateField('city', e.target.value)}
+            />
+          </FormField>
+          <FormField>
+            <FieldLabel>Interpreter Type *</FieldLabel>
+            <SelectInput
+              value={formData.interpreterType}
+              onChange={e => updateField('interpreterType', e.target.value)}
+            >
+              <option value="">Select…</option>
+              <option>Hearing Interpreter</option>
+              <option>Deaf Interpreter</option>
+            </SelectInput>
+          </FormField>
+          <FormField>
+            <FieldLabel>Mode of Work *</FieldLabel>
+            <SelectInput
+              value={formData.modeOfWork}
+              onChange={e => updateField('modeOfWork', e.target.value)}
+            >
+              <option value="">Select…</option>
+              <option>Remote only</option>
+              <option>On-site only</option>
+              <option>Both remote and on-site</option>
+            </SelectInput>
+          </FormField>
+        </FormRow>
 
-        {/* Event Coordination */}
-        <div>
-          <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>
-            Event Coordination
-          </div>
-          <CheckboxItem
-            checked={form.eventCoordination}
-            onChange={(v) => update('eventCoordination', v)}
-            label="I am available to coordinate interpreter teams for complex and/or large-scale events (conferences, summits, multi-day institutional events, and more)"
-          />
-          {form.eventCoordination && (
-            <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <FormRow three>
+          <FormField>
+            <FieldLabel>Years of Experience *</FieldLabel>
+            <SelectInput
+              value={formData.yearsExperience}
+              onChange={e => updateField('yearsExperience', e.target.value)}
+            >
+              <option value="">Select…</option>
+              <option>Less than 1 year</option>
+              <option>1–3 years</option>
+              <option>3–5 years</option>
+              <option>5–10 years</option>
+              <option>10–15 years</option>
+              <option>15–20 years</option>
+              <option>20+ years</option>
+            </SelectInput>
+          </FormField>
+          <FormField>
+            <FieldLabel>Website</FieldLabel>
+            <UrlInput
+              placeholder="https://yoursite.com"
+              value={formData.website}
+              onChange={e => updateField('website', e.target.value)}
+            />
+          </FormField>
+          <FormField>
+            <FieldLabel>LinkedIn Profile</FieldLabel>
+            <UrlInput
+              placeholder="https://linkedin.com/in/…"
+              value={formData.linkedin}
+              onChange={e => updateField('linkedin', e.target.value)}
+            />
+          </FormField>
+        </FormRow>
+
+        <FormRow full>
+          <FormField>
+            <FieldLabel>Professional Bio *</FieldLabel>
+            <TextareaInput
+              placeholder="Tell the Deaf community about yourself, your background, your approach to interpreting, and what you're passionate about…"
+              value={formData.bio}
+              onChange={e => updateField('bio', e.target.value)}
+            />
+          </FormField>
+        </FormRow>
+      </FormSection>
+
+      {/* Regions */}
+      <FormSection style={{ marginTop: 32 }}>
+        <SectionTitle>Regions Available For Work Travel</SectionTitle>
+        <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginBottom: 12, marginTop: -12 }}>
+          Select all regions where you are willing and able to work on-site. Remote work is available globally regardless of selection.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
+          {REGIONS.map(r => (
+            <ToggleTile
+              key={r.label}
+              label={r.label}
+              dotColor={r.color}
+              selected={formData.regions.includes(r.label)}
+              onToggle={() => toggleRegion(r.label)}
+            />
+          ))}
+        </div>
+      </FormSection>
+
+      {/* Event Coordination */}
+      <FormSection style={{ marginTop: 32 }}>
+        <SectionTitle>Event Coordination</SectionTitle>
+        <div style={{
+          background: 'var(--surface2)', border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-sm)', padding: '16px 18px',
+          display: 'flex', flexDirection: 'column', gap: 12,
+        }}>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 12, cursor: 'pointer', color: 'var(--text)' }}>
+            <input
+              type="checkbox"
+              checked={formData.eventCoordination}
+              onChange={e => updateField('eventCoordination', e.target.checked)}
+              style={{ width: 'auto', marginTop: 3, accentColor: 'var(--accent)' }}
+            />
+            <span>I am available to coordinate interpreter teams for complex and/or large-scale events (conferences, summits, multi-day institutional events, and more)</span>
+          </label>
+
+          {formData.eventCoordination && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div style={{
-                background: 'rgba(0,229,255,0.06)',
-                border: '1px solid rgba(0,229,255,0.15)',
-                borderRadius: '8px',
-                padding: '12px 16px',
-                fontSize: '0.82rem',
-                color: 'var(--muted)',
-                lineHeight: 1.6,
+                background: 'rgba(0,229,255,0.05)', border: '1px solid rgba(0,229,255,0.15)',
+                borderRadius: 8, padding: '12px 14px', fontSize: '0.82rem',
+                color: 'var(--muted)', lineHeight: 1.6,
               }}>
-                Coordination rates are negotiated directly with the requester. You&apos;ll discuss the scope, team size, and your fee once an inquiry comes in.
+                Coordination rates are negotiated directly with the requester. You'll discuss the scope, team size, and your fee once an inquiry comes in.
               </div>
-              <FormField label="Brief description of your coordination experience">
-                <textarea
-                  value={form.coordinationBio}
-                  onChange={(e) => update('coordinationBio', e.target.value)}
-                  placeholder="Describe your experience coordinating interpreter teams..."
-                  rows={3}
-                  style={{
-                    width: '100%',
-                    background: 'var(--surface)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '8px',
-                    padding: '12px 14px',
-                    color: 'var(--text)',
-                    fontSize: '0.95rem',
-                    outline: 'none',
-                    resize: 'vertical',
-                    fontFamily: 'var(--font-dm)',
-                  }}
+              <FormField>
+                <FieldLabel>Brief description of your coordination experience</FieldLabel>
+                <TextareaInput
+                  placeholder="e.g. I have coordinated interpreter teams for UN General Assembly side events and international academic conferences, managing scheduling, relay logistics, and on-site briefings…"
+                  value={formData.coordinationBio}
+                  onChange={e => updateField('coordinationBio', e.target.value)}
+                  style={{ minHeight: 80 }}
                 />
               </FormField>
             </div>
           )}
         </div>
-      </div>
+      </FormSection>
 
-      <StepNav onNext={onNext} nextDisabled={!canContinue} currentStep={1} />
-    </>
-  );
+      <FormNav step={1} totalSteps={6} onBack={() => {}} onContinue={onContinue} />
+    </StepWrapper>
+  )
 }
