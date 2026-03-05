@@ -6,6 +6,7 @@ import {
   TextInput, PasswordInput, SelectInput, TextareaInput, UrlInput,
   ToggleTile, FormNav,
 } from './FormFields'
+import GoogleSignInButton from '@/components/ui/GoogleSignInButton'
 
 const REGIONS = [
   { label: '🌍 Worldwide', color: '#00e5ff' },
@@ -57,6 +58,19 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
             />
           </FormField>
         </FormRow>
+
+        {/* Or divider */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 12, margin: '4px 0 16px',
+        }}>
+          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+          <span style={{ color: 'var(--muted)', fontSize: '0.78rem', whiteSpace: 'nowrap' }}>
+            or continue with
+          </span>
+          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+        </div>
+
+        <GoogleSignInButton role="interpreter" />
       </FormSection>
 
       {/* Divider */}
