@@ -32,10 +32,40 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
 
   return (
     <StepWrapper>
+      {/* Account credentials — top of form, before everything else */}
+      <FormSection>
+        <SectionTitle>Create Your Account</SectionTitle>
+        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
+          Enter your email and a password now so your profile is saved as a draft at each step. You can close the form and return to finish it any time.
+        </p>
+        <FormRow>
+          <FormField>
+            <FieldLabel>Email Address *</FieldLabel>
+            <TextInput
+              type="email"
+              placeholder="sofia@example.com"
+              value={formData.email}
+              onChange={e => updateField('email', e.target.value)}
+            />
+          </FormField>
+          <FormField>
+            <FieldLabel>Password *</FieldLabel>
+            <PasswordInput
+              placeholder="At least 8 characters"
+              value={formData.password}
+              onChange={e => updateField('password', e.target.value)}
+            />
+          </FormField>
+        </FormRow>
+      </FormSection>
+
+      {/* Divider */}
+      <div style={{ borderTop: '1px solid var(--border)', marginBottom: 36 }} />
+
       {/* Personal Information */}
       <FormSection>
         <SectionTitle>Personal Information</SectionTitle>
-        <FormRow three>
+        <FormRow>
           <FormField>
             <FieldLabel>First Name *</FieldLabel>
             <TextInput
@@ -52,35 +82,9 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
               onChange={e => updateField('lastName', e.target.value)}
             />
           </FormField>
-          <FormField>
-            <FieldLabel>Phone / WhatsApp</FieldLabel>
-            <TextInput
-              type="tel"
-              placeholder="+1 555 000 0000"
-              value={formData.phone}
-              onChange={e => updateField('phone', e.target.value)}
-            />
-          </FormField>
         </FormRow>
 
-        <FormRow three>
-          <FormField>
-            <FieldLabel>Email Address *</FieldLabel>
-            <TextInput
-              type="email"
-              placeholder="sofia@example.com"
-              value={formData.email}
-              onChange={e => updateField('email', e.target.value)}
-            />
-          </FormField>
-          <FormField>
-            <FieldLabel>Password *</FieldLabel>
-            <PasswordInput
-              placeholder="Create a password"
-              value={formData.password}
-              onChange={e => updateField('password', e.target.value)}
-            />
-          </FormField>
+        <FormRow>
           <FormField>
             <FieldLabel>Country *</FieldLabel>
             <SelectInput
@@ -100,9 +104,6 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
               <option>Other</option>
             </SelectInput>
           </FormField>
-        </FormRow>
-
-        <FormRow three>
           <FormField>
             <FieldLabel>City / Region *</FieldLabel>
             <TextInput
@@ -111,6 +112,37 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
               onChange={e => updateField('city', e.target.value)}
             />
           </FormField>
+        </FormRow>
+
+        <FormRow>
+          <FormField>
+            <FieldLabel>Phone / WhatsApp</FieldLabel>
+            <TextInput
+              type="tel"
+              placeholder="+1 555 000 0000"
+              value={formData.phone}
+              onChange={e => updateField('phone', e.target.value)}
+            />
+          </FormField>
+          <FormField>
+            <FieldLabel>Years of Experience *</FieldLabel>
+            <SelectInput
+              value={formData.yearsExperience}
+              onChange={e => updateField('yearsExperience', e.target.value)}
+            >
+              <option value="">Select…</option>
+              <option>Less than 1 year</option>
+              <option>1–3 years</option>
+              <option>3–5 years</option>
+              <option>5–10 years</option>
+              <option>10–15 years</option>
+              <option>15–20 years</option>
+              <option>20+ years</option>
+            </SelectInput>
+          </FormField>
+        </FormRow>
+
+        <FormRow>
           <FormField>
             <FieldLabel>Interpreter Type *</FieldLabel>
             <SelectInput
@@ -136,23 +168,7 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
           </FormField>
         </FormRow>
 
-        <FormRow three>
-          <FormField>
-            <FieldLabel>Years of Experience *</FieldLabel>
-            <SelectInput
-              value={formData.yearsExperience}
-              onChange={e => updateField('yearsExperience', e.target.value)}
-            >
-              <option value="">Select…</option>
-              <option>Less than 1 year</option>
-              <option>1–3 years</option>
-              <option>3–5 years</option>
-              <option>5–10 years</option>
-              <option>10–15 years</option>
-              <option>15–20 years</option>
-              <option>20+ years</option>
-            </SelectInput>
-          </FormField>
+        <FormRow>
           <FormField>
             <FieldLabel>Website</FieldLabel>
             <UrlInput
