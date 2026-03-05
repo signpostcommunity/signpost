@@ -1,5 +1,7 @@
 'use client'
 
+export const dynamic = 'force-dynamic'
+
 import { useState } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { FormProvider, useForm } from '@/components/interpreter-signup/FormContext'
@@ -21,58 +23,8 @@ function SignupForm() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  // Step 1 → 2: create account, then save draft
   async function handleStep1Continue() {
-    setStep1Error(null)
-
-    if (!formData.email || !formData.password) {
-      setStep1Error('Email and password are required to save your progress.')
-      return
-    }
-    if (formData.password.length < 8) {
-      setStep1Error('Password must be at least 8 characters.')
-      return
-    }
-
-    setIsCreatingAccount(true)
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-      })
-      if (error) {
-        setStep1Error(error.message)
-        return
-      }
-
-      const userId = data.user?.id
-      if (!userId) {
-        setStep1Error('Account creation failed. Please try again.')
-        return
-      }
-
-      // Insert user_profiles row
-      await supabase.from('user_profiles').insert({
-        id: userId,
-        role: 'interpreter',
-        email: formData.email,
-      })
-
-      setDraftUserId(userId)
-
-      // Save initial draft
-      await supabase.from('interpreter_profiles').upsert({
-        user_id: userId,
-        status: 'draft',
-        draft_step: 2,
-        draft_data: formData,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' })
-
-      setCurrentStep(2)
-    } finally {
-      setIsCreatingAccount(false)
-    }
+    setCurrentStep(2)
   }
 
   async function goToStep(step: number) {
