@@ -30,7 +30,7 @@ function StatCard({ num, label, href }: { num: number; label: string; href: stri
 
 export default function OverviewPage() {
   return (
-    <div style={{ padding: '48px 56px', maxWidth: 900 }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 900 }}>
       <BetaBanner />
 
       <PageHeader
@@ -71,7 +71,7 @@ export default function OverviewPage() {
             <span>📍 {inq.location}</span>
             <span>{inq.mode}</span>
           </div>
-          <div style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
+          <div className="dash-card-actions" style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
             <Link href="/interpreter/dashboard/inquiries">
               <button className="btn-primary" style={{ fontSize: '0.82rem', padding: '8px 18px' }}>
                 Accept &amp; Send Rate
@@ -110,6 +110,7 @@ export default function OverviewPage() {
           </div>
         </div>
       ))}
+
     </div>
   )
 }

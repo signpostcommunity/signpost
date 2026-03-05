@@ -27,7 +27,7 @@ export default function ClientListsPage() {
   }
 
   return (
-    <div style={{ padding: '48px 56px', maxWidth: 800 }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 800 }}>
       <BetaBanner />
       <PageHeader
         title="Client Interpreter Lists"

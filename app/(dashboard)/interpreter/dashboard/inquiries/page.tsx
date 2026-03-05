@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState } from 'react'
 import { DEMO_INQUIRIES } from '@/lib/data/demo'
-import { BetaBanner, PageHeader, RequestCard, GhostButton } from '@/components/dashboard/interpreter/shared'
+import { BetaBanner, PageHeader, RequestCard, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 
 type Filter = 'all' | 'new' | 'responded'
 
@@ -60,7 +60,7 @@ function AcceptModal({ inquiry, onClose }: { inquiry: typeof DEMO_INQUIRIES[0]; 
           />
         </div>
 
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+        <div className="dash-card-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
           <GhostButton onClick={onClose}>Cancel</GhostButton>
           <button className="btn-primary" onClick={() => setSent(true)} style={{ padding: '9px 22px' }}>
             Send Rate &amp; Accept
@@ -100,7 +100,7 @@ export default function InquiriesPage() {
   }).filter(inq => states[inq.id] !== 'declined')
 
   return (
-    <div style={{ padding: '48px 56px', maxWidth: 900 }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 900 }}>
       <BetaBanner />
       <PageHeader title="Inquiries" subtitle="Booking requests awaiting your response." />
 
@@ -160,6 +160,8 @@ export default function InquiriesPage() {
           }}
         />
       )}
+
+      <DashMobileStyles />
     </div>
   )
 }

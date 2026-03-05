@@ -32,7 +32,7 @@ function CardLabel({ children }: { children: React.ReactNode }) {
 
 export default function ProfilePage() {
   return (
-    <div style={{ padding: '48px 56px', maxWidth: 720 }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 720 }}>
       <PageHeader
         title="My Profile"
         subtitle="This is what requesters see when they view your listing. Keep it current — your profile is your first impression."

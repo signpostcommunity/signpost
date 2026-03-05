@@ -184,7 +184,7 @@ export function RequestCard({
       )}
 
       {actions && (
-        <div style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
+        <div className="dash-card-actions" style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
           {actions}
         </div>
       )}
@@ -217,6 +217,24 @@ export function GhostButton({ children, onClick, danger }: {
     >
       {children}
     </button>
+  )
+}
+
+// ── Mobile Styles (shared) ───────────────────────────────────────────────
+
+export function DashMobileStyles() {
+  return (
+    <style>{`
+      @media (max-width: 768px) {
+        .dash-page-content { padding: 24px 20px !important; }
+      }
+      @media (max-width: 640px) {
+        .dash-card-actions { flex-direction: column !important; }
+        .dash-card-actions > *, .dash-card-actions > a { width: 100% !important; }
+        .dash-card-actions > a > button { width: 100% !important; }
+        .dash-card-actions button { width: 100% !important; text-align: center !important; }
+      }
+    `}</style>
   )
 }
 

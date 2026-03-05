@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState } from 'react'
 import { DEMO_CONFIRMED } from '@/lib/data/demo'
-import { BetaBanner, PageHeader, SectionLabel, StatusBadge, DemoBadge, GhostButton } from '@/components/dashboard/interpreter/shared'
+import { BetaBanner, PageHeader, SectionLabel, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 
 export default function ConfirmedPage() {
   const [search, setSearch] = useState('')
@@ -17,7 +17,7 @@ export default function ConfirmedPage() {
   const all = filtered
 
   return (
-    <div style={{ padding: '48px 56px', maxWidth: 900 }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 900 }}>
       <BetaBanner />
       <PageHeader title="Confirmed Bookings" subtitle="All your accepted and confirmed jobs." />
 
@@ -57,6 +57,8 @@ export default function ConfirmedPage() {
       {all.map(b => (
         <BookingCard key={b.id} booking={b} />
       ))}
+
+      <DashMobileStyles />
     </div>
   )
 }
@@ -82,7 +84,7 @@ function BookingCard({ booking }: { booking: typeof DEMO_CONFIRMED[0] }) {
         <span>🕐 {booking.time}</span>
         <span>📍 {booking.location}</span>
       </div>
-      <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+      <div className="dash-card-actions" style={{ display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
         <GhostButton>View Details</GhostButton>
         {booking.upcoming && <GhostButton>Add to Calendar</GhostButton>}
       </div>

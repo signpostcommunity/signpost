@@ -26,7 +26,7 @@ export default function InboxPage() {
   if (activeThread && active) {
     const allMessages = [...active.thread, ...(sentMessages[activeThread] || [])]
     return (
-      <div style={{ padding: '48px 56px', maxWidth: 720 }}>
+      <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 720 }}>
         <button
           onClick={() => setActiveThread(null)}
           style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '0.85rem', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'DM Sans', sans-serif", padding: 0 }}
@@ -102,7 +102,7 @@ export default function InboxPage() {
   }
 
   return (
-    <div style={{ padding: '48px 56px', maxWidth: 760 }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 760 }}>
       <BetaBanner />
       <PageHeader title="Inbox" subtitle="Messages from requesters." />
 

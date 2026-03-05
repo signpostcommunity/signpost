@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -36,16 +37,11 @@ const NAV = [
   },
 ]
 
-export default function DashboardSidebar() {
+function SidebarContent() {
   const pathname = usePathname()
 
   return (
-    <div style={{
-      width: 240, flexShrink: 0, background: 'var(--surface)',
-      borderRight: '1px solid var(--border)',
-      display: 'flex', flexDirection: 'column',
-      height: '100vh', position: 'sticky', top: 0, overflowY: 'auto',
-    }}>
+    <>
       {/* Header */}
       <div style={{ padding: '24px 20px 20px', borderBottom: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -114,6 +110,106 @@ export default function DashboardSidebar() {
           </div>
         ))}
       </nav>
-    </div>
+    </>
+  )
+}
+
+export default function DashboardSidebar() {
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <div className="dash-sidebar-desktop" style={{
+        width: 240, flexShrink: 0, background: 'var(--surface)',
+        borderRight: '1px solid var(--border)',
+        display: 'flex', flexDirection: 'column',
+        height: '100vh', position: 'sticky', top: 0, overflowY: 'auto',
+      }}>
+        <SidebarContent />
+      </div>
+
+      {/* Mobile top bar */}
+      <div className="dash-sidebar-mobile-bar" style={{
+        display: 'none', position: 'sticky', top: 0, zIndex: 50,
+        height: 56, alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 20px',
+        background: 'var(--surface)', borderBottom: '1px solid var(--border)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: '50%',
+            background: 'linear-gradient(135deg,#7b61ff,#00e5ff)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.7rem', color: '#fff',
+          }}>
+            SR
+          </div>
+          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.88rem' }}>
+            Dashboard
+          </span>
+        </div>
+        <button
+          onClick={() => setMobileOpen(true)}
+          aria-label="Open menu"
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+            display: 'flex', flexDirection: 'column', gap: 5,
+          }}
+        >
+          <span style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
+          <span style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
+          <span style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
+        </button>
+      </div>
+
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 200,
+            background: 'rgba(0,0,0,0.7)',
+          }}
+          onClick={() => setMobileOpen(false)}
+        >
+          <div
+            style={{
+              position: 'absolute', top: 0, left: 0, bottom: 0,
+              width: 280, background: 'var(--surface)',
+              borderRight: '1px solid var(--border)',
+              display: 'flex', flexDirection: 'column',
+              overflowY: 'auto',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 16px 0' }}>
+              <button
+                onClick={() => setMobileOpen(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '1.2rem', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+            <div onClick={() => setMobileOpen(false)}>
+              <SidebarContent />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @media (max-width: 768px) {
+          .dash-sidebar-desktop { display: none !important; }
+          .dash-sidebar-mobile-bar { display: flex !important; }
+          .dash-page-content { padding: 24px 20px !important; }
+        }
+        @media (max-width: 640px) {
+          .dash-card-actions { flex-direction: column !important; }
+          .dash-card-actions > *, .dash-card-actions > a { width: 100% !important; }
+          .dash-card-actions > a > button,
+          .dash-card-actions button { width: 100% !important; text-align: center !important; }
+        }
+      `}</style>
+    </>
   )
 }

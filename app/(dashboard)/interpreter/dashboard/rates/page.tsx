@@ -84,7 +84,7 @@ export default function RatesPage() {
   }
 
   return (
-    <div style={{ padding: '48px 56px', maxWidth: 760 }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 760 }}>
       <PageHeader title="Rates & Terms" subtitle="Manage the rate profiles you send with inquiry responses." />
 
       <InfoBox>
