@@ -66,7 +66,8 @@ export type FormData = {
   education: Education[]
   // Step 4 - Rates
   rateProfiles: RateProfile[]
-  // Step 5 - Video
+  // Step 5 - Photo & Video
+  avatarUrl: string
   videoUrl: string
   videoDescription: string
   // Step 6 - Review
@@ -127,7 +128,7 @@ const initialFormData: FormData = {
   certifications: [{ id: 'cert-1', name: '', issuingBody: '', verificationLink: '' }],
   education: [{ id: 'edu-1', degree: '', institution: '' }],
   rateProfiles: defaultRateProfiles,
-  videoUrl: '', videoDescription: '',
+  avatarUrl: '', videoUrl: '', videoDescription: '',
   agreeTerms: false, agreeBooking: false, agreeCredentials: false,
 }
 
