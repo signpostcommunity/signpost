@@ -68,11 +68,20 @@ export default function DeafSignupPage() {
         <h1 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.8rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '8px' }}>
           Create Account
         </h1>
-        <p style={{ color: 'var(--muted)', marginBottom: '28px', fontSize: '0.9rem' }}>
+        <p style={{ color: 'var(--muted)', marginBottom: '12px', fontSize: '0.9rem' }}>
           Already have an account?{' '}
           <Link href="/dhh/login" style={{ color: 'var(--accent2)', textDecoration: 'none' }}>
             Sign in
           </Link>
+        </p>
+        <p style={{
+          color: 'var(--muted)',
+          fontSize: '0.78rem',
+          marginTop: 6,
+          lineHeight: 1.5,
+          marginBottom: '28px',
+        }}>
+          After completing signup, you'll have the option to add an interpreter or requester profile to your account.
         </p>
 
         <GoogleSignInButton role="deaf" label="Sign up with Google" />

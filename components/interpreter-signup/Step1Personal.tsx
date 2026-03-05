@@ -161,6 +161,14 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
               <option>Hearing Interpreter</option>
               <option>Deaf Interpreter</option>
             </SelectInput>
+            <p style={{
+              color: 'var(--muted)',
+              fontSize: '0.78rem',
+              marginTop: 6,
+              lineHeight: 1.5,
+            }}>
+              After completing signup, you'll have the option to add a D/HH personal or requester profile to your account.
+            </p>
           </FormField>
           <FormField>
             <FieldLabel>Mode of Work *</FieldLabel>
