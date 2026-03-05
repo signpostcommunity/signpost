@@ -29,7 +29,7 @@ export default function DirectoryPage() {
 
   // TODO: Replace with real Supabase auth check when login is hooked up.
   // Set to true to preview the logged-in directory.
-  const isLoggedIn = false;
+  const isLoggedIn = true;
 
   const filtered = useMemo(() => {
     return interpreters.filter((i) => {
