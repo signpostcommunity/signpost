@@ -307,13 +307,14 @@ export function Chip({ label, selected, onToggle }: {
       style={{
         display: 'flex', alignItems: 'center',
         justifyContent: 'flex-start',
-        padding: '0 14px', borderRadius: 'var(--radius-sm)',
-        height: 36, fontSize: '0.85rem', cursor: 'pointer',
+        padding: '8px 14px', borderRadius: 'var(--radius-sm)',
+        minHeight: 36, fontSize: '0.85rem', cursor: 'pointer',
         transition: 'all 0.15s', userSelect: 'none',
         border: `1px solid ${selected ? 'rgba(0,229,255,0.4)' : 'var(--border)'}`,
         background: selected ? 'rgba(0,229,255,0.1)' : 'var(--surface2)',
         color: selected ? 'var(--accent)' : 'var(--muted)',
         fontFamily: "'DM Sans', sans-serif",
+        lineHeight: 1.4, wordBreak: 'break-word',
       }}
     >
       {label}

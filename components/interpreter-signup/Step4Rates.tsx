@@ -372,13 +372,20 @@ export default function Step4Rates({ onBack, onContinue }: {
 
   return (
     <StepWrapper>
-      {/* Info box */}
+      {/* How rate profiles work — merged info box at top */}
       <div style={{
-        background: 'rgba(0,229,255,0.05)', border: '1px solid rgba(0,229,255,0.15)',
-        borderRadius: 'var(--radius)', padding: '18px 20px', marginBottom: 28,
+        background: 'var(--surface2)', border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-sm)', padding: '18px 20px', marginBottom: 28,
       }}>
+        <div style={{
+          fontFamily: "'Syne', sans-serif", fontSize: '0.7rem', fontWeight: 700,
+          letterSpacing: '0.1em', textTransform: 'uppercase',
+          color: 'var(--muted)', marginBottom: 8,
+        }}>
+          How rate profiles work
+        </div>
         <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65, margin: 0 }}>
-          Set up rate profiles you can quickly select when responding to inquiries. Rates are never shown publicly on your profile. Requesters will see your rates only when you send them a response to their inquiry. You can create multiple profiles for different situations and choose the right one each time you reply.
+          Rates are never shown publicly on your profile. When a requester contacts you, choose which profile to send with your reply — they see your full rate and terms before confirming. You can customize the quote for any individual job. These profiles are starting points, not locked-in prices.
         </p>
       </div>
 
@@ -396,23 +403,6 @@ export default function Step4Rates({ onBack, onContinue }: {
       ))}
 
       <AddButton onClick={addProfile}>+ Add Another Rate Profile</AddButton>
-
-      {/* How rate profiles work */}
-      <div style={{
-        background: 'var(--surface2)', border: '1px solid var(--border)',
-        borderRadius: 'var(--radius-sm)', padding: '16px 18px', marginTop: 24,
-      }}>
-        <div style={{
-          fontFamily: "'Syne', sans-serif", fontSize: '0.7rem', fontWeight: 700,
-          letterSpacing: '0.1em', textTransform: 'uppercase',
-          color: 'var(--muted)', marginBottom: 8,
-        }}>
-          How rate profiles work
-        </div>
-        <p style={{ color: 'var(--muted)', fontSize: '0.82rem', lineHeight: 1.65, margin: 0 }}>
-          When a requester contacts you, you choose which rate profile to send with your reply. They see the full rate and terms before confirming. You can customize the quote for any individual job — these profiles are starting points, not locked-in prices.
-        </p>
-      </div>
 
       <FormNav step={4} totalSteps={6} onBack={onBack} onContinue={onContinue} />
     </StepWrapper>
