@@ -1,128 +1,165 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
+export const dynamic = 'force-dynamic'
 
-type InquiryStatus = 'all' | 'pending' | 'accepted' | 'declined';
+import { useState } from 'react'
+import { DEMO_INQUIRIES } from '@/lib/data/demo'
+import { BetaBanner, PageHeader, RequestCard, GhostButton } from '@/components/dashboard/interpreter/shared'
 
-const INQUIRIES = [
-  { id: '1', from: 'Acme Corp', email: 'hr@acme.com', type: 'Medical', date: '2026-03-10', timeStart: '09:00', timeEnd: '12:00', format: 'In-person', location: 'Madrid, Spain', status: 'pending', interpreters: 1, notes: 'Specialist consultation. ASL required.' },
-  { id: '2', from: 'City Hospital', email: 'events@cityhospital.com', type: 'Conference', date: '2026-03-15', timeStart: '10:00', timeEnd: '16:00', format: 'Remote', location: 'Remote (Zoom)', status: 'pending', interpreters: 2, notes: 'Annual medical conference — two interpreters needed.' },
-  { id: '3', from: 'Sarah Johnson', email: 'sarah@email.com', type: 'Legal', date: '2026-03-18', timeStart: '14:00', timeEnd: '16:00', format: 'In-person', location: 'Madrid Court House', status: 'pending', interpreters: 1, notes: '' },
-  { id: '4', from: 'Tech Inc', email: 'office@tech.com', type: 'Technical', date: '2026-03-05', timeStart: '13:00', timeEnd: '15:00', format: 'Remote', location: 'Remote (Teams)', status: 'accepted', interpreters: 1, notes: 'Product demo for international client.' },
-  { id: '5', from: 'NGO Relief', email: 'info@ngo.org', type: 'Conference', date: '2026-02-28', timeStart: '09:00', timeEnd: '17:00', format: 'In-person', location: 'Barcelona', status: 'declined', interpreters: 1, notes: '' },
-];
+type Filter = 'all' | 'new' | 'responded'
 
-export default function InquiriesPage() {
-  const [tab, setTab] = useState<InquiryStatus>('all');
+type InquiryState = Record<string, 'new' | 'responded' | 'declined'>
 
-  const filtered = INQUIRIES.filter((i) => tab === 'all' || i.status === tab);
+function AcceptModal({ inquiry, onClose }: { inquiry: typeof DEMO_INQUIRIES[0]; onClose: () => void }) {
+  const [sent, setSent] = useState(false)
 
-  const counts = {
-    all: INQUIRIES.length,
-    pending: INQUIRIES.filter((i) => i.status === 'pending').length,
-    accepted: INQUIRIES.filter((i) => i.status === 'accepted').length,
-    declined: INQUIRIES.filter((i) => i.status === 'declined').length,
-  };
+  if (sent) return (
+    <div style={overlayStyle}>
+      <div style={modalStyle}>
+        <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
+          <div style={{ fontSize: '2rem', marginBottom: 12 }}>✓</div>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent)', marginBottom: 8 }}>
+            Rate sent!
+          </div>
+          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 20px' }}>
+            In the live product, {inquiry.from} would receive your rate and terms and can confirm the booking. This is a sample flow — no message was actually sent.
+          </p>
+          <button className="btn-primary" onClick={onClose} style={{ padding: '10px 28px' }}>Done</button>
+        </div>
+      </div>
+    </div>
+  )
 
   return (
-    <div>
-      <h1 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '24px' }}>
-        Inquiries
-      </h1>
+    <div style={overlayStyle}>
+      <div style={modalStyle}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Send Rate — {inquiry.title}</div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
+        </div>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: '4px', marginBottom: '24px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px', padding: '4px', width: 'fit-content' }}>
-        {(['all', 'pending', 'accepted', 'declined'] as InquiryStatus[]).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
+        <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '14px 16px', marginBottom: 18, fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
+          <strong style={{ color: 'var(--text)' }}>Rate profile:</strong> Standard Rate — $95/hr · 2hr minimum · 48hr cancellation · 100% late fee
+        </div>
+
+        <div style={{ marginBottom: 14 }}>
+          <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', fontFamily: "'Syne', sans-serif", fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
+            Message to {inquiry.from} (optional)
+          </label>
+          <textarea
+            placeholder={`Hi ${inquiry.from}, I'd be happy to assist with this. Here are my rates and terms…`}
             style={{
-              padding: '8px 16px',
-              borderRadius: '7px',
-              background: tab === t ? 'var(--surface2)' : 'none',
-              border: tab === t ? '1px solid var(--border)' : '1px solid transparent',
-              color: tab === t ? 'var(--text)' : 'var(--muted)',
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
+              width: '100%', boxSizing: 'border-box',
+              background: 'var(--surface2)', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)', padding: '10px 14px',
+              color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem',
+              outline: 'none', resize: 'vertical', minHeight: 90,
+            }}
+            onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+            onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
+          />
+        </div>
+
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <GhostButton onClick={onClose}>Cancel</GhostButton>
+          <button className="btn-primary" onClick={() => setSent(true)} style={{ padding: '9px 22px' }}>
+            Send Rate &amp; Accept
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const overlayStyle: React.CSSProperties = {
+  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  zIndex: 1000, padding: 20,
+}
+
+const modalStyle: React.CSSProperties = {
+  background: 'var(--surface)', border: '1px solid var(--border)',
+  borderRadius: 'var(--radius)', padding: '28px 32px',
+  width: '100%', maxWidth: 520,
+}
+
+export default function InquiriesPage() {
+  const [filter, setFilter] = useState<Filter>('all')
+  const [states, setStates] = useState<InquiryState>({ 'demo-inq-1': 'new', 'demo-inq-2': 'new' })
+  const [accepting, setAccepting] = useState<string | null>(null)
+
+  function decline(id: string) {
+    setStates(s => ({ ...s, [id]: 'declined' }))
+  }
+
+  const filtered = DEMO_INQUIRIES.filter(inq => {
+    if (filter === 'all') return true
+    if (filter === 'new') return states[inq.id] === 'new'
+    if (filter === 'responded') return states[inq.id] === 'responded'
+    return true
+  }).filter(inq => states[inq.id] !== 'declined')
+
+  return (
+    <div style={{ padding: '48px 56px', maxWidth: 900 }}>
+      <BetaBanner />
+      <PageHeader title="Inquiries" subtitle="Booking requests awaiting your response." />
+
+      {/* Filter pills */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
+        {(['all', 'new', 'responded'] as Filter[]).map(f => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            style={{
+              padding: '7px 16px', borderRadius: 100, fontSize: '0.82rem',
+              cursor: 'pointer', transition: 'all 0.15s', fontFamily: "'DM Sans', sans-serif",
+              background: filter === f ? 'var(--accent)' : 'transparent',
+              color: filter === f ? '#000' : 'var(--muted)',
+              border: `1px solid ${filter === f ? 'var(--accent)' : 'var(--border)'}`,
+              fontWeight: filter === f ? 700 : 400,
             }}
           >
-            {t.charAt(0).toUpperCase() + t.slice(1)}
-            <span style={{ background: tab === t ? 'var(--accent)' : 'var(--border)', color: tab === t ? '#000' : 'var(--muted)', borderRadius: '100px', padding: '1px 6px', fontSize: '0.7rem', fontWeight: 700 }}>
-              {counts[t]}
-            </span>
+            {f.charAt(0).toUpperCase() + f.slice(1)}
           </button>
         ))}
       </div>
 
-      {/* List */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {filtered.map((inquiry) => (
-          <div
-            key={inquiry.id}
-            style={{
-              background: 'var(--surface)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius)',
-              padding: '20px',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
-                  <span style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: '1rem' }}>{inquiry.from}</span>
-                  <StatusBadge status={inquiry.status} />
-                  <span style={{ fontSize: '0.75rem', color: 'var(--muted)', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '100px', padding: '2px 10px' }}>
-                    {inquiry.type}
-                  </span>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '6px 16px', fontSize: '0.82rem', color: 'var(--muted)' }}>
-                  <span>📅 {inquiry.date}</span>
-                  <span>🕐 {inquiry.timeStart} – {inquiry.timeEnd}</span>
-                  <span>📍 {inquiry.location}</span>
-                  <span>💻 {inquiry.format}</span>
-                  <span>👥 {inquiry.interpreters} interpreter{inquiry.interpreters > 1 ? 's' : ''}</span>
-                </div>
-                {inquiry.notes && (
-                  <div style={{ marginTop: '10px', fontSize: '0.82rem', color: 'var(--muted)', fontStyle: 'italic' }}>
-                    "{inquiry.notes}"
-                  </div>
-                )}
-              </div>
+      {filtered.length === 0 && (
+        <div style={{ padding: '40px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem' }}>
+          No inquiries in this filter.
+        </div>
+      )}
 
-              {inquiry.status === 'pending' && (
-                <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                  <button style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', borderRadius: '8px', padding: '9px 18px', color: '#34d399', fontSize: '0.85rem', cursor: 'pointer', fontWeight: 500 }}>
-                    Accept
-                  </button>
-                  <button style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '8px', padding: '9px 18px', color: 'var(--muted)', fontSize: '0.85rem', cursor: 'pointer' }}>
-                    Decline
-                  </button>
-                  <button style={{ background: 'none', border: '1px solid var(--border)', borderRadius: '8px', padding: '9px 18px', color: 'var(--muted)', fontSize: '0.85rem', cursor: 'pointer' }}>
-                    Negotiate
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
+      {filtered.map(inq => (
+        <RequestCard
+          key={inq.id}
+          {...inq}
+          status={states[inq.id] === 'new' ? 'pending' : states[inq.id]}
+          actions={
+            states[inq.id] === 'new' ? (
+              <>
+                <button className="btn-primary" style={{ fontSize: '0.82rem', padding: '8px 18px' }} onClick={() => setAccepting(inq.id)}>
+                  Accept &amp; Send Rate
+                </button>
+                <GhostButton>View Details</GhostButton>
+                <GhostButton danger onClick={() => decline(inq.id)}>Decline</GhostButton>
+              </>
+            ) : (
+              <GhostButton>View Details</GhostButton>
+            )
+          }
+        />
+      ))}
+
+      {accepting && (
+        <AcceptModal
+          inquiry={DEMO_INQUIRIES.find(i => i.id === accepting)!}
+          onClose={() => {
+            setStates(s => ({ ...s, [accepting]: 'responded' }))
+            setAccepting(null)
+          }}
+        />
+      )}
     </div>
-  );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, { bg: string; border: string; color: string }> = {
-    pending: { bg: 'rgba(251,191,36,0.1)', border: 'rgba(251,191,36,0.3)', color: '#fbbf24' },
-    accepted: { bg: 'rgba(52,211,153,0.1)', border: 'rgba(52,211,153,0.3)', color: '#34d399' },
-    declined: { bg: 'rgba(255,107,133,0.1)', border: 'rgba(255,107,133,0.3)', color: 'var(--accent3)' },
-  };
-  const s = styles[status] || styles.pending;
-  return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: s.bg, border: `1px solid ${s.border}`, borderRadius: '100px', padding: '2px 10px', fontSize: '0.72rem', color: s.color, fontWeight: 600 }}>
-      {status.charAt(0).toUpperCase() + status.slice(1)}
-    </span>
-  );
+  )
 }

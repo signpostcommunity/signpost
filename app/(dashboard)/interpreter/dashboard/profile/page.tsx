@@ -1,103 +1,106 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
+export const dynamic = 'force-dynamic'
 
-export default function InterpreterProfilePage() {
-  const [bio, setBio] = useState('Certified interpreter with 12+ years experience across medical, legal, and conference settings in Spain and internationally.');
-  const [website, setWebsite] = useState('');
-  const [linkedin, setLinkedin] = useState('');
-  const [eventCoord, setEventCoord] = useState(false);
-  const [saved, setSaved] = useState(false);
+import Link from 'next/link'
+import { PageHeader, GhostButton } from '@/components/dashboard/interpreter/shared'
 
-  function handleSave() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  }
-
+function InfoRow({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ maxWidth: 720 }}>
-      <h1 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '24px' }}>
-        My Profile
-      </h1>
+    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)', fontSize: '0.88rem' }}>
+      <span style={{ color: 'var(--muted)' }}>{label}</span>
+      <span style={{ color: 'var(--text)', textAlign: 'right', maxWidth: '60%' }}>{value}</span>
+    </div>
+  )
+}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        <Card title="Basic Information">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <Field label="Full Name"><Input value="Sofia Reyes" onChange={() => {}} /></Field>
-            <Field label="Country"><Input value="Spain" onChange={() => {}} /></Field>
-            <Field label="State / Region"><Input value="Community of Madrid" onChange={() => {}} /></Field>
-            <Field label="Years Experience"><Input value="12" onChange={() => {}} /></Field>
+function Card({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '24px 28px', marginBottom: 16 }}>
+      {children}
+    </div>
+  )
+}
+
+function CardLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 14 }}>
+      {children}
+    </div>
+  )
+}
+
+export default function ProfilePage() {
+  return (
+    <div style={{ padding: '48px 56px', maxWidth: 720 }}>
+      <PageHeader
+        title="My Profile"
+        subtitle="This is what requesters see when they view your listing. Keep it current — your profile is your first impression."
+      />
+
+      {/* Profile summary card */}
+      <Card>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
+          <div style={{
+            width: 60, height: 60, borderRadius: '50%', flexShrink: 0,
+            background: 'linear-gradient(135deg,#7b61ff,#00e5ff)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.2rem', color: '#fff',
+          }}>SR</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '1.15rem' }}>Sofia Reyes</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 5 }}>
+              <span style={{ fontSize: '0.72rem', fontWeight: 700, background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.25)', color: 'var(--accent)', borderRadius: 6, padding: '2px 8px' }}>✓ Verified</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>RID, EFSLI</span>
+            </div>
           </div>
-        </Card>
-
-        <Card title="Bio">
-          <textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            rows={5}
-            style={{ width: '100%', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px 14px', color: 'var(--text)', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'var(--font-dm)' }}
-          />
-        </Card>
-
-        <Card title="Links">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <Field label="Website"><Input value={website} onChange={setWebsite} placeholder="https://yourwebsite.com" /></Field>
-            <Field label="LinkedIn"><Input value={linkedin} onChange={setLinkedin} placeholder="https://linkedin.com/in/..." /></Field>
-          </div>
-        </Card>
-
-        <Card title="Event Coordination">
-          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
-            <input type="checkbox" checked={eventCoord} onChange={(e) => setEventCoord(e.target.checked)} style={{ accentColor: 'var(--accent)' }} />
-            <span style={{ fontSize: '0.9rem' }}>I offer event coordination services</span>
-          </label>
-          {eventCoord && (
-            <textarea
-              placeholder="Describe your event coordination services..."
-              rows={3}
-              style={{ marginTop: '12px', width: '100%', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px 14px', color: 'var(--text)', fontSize: '0.9rem', outline: 'none', resize: 'vertical', fontFamily: 'var(--font-dm)' }}
-            />
-          )}
-        </Card>
-
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <button onClick={handleSave} className="btn-primary" style={{ padding: '12px 28px' }}>
-            {saved ? '✓ Saved' : 'Save Changes'}
-          </button>
+          <Link href="/interpreter/signup">
+            <GhostButton>Edit Profile</GhostButton>
+          </Link>
         </div>
-      </div>
-    </div>
-  );
-}
+        <InfoRow label="Location" value="Seattle, WA" />
+        <InfoRow label="Sign Languages" value="ASL, LSF" />
+        <InfoRow label="Specializations" value="Medical, Legal, Conference, Mental Health" />
+        <InfoRow label="Mode" value="On-site + Remote" />
+        <InfoRow label="Service Area" value="Pacific Northwest · National (remote)" />
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontSize: '0.88rem' }}>
+          <span style={{ color: 'var(--muted)' }}>Profile visibility</span>
+          <span style={{ color: 'var(--accent)' }}>● Public</span>
+        </div>
+      </Card>
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '24px' }}>
-      <h2 style={{ fontFamily: 'var(--font-syne)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: 'var(--muted)', marginBottom: '16px' }}>{title}</h2>
-      {children}
-    </div>
-  );
-}
+      {/* Bio */}
+      <Card>
+        <CardLabel>Bio</CardLabel>
+        <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.7, margin: '0 0 16px' }}>
+          Certified ASL interpreter with 12 years of experience in medical, legal, and conference settings. I bring deep cultural fluency, strong preparation practices, and a commitment to accuracy under pressure. Available for both on-site and remote assignments throughout the Pacific Northwest.
+        </p>
+        <Link href="/interpreter/signup">
+          <GhostButton>Edit Bio</GhostButton>
+        </Link>
+      </Card>
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 500, color: 'var(--muted)', marginBottom: '6px' }}>{label}</label>
-      {children}
+      {/* Credentials */}
+      <Card>
+        <CardLabel>Credentials</CardLabel>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {[
+            'RID NIC-Master',
+            'EFSLI Member',
+            'WA State Interpreter License',
+          ].map(cred => (
+            <div key={cred} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '0.88rem' }}>{cred}</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 600 }}>✓ Verified</span>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop: 16 }}>
+          <Link href="/interpreter/signup">
+            <GhostButton>Manage Credentials</GhostButton>
+          </Link>
+        </div>
+      </Card>
     </div>
-  );
-}
-
-function Input({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
-  return (
-    <input
-      type="text"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      style={{ width: '100%', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 13px', color: 'var(--text)', fontSize: '0.9rem', outline: 'none' }}
-      onFocus={(e) => (e.target.style.borderColor = 'rgba(0,229,255,0.4)')}
-      onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
-    />
-  );
+  )
 }

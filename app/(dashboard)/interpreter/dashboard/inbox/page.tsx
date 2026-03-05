@@ -1,100 +1,153 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
+export const dynamic = 'force-dynamic'
 
-const THREADS = [
-  { id: '1', from: 'Tech Inc', lastMessage: 'Can we confirm the remote setup details?', time: '10:32 AM', unread: true },
-  { id: '2', from: 'Greenway School', lastMessage: 'Looking forward to working with you.', time: 'Yesterday', unread: false },
-  { id: '3', from: 'Law & Partners', lastMessage: 'Please bring your ID for building access.', time: 'Mar 1', unread: false },
-];
-
-const MESSAGES: Record<string, { sender: string; body: string; time: string; own?: boolean }[]> = {
-  '1': [
-    { sender: 'Tech Inc', body: 'Hi, we\'re looking forward to the session on March 20.', time: '9:00 AM' },
-    { sender: 'You', body: 'Great! I\'ll be available via Teams. What format is the meeting?', time: '9:15 AM', own: true },
-    { sender: 'Tech Inc', body: 'It\'ll be a product demo for our international client. Can we confirm the remote setup details?', time: '10:32 AM' },
-  ],
-  '2': [
-    { sender: 'Greenway School', body: 'Looking forward to working with you.', time: 'Yesterday' },
-  ],
-  '3': [
-    { sender: 'Law & Partners', body: 'Please bring your ID for building access.', time: 'Mar 1' },
-  ],
-};
+import { useState } from 'react'
+import { DEMO_MESSAGES } from '@/lib/data/demo'
+import { BetaBanner, PageHeader, Avatar, DemoBadge } from '@/components/dashboard/interpreter/shared'
 
 export default function InboxPage() {
-  const [activeThread, setActiveThread] = useState('1');
-  const [newMessage, setNewMessage] = useState('');
+  const [activeThread, setActiveThread] = useState<string | null>(null)
+  const [replies, setReplies] = useState<Record<string, string>>({})
+  const [reply, setReply] = useState('')
+  const [sentMessages, setSentMessages] = useState<Record<string, Array<{ sender: string; body: string; time: string; fromMe: boolean }>>>({})
 
-  return (
-    <div style={{ display: 'flex', height: 'calc(100vh - 160px)', gap: '0', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
-      {/* Thread list */}
-      <div style={{ width: 260, borderRight: '1px solid var(--border)', flexShrink: 0, overflowY: 'auto' }}>
-        <div style={{ padding: '16px', borderBottom: '1px solid var(--border)', fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: '0.9rem' }}>Inbox</div>
-        {THREADS.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setActiveThread(t.id)}
-            style={{
-              display: 'block',
-              width: '100%',
-              textAlign: 'left',
-              padding: '14px 16px',
-              background: activeThread === t.id ? 'var(--surface2)' : 'none',
-              border: 'none',
-              borderBottom: '1px solid var(--border)',
-              cursor: 'pointer',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
-              <span style={{ fontWeight: t.unread ? 700 : 500, fontSize: '0.88rem', color: 'var(--text)' }}>{t.from}</span>
-              <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{t.time}</span>
-            </div>
-            <div style={{ fontSize: '0.78rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {t.unread && <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)', marginRight: '5px', verticalAlign: 'middle' }} />}
-              {t.lastMessage}
-            </div>
-          </button>
-        ))}
-      </div>
+  const active = DEMO_MESSAGES.find(m => m.id === activeThread)
 
-      {/* Message area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', fontWeight: 600, fontSize: '0.9rem' }}>
-          {THREADS.find((t) => t.id === activeThread)?.from}
+  function sendReply(msgId: string) {
+    if (!reply.trim()) return
+    setSentMessages(prev => ({
+      ...prev,
+      [msgId]: [...(prev[msgId] || []), { sender: 'You', body: reply, time: 'Just now', fromMe: true }],
+    }))
+    setReply('')
+  }
+
+  if (activeThread && active) {
+    const allMessages = [...active.thread, ...(sentMessages[activeThread] || [])]
+    return (
+      <div style={{ padding: '48px 56px', maxWidth: 720 }}>
+        <button
+          onClick={() => setActiveThread(null)}
+          style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '0.85rem', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'DM Sans', sans-serif", padding: 0 }}
+        >
+          ← Back to Inbox
+        </button>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
+          <Avatar initials={active.avatar} gradient={active.avatarGradient} size={40} />
+          <div>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem' }}>{active.from}</div>
+            <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 2 }}>{active.subject}</div>
+          </div>
+          <DemoBadge />
         </div>
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {(MESSAGES[activeThread] || []).map((msg, idx) => (
-            <div key={idx} style={{ display: 'flex', justifyContent: msg.own ? 'flex-end' : 'flex-start' }}>
-              <div style={{
-                maxWidth: '70%',
-                padding: '10px 14px',
-                borderRadius: '12px',
-                background: msg.own ? 'rgba(0,229,255,0.12)' : 'var(--surface2)',
-                border: `1px solid ${msg.own ? 'rgba(0,229,255,0.25)' : 'var(--border)'}`,
-                fontSize: '0.88rem',
-                lineHeight: 1.5,
-              }}>
-                {msg.body}
-                <div style={{ fontSize: '0.68rem', color: 'var(--muted)', marginTop: '4px' }}>{msg.time}</div>
+
+        {/* Thread */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 24 }}>
+          {allMessages.map((msg, i) => (
+            <div key={i} style={{
+              display: 'flex', gap: 12,
+              flexDirection: msg.fromMe ? 'row-reverse' : 'row',
+            }}>
+              {!msg.fromMe && (
+                <Avatar initials={active.avatar} gradient={active.avatarGradient} size={32} />
+              )}
+              <div style={{ maxWidth: '75%' }}>
+                <div style={{
+                  background: msg.fromMe ? 'rgba(0,229,255,0.08)' : 'var(--card-bg)',
+                  border: `1px solid ${msg.fromMe ? 'rgba(0,229,255,0.2)' : 'var(--border)'}`,
+                  borderRadius: 'var(--radius)',
+                  padding: '12px 16px',
+                  fontSize: '0.86rem', lineHeight: 1.6, color: 'var(--text)',
+                }}>
+                  {msg.body}
+                </div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: 4, textAlign: msg.fromMe ? 'right' : 'left' }}>
+                  {msg.time}
+                </div>
               </div>
             </div>
           ))}
         </div>
-        <div style={{ padding: '14px 20px', borderTop: '1px solid var(--border)', display: 'flex', gap: '10px' }}>
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type a message..."
-            style={{ flex: 1, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: '8px', padding: '10px 14px', color: 'var(--text)', fontSize: '0.9rem', outline: 'none' }}
-            onKeyDown={(e) => { if (e.key === 'Enter' && newMessage.trim()) setNewMessage(''); }}
+
+        {/* Reply box */}
+        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '16px 20px' }}>
+          <textarea
+            placeholder="Write a reply…"
+            value={reply}
+            onChange={e => setReply(e.target.value)}
+            style={{
+              width: '100%', boxSizing: 'border-box',
+              background: 'var(--surface2)', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)', padding: '10px 14px',
+              color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem',
+              outline: 'none', resize: 'vertical', minHeight: 80, marginBottom: 12,
+            }}
+            onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+            onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
           />
-          <button onClick={() => setNewMessage('')} className="btn-primary" style={{ padding: '10px 18px' }}>
-            Send
-          </button>
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <button
+              className="btn-primary"
+              style={{ padding: '9px 22px', fontSize: '0.85rem' }}
+              onClick={() => sendReply(activeThread)}
+            >
+              Send
+            </button>
+          </div>
         </div>
       </div>
+    )
+  }
+
+  return (
+    <div style={{ padding: '48px 56px', maxWidth: 760 }}>
+      <BetaBanner />
+      <PageHeader title="Inbox" subtitle="Messages from requesters." />
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {DEMO_MESSAGES.map(msg => (
+          <MessageRow key={msg.id} msg={msg} onClick={() => setActiveThread(msg.id)} />
+        ))}
+      </div>
     </div>
-  );
+  )
+}
+
+function MessageRow({ msg, onClick }: { msg: typeof DEMO_MESSAGES[0]; onClick: () => void }) {
+  const [hover, setHover] = useState(false)
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        background: 'var(--card-bg)',
+        border: `1px solid ${hover ? 'rgba(0,229,255,0.35)' : 'var(--border)'}`,
+        borderRadius: 'var(--radius)', padding: '18px 22px',
+        cursor: 'pointer', transition: 'border-color 0.2s',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Avatar initials={msg.avatar} gradient={msg.avatarGradient} size={36} />
+          <div>
+            <div style={{ fontWeight: 600, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+              {msg.from}
+              <DemoBadge />
+            </div>
+            <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 1 }}>{msg.subject}</div>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          {msg.unread && <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block' }} />}
+          <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{msg.time}</span>
+        </div>
+      </div>
+      <p style={{ color: 'var(--muted)', fontSize: '0.84rem', lineHeight: 1.5, margin: '0 0 0 46px' }}>
+        {msg.preview}
+      </p>
+    </div>
+  )
 }

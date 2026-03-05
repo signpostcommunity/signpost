@@ -4,12 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { interpreters } from '@/lib/data/seed';
 import RatingStars from '@/components/ui/RatingStars';
-import DashboardSidebar from '@/components/layout/DashboardSidebar';
-
-const NAV_ITEMS = [
-  { href: '/dhh/dashboard', label: 'My Roster' },
-  { href: '/dhh/dashboard/requests', label: 'My Requests' },
-];
 
 const INITIAL_ROSTER = [
   { ...interpreters[0], tier: 'top', approveWork: true, approvePersonal: true, notes: '' },
@@ -33,9 +27,7 @@ export default function DeafDashboardPage() {
   };
 
   return (
-    <div style={{ display: 'flex' }}>
-      <DashboardSidebar items={NAV_ITEMS} role="deaf" userName="Alex Chen" />
-      <main style={{ flex: 1, minWidth: 0, padding: '32px 32px 64px' }}>
+    <div style={{ maxWidth: 960, margin: '0 auto', padding: '32px 32px 64px' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
@@ -176,7 +168,6 @@ export default function DeafDashboardPage() {
             <Link href="/directory" style={{ color: 'var(--accent2)', textDecoration: 'none', fontSize: '0.9rem' }}>Browse the directory →</Link>
           </div>
         )}
-      </main>
     </div>
   );
 }

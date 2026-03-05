@@ -1,163 +1,115 @@
-import Link from 'next/link';
+'use client'
 
-const STATS = [
-  { label: 'Active inquiries', value: '3', color: 'var(--accent)' },
-  { label: 'Confirmed bookings', value: '7', color: '#34d399' },
-  { label: 'Unread messages', value: '1', color: 'var(--accent2)' },
-  { label: 'Profile views (30d)', value: '142', color: 'var(--muted)' },
-];
+export const dynamic = 'force-dynamic'
 
-const RECENT_INQUIRIES = [
-  { id: '1', from: 'Acme Corp', type: 'Medical', date: '2026-03-10', format: 'In-person', status: 'pending' },
-  { id: '2', from: 'City Hospital', type: 'Conference', date: '2026-03-15', format: 'Remote', status: 'pending' },
-  { id: '3', from: 'Sarah Johnson', type: 'Legal', date: '2026-03-18', format: 'In-person', status: 'pending' },
-];
+import { useState } from 'react'
+import Link from 'next/link'
+import { DEMO_INQUIRIES, DEMO_CONFIRMED } from '@/lib/data/demo'
+import { BetaBanner, PageHeader, SectionLabel, StatusBadge, Avatar, DemoBadge, GhostButton } from '@/components/dashboard/interpreter/shared'
 
-export default function InterpreterDashboardPage() {
+function StatCard({ num, label, href }: { num: number; label: string; href: string }) {
+  const [hover, setHover] = useState(false)
   return (
-    <div>
-      <h1
+    <Link href={href} style={{ textDecoration: 'none' }}>
+      <div
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
         style={{
-          fontFamily: 'var(--font-syne)',
-          fontSize: '1.6rem',
-          fontWeight: 800,
-          letterSpacing: '-0.03em',
-          marginBottom: '6px',
+          background: 'var(--card-bg)',
+          border: `1px solid ${hover ? 'rgba(0,229,255,0.3)' : 'var(--border)'}`,
+          borderRadius: 'var(--radius)', padding: '24px 28px',
+          transition: 'border-color 0.2s', cursor: 'pointer',
         }}
       >
-        Dashboard
-      </h1>
-      <p style={{ color: 'var(--muted)', marginBottom: '32px', fontSize: '0.9rem' }}>
-        Welcome back, Sofia.
-      </p>
+        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '2rem', color: 'var(--accent)' }}>{num}</div>
+        <div style={{ color: 'var(--muted)', fontSize: '0.82rem', marginTop: 4 }}>{label}</div>
+      </div>
+    </Link>
+  )
+}
+
+export default function OverviewPage() {
+  return (
+    <div style={{ padding: '48px 56px', maxWidth: 900 }}>
+      <BetaBanner />
+
+      <PageHeader
+        title="Welcome back, Sofia."
+        subtitle="Here's a snapshot of your activity on signpost."
+      />
 
       {/* Stats */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: '12px',
-          marginBottom: '32px',
-        }}
-        className="stats-grid"
-      >
-        {STATS.map((s) => (
-          <div
-            key={s.label}
-            style={{
-              background: 'var(--surface)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius)',
-              padding: '20px 20px',
-            }}
-          >
-            <div
-              style={{
-                fontFamily: 'var(--font-syne)',
-                fontSize: '1.8rem',
-                fontWeight: 800,
-                color: s.color,
-                marginBottom: '4px',
-              }}
-            >
-              {s.value}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14, marginBottom: 40 }}>
+        <StatCard num={2} label="New Inquiries" href="/interpreter/dashboard/inquiries" />
+        <StatCard num={3} label="Confirmed This Month" href="/interpreter/dashboard/confirmed" />
+        <StatCard num={4} label="Interpreters in Your Preferred Team" href="/interpreter/dashboard/team" />
+        <StatCard num={4} label="Days Available This Week" href="/interpreter/dashboard/availability" />
+      </div>
+
+      {/* Pending Inquiries */}
+      <SectionLabel>Pending Inquiries</SectionLabel>
+      {DEMO_INQUIRIES.map(inq => (
+        <div key={inq.id} style={{
+          background: 'var(--card-bg)', border: '1px solid var(--border)',
+          borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 12,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif" }}>{inq.title}</div>
+              <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>
+                From: {inq.from} · {inq.category} · {inq.receivedDate}
+              </div>
             </div>
-            <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{s.label}</div>
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+              <DemoBadge />
+              <StatusBadge status="pending" />
+            </div>
           </div>
-        ))}
-      </div>
-
-      {/* Recent Inquiries */}
-      <div
-        style={{
-          background: 'var(--surface)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius)',
-          overflow: 'hidden',
-          marginBottom: '20px',
-        }}
-      >
-        <div
-          style={{
-            padding: '16px 20px',
-            borderBottom: '1px solid var(--border)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <h2 style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: '0.9rem' }}>
-            Pending Inquiries
-          </h2>
-          <Link
-            href="/interpreter/dashboard/inquiries"
-            style={{ color: 'var(--accent)', fontSize: '0.82rem', textDecoration: 'none' }}
-          >
-            View all →
-          </Link>
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--muted)', padding: '10px 0', borderTop: '1px solid var(--border)' }}>
+            <span>📅 {inq.date}</span>
+            <span>🕐 {inq.time}</span>
+            <span>📍 {inq.location}</span>
+            <span>{inq.mode}</span>
+          </div>
+          <div style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
+            <Link href="/interpreter/dashboard/inquiries">
+              <button className="btn-primary" style={{ fontSize: '0.82rem', padding: '8px 18px' }}>
+                Accept &amp; Send Rate
+              </button>
+            </Link>
+            <GhostButton>View Details</GhostButton>
+            <GhostButton danger>Decline</GhostButton>
+          </div>
         </div>
+      ))}
 
-        <div>
-          {RECENT_INQUIRIES.map((inquiry) => (
-            <div
-              key={inquiry.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px',
-                padding: '14px 20px',
-                borderBottom: '1px solid var(--border)',
-              }}
-            >
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: '2px' }}>
-                  {inquiry.from}
-                </div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
-                  {inquiry.type} · {inquiry.format} · {inquiry.date}
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button
-                  style={{
-                    background: 'rgba(52,211,153,0.1)',
-                    border: '1px solid rgba(52,211,153,0.3)',
-                    borderRadius: '6px',
-                    padding: '6px 14px',
-                    color: '#34d399',
-                    fontSize: '0.78rem',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Accept
-                </button>
-                <button
-                  style={{
-                    background: 'none',
-                    border: '1px solid var(--border)',
-                    borderRadius: '6px',
-                    padding: '6px 14px',
-                    color: 'var(--muted)',
-                    fontSize: '0.78rem',
-                    cursor: 'pointer',
-                  }}
-                >
-                  Decline
-                </button>
-              </div>
+      {/* Upcoming Confirmed */}
+      <SectionLabel>Upcoming Confirmed</SectionLabel>
+      {DEMO_CONFIRMED.filter(b => b.upcoming).map(booking => (
+        <div key={booking.id} style={{
+          background: 'var(--card-bg)', border: '1px solid var(--border)',
+          borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 12,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif" }}>{booking.title}</div>
+              <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>{booking.client} · {booking.category}</div>
             </div>
-          ))}
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+              <DemoBadge />
+              <StatusBadge status="confirmed" />
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--muted)', padding: '10px 0', borderTop: '1px solid var(--border)' }}>
+            <span>📅 {booking.date}</span>
+            <span>🕐 {booking.time}</span>
+            <span>📍 {booking.location}</span>
+          </div>
+          <div style={{ marginTop: 12 }}>
+            <GhostButton>Add to Calendar</GhostButton>
+          </div>
         </div>
-      </div>
-
-      <style>{`
-        @media (max-width: 900px) {
-          .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
-        }
-        @media (max-width: 560px) {
-          .stats-grid { grid-template-columns: 1fr !important; }
-        }
-      `}</style>
+      ))}
     </div>
-  );
+  )
 }

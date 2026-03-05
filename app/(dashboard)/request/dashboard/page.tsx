@@ -2,13 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import DashboardSidebar from '@/components/layout/DashboardSidebar';
-
-const NAV_ITEMS = [
-  { href: '/request/dashboard', label: 'My Requests', badge: 2 },
-  { href: '/request/dashboard/bookings', label: 'Confirmed Bookings' },
-  { href: '/request/dashboard/inbox', label: 'Inbox', badge: 1 },
-];
 
 const REQUESTS = [
   { id: '1', interpreter: 'Sofia Reyes', type: 'Medical', date: '2026-03-10', status: 'pending', format: 'In-person' },
@@ -30,9 +23,7 @@ export default function RequesterDashboardPage() {
   const filtered = activeTab === 'all' ? REQUESTS : REQUESTS.filter((r) => r.status === activeTab);
 
   return (
-    <div style={{ display: 'flex' }}>
-      <DashboardSidebar items={NAV_ITEMS} role="requester" userName="Mark Smith" />
-      <main style={{ flex: 1, minWidth: 0, padding: '32px 32px 64px' }}>
+    <div style={{ maxWidth: 960, margin: '0 auto', padding: '32px 32px 64px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '28px', flexWrap: 'wrap', gap: '12px' }}>
           <div>
             <h1 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '4px' }}>My Requests</h1>
@@ -89,7 +80,6 @@ export default function RequesterDashboardPage() {
             <Link href="/directory" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.9rem' }}>Browse interpreters →</Link>
           </div>
         )}
-      </main>
     </div>
   );
 }

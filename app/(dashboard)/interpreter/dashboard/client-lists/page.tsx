@@ -1,29 +1,133 @@
-export default function ClientListsPage() {
-  return (
-    <div style={{ maxWidth: 720 }}>
-      <h1 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '24px' }}>Client Lists</h1>
-      <p style={{ color: 'var(--muted)', marginBottom: '32px', fontSize: '0.9rem', lineHeight: 1.65 }}>
-        Manage approved client relationships. You can create exclusive rate profiles visible only to specific clients on your list.
-      </p>
+'use client'
 
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', marginBottom: '16px' }}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: '0.9rem' }}>Preferred Clients</span>
-          <button className="btn-primary" style={{ padding: '7px 16px', fontSize: '0.8rem' }}>+ Add Client</button>
-        </div>
-        <div style={{ padding: '40px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem' }}>
-          No preferred clients yet. Add clients to offer them custom rates.
-        </div>
+export const dynamic = 'force-dynamic'
+
+import { useState } from 'react'
+import { DEMO_CLIENT_LISTS } from '@/lib/data/demo'
+import { BetaBanner, PageHeader, Avatar, DemoBadge } from '@/components/dashboard/interpreter/shared'
+
+function PillBadge({ ok, label }: { ok: boolean; label: string }) {
+  return (
+    <span style={{
+      fontSize: '0.72rem', padding: '2px 10px', borderRadius: 20,
+      background: ok ? 'rgba(52,211,153,0.1)' : 'rgba(255,77,109,0.08)',
+      border: `1px solid ${ok ? 'rgba(52,211,153,0.3)' : 'rgba(255,77,109,0.2)'}`,
+      color: ok ? '#34d399' : 'var(--accent3)',
+    }}>
+      {ok ? '✓' : '✕'} {label}
+    </span>
+  )
+}
+
+export default function ClientListsPage() {
+  const [open, setOpen] = useState<string[]>(['demo-cl-1'])
+
+  function toggleCard(id: string) {
+    setOpen(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  }
+
+  return (
+    <div style={{ padding: '48px 56px', maxWidth: 800 }}>
+      <BetaBanner />
+      <PageHeader
+        title="Client Interpreter Lists"
+        subtitle="When a Deaf or Hard of Hearing client shares their preferred interpreter list with you, it appears here. These lists are set by the client. You cannot edit them."
+      />
+
+      <div style={{
+        background: 'var(--card-bg)', border: '1px solid var(--border)',
+        borderRadius: 'var(--radius)', padding: '16px 20px', marginBottom: 24,
+        fontSize: '0.83rem', color: 'var(--muted)', lineHeight: 1.7,
+      }}>
+        <strong style={{ color: 'var(--text)' }}>These lists belong to your clients.</strong>{' '}
+        They update automatically when the client makes changes. The work/personal designations reflect the client's preferences — use them to understand which interpreters they trust in which contexts.
       </div>
 
-      <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: '0.9rem' }}>Blocked Clients</span>
-        </div>
-        <div style={{ padding: '40px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem' }}>
-          No blocked clients.
+      {DEMO_CLIENT_LISTS.map(list => {
+        const isOpen = open.includes(list.id)
+        return (
+          <div key={list.id} style={{
+            background: 'var(--card-bg)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius)', overflow: 'hidden', marginBottom: 14,
+          }}>
+            {/* Header */}
+            <div
+              onClick={() => toggleCard(list.id)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '18px 22px', cursor: 'pointer',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <Avatar initials={list.clientAvatar} gradient={list.clientAvatarGradient} size={40} />
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {list.clientName}
+                    <DemoBadge />
+                  </div>
+                  <div style={{ fontSize: '0.76rem', color: 'var(--muted)', marginTop: 2 }}>
+                    {list.interpreterCount} interpreters · Updated {list.updatedAt}
+                  </div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: '0.7rem', fontWeight: 600, background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.25)', color: 'var(--accent)', borderRadius: 6, padding: '2px 9px' }}>
+                  Live · Read-only
+                </span>
+                <span style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>{isOpen ? '▲' : '▼'}</span>
+              </div>
+            </div>
+
+            {/* Body */}
+            {isOpen && (
+              <div style={{ padding: '20px 22px', borderTop: '1px solid var(--border)' }}>
+                {/* Preferred */}
+                <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 12 }}>
+                  ★ Preferred Interpreters
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
+                  {list.preferred.map(interp => (
+                    <InterpRow key={interp.name} interp={interp} />
+                  ))}
+                </div>
+
+                {/* Secondary */}
+                <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 12 }}>
+                  ✓ Secondary Tier
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {list.secondary.map(interp => (
+                    <InterpRow key={interp.name} interp={interp} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function InterpRow({ interp }: { interp: { name: string; avatar: string; avatarGradient: string; credentials: string; note: string; workOk: boolean; personalOk: boolean } }) {
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'flex-start', gap: 14,
+      background: 'var(--surface2)', border: '1px solid var(--border)',
+      borderRadius: 'var(--radius-sm)', padding: '14px 16px',
+    }}>
+      <Avatar initials={interp.avatar} gradient={interp.avatarGradient} size={36} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontWeight: 600, fontSize: '0.88rem', marginBottom: 2 }}>{interp.name}</div>
+        <div style={{ fontSize: '0.76rem', color: 'var(--muted)', marginBottom: 6 }}>{interp.credentials}</div>
+        {interp.note && (
+          <div style={{ fontSize: '0.78rem', color: 'var(--muted)', fontStyle: 'italic', marginBottom: 8 }}>{interp.note}</div>
+        )}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <PillBadge ok={interp.workOk} label="Work settings" />
+          <PillBadge ok={interp.personalOk} label="Personal / medical" />
         </div>
       </div>
     </div>
-  );
+  )
 }
