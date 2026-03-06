@@ -146,10 +146,9 @@ body::before {
   animation: fadeInUp 0.5s ease forwards;
 }
 
-html.beta-panel-open {
-  padding-right: 320px;
+#page-content-wrapper {
   transition: padding-right 0.25s ease;
 }
-html.beta-panel-open * {
-  box-sizing: border-box;
+#page-content-wrapper.panel-open {
+  padding-right: 320px;
 }

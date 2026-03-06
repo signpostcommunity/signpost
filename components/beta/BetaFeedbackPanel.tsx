@@ -105,6 +105,7 @@ export default function BetaFeedbackPanel() {
   const [showEndOfSession, setShowEndOfSession] = useState(false);
 
   const config = getConfig(pathname);
+  const isWelcomePage = ['/', '/interpreter', '/interpreter/login'].includes(pathname);
 
   // Track dashboard visit for end-of-session trigger
   useEffect(() => {
@@ -118,13 +119,15 @@ export default function BetaFeedbackPanel() {
 
   // Push page content right when panel is open so nothing is covered
   useEffect(() => {
+    const wrapper = document.getElementById('page-content-wrapper');
+    if (!wrapper) return;
     if (isOpen) {
-      document.documentElement.classList.add('beta-panel-open');
+      wrapper.classList.add('panel-open');
     } else {
-      document.documentElement.classList.remove('beta-panel-open');
+      wrapper.classList.remove('panel-open');
     }
     return () => {
-      document.documentElement.classList.remove('beta-panel-open');
+      wrapper?.classList.remove('panel-open');
     };
   }, [isOpen]);
 
@@ -257,9 +260,26 @@ export default function BetaFeedbackPanel() {
       {/* Body */}
       <div style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column', gap: 14 }}>
         {/* Page prompt */}
-        <p style={{ fontSize: '0.82rem', lineHeight: 1.65, color: '#1e1e1e', margin: 0 }}>
-          {config.prompt}
-        </p>
+        {isWelcomePage ? (
+          <div style={{ fontSize: '0.82rem', lineHeight: 1.65, color: '#1e1e1e' }}>
+            <p style={{ margin: '0 0 10px' }}>
+              Welcome to the signpost interpreter beta! Take a moment to look over this page — then when you&apos;re ready, go ahead and create your interpreter account.
+            </p>
+            <p style={{ margin: '0 0 10px' }}>
+              As you move through each step, drop your notes here — anything confusing, broken, missing, or that you love.
+            </p>
+            <p style={{ margin: '0 0 10px' }}>
+              For the beta, you can create your actual profile to be posted live on the site when we open — or a test profile that we&apos;ll delete after the beta. Either way, you can always update your profile at any time!
+            </p>
+            <p style={{ margin: 0 }}>
+              <strong>If you&apos;re creating a test profile, please enter your name as: First Name (TEST)</strong>
+            </p>
+          </div>
+        ) : (
+          <p style={{ fontSize: '0.82rem', lineHeight: 1.65, color: '#1e1e1e', margin: 0 }}>
+            {config.prompt}
+          </p>
+        )}
 
         {/* Scenario callout */}
         {config.scenario && (

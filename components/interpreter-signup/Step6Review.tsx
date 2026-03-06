@@ -89,9 +89,11 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         if (!signInError) {
           router.push('/interpreter/dashboard')
           return
+        } else {
+          console.error('Beta auto sign-in failed:', signInError.message)
         }
-      } catch {
-        // sign-in failed, fall through to show error
+      } catch (e) {
+        console.error('Beta redirect error:', e)
       }
 
       router.push('/interpreter/dashboard')

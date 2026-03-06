@@ -404,6 +404,23 @@ export default function Step4Rates({ onBack, onContinue }: {
 
       <AddButton onClick={addProfile}>+ Add Another Rate Profile</AddButton>
 
+      {/* How Payment Works */}
+      <div style={{
+        background: 'var(--surface2)', border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-sm)', padding: '18px 20px', marginTop: 28,
+      }}>
+        <div style={{
+          fontFamily: "'Syne', sans-serif", fontSize: '0.7rem', fontWeight: 700,
+          letterSpacing: '0.1em', textTransform: 'uppercase',
+          color: 'var(--accent)', marginBottom: 8,
+        }}>
+          How Payment Works
+        </div>
+        <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65, margin: 0 }}>
+          signpost does not invoice or process payment on your behalf. After a job is complete: invoice the requester directly via your standard method, using the rates and terms agreed to in the signpost request.
+        </p>
+      </div>
+
       <FormNav step={4} totalSteps={6} onBack={onBack} onContinue={onContinue} />
     </StepWrapper>
   )

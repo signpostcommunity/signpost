@@ -3,7 +3,7 @@ import BetaFeedbackPanel from '@/components/beta/BetaFeedbackPanel';
 
 export default function DashboardRootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+    <div id="page-content-wrapper" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       {/* Dashboard top bar */}
       <header
         style={{
