@@ -14,12 +14,16 @@ const languages = [
   { code: 'ja', label: '日本語', flag: '🇯🇵' },
 ];
 
-export default function Nav() {
+interface NavProps {
+  initialSession?: Session | null;
+}
+
+export default function Nav({ initialSession = null }: NavProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const [selectedLang, setSelectedLang] = useState('en');
   const langRef = useRef<HTMLDivElement>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [session, setSession] = useState<Session | null>(initialSession);
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
