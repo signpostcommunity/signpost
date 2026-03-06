@@ -268,6 +268,23 @@ npm run seed       # Seed 10 demo interpreters into Supabase
 
 ---
 
+## ⚠️ PROTOTYPE COMPARISON PROTOCOL
+
+### ⚠️ CRITICAL RULES — READ BEFORE ANY UI WORK
+
+1. **Prototype-first:** Before touching any component or page, read the corresponding section of the original HTML prototype at /home/mollysano/signpost/index.html. If the Next.js implementation does not match the prototype exactly, do a full rewrite based on the prototype. Do not patch.
+
+2. **Intentional additions are sacred:** Some features were deliberately added to the Next.js app that do NOT exist in the prototype. These must never be removed when aligning to the prototype. Current intentional additions include:
+   - Log in button in the logged-out nav (between D/HH Portal and Request Interpreters)
+   - Beta feedback panel on all pages
+   - force-dynamic exports on server pages
+   - onAuthStateChange session management in Nav
+   - initialSession prop passed from layouts to Nav
+
+   When in doubt, ask before removing anything. The prototype is the visual contract — not the feature contract.
+
+---
+
 ## Session Handoff
 
 ### Session 4 — March 3, 2026
