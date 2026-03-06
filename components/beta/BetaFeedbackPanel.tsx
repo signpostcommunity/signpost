@@ -6,15 +6,15 @@ import { usePathname } from 'next/navigation';
 const ROUTE_CONFIG: Record<string, { prompt: string; scenario?: string; question?: string }> = {
   '/': {
     prompt:
-      "Welcome to the signpost interpreter beta! Take a moment to look over this page — then when you're ready, go ahead and create your interpreter account. As you move through each step, drop your notes here — anything confusing, broken, missing, or that you love.",
+      "Welcome to the signpost interpreter beta! Take a moment to look over this page — then when you're ready, go ahead and create your interpreter account. As you move through each step, drop your notes here — anything confusing, broken, missing, or that you love.\n\nFor the beta, you can create your actual profile to be posted live on the site when we open — or a test profile that we'll delete after the beta. Either way, you can always update your profile at any time! If you're creating a test profile, please enter your name as: First Name (TEST)",
   },
   '/interpreter': {
     prompt:
-      "Welcome to the signpost interpreter beta! Take a moment to look over this page — then when you're ready, go ahead and create your interpreter account. As you move through each step, drop your notes here — anything confusing, broken, missing, or that you love.",
+      "Welcome to the signpost interpreter beta! Take a moment to look over this page — then when you're ready, go ahead and create your interpreter account. As you move through each step, drop your notes here — anything confusing, broken, missing, or that you love.\n\nFor the beta, you can create your actual profile to be posted live on the site when we open — or a test profile that we'll delete after the beta. Either way, you can always update your profile at any time! If you're creating a test profile, please enter your name as: First Name (TEST)",
   },
   '/interpreter/login': {
     prompt:
-      "Welcome to the signpost interpreter beta! Take a moment to look over this page — then when you're ready, go ahead and create your interpreter account. As you move through each step, drop your notes here — anything confusing, broken, missing, or that you love.",
+      "Welcome to the signpost interpreter beta! Take a moment to look over this page — then when you're ready, go ahead and create your interpreter account. As you move through each step, drop your notes here — anything confusing, broken, missing, or that you love.\n\nFor the beta, you can create your actual profile to be posted live on the site when we open — or a test profile that we'll delete after the beta. Either way, you can always update your profile at any time! If you're creating a test profile, please enter your name as: First Name (TEST)",
   },
   '/interpreter/signup': {
     prompt:

@@ -299,7 +299,7 @@ export default function Step3Credentials({ onBack, onContinue }: {
 
       {/* Business Documents */}
       <FormSection>
-        <SectionTitle>Business Documents</SectionTitle>
+        <SectionTitle>Business Documents (OPTIONAL)</SectionTitle>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16 }}>
           Check the documents you have on file. These are never shown publicly — you control who receives them.
           Documents with a verification link will display a{' '}

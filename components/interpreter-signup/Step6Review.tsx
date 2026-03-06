@@ -19,6 +19,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
+  // BETA: auto-signin on submit — remove for production
   async function handleSubmit() {
     if (!allAgreed || isSubmitting) return
     setIsSubmitting(true)
@@ -74,6 +75,13 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         submitted_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' })
+
+      // BETA: sign in immediately so user lands on dashboard authenticated
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      })
+      if (signInError) throw signInError
 
       router.push('/interpreter/dashboard')
     } catch (err: unknown) {
@@ -186,19 +194,6 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
             {error}
           </p>
         )}
-
-        {/* Submit button */}
-        <button
-          onClick={handleSubmit}
-          disabled={!allAgreed || isSubmitting}
-          className="btn-primary btn-large"
-          style={{
-            opacity: allAgreed && !isSubmitting ? 1 : 0.4,
-            pointerEvents: allAgreed && !isSubmitting ? 'auto' : 'none',
-          }}
-        >
-          {isSubmitting ? 'Submitting…' : 'Submit Profile for Review'}
-        </button>
       </div>
 
       <FormNav
