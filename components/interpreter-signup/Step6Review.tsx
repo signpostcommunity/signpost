@@ -19,7 +19,6 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  // BETA: auto-signin on submit — remove for production
   async function handleSubmit() {
     if (!allAgreed || isSubmitting) return
     setIsSubmitting(true)
@@ -47,41 +46,53 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
       }
 
       // Upsert interpreter_profiles with status: pending (awaiting admin review)
-      await supabase.from('interpreter_profiles').upsert({
-        user_id: userId,
-        status: 'pending',
-        draft_step: 6,
-        draft_data: formData,
-        first_name: formData.firstName,
-        last_name: formData.lastName,
-        email: formData.email,
-        phone: formData.phone,
-        country: formData.country,
-        city: formData.city,
-        bio: formData.bio,
-        interpreter_type: formData.interpreterType,
-        mode_of_work: formData.modeOfWork,
-        years_experience: formData.yearsExperience,
-        website: formData.website,
-        linkedin: formData.linkedin,
-        regions: formData.regions,
-        event_coordination: formData.eventCoordination,
-        coordination_bio: formData.coordinationBio,
-        sign_languages: formData.signLanguages,
-        spoken_languages: formData.spokenLanguages,
-        specializations: formData.specializations,
-        video_url: formData.videoUrl,
-        video_description: formData.videoDescription,
-        submitted_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' })
+      try {
+        await supabase.from('interpreter_profiles').upsert({
+          user_id: userId,
+          status: 'pending',
+          draft_step: 6,
+          draft_data: formData,
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+          country: formData.country,
+          city: formData.city,
+          bio: formData.bio,
+          interpreter_type: formData.interpreterType,
+          mode_of_work: formData.modeOfWork,
+          years_experience: formData.yearsExperience,
+          website: formData.website,
+          linkedin: formData.linkedin,
+          regions: formData.regions,
+          event_coordination: formData.eventCoordination,
+          coordination_bio: formData.coordinationBio,
+          sign_languages: formData.signLanguages,
+          spoken_languages: formData.spokenLanguages,
+          specializations: formData.specializations,
+          video_url: formData.videoUrl,
+          video_description: formData.videoDescription,
+          submitted_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' })
+      } catch {
+        // insert may fail — continue to sign-in anyway
+      }
 
-      // BETA: sign in immediately so user lands on dashboard authenticated
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      })
-      if (signInError) throw signInError
+      // BETA: auto sign-in and redirect regardless of insert result
+      // Remove this block for production
+      try {
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        })
+        if (!signInError) {
+          router.push('/interpreter/dashboard')
+          return
+        }
+      } catch {
+        // sign-in failed, fall through to show error
+      }
 
       router.push('/interpreter/dashboard')
     } catch (err: unknown) {

@@ -116,12 +116,15 @@ export default function BetaFeedbackPanel() {
     }
   }, [pathname]);
 
-  // Push page body right when panel is open so content is never covered
+  // Push page content right when panel is open so nothing is covered
   useEffect(() => {
-    document.body.style.transition = 'padding-right 0.25s ease';
-    document.body.style.paddingRight = isOpen ? '320px' : '0px';
+    if (isOpen) {
+      document.documentElement.classList.add('beta-panel-open');
+    } else {
+      document.documentElement.classList.remove('beta-panel-open');
+    }
     return () => {
-      document.body.style.paddingRight = '0px';
+      document.documentElement.classList.remove('beta-panel-open');
     };
   }, [isOpen]);
 
