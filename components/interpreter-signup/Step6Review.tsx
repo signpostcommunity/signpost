@@ -38,6 +38,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         userId = signUpData.user?.id ?? null
         if (!userId) throw new Error('Account creation failed — no user ID returned.')
         if (signUpData.session) {
+          router.refresh()
           router.push('/interpreter/dashboard')
           return
         }
@@ -91,6 +92,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         password: formData.password,
       })
       if (data?.session) {
+        router.refresh()
         router.push('/interpreter/dashboard')
         return
       }

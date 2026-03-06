@@ -31,8 +31,8 @@ export default function InterpreterLoginPage() {
       return;
     }
 
-    router.push('/interpreter/dashboard');
     router.refresh();
+    router.push('/interpreter/dashboard');
   }
 
   return (
