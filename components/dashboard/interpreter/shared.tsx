@@ -15,12 +15,7 @@ export function BetaBanner() {
       gap: 16, marginBottom: 28,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={{
-          fontSize: '0.65rem', fontWeight: 700, fontFamily: "'Syne', sans-serif",
-          letterSpacing: '0.1em', textTransform: 'uppercase',
-          background: 'rgba(123,97,255,0.2)', border: '1px solid rgba(123,97,255,0.4)',
-          color: '#a78bfa', borderRadius: 100, padding: '2px 8px', whiteSpace: 'nowrap',
-        }}>
+        <span className="beta-pill">
           Beta
         </span>
         <p style={{ color: 'var(--muted)', fontSize: '0.82rem', margin: 0, lineHeight: 1.5 }}>

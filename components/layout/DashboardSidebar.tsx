@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 
 const NAV = [
   {
@@ -32,12 +33,49 @@ const NAV = [
   {
     section: 'Account',
     items: [
-      { label: 'Back to signpost', href: '/', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+      { label: 'Back to front page', href: '/', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg> },
     ],
   },
 ]
 
-function SidebarContent() {
+function LogoutButton() {
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+
+  async function handleLogout() {
+    setLoading(true)
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.refresh()
+    router.push('/')
+  }
+
+  return (
+    <button
+      onClick={handleLogout}
+      disabled={loading}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 10,
+        padding: '9px 20px', width: '100%',
+        background: 'none', border: 'none', cursor: 'pointer',
+        fontSize: '0.88rem', color: 'var(--accent3)',
+        fontFamily: "'DM Sans', sans-serif", textAlign: 'left',
+        borderLeft: '2px solid transparent',
+        transition: 'all 0.15s',
+        opacity: loading ? 0.5 : 1,
+      }}
+    >
+      <span style={{ width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M6 2H3.5A1.5 1.5 0 002 3.5v9A1.5 1.5 0 003.5 14H6M10.5 11.5L14 8l-3.5-3.5M14 8H6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </span>
+      <span>{loading ? 'Logging out...' : 'Log out'}</span>
+    </button>
+  )
+}
+
+function SidebarContent({ userName, userInitials }: { userName: string; userInitials: string }) {
   const pathname = usePathname()
 
   return (
@@ -51,10 +89,10 @@ function SidebarContent() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.85rem', color: '#fff',
           }}>
-            SR
+            {userInitials}
           </div>
           <div>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.92rem' }}>Sofia Reyes</div>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.92rem' }}>{userName}</div>
             <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 2 }}>Interpreter</div>
           </div>
         </div>
@@ -110,11 +148,16 @@ function SidebarContent() {
           </div>
         ))}
       </nav>
+
+      {/* Log out */}
+      <div style={{ borderTop: '1px solid var(--border)', padding: '8px 0' }}>
+        <LogoutButton />
+      </div>
     </>
   )
 }
 
-export default function DashboardSidebar() {
+export default function DashboardSidebar({ userName = 'Interpreter', userInitials = 'IN' }: { userName?: string; userInitials?: string }) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
@@ -126,7 +169,7 @@ export default function DashboardSidebar() {
         display: 'flex', flexDirection: 'column',
         height: '100vh', position: 'sticky', top: 0, overflowY: 'auto',
       }}>
-        <SidebarContent />
+        <SidebarContent userName={userName} userInitials={userInitials} />
       </div>
 
       {/* Mobile top bar */}
@@ -143,7 +186,7 @@ export default function DashboardSidebar() {
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.7rem', color: '#fff',
           }}>
-            SR
+            {userInitials}
           </div>
           <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.88rem' }}>
             Dashboard
@@ -191,7 +234,7 @@ export default function DashboardSidebar() {
               </button>
             </div>
             <div onClick={() => setMobileOpen(false)}>
-              <SidebarContent />
+              <SidebarContent userName={userName} userInitials={userInitials} />
             </div>
           </div>
         </div>
