@@ -96,11 +96,11 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
       }
       if (signInError) {
         console.error('Beta sign-in error:', signInError.message)
-        setError('Profile submitted! Sign in at /interpreter/login to access your dashboard.')
+        router.push('/interpreter/login')
       }
     } catch (e) {
       console.error('Beta redirect error:', e)
-      setError('Profile submitted! Sign in at /interpreter/login to access your dashboard.')
+      router.push('/interpreter/login')
     } finally {
       setIsSubmitting(false)
     }
