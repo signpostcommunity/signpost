@@ -24,6 +24,7 @@ export default function Nav({ initialSession = null }: NavProps) {
   const [selectedLang, setSelectedLang] = useState('en');
   const langRef = useRef<HTMLDivElement>(null);
   const [session, setSession] = useState<Session | null>(initialSession);
+  const [role, setRole] = useState<string>('interpreter');
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -32,11 +33,31 @@ export default function Nav({ initialSession = null }: NavProps) {
 
   const isLoggedIn = !!session;
 
+  function portalPath(r: string) {
+    if (r === 'deaf') return '/dhh/dashboard';
+    if (r === 'requester' || r === 'org') return '/request/dashboard';
+    return '/interpreter/dashboard';
+  }
+
   // Check initial session and subscribe to auth state changes
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session: s } }) => setSession(s));
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s);
+      if (s) {
+        supabase.auth.getUser().then(({ data: { user } }) => {
+          setRole(user?.user_metadata?.role || 'interpreter');
+        });
+      }
+    });
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, s) => setSession(s)
+      (_event, s) => {
+        setSession(s);
+        if (s) {
+          supabase.auth.getUser().then(({ data: { user } }) => {
+            setRole(user?.user_metadata?.role || 'interpreter');
+          });
+        }
+      }
     );
     return () => subscription.unsubscribe();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -93,7 +114,7 @@ export default function Nav({ initialSession = null }: NavProps) {
               <Link href="/directory" className="nav-btn" style={{ textDecoration: 'none' }}>
                 Browse Interpreter Directory
               </Link>
-              <Link href="/interpreter/dashboard" className="btn-primary-outline" style={{ textDecoration: 'none' }}>
+              <Link href={portalPath(role)} className="btn-primary-outline" style={{ textDecoration: 'none' }}>
                 My Portal
               </Link>
             </>
@@ -274,7 +295,7 @@ export default function Nav({ initialSession = null }: NavProps) {
 
             {isLoggedIn ? (
               <Link
-                href="/interpreter/dashboard"
+                href={portalPath(role)}
                 className="btn-primary-outline"
                 onClick={() => setMobileOpen(false)}
                 style={{ textAlign: 'center', marginTop: '8px', textDecoration: 'none' }}
