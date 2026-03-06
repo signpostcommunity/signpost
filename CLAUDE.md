@@ -270,6 +270,23 @@ npm run seed       # Seed 10 demo interpreters into Supabase
 
 ## ⚠️ PROTOTYPE COMPARISON PROTOCOL
 
+### NON-NEGOTIABLE WORKING RULES
+
+1. **No piecemeal fixes.** Read the ENTIRE component, identify ALL problems at once, fix everything in one pass. One commit. Not fix → deploy → find next issue → fix → deploy again.
+
+2. **Prototype-first.** Before touching any UI, grep /home/mollysano/signpost/index.html for the relevant section. If the Next.js version doesn't match exactly, full rewrite — not a patch.
+
+3. **Intentional additions are sacred — never remove:**
+   - Log in button in logged-out nav
+   - Beta feedback panel
+   - force-dynamic on all server pages
+   - onAuthStateChange + initialSession in Nav
+   - router.refresh() before router.push() on auth redirects
+
+4. **Read before you write.** cat the actual file. grep for the specific lines. Then write the fix.
+
+5. **Diagnose completely before fixing.** Identify root cause first. Do not try the first thing that comes to mind.
+
 ### ⚠️ CRITICAL RULES — READ BEFORE ANY UI WORK
 
 1. **Prototype-first:** Before touching any component or page, read the corresponding section of the original HTML prototype at /home/mollysano/signpost/index.html. If the Next.js implementation does not match the prototype exactly, do a full rewrite based on the prototype. Do not patch.
