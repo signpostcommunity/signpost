@@ -1,6 +1,15 @@
 import Link from 'next/link';
+import ComingSoonOverlay from '@/components/beta/ComingSoonOverlay';
 
 export default function DeafPortalPage() {
+  return (
+    <ComingSoonOverlay message="The Deaf/HH portal is coming soon. We're starting with our interpreter community first — stay tuned!">
+      <DeafPortalContent />
+    </ComingSoonOverlay>
+  );
+}
+
+function DeafPortalContent() {
   return (
     <div
       style={{
@@ -43,7 +52,7 @@ export default function DeafPortalPage() {
           </h1>
           <p style={{ color: 'var(--muted)', lineHeight: 1.65, fontSize: '0.95rem' }}>
             Build and manage your curated list of trusted sign language interpreters.
-            Know who's available, who you prefer, and who to call first.
+            Know who&apos;s available, who you prefer, and who to call first.
           </p>
         </div>
 
@@ -73,7 +82,7 @@ export default function DeafPortalPage() {
               New account
             </div>
             <div style={{ fontFamily: 'var(--font-syne)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '6px' }}>
-              Create your free account →
+              Create your free account &rarr;
             </div>
             <div style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6 }}>
               Build your preferred interpreter list, manage approvals, and track your bookings.
@@ -88,7 +97,6 @@ export default function DeafPortalPage() {
           </div>
         </div>
 
-        {/* Features */}
         <div
           style={{
             marginTop: '40px',
@@ -99,7 +107,7 @@ export default function DeafPortalPage() {
         >
           {[
             { title: 'Your roster', body: 'Tier your preferred interpreters — Top, Preferred, and Backup.' },
-            { title: 'Availability at a glance', body: 'See who\'s available before you request.' },
+            { title: 'Availability at a glance', body: "See who's available before you request." },
             { title: 'Per-interpreter approvals', body: 'Control which interpreters can accept work or personal bookings.' },
             { title: 'Direct messaging', body: 'Communicate directly with interpreters on your list.' },
           ].map((f) => (

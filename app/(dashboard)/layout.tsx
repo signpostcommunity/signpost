@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import BetaFeedbackPanel from '@/components/beta/BetaFeedbackPanel';
 
 export default function DashboardRootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -25,6 +26,7 @@ export default function DashboardRootLayout({ children }: { children: React.Reac
         </Link>
       </header>
       {children}
+      {process.env.NEXT_PUBLIC_BETA_MODE === 'true' && <BetaFeedbackPanel />}
     </div>
   );
 }

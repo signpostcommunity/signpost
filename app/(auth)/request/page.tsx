@@ -1,6 +1,15 @@
 import Link from 'next/link';
+import ComingSoonOverlay from '@/components/beta/ComingSoonOverlay';
 
 export default function RequestPortalPage() {
+  return (
+    <ComingSoonOverlay message="The Requester portal is opening soon. Want to be notified? Email hello@signpost.community">
+      <RequestPortalContent />
+    </ComingSoonOverlay>
+  );
+}
+
+function RequestPortalContent() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 73px)', padding: '40px 24px' }}>
       <div style={{ maxWidth: 580, width: '100%' }}>
@@ -19,12 +28,12 @@ export default function RequestPortalPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <Link href="/request/signup" style={{ display: 'block', padding: '28px', background: 'var(--surface)', border: '1px solid rgba(0,229,255,0.3)', borderRadius: 'var(--radius)', textDecoration: 'none' }}>
             <div style={{ fontFamily: 'var(--font-syne)', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' as const, color: 'var(--accent)', marginBottom: '8px' }}>New account</div>
-            <div style={{ fontFamily: 'var(--font-syne)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '6px' }}>Create your free account →</div>
+            <div style={{ fontFamily: 'var(--font-syne)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '6px' }}>Create your free account &rarr;</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6 }}>For individuals, organizations, and institutions that need sign language interpreters.</div>
           </Link>
           <Link href="/request/login" style={{ display: 'block', padding: '28px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', textDecoration: 'none' }}>
             <div style={{ fontFamily: 'var(--font-syne)', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' as const, color: 'var(--muted)', marginBottom: '8px' }}>Existing account</div>
-            <div style={{ fontFamily: 'var(--font-syne)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '6px' }}>Sign in to your dashboard →</div>
+            <div style={{ fontFamily: 'var(--font-syne)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '6px' }}>Sign in to your dashboard &rarr;</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6 }}>Manage your requests, messages, and bookings.</div>
           </Link>
         </div>
