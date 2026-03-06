@@ -37,6 +37,10 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         if (signUpError) throw signUpError
         userId = signUpData.user?.id ?? null
         if (!userId) throw new Error('Account creation failed — no user ID returned.')
+        if (signUpData.session) {
+          router.push('/interpreter/dashboard')
+          return
+        }
 
         // Insert user_profiles row
         await supabase.from('user_profiles').insert({

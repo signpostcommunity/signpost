@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  --panel-offset: 0px;
   --bg: #000000;
   --surface: #0f1118;
   --surface2: #161923;
@@ -151,4 +152,8 @@ body::before {
 }
 .site-content.panel-open {
   margin-right: 320px;
+}
+nav {
+  right: var(--panel-offset) !important;
+  transition: right 0.25s ease;
 }
