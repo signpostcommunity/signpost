@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import Link from 'next/link';
 import ComingSoonOverlay from '@/components/beta/ComingSoonOverlay';
 
