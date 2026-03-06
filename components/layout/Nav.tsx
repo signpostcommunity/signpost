@@ -114,7 +114,7 @@ export default function Nav({ initialSession = null }: NavProps) {
               <Link href="/directory" className="nav-btn" style={{ textDecoration: 'none' }}>
                 Browse Interpreter Directory
               </Link>
-              <Link href={portalPath(role)} className="btn-primary-outline" style={{ textDecoration: 'none' }}>
+              <Link href={portalPath(role)} className="btn-primary" style={{ textDecoration: 'none' }}>
                 My Portal
               </Link>
             </>
@@ -296,7 +296,7 @@ export default function Nav({ initialSession = null }: NavProps) {
             {isLoggedIn ? (
               <Link
                 href={portalPath(role)}
-                className="btn-primary-outline"
+                className="btn-primary"
                 onClick={() => setMobileOpen(false)}
                 style={{ textAlign: 'center', marginTop: '8px', textDecoration: 'none' }}
               >
