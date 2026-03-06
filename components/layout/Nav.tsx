@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
+import { createBrowserClient } from '@supabase/ssr';
+import type { Session } from '@supabase/supabase-js';
 
 const languages = [
   { code: 'en', label: 'English', flag: '🇺🇸' },
@@ -17,10 +19,24 @@ export default function Nav() {
   const [langOpen, setLangOpen] = useState(false);
   const [selectedLang, setSelectedLang] = useState('en');
   const langRef = useRef<HTMLDivElement>(null);
+  const [session, setSession] = useState<Session | null>(null);
 
-  // TODO: Replace this with real Supabase auth check when login is hooked up.
-  // Set to true to preview the logged-in nav state.
-  const isLoggedIn = false;
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  const isLoggedIn = !!session;
+
+  // Check initial session and subscribe to auth state changes
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session: s } }) => setSession(s));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, s) => setSession(s)
+    );
+    return () => subscription.unsubscribe();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Close language dropdown on outside click
   useEffect(() => {

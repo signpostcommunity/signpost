@@ -119,16 +119,14 @@ export default function BetaFeedbackPanel() {
 
   // Push page content right when panel is open so nothing is covered
   useEffect(() => {
-    const wrapper = document.getElementById('page-content-wrapper');
-    if (!wrapper) return;
+    const el = document.getElementById('site-content');
+    if (!el) return;
     if (isOpen) {
-      wrapper.classList.add('panel-open');
+      el.classList.add('panel-open');
     } else {
-      wrapper.classList.remove('panel-open');
+      el.classList.remove('panel-open');
     }
-    return () => {
-      wrapper?.classList.remove('panel-open');
-    };
+    return () => el.classList.remove('panel-open');
   }, [isOpen]);
 
   // Reset fields on route change

@@ -146,9 +146,10 @@ body::before {
   animation: fadeInUp 0.5s ease forwards;
 }
 
-#page-content-wrapper {
-  transition: padding-right 0.25s ease;
+.site-content {
+  transition: margin-right 0.25s ease;
+  margin-right: 0;
 }
-#page-content-wrapper.panel-open {
-  padding-right: 320px;
+.site-content.panel-open {
+  margin-right: 320px;
 }

@@ -3,9 +3,10 @@ import BetaFeedbackPanel from '@/components/beta/BetaFeedbackPanel';
 
 export default function DashboardRootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div id="page-content-wrapper" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-      {/* Dashboard top bar */}
-      <header
+    <>
+      <div id="site-content" className="site-content" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+        {/* Dashboard top bar */}
+        <header
         style={{
           position: 'sticky',
           top: 0,
@@ -25,8 +26,9 @@ export default function DashboardRootLayout({ children }: { children: React.Reac
           </div>
         </Link>
       </header>
-      {children}
+        {children}
+      </div>
       {process.env.NEXT_PUBLIC_BETA_MODE === 'true' && <BetaFeedbackPanel />}
-    </div>
+    </>
   );
 }

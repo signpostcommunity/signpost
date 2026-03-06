@@ -24,6 +24,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
     setIsSubmitting(true)
     setError(null)
 
+    // Attempt profile insert — catch and ignore errors in beta
     try {
       let userId = draftUserId
 
@@ -46,59 +47,57 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
       }
 
       // Upsert interpreter_profiles with status: pending (awaiting admin review)
-      try {
-        await supabase.from('interpreter_profiles').upsert({
-          user_id: userId,
-          status: 'pending',
-          draft_step: 6,
-          draft_data: formData,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          email: formData.email,
-          phone: formData.phone,
-          country: formData.country,
-          city: formData.city,
-          bio: formData.bio,
-          interpreter_type: formData.interpreterType,
-          mode_of_work: formData.modeOfWork,
-          years_experience: formData.yearsExperience,
-          website: formData.website,
-          linkedin: formData.linkedin,
-          regions: formData.regions,
-          event_coordination: formData.eventCoordination,
-          coordination_bio: formData.coordinationBio,
-          sign_languages: formData.signLanguages,
-          spoken_languages: formData.spokenLanguages,
-          specializations: formData.specializations,
-          video_url: formData.videoUrl,
-          video_description: formData.videoDescription,
-          submitted_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id' })
-      } catch {
-        // insert may fail — continue to sign-in anyway
-      }
+      await supabase.from('interpreter_profiles').upsert({
+        user_id: userId,
+        status: 'pending',
+        draft_step: 6,
+        draft_data: formData,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        country: formData.country,
+        city: formData.city,
+        bio: formData.bio,
+        interpreter_type: formData.interpreterType,
+        mode_of_work: formData.modeOfWork,
+        years_experience: formData.yearsExperience,
+        website: formData.website,
+        linkedin: formData.linkedin,
+        regions: formData.regions,
+        event_coordination: formData.eventCoordination,
+        coordination_bio: formData.coordinationBio,
+        sign_languages: formData.signLanguages,
+        spoken_languages: formData.spokenLanguages,
+        specializations: formData.specializations,
+        video_url: formData.videoUrl,
+        video_description: formData.videoDescription,
+        submitted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' })
+    } catch (insertError) {
+      console.warn('Beta: insert failed, proceeding to auto sign-in anyway', insertError)
+    }
 
-      // BETA: auto sign-in and redirect regardless of insert result
-      // Remove this block for production
-      try {
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: formData.email,
-          password: formData.password,
-        })
-        if (!signInError) {
-          router.push('/interpreter/dashboard')
-          return
-        } else {
-          console.error('Beta auto sign-in failed:', signInError.message)
-        }
-      } catch (e) {
-        console.error('Beta redirect error:', e)
+    // BETA: unconditional auto sign-in and redirect
+    // Remove this entire block for production
+    try {
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      })
+      if (data?.session) {
+        router.push('/interpreter/dashboard')
+        return
       }
-
-      router.push('/interpreter/dashboard')
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+      if (signInError) {
+        console.error('Beta sign-in error:', signInError.message)
+        setError('Profile submitted! Sign in at /interpreter/login to access your dashboard.')
+      }
+    } catch (e) {
+      console.error('Beta redirect error:', e)
+      setError('Profile submitted! Sign in at /interpreter/login to access your dashboard.')
+    } finally {
       setIsSubmitting(false)
     }
   }
