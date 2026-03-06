@@ -148,7 +148,6 @@ body::before {
 
 .site-content {
   transition: margin-right 0.25s ease;
-  margin-right: 0;
 }
 .site-content.panel-open {
   margin-right: 320px;

@@ -123,10 +123,15 @@ export default function BetaFeedbackPanel() {
     if (!el) return;
     if (isOpen) {
       el.classList.add('panel-open');
+      document.documentElement.style.setProperty('--panel-offset', '320px');
     } else {
       el.classList.remove('panel-open');
+      document.documentElement.style.setProperty('--panel-offset', '0px');
     }
-    return () => el.classList.remove('panel-open');
+    return () => {
+      el.classList.remove('panel-open');
+      document.documentElement.style.setProperty('--panel-offset', '0px');
+    };
   }, [isOpen]);
 
   // Reset fields on route change

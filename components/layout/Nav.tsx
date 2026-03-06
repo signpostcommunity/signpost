@@ -56,7 +56,7 @@ export default function Nav() {
           position: 'fixed',
           top: 0,
           left: 0,
-          right: 0,
+          right: 'var(--panel-offset, 0px)',
           zIndex: 100,
           display: 'flex',
           alignItems: 'center',
