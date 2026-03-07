@@ -22,7 +22,53 @@ function SignupForm() {
   )
 
   async function handleStep1Continue() {
-    setCurrentStep(2)
+    if (!formData.email || !formData.password) {
+      setStep1Error('Email and password are required.')
+      return
+    }
+    if (formData.password.length < 8) {
+      setStep1Error('Password must be at least 8 characters.')
+      return
+    }
+
+    setStep1Error(null)
+    setIsCreatingAccount(true)
+
+    try {
+      // Try to sign up
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+      })
+
+      if (signUpError) {
+        // If user already exists, try to sign in instead (resume flow)
+        if (signUpError.message.includes('already registered') || signUpError.message.includes('already been registered')) {
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: formData.email,
+            password: formData.password,
+          })
+          if (signInError) {
+            setStep1Error(signInError.message)
+            return
+          }
+          if (signInData.user) {
+            setDraftUserId(signInData.user.id)
+          }
+        } else {
+          setStep1Error(signUpError.message)
+          return
+        }
+      } else if (signUpData.user) {
+        setDraftUserId(signUpData.user.id)
+      }
+
+      setCurrentStep(2)
+    } catch (e) {
+      setStep1Error(e instanceof Error ? e.message : 'Account creation failed.')
+    } finally {
+      setIsCreatingAccount(false)
+    }
   }
 
   async function goToStep(step: number) {

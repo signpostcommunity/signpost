@@ -268,14 +268,19 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       updated_at: new Date().toISOString(),
     }
 
-    const { error } = existing
-      ? await supabase.from('interpreter_profiles').update(payload).eq('user_id', user.id)
-      : await supabase.from('interpreter_profiles').insert(payload)
+    const result = existing
+      ? await supabase.from('interpreter_profiles').update(payload).eq('user_id', user.id).select()
+      : await supabase.from('interpreter_profiles').insert(payload).select()
+
+    console.log('Save response:', { data: result.data, error: result.error })
 
     setSaving(false)
-    if (error) {
-      console.error('Save error:', error)
-      setToast({ message: `Error: ${error.message}`, type: 'error' })
+    if (result.error) {
+      console.error('Save error:', result.error)
+      setToast({ message: `Error: ${result.error.message}`, type: 'error' })
+    } else if (!result.data || result.data.length === 0) {
+      console.error('Save returned no rows — RLS may be blocking the write')
+      setToast({ message: 'Error: save returned no data. Check RLS policies.', type: 'error' })
     } else {
       setToast({ message: 'Changes saved.', type: 'success' })
     }
@@ -318,14 +323,19 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
     const { data: urlData } = supabase.storage.from('profile-photos').getPublicUrl(path)
     const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`
 
-    const { error: dbError } = await supabase
+    const { data: dbData, error: dbError } = await supabase
       .from('interpreter_profiles')
       .update({ photo_url: publicUrl, updated_at: new Date().toISOString() })
       .eq('user_id', user.id)
+      .select()
+
+    console.log('Photo save response:', { data: dbData, error: dbError })
 
     setUploading(false)
     if (dbError) {
       setUploadMsg({ text: `Save failed: ${dbError.message}`, type: 'error' })
+    } else if (!dbData || dbData.length === 0) {
+      setUploadMsg({ text: 'Save failed: no profile row found. Save your profile first.', type: 'error' })
     } else {
       setPhotoUrl(publicUrl)
       setUploadMsg({ text: 'Photo updated.', type: 'success' })
@@ -336,12 +346,10 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
 
   // ── Display info ───────────────────────────────────────────────────────
 
-  const displayName = hasProfile
-    ? `${p.first_name || ''} ${p.last_name || ''}`.trim() || (p.name as string) || userEmail
-    : userEmail
-  const initials = hasProfile && (p.first_name || p.name)
-    ? `${(p.first_name || (p.name as string) || '')[0]}${(p.last_name || '')[0] || ''}`.toUpperCase()
-    : userEmail[0]?.toUpperCase() || '?'
+  const displayName = `${firstName || p.first_name || ''} ${lastName || p.last_name || ''}`.trim()
+    || (p.name as string) || userEmail
+  const initialsSource = firstName || p.first_name || (p.name as string) || userEmail
+  const initials = `${initialsSource[0] || ''}${(lastName || p.last_name || '')[0] || ''}`.toUpperCase() || '?'
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 780 }}>

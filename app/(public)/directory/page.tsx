@@ -10,7 +10,7 @@ export default async function DirectoryPage() {
   const { data: rows } = await supabase
     .from('interpreter_profiles')
     .select('id, name, first_name, last_name, city, country, state, sign_languages, spoken_languages, specializations, regions, rating, review_count, available, avatar_color, bio, video_url, interpreter_type, status, photo_url')
-    .eq('status', 'approved');
+    .in('status', ['approved', 'active', 'draft', 'pending']);
 
   const interpreters: Interpreter[] = (rows || []).map((r) => {
     const fullName = r.name || [r.first_name, r.last_name].filter(Boolean).join(' ') || 'Interpreter';
