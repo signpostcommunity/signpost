@@ -18,6 +18,7 @@ export interface Interpreter {
   bio?: string;
   videoUrl?: string;
   website?: string;
+  photoUrl?: string;
   // New identity/affinity fields
   gender: 'male' | 'female' | 'nonbinary' | null;
   isDeafInterpreter: boolean;

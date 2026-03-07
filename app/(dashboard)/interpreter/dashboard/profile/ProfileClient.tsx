@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { PageHeader } from '@/components/dashboard/interpreter/shared'
 import Toast from '@/components/ui/Toast'
@@ -129,6 +129,7 @@ interface ProfileData {
   linkedin_url?: string | null
   event_coordination?: boolean | null
   event_coordination_desc?: string | null
+  photo_url?: string | null
   draft_data?: Record<string, unknown> | null
   status?: string | null
 }
@@ -280,6 +281,59 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
     }
   }
 
+  // ── Photo upload state ─────────────────────────────────────────────────
+  const [photoUrl, setPhotoUrl] = useState(p.photo_url || '')
+  const [uploading, setUploading] = useState(false)
+  const [uploadMsg, setUploadMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 2 * 1024 * 1024) {
+      setUploadMsg({ text: 'File must be under 2 MB.', type: 'error' })
+      return
+    }
+
+    setUploading(true)
+    setUploadMsg(null)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setUploading(false); return }
+
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+    const path = `${user.id}/avatar.${ext}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('profile-photos')
+      .upload(path, file, { upsert: true })
+
+    if (uploadError) {
+      setUploading(false)
+      setUploadMsg({ text: `Upload failed: ${uploadError.message}`, type: 'error' })
+      return
+    }
+
+    const { data: urlData } = supabase.storage.from('profile-photos').getPublicUrl(path)
+    const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`
+
+    const { error: dbError } = await supabase
+      .from('interpreter_profiles')
+      .update({ photo_url: publicUrl, updated_at: new Date().toISOString() })
+      .eq('user_id', user.id)
+
+    setUploading(false)
+    if (dbError) {
+      setUploadMsg({ text: `Save failed: ${dbError.message}`, type: 'error' })
+    } else {
+      setPhotoUrl(publicUrl)
+      setUploadMsg({ text: 'Photo updated.', type: 'success' })
+    }
+
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
   // ── Display info ───────────────────────────────────────────────────────
 
   const displayName = hasProfile
@@ -305,12 +359,19 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
         borderRadius: 'var(--radius)', padding: '24px 28px', marginBottom: 28,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{
-            width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
-            background: 'linear-gradient(135deg,#7b61ff,#00e5ff)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: '#fff',
-          }}>{initials}</div>
+          {photoUrl ? (
+            <img src={photoUrl} alt="Profile" style={{
+              width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
+              objectFit: 'cover', border: '2px solid var(--accent)',
+            }} />
+          ) : (
+            <div style={{
+              width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
+              background: 'linear-gradient(135deg,#7b61ff,#00e5ff)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: '#fff',
+            }}>{initials}</div>
+          )}
           <div>
             <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '1.1rem' }}>{displayName}</div>
             {p.status && (
@@ -335,6 +396,59 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       {/* ── Tab 1: Personal ─────────────────────────────────────────────── */}
       {activeTab === 'Personal' && (
         <>
+          {/* Photo upload */}
+          <div style={sectionTitleStyle}>Profile Photo</div>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 20, marginBottom: 28,
+            background: 'var(--surface2)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)', padding: '20px 24px',
+          }}>
+            {photoUrl ? (
+              <img src={photoUrl} alt="Profile" style={{
+                width: 72, height: 72, borderRadius: '50%', objectFit: 'cover',
+                border: '2px solid var(--accent)', flexShrink: 0,
+              }} />
+            ) : (
+              <div style={{
+                width: 72, height: 72, borderRadius: '50%', flexShrink: 0,
+                background: 'linear-gradient(135deg,#7b61ff,#00e5ff)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.4rem', color: '#fff',
+              }}>{initials}</div>
+            )}
+            <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                style={{ display: 'none' }}
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                style={{
+                  background: 'none', border: '1px solid rgba(0,229,255,0.4)',
+                  color: 'var(--accent)', borderRadius: 8, padding: '8px 16px',
+                  fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
+                  fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
+                  opacity: uploading ? 0.6 : 1,
+                }}
+              >
+                {uploading ? 'Uploading...' : photoUrl ? 'Change photo' : 'Upload photo'}
+              </button>
+              <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: 6 }}>
+                JPG, PNG, or WebP. Max 2 MB.
+              </div>
+              {uploadMsg && (
+                <div style={{
+                  fontSize: '0.78rem', marginTop: 6,
+                  color: uploadMsg.type === 'success' ? '#34d399' : 'var(--accent3)',
+                }}>{uploadMsg.text}</div>
+              )}
+            </div>
+          </div>
+
           <div style={sectionTitleStyle}>Personal Information</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, marginBottom: 16 }}>
             <div>
@@ -640,11 +754,11 @@ function CredentialsTab({ saving, onSave }: { saving: boolean; onSave: (fields: 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, marginBottom: 10 }}>
               <div>
                 <label style={labelStyle}>Certification Name</label>
-                <input value={cert.name} onChange={e => updateCert(cert.id, 'name', e.target.value)} placeholder="e.g. RID NIC Advanced" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+                <input value={cert.name} onChange={e => updateCert(cert.id, 'name', e.target.value)} placeholder="e.g. NIC Advanced" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
               </div>
               <div>
                 <label style={labelStyle}>Issuing Body &amp; Year</label>
-                <input value={cert.issuingBody} onChange={e => updateCert(cert.id, 'issuingBody', e.target.value)} placeholder="e.g. RID, USA · 2018" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+                <input value={cert.issuingBody} onChange={e => updateCert(cert.id, 'issuingBody', e.target.value)} placeholder="e.g. RID, USA, 2018" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
               </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, alignItems: 'end' }}>

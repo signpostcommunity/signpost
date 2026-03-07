@@ -9,7 +9,7 @@ export default async function DirectoryPage() {
 
   const { data: rows } = await supabase
     .from('interpreter_profiles')
-    .select('id, name, first_name, last_name, city, country, state, sign_languages, spoken_languages, specializations, regions, rating, review_count, available, avatar_color, bio, video_url, interpreter_type, status')
+    .select('id, name, first_name, last_name, city, country, state, sign_languages, spoken_languages, specializations, regions, rating, review_count, available, avatar_color, bio, video_url, interpreter_type, status, photo_url')
     .eq('status', 'approved');
 
   const interpreters: Interpreter[] = (rows || []).map((r) => {
@@ -36,6 +36,7 @@ export default async function DirectoryPage() {
       gender: null,
       isDeafInterpreter: r.interpreter_type === 'Deaf Interpreter',
       affinities: [],
+      photoUrl: r.photo_url || undefined,
       racialIdentity: [],
       religiousAffiliation: [],
     };

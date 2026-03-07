@@ -218,7 +218,7 @@ export default function Step3Credentials({ onBack, onContinue }: {
                 <FormField>
                   <FieldLabel>Certification Name</FieldLabel>
                   <TextInput
-                    placeholder="e.g. RID NIC Advanced"
+                    placeholder="e.g. NIC Advanced"
                     value={cert.name}
                     onChange={e => updateCert(cert.id, 'name', e.target.value)}
                   />
@@ -226,7 +226,7 @@ export default function Step3Credentials({ onBack, onContinue }: {
                 <FormField>
                   <FieldLabel>Issuing Body &amp; Year</FieldLabel>
                   <TextInput
-                    placeholder="e.g. RID, USA · 2018"
+                    placeholder="e.g. RID, USA, 2018"
                     value={cert.issuingBody}
                     onChange={e => updateCert(cert.id, 'issuingBody', e.target.value)}
                   />

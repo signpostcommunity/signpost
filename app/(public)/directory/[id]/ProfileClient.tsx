@@ -70,25 +70,40 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
             {/* Left: avatar + info */}
             <div style={{ display: 'flex', gap: '20px', flex: 1, minWidth: 0, alignItems: 'flex-start' }}>
               {/* Avatar */}
-              <div
-                style={{
-                  width: 96,
-                  height: 96,
-                  borderRadius: '50%',
-                  background: i.color,
-                  border: '3px solid var(--accent)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '1.8rem',
-                  fontFamily: 'var(--font-syne)',
-                  fontWeight: 800,
-                  color: '#fff',
-                  flexShrink: 0,
-                }}
-              >
-                {i.initials}
-              </div>
+              {i.photoUrl ? (
+                <img
+                  src={i.photoUrl}
+                  alt={i.name}
+                  style={{
+                    width: 96,
+                    height: 96,
+                    borderRadius: '50%',
+                    border: '3px solid var(--accent)',
+                    objectFit: 'cover',
+                    flexShrink: 0,
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: 96,
+                    height: 96,
+                    borderRadius: '50%',
+                    background: i.color,
+                    border: '3px solid var(--accent)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '1.8rem',
+                    fontFamily: 'var(--font-syne)',
+                    fontWeight: 800,
+                    color: '#fff',
+                    flexShrink: 0,
+                  }}
+                >
+                  {i.initials}
+                </div>
+              )}
 
               <div style={{ flex: 1, minWidth: 0 }}>
                 {/* Name */}

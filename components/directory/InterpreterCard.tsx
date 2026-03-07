@@ -32,16 +32,30 @@ export default function InterpreterCard({ interpreter: i }: { interpreter: Inter
             justifyContent: 'center',
           }}
         >
-          <svg
-            width="110"
-            height="130"
-            viewBox="0 0 120 140"
-            fill="none"
-            style={{ opacity: 0.35, flexShrink: 0 }}
-          >
-            <ellipse cx="60" cy="44" rx="24" ry="26" fill="white" />
-            <path d="M10 140 C10 100 30 84 60 84 C90 84 110 100 110 140 Z" fill="white" />
-          </svg>
+          {i.photoUrl ? (
+            <img
+              src={i.photoUrl}
+              alt={i.name}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+              }}
+            />
+          ) : (
+            <svg
+              width="110"
+              height="130"
+              viewBox="0 0 120 140"
+              fill="none"
+              style={{ opacity: 0.35, flexShrink: 0 }}
+            >
+              <ellipse cx="60" cy="44" rx="24" ry="26" fill="white" />
+              <path d="M10 140 C10 100 30 84 60 84 C90 84 110 100 110 140 Z" fill="white" />
+            </svg>
+          )}
 
           {/* Intro video button */}
           <button
