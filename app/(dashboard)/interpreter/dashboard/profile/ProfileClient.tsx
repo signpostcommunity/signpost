@@ -116,7 +116,7 @@ interface ProfileData {
   phone?: string | null
   years_experience?: string | null
   interpreter_type?: string | null
-  mode_of_work?: string | null
+  work_mode?: string | null
   bio?: string | null
   sign_languages?: string[] | null
   spoken_languages?: string[] | null
@@ -205,7 +205,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const [phone, setPhone] = useState(p.phone || '')
   const [yearsExperience, setYearsExperience] = useState(p.years_experience || '')
   const [interpreterType, setInterpreterType] = useState(p.interpreter_type || '')
-  const [modeOfWork, setModeOfWork] = useState(p.mode_of_work || '')
+  const [modeOfWork, setModeOfWork] = useState(p.work_mode || '')
   const [website, setWebsite] = useState(p.website_url || '')
   const [linkedin, setLinkedin] = useState(p.linkedin_url || '')
   const [eventCoordination, setEventCoordination] = useState(p.event_coordination || false)
@@ -419,7 +419,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           <SaveButton saving={saving} onClick={() => saveFields({
             first_name: firstName, last_name: lastName, city, country, phone,
             years_experience: yearsExperience, interpreter_type: interpreterType,
-            mode_of_work: modeOfWork, website_url: website, linkedin_url: linkedin,
+            work_mode: modeOfWork, website_url: website, linkedin_url: linkedin,
             event_coordination: eventCoordination, event_coordination_desc: coordinationBio,
             regions,
           })} />
