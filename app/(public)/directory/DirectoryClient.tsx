@@ -2,8 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { interpreters } from '@/lib/data/seed';
-import type { FilterState } from '@/lib/types';
+import type { Interpreter, FilterState } from '@/lib/types';
 import FilterSidebar from '@/components/directory/FilterSidebar';
 import InterpreterGrid from '@/components/directory/InterpreterGrid';
 
@@ -23,7 +22,7 @@ const defaultFilters: FilterState = {
   religiousAffiliation: [],
 };
 
-export default function DirectoryClient() {
+export default function DirectoryClient({ interpreters }: { interpreters: Interpreter[] }) {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [filterOpen, setFilterOpen] = useState(false);
 

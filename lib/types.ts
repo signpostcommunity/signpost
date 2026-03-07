@@ -1,7 +1,7 @@
 export type UserRole = 'interpreter' | 'deaf' | 'org' | 'requester';
 
 export interface Interpreter {
-  id: number;
+  id: number | string;
   initials: string;
   name: string;
   location: string;
