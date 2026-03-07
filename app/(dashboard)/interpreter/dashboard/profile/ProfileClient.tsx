@@ -123,11 +123,12 @@ interface ProfileData {
   specializations?: string[] | null
   regions?: string[] | null
   video_url?: string | null
-  video_description?: string | null
-  website?: string | null
-  linkedin?: string | null
+  video_desc?: string | null
+  website_url?: string | null
+  linkedin_url?: string | null
   event_coordination?: boolean | null
-  coordination_bio?: string | null
+  event_coordination_desc?: string | null
+  draft_data?: Record<string, unknown> | null
   status?: string | null
 }
 
@@ -205,10 +206,10 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const [yearsExperience, setYearsExperience] = useState(p.years_experience || '')
   const [interpreterType, setInterpreterType] = useState(p.interpreter_type || '')
   const [modeOfWork, setModeOfWork] = useState(p.mode_of_work || '')
-  const [website, setWebsite] = useState(p.website || '')
-  const [linkedin, setLinkedin] = useState(p.linkedin || '')
+  const [website, setWebsite] = useState(p.website_url || '')
+  const [linkedin, setLinkedin] = useState(p.linkedin_url || '')
   const [eventCoordination, setEventCoordination] = useState(p.event_coordination || false)
-  const [coordinationBio, setCoordinationBio] = useState(p.coordination_bio || '')
+  const [coordinationBio, setCoordinationBio] = useState(p.event_coordination_desc || '')
 
   // ── Languages state ────────────────────────────────────────────────────
   const [signLangs, setSignLangs] = useState<string[]>(p.sign_languages || [])
@@ -223,7 +224,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   // ── Bio & Video state ──────────────────────────────────────────────────
   const [bio, setBio] = useState(p.bio || '')
   const [videoUrl, setVideoUrl] = useState(p.video_url || '')
-  const [videoDescription, setVideoDescription] = useState(p.video_description || '')
+  const [videoDescription, setVideoDescription] = useState(p.video_desc || '')
 
   // ── Helpers ────────────────────────────────────────────────────────────
 
@@ -418,8 +419,8 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           <SaveButton saving={saving} onClick={() => saveFields({
             first_name: firstName, last_name: lastName, city, country, phone,
             years_experience: yearsExperience, interpreter_type: interpreterType,
-            mode_of_work: modeOfWork, website, linkedin,
-            event_coordination: eventCoordination, coordination_bio: coordinationBio,
+            mode_of_work: modeOfWork, website_url: website, linkedin_url: linkedin,
+            event_coordination: eventCoordination, event_coordination_desc: coordinationBio,
             regions,
           })} />
         </>
@@ -569,7 +570,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           </div>
 
           <SaveButton saving={saving} onClick={() => saveFields({
-            bio, video_url: videoUrl, video_description: videoDescription,
+            bio, video_url: videoUrl, video_desc: videoDescription,
           })} />
         </>
       )}

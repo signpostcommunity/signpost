@@ -12,7 +12,7 @@ export default async function ProfilePage() {
   if (user) {
     const { data } = await supabase
       .from('interpreter_profiles')
-      .select('first_name, last_name, city, country, phone, years_experience, interpreter_type, mode_of_work, bio, sign_languages, spoken_languages, specializations, regions, video_url, video_description, website, linkedin, event_coordination, coordination_bio, status')
+      .select('first_name, last_name, city, country, phone, years_experience, interpreter_type, mode_of_work, bio, sign_languages, spoken_languages, specializations, regions, video_url, video_desc, website_url, linkedin_url, event_coordination, event_coordination_desc, draft_data, status')
       .eq('user_id', user.id)
       .single()
     profile = data
