@@ -39,5 +39,10 @@ ALTER TABLE public.interpreter_profiles DROP CONSTRAINT IF EXISTS interpreter_pr
 ALTER TABLE public.interpreter_profiles ADD CONSTRAINT interpreter_profiles_status_check
   CHECK (status IN ('draft', 'pending', 'approved', 'suspended'));
 
+-- ── Unique constraint on user_id ─────────────────────────────────────────
+-- Required for upsert({ onConflict: 'user_id' }) to work correctly.
+-- Without this, every upsert attempts INSERT instead of UPDATE.
+CREATE UNIQUE INDEX IF NOT EXISTS interpreter_profiles_user_id_key ON public.interpreter_profiles(user_id);
+
 -- Reload PostgREST schema cache so new columns are immediately available
 NOTIFY pgrst, 'reload schema';
