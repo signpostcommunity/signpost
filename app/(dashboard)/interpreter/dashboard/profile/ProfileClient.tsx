@@ -109,6 +109,7 @@ function ToggleTile({ label, selected, onToggle, dotColor }: {
 // ── Types ────────────────────────────────────────────────────────────────────
 
 interface ProfileData {
+  name?: string | null
   first_name?: string | null
   last_name?: string | null
   city?: string | null
@@ -242,6 +243,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       .from('interpreter_profiles')
       .upsert({
         user_id: user.id,
+        name: [firstName, lastName].filter(Boolean).join(' ') || userEmail,
         ...fields,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' })
@@ -258,10 +260,10 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   // ── Display info ───────────────────────────────────────────────────────
 
   const displayName = hasProfile
-    ? `${p.first_name || ''} ${p.last_name || ''}`.trim() || userEmail
+    ? `${p.first_name || ''} ${p.last_name || ''}`.trim() || (p.name as string) || userEmail
     : userEmail
-  const initials = hasProfile && p.first_name
-    ? `${p.first_name[0]}${p.last_name?.[0] || ''}`.toUpperCase()
+  const initials = hasProfile && (p.first_name || p.name)
+    ? `${(p.first_name || (p.name as string) || '')[0]}${(p.last_name || '')[0] || ''}`.toUpperCase()
     : userEmail[0]?.toUpperCase() || '?'
 
   return (
