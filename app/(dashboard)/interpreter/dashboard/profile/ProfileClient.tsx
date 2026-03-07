@@ -239,21 +239,30 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setSaving(false); return }
 
-    const { error } = await supabase
+    const { data: existing } = await supabase
       .from('interpreter_profiles')
-      .upsert({
-        user_id: user.id,
-        name: [firstName, lastName].filter(Boolean).join(' ') || userEmail,
-        ...fields,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' })
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    const payload = {
+      user_id: user.id,
+      name: [firstName, lastName].filter(Boolean).join(' ') || userEmail,
+      status: 'draft' as const,
+      ...fields,
+      updated_at: new Date().toISOString(),
+    }
+
+    const { error } = existing
+      ? await supabase.from('interpreter_profiles').update(payload).eq('user_id', user.id)
+      : await supabase.from('interpreter_profiles').insert(payload)
 
     setSaving(false)
     if (error) {
-      console.error('Supabase upsert error:', error)
-      setToast({ message: `Error saving: ${error.message}`, type: 'error' })
+      console.error('Save error:', error)
+      setToast({ message: `Error: ${error.message}`, type: 'error' })
     } else {
-      setToast({ message: 'Changes saved successfully.', type: 'success' })
+      setToast({ message: 'Changes saved.', type: 'success' })
     }
   }
 

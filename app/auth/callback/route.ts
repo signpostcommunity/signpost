@@ -38,25 +38,41 @@ export async function GET(request: NextRequest) {
 
   // New OAuth user — create profile with the role passed from the login page
   const assignedRole = role ?? 'requester';
-  await supabase.from('user_profiles').insert({ id: user.id, role: assignedRole });
+  await supabase.from('user_profiles').upsert(
+    { id: user.id, role: assignedRole },
+    { onConflict: 'id' }
+  );
 
-  // For interpreter/deaf, also create role-specific profile stub
+  // For interpreter/deaf, also create role-specific profile stub (ignore if exists)
+  const displayName = user.user_metadata?.full_name ?? user.email ?? 'User';
   if (assignedRole === 'interpreter') {
-    await supabase.from('interpreter_profiles').insert({
-      user_id: user.id,
-      name: user.user_metadata?.full_name ?? user.email ?? 'Interpreter',
-      status: 'pending',
-    });
+    const { data: existing } = await supabase
+      .from('interpreter_profiles').select('id').eq('user_id', user.id).maybeSingle();
+    if (!existing) {
+      await supabase.from('interpreter_profiles').insert({
+        user_id: user.id,
+        name: displayName,
+        status: 'pending',
+      });
+    }
   } else if (assignedRole === 'deaf') {
-    await supabase.from('deaf_profiles').insert({
-      id: user.id,
-      name: user.user_metadata?.full_name ?? user.email ?? 'User',
-    });
+    const { data: existing } = await supabase
+      .from('deaf_profiles').select('id').eq('id', user.id).maybeSingle();
+    if (!existing) {
+      await supabase.from('deaf_profiles').insert({
+        id: user.id,
+        name: displayName,
+      });
+    }
   } else {
-    await supabase.from('requester_profiles').insert({
-      id: user.id,
-      name: user.user_metadata?.full_name ?? user.email ?? 'User',
-    });
+    const { data: existing } = await supabase
+      .from('requester_profiles').select('id').eq('id', user.id).maybeSingle();
+    if (!existing) {
+      await supabase.from('requester_profiles').insert({
+        id: user.id,
+        name: displayName,
+      });
+    }
   }
 
   return redirectToDashboard(origin, assignedRole);
