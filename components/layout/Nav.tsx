@@ -122,7 +122,7 @@ export default function Nav({ initialSession = null }: NavProps) {
             <>
               {/* ── Logged-out state ── */}
               <Link href="/directory" className="nav-btn" style={{ textDecoration: 'none' }}>
-                Browse Directory
+                Browse Interpreter Directory
               </Link>
               <Link href="/interpreter" className="nav-btn" style={{ textDecoration: 'none' }}>
                 Interpreter Portal

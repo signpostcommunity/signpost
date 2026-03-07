@@ -4,7 +4,11 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { PageHeader } from '@/components/dashboard/interpreter/shared'
 import Toast from '@/components/ui/Toast'
-import { ALL_SIGN_LANGS, ALL_SPOKEN_LANGS, ALL_SPECS, ALL_REGIONS } from '@/lib/data/seed'
+import {
+  SIGN_LANGUAGES_TOP6, SIGN_LANGUAGES_BY_REGION,
+  SPOKEN_LANGUAGES_TOP6, SPOKEN_LANGUAGES_BY_REGION,
+  SPECIALIZATIONS,
+} from '@/lib/data/languages'
 
 // ── Shared styles ────────────────────────────────────────────────────────────
 
@@ -13,18 +17,17 @@ const inputStyle: React.CSSProperties = {
   background: 'var(--surface2)',
   border: '1px solid var(--border)',
   borderRadius: 'var(--radius-sm)',
-  padding: '10px 14px',
+  padding: '11px 14px',
   color: 'var(--text)',
   fontSize: '0.9rem',
   fontFamily: "'DM Sans', sans-serif",
   outline: 'none',
-  transition: 'border-color 0.15s',
   boxSizing: 'border-box' as const,
 }
 
 const labelStyle: React.CSSProperties = {
   display: 'block',
-  fontSize: '0.8rem',
+  fontSize: '0.82rem',
   fontWeight: 500,
   color: 'var(--muted)',
   marginBottom: 6,
@@ -32,29 +35,75 @@ const labelStyle: React.CSSProperties = {
 
 const sectionTitleStyle: React.CSSProperties = {
   fontFamily: "'Syne', sans-serif",
-  fontSize: '0.75rem',
+  fontSize: '0.7rem',
   fontWeight: 700,
-  letterSpacing: '0.1em',
+  letterSpacing: '0.12em',
   textTransform: 'uppercase',
   color: 'var(--accent)',
-  margin: '32px 0 16px',
+  marginBottom: 20,
 }
 
-function chipStyle(selected: boolean): React.CSSProperties {
-  return {
-    display: 'inline-flex',
-    alignItems: 'center',
-    padding: '6px 14px',
-    borderRadius: 999,
-    fontSize: '0.82rem',
-    cursor: 'pointer',
-    border: selected ? '1px solid var(--accent)' : '1px solid var(--border)',
-    background: selected ? 'rgba(0,229,255,0.1)' : 'transparent',
-    color: selected ? 'var(--accent)' : 'var(--muted)',
-    fontWeight: selected ? 600 : 400,
-    transition: 'all 0.15s',
-    fontFamily: "'DM Sans', sans-serif",
-  }
+function handleFocus(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+  e.target.style.borderColor = 'var(--accent)'
+  e.target.style.boxShadow = '0 0 0 3px rgba(0,229,255,0.07)'
+}
+function handleBlur(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
+  e.target.style.borderColor = 'var(--border)'
+  e.target.style.boxShadow = 'none'
+}
+
+// ── Chip ─────────────────────────────────────────────────────────────────────
+
+function Chip({ label, selected, onToggle }: { label: string; selected: boolean; onToggle: () => void }) {
+  return (
+    <span
+      onClick={onToggle}
+      style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'flex-start',
+        padding: '8px 14px', borderRadius: 'var(--radius-sm)',
+        minHeight: 36, fontSize: '0.85rem', cursor: 'pointer',
+        transition: 'all 0.15s', userSelect: 'none',
+        border: `1px solid ${selected ? 'rgba(0,229,255,0.4)' : 'var(--border)'}`,
+        background: selected ? 'rgba(0,229,255,0.1)' : 'var(--surface2)',
+        color: selected ? 'var(--accent)' : 'var(--muted)',
+        fontFamily: "'DM Sans', sans-serif", lineHeight: 1.4, wordBreak: 'break-word',
+      }}
+    >
+      {label}
+    </span>
+  )
+}
+
+// ── Region toggle tile ───────────────────────────────────────────────────────
+
+const REGIONS = [
+  { label: 'Worldwide', color: '#00e5ff' },
+  { label: 'NA — North America', color: '#f97316' },
+  { label: 'LATAM — Latin America & Caribbean', color: '#a78bfa' },
+  { label: 'EU — Europe', color: '#60a5fa' },
+  { label: 'AF — Africa', color: '#34d399' },
+  { label: 'ME — Middle East', color: '#fb923c' },
+  { label: 'SA — South & Central Asia', color: '#f472b6' },
+  { label: 'EA — East & Southeast Asia', color: '#facc15' },
+  { label: 'OC — Oceania & Pacific', color: '#4dd9ac' },
+]
+
+function ToggleTile({ label, selected, onToggle, dotColor }: {
+  label: string; selected: boolean; onToggle: () => void; dotColor?: string
+}) {
+  return (
+    <label onClick={onToggle} style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '10px 14px', borderRadius: 'var(--radius-sm)',
+      border: `1px solid ${selected ? 'rgba(0,229,255,0.4)' : 'var(--border)'}`,
+      background: selected ? 'rgba(0,229,255,0.08)' : 'var(--surface2)',
+      cursor: 'pointer', transition: 'all 0.15s', userSelect: 'none', gap: 8,
+    }}>
+      {dotColor && <span style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor, flexShrink: 0 }} />}
+      <span style={{ color: selected ? 'var(--text)' : 'var(--muted)', fontSize: '0.85rem', flex: 1 }}>{label}</span>
+      <span style={{ color: 'var(--accent)', fontSize: '0.8rem', opacity: selected ? 1 : 0 }}>✓</span>
+    </label>
+  )
 }
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -64,14 +113,21 @@ interface ProfileData {
   last_name?: string | null
   city?: string | null
   country?: string | null
-  bio?: string | null
+  phone?: string | null
+  years_experience?: string | null
+  interpreter_type?: string | null
   mode_of_work?: string | null
+  bio?: string | null
   sign_languages?: string[] | null
   spoken_languages?: string[] | null
   specializations?: string[] | null
   regions?: string[] | null
   video_url?: string | null
   video_description?: string | null
+  website?: string | null
+  linkedin?: string | null
+  event_coordination?: boolean | null
+  coordination_bio?: string | null
   status?: string | null
 }
 
@@ -80,34 +136,102 @@ interface ProfileClientProps {
   userEmail: string
 }
 
-// ── Component ────────────────────────────────────────────────────────────────
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+
+const TABS = ['Personal', 'Languages', 'Credentials', 'Bio & Video'] as const
+type Tab = typeof TABS[number]
+
+function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
+  return (
+    <div style={{
+      display: 'flex', gap: 0, borderBottom: '1px solid var(--border)',
+      marginBottom: 32,
+    }}>
+      {TABS.map(tab => (
+        <button
+          key={tab}
+          onClick={() => onChange(tab)}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            padding: '12px 20px',
+            fontSize: '0.88rem', fontWeight: active === tab ? 700 : 400,
+            fontFamily: "'DM Sans', sans-serif",
+            color: active === tab ? 'var(--accent)' : 'var(--muted)',
+            borderBottom: active === tab ? '2px solid var(--accent)' : '2px solid transparent',
+            transition: 'all 0.15s',
+            marginBottom: -1,
+          }}
+        >
+          {tab}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+// ── Save button ──────────────────────────────────────────────────────────────
+
+function SaveButton({ saving, onClick }: { saving: boolean; onClick: () => void }) {
+  return (
+    <div style={{ paddingTop: 24, borderTop: '1px solid var(--border)', marginTop: 32 }}>
+      <button
+        onClick={onClick}
+        disabled={saving}
+        className="btn-primary"
+        style={{ opacity: saving ? 0.6 : 1 }}
+      >
+        {saving ? 'Saving...' : 'Save Changes'}
+      </button>
+    </div>
+  )
+}
+
+// ── Main component ───────────────────────────────────────────────────────────
 
 export default function ProfileClient({ profile: rawProfile, userEmail }: ProfileClientProps) {
   const p = (rawProfile || {}) as ProfileData
   const hasProfile = !!rawProfile
 
-  const [editing, setEditing] = useState(false)
+  const [activeTab, setActiveTab] = useState<Tab>('Personal')
   const [saving, setSaving] = useState(false)
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
-  // Form state
+  // ── Personal state ─────────────────────────────────────────────────────
   const [firstName, setFirstName] = useState(p.first_name || '')
   const [lastName, setLastName] = useState(p.last_name || '')
   const [city, setCity] = useState(p.city || '')
   const [country, setCountry] = useState(p.country || '')
+  const [phone, setPhone] = useState(p.phone || '')
+  const [yearsExperience, setYearsExperience] = useState(p.years_experience || '')
+  const [interpreterType, setInterpreterType] = useState(p.interpreter_type || '')
   const [modeOfWork, setModeOfWork] = useState(p.mode_of_work || '')
+  const [website, setWebsite] = useState(p.website || '')
+  const [linkedin, setLinkedin] = useState(p.linkedin || '')
+  const [eventCoordination, setEventCoordination] = useState(p.event_coordination || false)
+  const [coordinationBio, setCoordinationBio] = useState(p.coordination_bio || '')
+
+  // ── Languages state ────────────────────────────────────────────────────
   const [signLangs, setSignLangs] = useState<string[]>(p.sign_languages || [])
   const [spokenLangs, setSpokenLangs] = useState<string[]>(p.spoken_languages || [])
   const [specs, setSpecs] = useState<string[]>(p.specializations || [])
+  const [signRegional, setSignRegional] = useState<string[]>([])
+  const [spokenRegional, setSpokenRegional] = useState<string[]>([])
+
+  // ── Service area state ─────────────────────────────────────────────────
   const [regions, setRegions] = useState<string[]>(p.regions || [])
+
+  // ── Bio & Video state ──────────────────────────────────────────────────
   const [bio, setBio] = useState(p.bio || '')
   const [videoUrl, setVideoUrl] = useState(p.video_url || '')
+  const [videoDescription, setVideoDescription] = useState(p.video_description || '')
+
+  // ── Helpers ────────────────────────────────────────────────────────────
 
   function toggleInList(list: string[], item: string, setter: (v: string[]) => void) {
     setter(list.includes(item) ? list.filter(x => x !== item) : [...list, item])
   }
 
-  async function handleSave() {
+  async function saveFields(fields: Record<string, unknown>) {
     setSaving(true)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -115,30 +239,22 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
 
     const { error } = await supabase
       .from('interpreter_profiles')
-      .update({
-        first_name: firstName,
-        last_name: lastName,
-        city,
-        country,
-        mode_of_work: modeOfWork,
-        sign_languages: signLangs,
-        spoken_languages: spokenLangs,
-        specializations: specs,
-        regions,
-        bio,
-        video_url: videoUrl,
+      .upsert({
+        user_id: user.id,
+        ...fields,
         updated_at: new Date().toISOString(),
-      })
-      .eq('user_id', user.id)
+      }, { onConflict: 'user_id' })
 
     setSaving(false)
     if (error) {
-      setToast('Error saving profile. Please try again.')
+      console.error('Supabase upsert error:', error)
+      setToast({ message: `Error saving: ${error.message}`, type: 'error' })
     } else {
-      setToast('Profile saved successfully.')
-      setEditing(false)
+      setToast({ message: 'Changes saved successfully.', type: 'success' })
     }
   }
+
+  // ── Display info ───────────────────────────────────────────────────────
 
   const displayName = hasProfile
     ? `${p.first_name || ''} ${p.last_name || ''}`.trim() || userEmail
@@ -147,250 +263,400 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
     ? `${p.first_name[0]}${p.last_name?.[0] || ''}`.toUpperCase()
     : userEmail[0]?.toUpperCase() || '?'
 
-  // ── Read-only view ───────────────────────────────────────────────────────
-
-  if (!editing) {
-    return (
-      <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 720 }}>
-        <PageHeader
-          title="My Profile"
-          subtitle={hasProfile
-            ? "This is what requesters see when they view your listing. Keep it current — your profile is your first impression."
-            : "You haven't completed your profile yet. Click Edit Profile to get started."
-          }
-        />
-
-        {/* Profile summary card */}
-        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '24px 28px', marginBottom: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24 }}>
-            <div style={{
-              width: 60, height: 60, borderRadius: '50%', flexShrink: 0,
-              background: 'linear-gradient(135deg,#7b61ff,#00e5ff)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.2rem', color: '#fff',
-            }}>{initials}</div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '1.15rem' }}>{displayName}</div>
-              {p.status && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 5 }}>
-                  <span style={{
-                    fontSize: '0.72rem', fontWeight: 700,
-                    background: p.status === 'approved' ? 'rgba(0,229,255,0.1)' : 'rgba(255,165,0,0.12)',
-                    border: p.status === 'approved' ? '1px solid rgba(0,229,255,0.25)' : '1px solid rgba(255,165,0,0.3)',
-                    color: p.status === 'approved' ? 'var(--accent)' : '#f97316',
-                    borderRadius: 6, padding: '2px 8px',
-                  }}>
-                    {p.status === 'approved' ? '✓ Approved' : p.status === 'pending' ? '⏳ Pending Review' : p.status}
-                  </span>
-                </div>
-              )}
-            </div>
-            <button
-              onClick={() => setEditing(true)}
-              style={{
-                background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
-                color: 'var(--muted)', fontSize: '0.82rem', padding: '8px 16px',
-                cursor: 'pointer', transition: 'all 0.15s', fontFamily: "'DM Sans', sans-serif",
-              }}
-            >
-              Edit Profile
-            </button>
-          </div>
-
-          <InfoRow label="Location" value={[p.city, p.country].filter(Boolean).join(', ') || 'Not set yet'} />
-          <InfoRow label="Sign Languages" value={p.sign_languages?.join(', ') || 'Not set yet'} />
-          <InfoRow label="Spoken Languages" value={p.spoken_languages?.join(', ') || 'Not set yet'} />
-          <InfoRow label="Specializations" value={p.specializations?.join(', ') || 'Not set yet'} />
-          <InfoRow label="Mode" value={p.mode_of_work || 'Not set yet'} />
-          <InfoRow label="Service Area" value={p.regions?.join(', ') || 'Not set yet'} />
-        </div>
-
-        {/* Bio */}
-        <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '24px 28px', marginBottom: 16 }}>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 14 }}>Bio</div>
-          <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.7, margin: 0 }}>
-            {p.bio || 'No bio set yet. Click Edit Profile to add one.'}
-          </p>
-        </div>
-
-        {toast && <Toast message={toast} type="success" onClose={() => setToast(null)} />}
-      </div>
-    )
-  }
-
-  // ── Edit form ────────────────────────────────────────────────────────────
-
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 720 }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 780 }}>
       <PageHeader
-        title="Edit Profile"
-        subtitle="Update your information below. Changes are saved when you click Save."
+        title="My Profile"
+        subtitle={hasProfile
+          ? "This is what requesters see when they view your listing. Keep it current."
+          : "Complete your profile below to get listed in the directory."
+        }
       />
 
-      {/* BASIC INFO */}
-      <div style={sectionTitleStyle}>Basic Info</div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-        <div>
-          <label style={labelStyle}>First Name</label>
-          <input
-            value={firstName}
-            onChange={e => setFirstName(e.target.value)}
-            style={inputStyle}
-            onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-            onBlur={e => e.target.style.borderColor = 'var(--border)'}
+      {/* Profile header card */}
+      <div style={{
+        background: 'var(--card-bg)', border: '1px solid var(--border)',
+        borderRadius: 'var(--radius)', padding: '24px 28px', marginBottom: 28,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{
+            width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
+            background: 'linear-gradient(135deg,#7b61ff,#00e5ff)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: '#fff',
+          }}>{initials}</div>
+          <div>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '1.1rem' }}>{displayName}</div>
+            {p.status && (
+              <span style={{
+                display: 'inline-block', marginTop: 4,
+                fontSize: '0.72rem', fontWeight: 700,
+                background: p.status === 'approved' ? 'rgba(0,229,255,0.1)' : 'rgba(255,165,0,0.12)',
+                border: p.status === 'approved' ? '1px solid rgba(0,229,255,0.25)' : '1px solid rgba(255,165,0,0.3)',
+                color: p.status === 'approved' ? 'var(--accent)' : '#f97316',
+                borderRadius: 6, padding: '2px 8px',
+              }}>
+                {p.status === 'approved' ? '✓ Approved' : p.status === 'pending' ? '⏳ Pending Review' : p.status}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <TabBar active={activeTab} onChange={setActiveTab} />
+
+      {/* ── Tab 1: Personal ─────────────────────────────────────────────── */}
+      {activeTab === 'Personal' && (
+        <>
+          <div style={sectionTitleStyle}>Personal Information</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, marginBottom: 16 }}>
+            <div>
+              <label style={labelStyle}>First Name</label>
+              <input value={firstName} onChange={e => setFirstName(e.target.value)} style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+            </div>
+            <div>
+              <label style={labelStyle}>Last Name</label>
+              <input value={lastName} onChange={e => setLastName(e.target.value)} style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, marginBottom: 16 }}>
+            <div>
+              <label style={labelStyle}>Country</label>
+              <select value={country} onChange={e => setCountry(e.target.value)} style={inputStyle} onFocus={handleFocus} onBlur={handleBlur}>
+                <option value="">Select country...</option>
+                <option>United States</option><option>United Kingdom</option><option>Spain</option>
+                <option>Australia</option><option>Germany</option><option>France</option>
+                <option>Japan</option><option>Brazil</option><option>Canada</option><option>Other</option>
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>City / Region</label>
+              <input value={city} onChange={e => setCity(e.target.value)} style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, marginBottom: 16 }}>
+            <div>
+              <label style={labelStyle}>Phone / WhatsApp</label>
+              <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+1 555 000 0000" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+            </div>
+            <div>
+              <label style={labelStyle}>Years of Experience</label>
+              <select value={yearsExperience} onChange={e => setYearsExperience(e.target.value)} style={inputStyle} onFocus={handleFocus} onBlur={handleBlur}>
+                <option value="">Select...</option>
+                <option>Less than 1 year</option><option>1–3 years</option><option>3–5 years</option>
+                <option>5–10 years</option><option>10–15 years</option><option>15–20 years</option><option>20+ years</option>
+              </select>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, marginBottom: 16 }}>
+            <div>
+              <label style={labelStyle}>Interpreter Type</label>
+              <select value={interpreterType} onChange={e => setInterpreterType(e.target.value)} style={inputStyle} onFocus={handleFocus} onBlur={handleBlur}>
+                <option value="">Select...</option>
+                <option>Hearing Interpreter</option><option>Deaf Interpreter</option>
+              </select>
+            </div>
+            <div>
+              <label style={labelStyle}>Mode of Work</label>
+              <select value={modeOfWork} onChange={e => setModeOfWork(e.target.value)} style={inputStyle} onFocus={handleFocus} onBlur={handleBlur}>
+                <option value="">Select...</option>
+                <option>Remote only</option><option>On-site only</option><option>Both remote and on-site</option>
+              </select>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, marginBottom: 16 }}>
+            <div>
+              <label style={labelStyle}>Website</label>
+              <input type="url" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://yoursite.com" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+            </div>
+            <div>
+              <label style={labelStyle}>LinkedIn Profile</label>
+              <input type="url" value={linkedin} onChange={e => setLinkedin(e.target.value)} placeholder="https://linkedin.com/in/..." style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+            </div>
+          </div>
+
+          {/* Event Coordination */}
+          <div style={sectionTitleStyle}>Event Coordination</div>
+          <div style={{
+            background: 'var(--surface2)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)', padding: '16px 18px', marginBottom: 16,
+          }}>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 12, cursor: 'pointer', color: 'var(--text)', fontSize: '0.88rem' }}>
+              <input
+                type="checkbox" checked={eventCoordination}
+                onChange={e => setEventCoordination(e.target.checked)}
+                style={{ width: 'auto', marginTop: 3, accentColor: 'var(--accent)' }}
+              />
+              <span>I am available to coordinate interpreter teams for complex and/or large-scale events</span>
+            </label>
+            {eventCoordination && (
+              <div style={{ marginTop: 12 }}>
+                <label style={labelStyle}>Coordination experience</label>
+                <textarea
+                  value={coordinationBio} onChange={e => setCoordinationBio(e.target.value)}
+                  placeholder="Describe your coordination experience..."
+                  rows={3} style={{ ...inputStyle, resize: 'vertical' }}
+                  onFocus={handleFocus} onBlur={handleBlur}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Regions */}
+          <div style={sectionTitleStyle}>Regions Available For Work Travel</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10, marginBottom: 16 }}>
+            {REGIONS.map(r => (
+              <ToggleTile
+                key={r.label} label={r.label} dotColor={r.color}
+                selected={regions.includes(r.label)}
+                onToggle={() => toggleInList(regions, r.label, setRegions)}
+              />
+            ))}
+          </div>
+
+          <SaveButton saving={saving} onClick={() => saveFields({
+            first_name: firstName, last_name: lastName, city, country, phone,
+            years_experience: yearsExperience, interpreter_type: interpreterType,
+            mode_of_work: modeOfWork, website, linkedin,
+            event_coordination: eventCoordination, coordination_bio: coordinationBio,
+            regions,
+          })} />
+        </>
+      )}
+
+      {/* ── Tab 2: Languages ────────────────────────────────────────────── */}
+      {activeTab === 'Languages' && (
+        <>
+          {/* Sign Languages */}
+          <div style={sectionTitleStyle}>Sign Languages</div>
+          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
+            Select all sign languages in which you have professional-level fluency.
+          </p>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>
+            Most common
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 6, marginBottom: 12 }}>
+            {SIGN_LANGUAGES_TOP6.map(lang => (
+              <Chip key={lang} label={lang} selected={signLangs.includes(lang)} onToggle={() => toggleInList(signLangs, lang, setSignLangs)} />
+            ))}
+          </div>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 6 }}>
+            More languages by region
+          </div>
+          <select
+            value="" onChange={e => { if (e.target.value && !signRegional.includes(e.target.value)) { setSignRegional(prev => [...prev, e.target.value]); setSignLangs(prev => prev.includes(e.target.value) ? prev : [...prev, e.target.value]) } }}
+            style={inputStyle} onFocus={handleFocus} onBlur={handleBlur}
+          >
+            <option value="">Select a language...</option>
+            {Object.entries(SIGN_LANGUAGES_BY_REGION).sort().map(([region, langs]) => (
+              <optgroup key={region} label={region}>
+                {langs.map(lang => <option key={lang} value={lang}>{lang}</option>)}
+              </optgroup>
+            ))}
+          </select>
+          {signRegional.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 8 }}>
+              {signRegional.map(lang => (
+                <span key={lang} style={{
+                  padding: '0 10px 0 12px', height: 30, fontSize: '0.8rem',
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  borderRadius: 20, border: '1px solid rgba(0,229,255,0.4)',
+                  background: 'rgba(0,229,255,0.1)', color: 'var(--accent)',
+                  fontFamily: "'DM Sans', sans-serif",
+                }}>
+                  {lang}
+                  <span onClick={() => { setSignRegional(prev => prev.filter(l => l !== lang)); setSignLangs(prev => prev.filter(l => l !== lang)) }} style={{ cursor: 'pointer', opacity: 0.6, fontSize: '0.85rem' }}>✕</span>
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Spoken Languages */}
+          <div style={{ ...sectionTitleStyle, marginTop: 36 }}>Spoken Languages</div>
+          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
+            Select all spoken languages in which you have professional-level fluency.
+          </p>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>
+            Most common
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 6, marginBottom: 12 }}>
+            {SPOKEN_LANGUAGES_TOP6.map(lang => (
+              <Chip key={lang} label={lang} selected={spokenLangs.includes(lang)} onToggle={() => toggleInList(spokenLangs, lang, setSpokenLangs)} />
+            ))}
+          </div>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 6 }}>
+            More languages by region
+          </div>
+          <select
+            value="" onChange={e => { if (e.target.value && !spokenRegional.includes(e.target.value)) { setSpokenRegional(prev => [...prev, e.target.value]); setSpokenLangs(prev => prev.includes(e.target.value) ? prev : [...prev, e.target.value]) } }}
+            style={inputStyle} onFocus={handleFocus} onBlur={handleBlur}
+          >
+            <option value="">Select a language...</option>
+            {Object.entries(SPOKEN_LANGUAGES_BY_REGION).sort().map(([region, langs]) => (
+              <optgroup key={region} label={region}>
+                {langs.map(lang => <option key={lang} value={lang}>{lang}</option>)}
+              </optgroup>
+            ))}
+          </select>
+          {spokenRegional.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 8 }}>
+              {spokenRegional.map(lang => (
+                <span key={lang} style={{
+                  padding: '0 10px 0 12px', height: 30, fontSize: '0.8rem',
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  borderRadius: 20, border: '1px solid rgba(0,229,255,0.4)',
+                  background: 'rgba(0,229,255,0.1)', color: 'var(--accent)',
+                  fontFamily: "'DM Sans', sans-serif",
+                }}>
+                  {lang}
+                  <span onClick={() => { setSpokenRegional(prev => prev.filter(l => l !== lang)); setSpokenLangs(prev => prev.filter(l => l !== lang)) }} style={{ cursor: 'pointer', opacity: 0.6, fontSize: '0.85rem' }}>✕</span>
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Specializations */}
+          <div style={{ ...sectionTitleStyle, marginTop: 36 }}>Specializations</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 180px), 1fr))', gap: 6, marginBottom: 16 }}>
+            {SPECIALIZATIONS.map(spec => (
+              <Chip key={spec} label={spec} selected={specs.includes(spec)} onToggle={() => toggleInList(specs, spec, setSpecs)} />
+            ))}
+          </div>
+
+          <SaveButton saving={saving} onClick={() => saveFields({
+            sign_languages: signLangs, spoken_languages: spokenLangs, specializations: specs,
+          })} />
+        </>
+      )}
+
+      {/* ── Tab 3: Credentials ──────────────────────────────────────────── */}
+      {activeTab === 'Credentials' && (
+        <CredentialsTab saving={saving} onSave={saveFields} />
+      )}
+
+      {/* ── Tab 4: Bio & Video ──────────────────────────────────────────── */}
+      {activeTab === 'Bio & Video' && (
+        <>
+          <div style={sectionTitleStyle}>Professional Bio</div>
+          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
+            Tell the signpost community about yourself: your background, professional experience, specializations, etc.
+          </p>
+          <textarea
+            value={bio} onChange={e => setBio(e.target.value)}
+            rows={6} style={{ ...inputStyle, resize: 'vertical', minHeight: 120, marginBottom: 24 }}
+            onFocus={handleFocus} onBlur={handleBlur}
           />
-        </div>
-        <div>
-          <label style={labelStyle}>Last Name</label>
-          <input
-            value={lastName}
-            onChange={e => setLastName(e.target.value)}
-            style={inputStyle}
-            onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-            onBlur={e => e.target.style.borderColor = 'var(--border)'}
-          />
-        </div>
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-        <div>
-          <label style={labelStyle}>City</label>
-          <input
-            value={city}
-            onChange={e => setCity(e.target.value)}
-            style={inputStyle}
-            onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-            onBlur={e => e.target.style.borderColor = 'var(--border)'}
-          />
-        </div>
-        <div>
-          <label style={labelStyle}>State / Country</label>
-          <input
-            value={country}
-            onChange={e => setCountry(e.target.value)}
-            style={inputStyle}
-            onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-            onBlur={e => e.target.style.borderColor = 'var(--border)'}
-          />
-        </div>
-      </div>
-      <div style={{ marginBottom: 16 }}>
-        <label style={labelStyle}>Mode of Work</label>
-        <div style={{ display: 'flex', gap: 10 }}>
-          {['On-site', 'Remote', 'Both'].map(mode => (
-            <button
-              key={mode}
-              onClick={() => setModeOfWork(mode)}
-              style={chipStyle(modeOfWork === mode)}
-            >
-              {mode}
-            </button>
-          ))}
-        </div>
-      </div>
 
-      {/* LANGUAGES & SPECIALIZATIONS */}
-      <div style={sectionTitleStyle}>Languages &amp; Specializations</div>
-      <div style={{ marginBottom: 16 }}>
-        <label style={labelStyle}>Sign Languages</label>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {ALL_SIGN_LANGS.map(lang => (
-            <button key={lang} onClick={() => toggleInList(signLangs, lang, setSignLangs)} style={chipStyle(signLangs.includes(lang))}>
-              {lang}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div style={{ marginBottom: 16 }}>
-        <label style={labelStyle}>Spoken Languages</label>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {ALL_SPOKEN_LANGS.map(lang => (
-            <button key={lang} onClick={() => toggleInList(spokenLangs, lang, setSpokenLangs)} style={chipStyle(spokenLangs.includes(lang))}>
-              {lang}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div style={{ marginBottom: 16 }}>
-        <label style={labelStyle}>Specializations</label>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {ALL_SPECS.map(spec => (
-            <button key={spec} onClick={() => toggleInList(specs, spec, setSpecs)} style={chipStyle(specs.includes(spec))}>
-              {spec}
-            </button>
-          ))}
-        </div>
-      </div>
+          <div style={sectionTitleStyle}>Introduction Video</div>
+          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
+            Paste a link to a short video introduction. This is the first thing Deaf clients will see.
+          </p>
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>Video URL</label>
+            <input type="url" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="https://youtube.com/... or https://vimeo.com/..." style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+          </div>
 
-      {/* SERVICE AREA */}
-      <div style={sectionTitleStyle}>Service Area</div>
-      <div style={{ marginBottom: 16 }}>
-        <label style={labelStyle}>Regions</label>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {ALL_REGIONS.map(region => (
-            <button key={region} onClick={() => toggleInList(regions, region, setRegions)} style={chipStyle(regions.includes(region))}>
-              {region}
-            </button>
-          ))}
-        </div>
-      </div>
+          <div style={sectionTitleStyle}>Video Description</div>
+          <div style={{ marginBottom: 16 }}>
+            <label style={labelStyle}>Brief description of your video (shown to clients)</label>
+            <textarea
+              value={videoDescription} onChange={e => setVideoDescription(e.target.value)}
+              placeholder="In this video I introduce myself in ASL and explain my background..."
+              rows={3} style={{ ...inputStyle, resize: 'vertical', minHeight: 80 }}
+              onFocus={handleFocus} onBlur={handleBlur}
+            />
+          </div>
 
-      {/* BIO & VIDEO */}
-      <div style={sectionTitleStyle}>Bio &amp; Video</div>
-      <div style={{ marginBottom: 16 }}>
-        <label style={labelStyle}>Professional Bio</label>
-        <textarea
-          value={bio}
-          onChange={e => setBio(e.target.value)}
-          rows={5}
-          style={{ ...inputStyle, resize: 'vertical' }}
-          onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-          onBlur={e => e.target.style.borderColor = 'var(--border)'}
-        />
-      </div>
-      <div style={{ marginBottom: 16 }}>
-        <label style={labelStyle}>Video URL</label>
-        <input
-          value={videoUrl}
-          onChange={e => setVideoUrl(e.target.value)}
-          placeholder="https://youtube.com/..."
-          style={inputStyle}
-          onFocus={e => e.target.style.borderColor = 'var(--accent)'}
-          onBlur={e => e.target.style.borderColor = 'var(--border)'}
-        />
-      </div>
+          <SaveButton saving={saving} onClick={() => saveFields({
+            bio, video_url: videoUrl, video_description: videoDescription,
+          })} />
+        </>
+      )}
 
-      {/* Actions */}
-      <div style={{ display: 'flex', gap: 12, marginTop: 32, paddingBottom: 40 }}>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="btn-primary"
-          style={{ opacity: saving ? 0.6 : 1 }}
-        >
-          {saving ? 'Saving...' : 'Save Profile'}
-        </button>
-        <button
-          onClick={() => setEditing(false)}
-          style={{
-            background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
-            color: 'var(--muted)', fontSize: '0.88rem', padding: '10px 20px',
-            cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
-          }}
-        >
-          Cancel
-        </button>
-      </div>
-
-      {toast && <Toast message={toast} type={toast.startsWith('Error') ? 'error' : 'success'} onClose={() => setToast(null)} />}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   )
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
+// ── Credentials tab (isolated state) ─────────────────────────────────────────
+
+interface CertEntry { id: string; name: string; issuingBody: string; verificationLink: string }
+
+function CredentialsTab({ saving, onSave }: { saving: boolean; onSave: (fields: Record<string, unknown>) => Promise<void> }) {
+  const [certs, setCerts] = useState<CertEntry[]>([
+    { id: `cert-${Date.now()}`, name: '', issuingBody: '', verificationLink: '' },
+  ])
+
+  function updateCert(id: string, field: keyof CertEntry, value: string) {
+    setCerts(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c))
+  }
+
+  function removeCert(id: string) {
+    if (certs.length === 1) return
+    setCerts(prev => prev.filter(c => c.id !== id))
+  }
+
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)', fontSize: '0.88rem' }}>
-      <span style={{ color: 'var(--muted)' }}>{label}</span>
-      <span style={{ color: value === 'Not set yet' ? 'var(--muted)' : 'var(--text)', textAlign: 'right', maxWidth: '60%', fontStyle: value === 'Not set yet' ? 'italic' : 'normal' }}>{value}</span>
-    </div>
+    <>
+      <div style={sectionTitleStyle}>Certifications &amp; Credentials</div>
+      <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
+        List your certifications and qualifications. To earn a{' '}
+        <span style={{ color: 'var(--accent)', fontWeight: 600 }}>✓ Verified</span>{' '}
+        badge, paste a link to your certifying body for each credential.
+      </p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {certs.map(cert => (
+          <div key={cert.id} style={{
+            background: 'var(--surface2)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)', padding: '20px 24px',
+          }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, marginBottom: 10 }}>
+              <div>
+                <label style={labelStyle}>Certification Name</label>
+                <input value={cert.name} onChange={e => updateCert(cert.id, 'name', e.target.value)} placeholder="e.g. RID NIC Advanced" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+              </div>
+              <div>
+                <label style={labelStyle}>Issuing Body &amp; Year</label>
+                <input value={cert.issuingBody} onChange={e => updateCert(cert.id, 'issuingBody', e.target.value)} placeholder="e.g. RID, USA · 2018" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, alignItems: 'end' }}>
+              <div>
+                <label style={labelStyle}>Verification link</label>
+                <input type="url" value={cert.verificationLink} onChange={e => updateCert(cert.id, 'verificationLink', e.target.value)} placeholder="https://rid.org/verify/..." style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+              </div>
+              {certs.length > 1 && (
+                <button onClick={() => removeCert(cert.id)} style={{
+                  background: 'rgba(255,77,109,0.1)', border: '1px solid rgba(255,77,109,0.2)',
+                  color: 'var(--accent3)', borderRadius: 8, padding: '8px 10px', cursor: 'pointer',
+                  fontSize: '0.9rem', transition: 'all 0.2s',
+                }}>✕</button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      <button
+        onClick={() => setCerts(prev => [...prev, { id: `cert-${Date.now()}`, name: '', issuingBody: '', verificationLink: '' }])}
+        style={{
+          background: 'none', border: '1px dashed var(--border)',
+          color: 'var(--muted)', borderRadius: 'var(--radius-sm)',
+          padding: 10, width: '100%', cursor: 'pointer',
+          fontFamily: "'DM Sans', sans-serif", fontSize: '0.85rem',
+          transition: 'all 0.2s', marginTop: 10,
+        }}
+      >
+        + Add Another Credential
+      </button>
+
+      <SaveButton saving={saving} onClick={() => {
+        const validCerts = certs.filter(c => c.name.trim())
+        onSave({
+          // Store credentials as JSON array — the separate table isn't used by the signup flow
+          draft_data: { certifications: validCerts },
+        })
+      }} />
+    </>
   )
 }
