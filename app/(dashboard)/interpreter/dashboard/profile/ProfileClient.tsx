@@ -239,6 +239,20 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setSaving(false); return }
 
+    // Ensure user_profiles row exists (FK target for interpreter_profiles)
+    const { data: userProfile } = await supabase
+      .from('user_profiles')
+      .select('id')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    if (!userProfile) {
+      await supabase.from('user_profiles').insert({
+        id: user.id,
+        role: 'interpreter',
+      })
+    }
+
     const { data: existing } = await supabase
       .from('interpreter_profiles')
       .select('id')

@@ -169,6 +169,11 @@ export function FormProvider({ children }: { children: ReactNode }) {
     if (!draftUserId) return
     setIsSaving(true)
     try {
+      // Ensure user_profiles row exists (FK target for interpreter_profiles)
+      await supabase.from('user_profiles').upsert(
+        { id: draftUserId, role: 'interpreter' },
+        { onConflict: 'id' }
+      )
       await supabase
         .from('interpreter_profiles')
         .upsert({
