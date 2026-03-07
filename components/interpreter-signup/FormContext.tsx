@@ -173,6 +173,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
         .from('interpreter_profiles')
         .upsert({
           user_id: draftUserId,
+          name: [formData.firstName, formData.lastName].filter(Boolean).join(' ') || formData.email || 'Draft',
           status: 'draft',
           draft_step: currentStep,
           draft_data: formData,

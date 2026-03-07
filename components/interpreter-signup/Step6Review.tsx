@@ -54,6 +54,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
       // Upsert interpreter_profiles with status: pending (awaiting admin review)
       await supabase.from('interpreter_profiles').upsert({
         user_id: userId,
+        name: [formData.firstName, formData.lastName].filter(Boolean).join(' ') || formData.email || 'Interpreter',
         status: 'pending',
         draft_step: 6,
         draft_data: formData,
