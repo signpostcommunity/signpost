@@ -260,7 +260,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       // Now try interpreter_profiles
       const { data, error, status, statusText } = await supabase
         .from('interpreter_profiles')
-        .select('name, first_name, last_name, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, sign_languages, spoken_languages, specializations, regions, video_url, video_desc, website_url, linkedin_url, event_coordination, event_coordination_desc, draft_data, status, photo_url, other_specializations')
+        .select('name, first_name, last_name, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, sign_languages, spoken_languages, specializations, regions, video_url, video_desc, website_url, linkedin_url, event_coordination, event_coordination_desc, draft_data, status, photo_url')
         .eq('user_id', user.id)
         .maybeSingle()
       console.log('PROFILE CLIENT-SIDE LOAD:', JSON.stringify({ data, error, status, statusText, userId: user.id }, null, 2))
@@ -788,7 +788,6 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
 
           <SaveButton saving={saving} onClick={() => saveFields({
             sign_languages: signLangs, spoken_languages: spokenLangs, specializations: specs,
-            other_specializations: otherSpecs,
           })} />
         </>
       )}
