@@ -10,12 +10,15 @@ export default async function ProfilePage() {
   let profile: Record<string, unknown> | null = null
 
   if (user) {
-    const { data } = await supabase
+    const { data, error, status } = await supabase
       .from('interpreter_profiles')
       .select('name, first_name, last_name, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, sign_languages, spoken_languages, specializations, regions, video_url, video_desc, website_url, linkedin_url, event_coordination, event_coordination_desc, draft_data, status, photo_url, other_specializations')
       .eq('user_id', user.id)
       .maybeSingle()
+    console.log('SERVER PROFILE QUERY:', JSON.stringify({ userId: user.id, data, error, status }, null, 2))
     profile = data
+  } else {
+    console.log('SERVER PROFILE QUERY: no user from auth.getUser()')
   }
 
   return (
