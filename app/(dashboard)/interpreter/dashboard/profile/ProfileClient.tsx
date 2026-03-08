@@ -331,7 +331,8 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
     const payload = {
       user_id: user.id,
       name: [firstName, lastName].filter(Boolean).join(' ') || userEmail,
-      status: 'draft' as const,
+      // BETA: auto-approve profiles. Revert to 'draft' when admin review flow is built.
+      status: 'approved' as const,
       ...fields,
       updated_at: new Date().toISOString(),
     }

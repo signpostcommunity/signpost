@@ -49,7 +49,8 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
       await supabase.from('interpreter_profiles').upsert({
         user_id: userId,
         name: [formData.firstName, formData.lastName].filter(Boolean).join(' ') || formData.email || 'Interpreter',
-        status: 'pending',
+        // BETA: auto-approve profiles. Revert to 'pending' when admin review flow is built.
+        status: 'approved',
         draft_step: 6,
         draft_data: formData,
         first_name: formData.firstName,
