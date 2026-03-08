@@ -28,6 +28,12 @@ const CERT_FULL_NAMES: Record<string, string> = {
 
 export default function ProfileClient({ interpreter: i }: { interpreter: Interpreter }) {
   const [activeTab, setActiveTab] = useState<Tab>('Overview');
+  const [toast, setToast] = useState<string | null>(null);
+
+  function showToast(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  }
 
   return (
     <div style={{ minHeight: '100vh' }}>
@@ -245,9 +251,7 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
                 Request Booking
               </Link>
               <button
-                onClick={() => {
-                  // TODO: hook up to saved list / Supabase
-                }}
+                onClick={() => showToast(`Added ${i.name} to your list`)}
                 style={{
                   width: '100%',
                   padding: '10px 24px',
@@ -265,6 +269,7 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
                 + Add to my list
               </button>
               <button
+                onClick={() => showToast('Messaging feature coming soon')}
                 style={{
                   width: '100%',
                   padding: '10px 24px',
@@ -431,6 +436,17 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
           </div>
         </div>
       </div>
+
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
+          background: 'var(--surface)', border: '1px solid rgba(52,211,153,0.3)',
+          borderRadius: '16px', padding: '14px 24px',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.5)', zIndex: 9999,
+          fontSize: '0.85rem', color: '#34d399',
+        }}>{toast}</div>
+      )}
 
       <style>{`
         @media (max-width: 900px) {

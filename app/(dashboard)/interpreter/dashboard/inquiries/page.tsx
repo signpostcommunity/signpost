@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { DEMO_INQUIRIES } from '@/lib/data/demo'
 import { BetaBanner, PageHeader, RequestCard, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 
-type Filter = 'all' | 'new' | 'responded'
+type Filter = 'all' | 'new' | 'pending' | 'responded' | 'sent'
 type InquiryState = Record<string, { status: 'new' | 'responded' | 'declined'; reason?: string }>
 
 const overlayStyle: React.CSSProperties = {
@@ -321,7 +321,9 @@ export default function InquiriesPage() {
     const s = states[inq.id]?.status
     if (filter === 'all') return true
     if (filter === 'new') return s === 'new'
+    if (filter === 'pending') return s === 'new'
     if (filter === 'responded') return s === 'responded'
+    if (filter === 'sent') return s === 'responded'
     return true
   })
 
@@ -332,7 +334,7 @@ export default function InquiriesPage() {
 
       {/* Filter pills */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
-        {(['all', 'new', 'responded'] as Filter[]).map(f => (
+        {(['all', 'new', 'pending', 'responded', 'sent'] as Filter[]).map(f => (
           <button
             key={f}
             onClick={() => setFilter(f)}
@@ -392,8 +394,11 @@ export default function InquiriesPage() {
         <AcceptModal
           inquiry={DEMO_INQUIRIES.find(i => i.id === accepting)!}
           onClose={() => {
+            const inq = DEMO_INQUIRIES.find(i => i.id === accepting)
             setStates(s => ({ ...s, [accepting]: { status: 'responded' } }))
             setAccepting(null)
+            setToast(`Rate sent to ${inq?.from || 'requester'}`)
+            setTimeout(() => setToast(null), 3000)
           }}
         />
       )}
