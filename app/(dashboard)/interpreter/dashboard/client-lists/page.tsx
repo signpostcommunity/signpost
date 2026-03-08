@@ -31,17 +31,8 @@ export default function ClientListsPage() {
       <BetaBanner />
       <PageHeader
         title="Client Interpreter Lists"
-        subtitle="When a Deaf or Hard of Hearing client shares their preferred interpreter list with you, it appears here. These lists are set by the client. You cannot edit them."
+        subtitle="When a Deaf or Hard of Hearing client proactively shares their preferred interpreter list with you, it appears here. These lists belong to your clients — they update automatically when the client makes changes. Work/personal designations reflect the client's preferences, helping you understand which contexts they trust you in."
       />
-
-      <div style={{
-        background: 'var(--card-bg)', border: '1px solid var(--border)',
-        borderRadius: 'var(--radius)', padding: '16px 20px', marginBottom: 24,
-        fontSize: '0.83rem', color: 'var(--muted)', lineHeight: 1.7,
-      }}>
-        <strong style={{ color: 'var(--text)' }}>These lists belong to your clients.</strong>{' '}
-        They update automatically when the client makes changes. The work/personal designations reflect the client's preferences — use them to understand which interpreters they trust in which contexts.
-      </div>
 
       {DEMO_CLIENT_LISTS.map(list => {
         const isOpen = open.includes(list.id)

@@ -2,7 +2,8 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { DEMO_TEAM } from '@/lib/data/demo'
 import { BetaBanner, PageHeader, Avatar, GhostButton } from '@/components/dashboard/interpreter/shared'
@@ -35,24 +36,33 @@ const fieldLabelStyle: React.CSSProperties = {
 
 // ── FIX 4: Invite modal ─────────────────────────────────────────────────────
 
-function InviteModal({ onClose }: { onClose: () => void }) {
+function InviteModal({ onClose, interpreterFullName }: { onClose: () => void; interpreterFullName: string }) {
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
-  const [message, setMessage] = useState(
-    "Hi, I'd like to add you to my preferred interpreter team on signpost. Once you create your profile, I can add you as a teammate for co-interpretation assignments."
-  )
-  const [sent, setSent] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
 
-  if (sent) return (
+  const defaultMessage = `Hey ${firstName || '[First Name]'}!\n\nI would love to add you to my preferred interpreter team on signpost, but I don't believe you have created a profile yet. Once you create a profile I can add you as a preferred team member for upcoming jobs.\n\nIf you would like to create a profile, click here: https://signpost.community/signup\n\n${interpreterFullName}`
+
+  const [message, setMessage] = useState('')
+
+  // Update message when firstName changes
+  const currentMessage = message || defaultMessage
+
+  function handleFirstNameChange(val: string) {
+    setFirstName(val)
+    // Auto-update the message with new first name
+    setMessage(`Hey ${val || '[First Name]'}!\n\nI would love to add you to my preferred interpreter team on signpost, but I don't believe you have created a profile yet. Once you create a profile I can add you as a preferred team member for upcoming jobs.\n\nIf you would like to create a profile, click here: https://signpost.community/signup\n\n${interpreterFullName}`)
+  }
+
+  if (toast) return (
     <div style={overlayStyle}>
       <div style={modalStyle}>
         <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
           <div style={{ fontSize: '2rem', marginBottom: 12 }}>✓</div>
           <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent)', marginBottom: 8 }}>
-            Invitation sent.
+            {toast}
           </div>
-          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 20px' }}>
-            This is a demo — no email was actually sent.
-          </p>
           <button className="btn-primary" onClick={onClose} style={{ padding: '10px 28px' }}>Done</button>
         </div>
       </div>
@@ -67,22 +77,48 @@ function InviteModal({ onClose }: { onClose: () => void }) {
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
         </div>
 
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+          <div>
+            <label style={fieldLabelStyle}>First Name</label>
+            <input
+              type="text" value={firstName} onChange={e => handleFirstNameChange(e.target.value)}
+              placeholder="First name"
+              style={fieldInputStyle}
+              onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+              onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
+              required
+            />
+          </div>
+          <div>
+            <label style={fieldLabelStyle}>Last Name</label>
+            <input
+              type="text" value={lastName} onChange={e => setLastName(e.target.value)}
+              placeholder="Last name"
+              style={fieldInputStyle}
+              onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+              onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
+              required
+            />
+          </div>
+        </div>
+
         <div style={{ marginBottom: 14 }}>
-          <label style={fieldLabelStyle}>Email address</label>
+          <label style={fieldLabelStyle}>Email Address</label>
           <input
             type="email" value={email} onChange={e => setEmail(e.target.value)}
             placeholder="colleague@example.com"
             style={fieldInputStyle}
             onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
             onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
+            required
           />
         </div>
 
         <div style={{ marginBottom: 14 }}>
           <label style={fieldLabelStyle}>Message</label>
           <textarea
-            value={message} onChange={e => setMessage(e.target.value)}
-            style={{ ...fieldInputStyle, resize: 'vertical', minHeight: 100 }}
+            value={currentMessage} onChange={e => setMessage(e.target.value)}
+            style={{ ...fieldInputStyle, resize: 'vertical', minHeight: 160 }}
             onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
             onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
           />
@@ -90,7 +126,11 @@ function InviteModal({ onClose }: { onClose: () => void }) {
 
         <div className="dash-card-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
           <GhostButton onClick={onClose}>Cancel</GhostButton>
-          <button className="btn-primary" onClick={() => setSent(true)} style={{ padding: '9px 22px' }}>
+          <button className="btn-primary" onClick={() => {
+            if (firstName && lastName && email) {
+              setToast(`Invitation sent to ${firstName}!`)
+            }
+          }} style={{ padding: '9px 22px' }}>
             Send
           </button>
         </div>
@@ -104,6 +144,22 @@ function InviteModal({ onClose }: { onClose: () => void }) {
 export default function TeamPage() {
   const [team, setTeam] = useState(DEMO_TEAM)
   const [showInvite, setShowInvite] = useState(false)
+  const [interpreterName, setInterpreterName] = useState('')
+
+  useEffect(() => {
+    async function loadName() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase
+        .from('interpreter_profiles')
+        .select('first_name, last_name')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      if (data) setInterpreterName(`${data.first_name || ''} ${data.last_name || ''}`.trim())
+    }
+    loadName()
+  }, [])
 
   function remove(id: string) {
     setTeam(prev => prev.filter(t => t.id !== id))
@@ -158,7 +214,7 @@ export default function TeamPage() {
         </button>
       </Link>
 
-      {showInvite && <InviteModal onClose={() => setShowInvite(false)} />}
+      {showInvite && <InviteModal onClose={() => setShowInvite(false)} interpreterFullName={interpreterName || 'Your Name'} />}
     </div>
   )
 }

@@ -52,46 +52,62 @@ export default function RatesPage() {
   const [open, setOpen] = useState<string[]>(['rp-1'])
   const [saving, setSaving] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
-  // Load rate profiles from Supabase on mount
-  useEffect(() => {
-    async function loadRates() {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+  async function refetchProfiles() {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
 
-      // Get interpreter_profiles id
-      const { data: profile } = await supabase
-        .from('interpreter_profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle()
+    const { data: profile } = await supabase
+      .from('interpreter_profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
 
-      if (!profile) return
+    if (!profile) return
 
-      const { data: rates } = await supabase
+    const { data: rates } = await supabase
+      .from('interpreter_rate_profiles')
+      .select('*')
+      .eq('interpreter_id', profile.id)
+      .order('created_at', { ascending: true })
+
+    if (rates && rates.length > 0) {
+      setProfiles(rates.map((r, i) => ({
+        id: r.id,
+        dbId: r.id,
+        name: r.label,
+        color: r.color || (i === 0 ? '#00e5ff' : i === 1 ? '#34d399' : '#a78bfa'),
+        isDefault: r.is_default ?? i === 0,
+        hourlyRate: r.hourly_rate?.toString() || '',
+        currency: r.currency ? `${r.currency} — ${r.currency === 'USD' ? 'US Dollar' : r.currency === 'GBP' ? 'British Pound' : r.currency === 'EUR' ? 'Euro' : r.currency === 'CAD' ? 'Canadian Dollar' : r.currency === 'AUD' ? 'Australian Dollar' : r.currency}` : 'USD — US Dollar',
+        minBooking: r.min_booking ? `${r.min_booking / 60} hour${r.min_booking > 60 ? 's' : ''}` : 'No minimum',
+        cancellationPolicy: r.cancellation_policy || '48 hours notice required',
+        lateFee: r.late_cancel_fee ? `${r.late_cancel_fee}` : 'No fee',
+        notes: r.additional_terms || '',
+        travel: (r.travel_expenses as string[]) || [],
+      })))
+      setOpen([rates[0]?.id])
+    } else {
+      // Seed 3 default profiles if user has none
+      const defaults = [
+        { interpreter_id: profile.id, label: 'Standard Rate', color: '#a78bfa', is_default: true, hourly_rate: 95, currency: 'USD', min_booking: 120, cancellation_policy: '48 hours notice required', late_cancel_fee: 100, travel_expenses: ['Mileage', 'Parking', 'Tolls'], additional_terms: null },
+        { interpreter_id: profile.id, label: 'Community Rate', color: '#34d399', is_default: false, hourly_rate: 65, currency: 'USD', min_booking: 60, cancellation_policy: '48 hours notice required', late_cancel_fee: null, travel_expenses: [], additional_terms: null },
+        { interpreter_id: profile.id, label: 'Multi-Day Rate', color: '#00e5ff', is_default: false, hourly_rate: 750, currency: 'USD', min_booking: 960, cancellation_policy: '2 weeks notice required', late_cancel_fee: null, travel_expenses: ['Mileage', 'Parking', 'Tolls', 'Airfare', 'Lodging', 'Per diem / Meals'], additional_terms: null },
+      ]
+      const { data: seeded, error } = await supabase
         .from('interpreter_rate_profiles')
-        .select('*')
-        .eq('interpreter_id', profile.id)
-
-      if (rates && rates.length > 0) {
-        setProfiles(rates.map((r, i) => ({
-          id: r.id,
-          dbId: r.id,
-          name: r.label,
-          color: r.color || (i === 0 ? '#00e5ff' : '#34d399'),
-          isDefault: r.is_default ?? i === 0,
-          hourlyRate: r.hourly_rate?.toString() || '',
-          currency: r.currency || 'USD — US Dollar',
-          minBooking: r.min_booking ? `${r.min_booking / 60} hour${r.min_booking > 60 ? 's' : ''}` : 'No minimum',
-          cancellationPolicy: r.cancellation_policy || '48 hours notice required',
-          lateFee: r.late_cancel_fee ? `${r.late_cancel_fee}` : 'No fee',
-          notes: r.additional_terms || '',
-          travel: (r.travel_expenses as string[]) || [],
-        })))
-        setOpen([rates[0]?.id])
+        .insert(defaults)
+        .select()
+      console.log('Seed rate profiles:', { data: seeded, error })
+      if (seeded && seeded.length > 0) {
+        // Refetch to get properly ordered data
+        await refetchProfiles()
       }
     }
-    loadRates()
+  }
+
+  useEffect(() => {
+    refetchProfiles()
   }, [])
 
   function toggleOpen(id: string) {
@@ -178,29 +194,67 @@ export default function RatesPage() {
       const savedId = result.data[0].id
       setProfiles(prev => prev.map(p => p.id === id ? { ...p, dbId: savedId } : p))
       setToast({ message: 'Rate profile saved.', type: 'success' })
+      await refetchProfiles()
     } else {
       setToast({ message: 'Error: save returned no data. Check RLS policies.', type: 'error' })
     }
   }
 
-  function addProfile() {
-    const id = `rp-${Date.now()}`
-    setProfiles(prev => [...prev, {
-      id, name: 'New Rate Profile', color: '#a78bfa', isDefault: false,
-      hourlyRate: '', currency: 'USD — US Dollar', minBooking: 'No minimum',
-      cancellationPolicy: '48 hours notice required', lateFee: 'No fee',
-      notes: '', travel: [],
-    }])
-    setOpen(prev => [...prev, id])
+  async function addProfile() {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const { data: interpProfile } = await supabase
+      .from('interpreter_profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (!interpProfile) {
+      setToast({ message: 'Error: No interpreter profile found.', type: 'error' })
+      return
+    }
+
+    const { data, error } = await supabase
+      .from('interpreter_rate_profiles')
+      .insert({
+        interpreter_id: interpProfile.id,
+        label: 'New Rate Profile',
+        color: '#a78bfa',
+        is_default: false,
+        hourly_rate: null,
+        currency: 'USD',
+        min_booking: null,
+        cancellation_policy: '48 hours notice required',
+        late_cancel_fee: null,
+        travel_expenses: [],
+        additional_terms: null,
+      })
+      .select()
+
+    console.log('Add rate profile:', { data, error })
+    if (error) {
+      setToast({ message: `Error: ${error.message}`, type: 'error' })
+    } else {
+      await refetchProfiles()
+      if (data && data[0]) {
+        setOpen(prev => [...prev, data[0].id])
+      }
+    }
   }
 
   async function removeProfile(id: string) {
     const profile = profiles.find(p => p.id === id)
     if (profile?.dbId) {
       const supabase = createClient()
-      await supabase.from('interpreter_rate_profiles').delete().eq('id', profile.dbId)
+      const { error } = await supabase.from('interpreter_rate_profiles').delete().eq('id', profile.dbId)
+      if (error) {
+        setToast({ message: `Error: ${error.message}`, type: 'error' })
+        return
+      }
     }
-    setProfiles(prev => prev.filter(p => p.id !== id))
+    await refetchProfiles()
   }
 
   return (

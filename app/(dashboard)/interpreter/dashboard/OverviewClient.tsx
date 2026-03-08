@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
 import { DEMO_INQUIRIES, DEMO_CONFIRMED } from '@/lib/data/demo'
 import { BetaBanner, PageHeader, SectionLabel, StatusBadge, DemoBadge, GhostButton } from '@/components/dashboard/interpreter/shared'
 
@@ -135,6 +136,51 @@ export default function OverviewClient({ firstName, lastName, profileStatus, sho
   const displayName = firstName || 'there'
   const hasPendingProfile = profileStatus === 'pending'
   const [toast, setToast] = useState<string | null>(null)
+  const [newInquiries, setNewInquiries] = useState(0)
+  const [confirmedThisMonth, setConfirmedThisMonth] = useState(0)
+  const [teamCount, setTeamCount] = useState(0)
+  const [daysAvailable, setDaysAvailable] = useState(0)
+
+  useEffect(() => {
+    async function fetchCounts() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      // New Inquiries: pending inquiries for this interpreter
+      const { count: pendingCount } = await supabase
+        .from('inquiries')
+        .select('*', { count: 'exact', head: true })
+        .eq('interpreter_id', user.id)
+        .eq('status', 'pending')
+      setNewInquiries(pendingCount ?? 0)
+
+      // Confirmed This Month
+      const now = new Date()
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString()
+      const { count: confirmedCount } = await supabase
+        .from('bookings')
+        .select('*', { count: 'exact', head: true })
+        .eq('interpreter_id', user.id)
+        .eq('status', 'confirmed')
+        .gte('date', startOfMonth)
+        .lte('date', endOfMonth)
+      setConfirmedThisMonth(confirmedCount ?? 0)
+
+      // Preferred Team count
+      const { count: teamC } = await supabase
+        .from('preferred_team')
+        .select('*', { count: 'exact', head: true })
+        .eq('interpreter_id', user.id)
+      setTeamCount(teamC ?? 0)
+
+      // Days Available This Week
+      // TODO: wire to real availability table
+      setDaysAvailable(0)
+    }
+    fetchCounts()
+  }, [])
 
   function showToast(msg: string) {
     setToast(msg)
@@ -156,10 +202,10 @@ export default function OverviewClient({ firstName, lastName, profileStatus, sho
 
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16, marginBottom: 32, alignItems: 'stretch' }}>
-        <StatCard num={showSampleData ? 2 : 0} label="New Inquiries" href="/interpreter/dashboard/inquiries" />
-        <StatCard num={showSampleData ? 3 : 0} label="Confirmed This Month" href="/interpreter/dashboard/confirmed" />
-        <StatCard num={showSampleData ? 4 : 0} label="Interpreters in Your Preferred Team" href="/interpreter/dashboard/team" />
-        <StatCard num={showSampleData ? 4 : 0} label="Days Available This Week" href="/interpreter/dashboard/availability" />
+        <StatCard num={showSampleData ? 2 : newInquiries} label="New Inquiries" href="/interpreter/dashboard/inquiries" />
+        <StatCard num={showSampleData ? 3 : confirmedThisMonth} label="Confirmed This Month" href="/interpreter/dashboard/confirmed" />
+        <StatCard num={showSampleData ? 4 : teamCount} label="Interpreters in Your Preferred Team" href="/interpreter/dashboard/team" />
+        <StatCard num={showSampleData ? 4 : daysAvailable} label="Days Available This Week" href="/interpreter/dashboard/availability" />
       </div>
 
       {showSampleData ? (

@@ -162,7 +162,25 @@ function DetailModal({ booking, onClose }: {
                   <path d="M7 1C4.79 1 3 2.79 3 5C3 8.5 7 13 7 13C7 13 11 8.5 11 5C11 2.79 9.21 1 7 1ZM7 7C5.9 7 5 6.1 5 5C5 3.9 5.9 3 7 3C8.1 3 9 3.9 9 5C9 6.1 8.1 7 7 7Z" fill="currentColor"/>
                 </svg>
               )}
-              <div>{booking.location}</div>
+              <div>
+                {booking.location.match(/\d+\s+\w+\s+(St|Ave|Blvd|Rd|Dr|Ln|Way|Ct|Pl|Pkwy|Hwy|Street|Avenue|Boulevard|Road|Drive|Lane|Court|Place)/) ? (
+                  <a
+                    href={`https://maps.google.com/?q=${encodeURIComponent(booking.location)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: 'var(--accent)', textDecoration: 'none' }}
+                    onMouseEnter={e => { e.currentTarget.style.textDecoration = 'underline' }}
+                    onMouseLeave={e => { e.currentTarget.style.textDecoration = 'none' }}
+                  >
+                    {booking.location}
+                  </a>
+                ) : (
+                  <>
+                    <div>{booking.location}</div>
+                    <div style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>(full address not provided)</div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 

@@ -254,10 +254,16 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       .maybeSingle()
 
     if (!userProfile) {
-      await supabase.from('user_profiles').insert({
+      const { error: upError } = await supabase.from('user_profiles').insert({
         id: user.id,
         role: 'interpreter',
-      })
+      }).select()
+      if (upError) {
+        console.error('user_profiles insert error:', upError)
+        setSaving(false)
+        setToast({ message: `Error creating user profile: ${upError.message}`, type: 'error' })
+        return
+      }
     }
 
     const { data: existing } = await supabase

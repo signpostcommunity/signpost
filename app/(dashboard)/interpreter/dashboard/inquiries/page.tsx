@@ -270,6 +270,9 @@ function DetailModal({ inquiry, status, onClose }: {
                 ) : (
                   <>
                     <div>{inquiry.location}</div>
+                    {!inquiry.location.match(/\d+\s+\w+\s+(St|Ave|Blvd|Rd|Dr|Ln|Way|Ct|Pl|Pkwy|Hwy|Street|Avenue|Boulevard|Road|Drive|Lane|Court|Place)/) && (
+                      <div style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>(full address not provided)</div>
+                    )}
                   </>
                 )}
               </div>
@@ -338,7 +341,7 @@ function DetailModal({ inquiry, status, onClose }: {
 
 // ── FIX 3: Decline modal with reason ────────────────────────────────────────
 
-const DECLINE_REASONS = ['Not Available', 'Not a Good Fit', 'Unacceptable Terms', 'Prefer Not To Say'] as const
+const DECLINE_REASONS = ['Not Available', 'Not a Good Fit', 'Scheduling Conflict', 'Prefer Not To Say', 'Other'] as const
 
 function DeclineModal({ inquiry, onConfirm, onClose }: {
   inquiry: typeof DEMO_INQUIRIES[0]
@@ -346,6 +349,7 @@ function DeclineModal({ inquiry, onConfirm, onClose }: {
   onClose: () => void
 }) {
   const [reason, setReason] = useState<string | null>(null)
+  const [otherText, setOtherText] = useState('')
 
   return (
     <div style={overlayStyle}>
@@ -377,11 +381,30 @@ function DeclineModal({ inquiry, onConfirm, onClose }: {
           ))}
         </div>
 
+        {reason === 'Other' && (
+          <div style={{ marginBottom: 24, marginTop: -16 }}>
+            <textarea
+              placeholder="Please describe your reason..."
+              value={otherText}
+              onChange={e => setOtherText(e.target.value)}
+              style={{
+                width: '100%', boxSizing: 'border-box',
+                background: 'var(--surface2)', border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-sm)', padding: '10px 14px',
+                color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem',
+                outline: 'none', resize: 'vertical', minHeight: 70,
+              }}
+              onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+              onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
+            />
+          </div>
+        )}
+
         <div className="dash-card-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
           <GhostButton onClick={onClose}>Cancel</GhostButton>
           <button
             className="btn-primary"
-            onClick={() => reason && onConfirm(reason)}
+            onClick={() => reason && onConfirm(reason === 'Other' && otherText ? `Other: ${otherText}` : reason)}
             disabled={!reason}
             style={{ padding: '9px 22px', opacity: reason ? 1 : 0.4, pointerEvents: reason ? 'auto' : 'none' }}
           >
