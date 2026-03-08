@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
+
+// ── Route-specific prompts ────────────────────────────────────────────────────
 
 const ROUTE_CONFIG: Record<string, { prompt: string; scenario?: string; question?: string }> = {
   '/': {
@@ -70,6 +72,37 @@ function getConfig(pathname: string) {
   return { prompt: `You're on ${pageName}. Note anything that feels off, confusing, or missing.` };
 }
 
+// ── Final question definitions ────────────────────────────────────────────────
+
+const SIGNUP_EASE_OPTIONS = [
+  'Very easy — no issues',
+  'Mostly easy — a few small things',
+  'Struggled — needed to figure things out',
+  'Really difficult — something was broken',
+];
+
+const DASHBOARD_FEEL_OPTIONS = [
+  'Intuitive — I knew where everything was',
+  'Mostly clear — a few things took a second',
+  "Confusing — I wasn't sure what to do",
+  "I couldn't figure it out",
+];
+
+const RATES_CONTROL_OPTIONS = [
+  'Yes — I can set what I need',
+  'Mostly — a few things are missing',
+  'No — I\'d need significant changes to use this professionally',
+];
+
+const WOULD_USE_OPTIONS = [
+  'Yes, absolutely',
+  'Probably — depends on how it develops',
+  'Maybe — I have some concerns',
+  'Probably not',
+];
+
+// ── Shared styles ─────────────────────────────────────────────────────────────
+
 const labelStyle: React.CSSProperties = {
   display: 'block',
   fontSize: '0.63rem',
@@ -95,13 +128,53 @@ const textareaStyle: React.CSSProperties = {
   boxSizing: 'border-box',
 };
 
+const radioLabelStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: 8,
+  cursor: 'pointer',
+  fontSize: '0.79rem',
+  color: '#1e1e1e',
+  lineHeight: 1.45,
+  padding: '4px 0',
+};
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type PageFeedback = {
+  page: string;
+  openNotes: string;
+  specificAnswer: string;
+};
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
 export default function BetaFeedbackPanel() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(true);
+
+  // Per-page fields (current page)
   const [notes, setNotes] = useState('');
   const [specificAnswer, setSpecificAnswer] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+  const [pageSaved, setPageSaved] = useState(false);
+
+  // Accumulated per-page feedback
+  const feedbackRef = useRef<PageFeedback[]>([]);
+
+  // Final questions state
+  const [showFinal, setShowFinal] = useState(false);
+  const [signupEase, setSignupEase] = useState('');
+  const [dashboardFeel, setDashboardFeel] = useState('');
+  const [ratesControl, setRatesControl] = useState('');
+  const [wouldUse, setWouldUse] = useState('');
+  const [whatNeedsChange, setWhatNeedsChange] = useState('');
+  const [oneThingForMolly, setOneThingForMolly] = useState('');
+
+  // Submit state
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [allDone, setAllDone] = useState(false);
+
   const [showEndOfSession, setShowEndOfSession] = useState(false);
 
   const config = getConfig(pathname);
@@ -117,7 +190,7 @@ export default function BetaFeedbackPanel() {
     }
   }, [pathname]);
 
-  // Push page content right when panel is open so nothing is covered
+  // Push page content right when panel is open
   useEffect(() => {
     const el = document.getElementById('site-content');
     if (!el) return;
@@ -134,43 +207,67 @@ export default function BetaFeedbackPanel() {
     };
   }, [isOpen]);
 
-  // Reset fields on route change
+  // Reset per-page fields on route change (but keep accumulated feedback)
   useEffect(() => {
     setNotes('');
     setSpecificAnswer('');
-    setSubmitted(false);
+    setPageSaved(false);
   }, [pathname]);
 
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleSubmit() {
+  // Save per-page feedback to local state only
+  function handlePageSave() {
     if (!notes.trim() && !specificAnswer.trim()) return;
+    // Replace existing feedback for same page, or add new
+    const existing = feedbackRef.current;
+    const idx = existing.findIndex(f => f.page === pathname);
+    const entry: PageFeedback = { page: pathname, openNotes: notes.trim(), specificAnswer: specificAnswer.trim() };
+    if (idx >= 0) {
+      existing[idx] = entry;
+    } else {
+      existing.push(entry);
+    }
+    setPageSaved(true);
+    setTimeout(() => setPageSaved(false), 3000);
+  }
+
+  // Submit everything to Monday.com
+  async function handleFinalSubmit() {
     setSubmitting(true);
     setError(null);
     try {
+      // Include current page fields if they have content and haven't been saved yet
+      if (notes.trim() || specificAnswer.trim()) {
+        handlePageSave();
+      }
+
       const res = await fetch('/api/beta-feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ page: pathname, notes, specificAnswer }),
+        body: JSON.stringify({
+          pageFeedback: feedbackRef.current,
+          signupEase,
+          dashboardFeel,
+          ratesControl,
+          wouldUse,
+          whatNeedsChange,
+          oneThingForMolly,
+        }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error || 'Failed to submit');
       }
-      setSubmitted(true);
-      setNotes('');
-      setSpecificAnswer('');
-      setTimeout(() => setSubmitted(false), 3000);
+      setAllDone(true);
+      feedbackRef.current = [];
     } catch (e) {
-      console.error('Feedback submit error:', e);
+      console.error('Final submit error:', e);
       setError((e as Error).message || 'Something went wrong');
-      setTimeout(() => setError(null), 5000);
     } finally {
       setSubmitting(false);
     }
   }
 
-  // ── Collapsed tab ─────────────────────────────────────────────────────────
+  // ── Collapsed tab ───────────────────────────────────────────────────────────
   if (!isOpen) {
     return (
       <button
@@ -202,7 +299,7 @@ export default function BetaFeedbackPanel() {
     );
   }
 
-  // ── Open panel ────────────────────────────────────────────────────────────
+  // ── Open panel ──────────────────────────────────────────────────────────────
   return (
     <div
       style={{
@@ -271,121 +368,236 @@ export default function BetaFeedbackPanel() {
 
       {/* Body */}
       <div style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column', gap: 14 }}>
-        {/* Page prompt */}
-        {isWelcomePage ? (
-          <div style={{ fontSize: '0.82rem', lineHeight: 1.65, color: '#1e1e1e' }}>
-            <p style={{ margin: '0 0 10px' }}>
-              Welcome to the signpost interpreter beta! Take a moment to look over this page — then when you&apos;re ready, go ahead and create your interpreter account.
-            </p>
-            <p style={{ margin: '0 0 10px' }}>
-              As you move through each step, drop your notes here — anything confusing, broken, missing, or that you love.
-            </p>
-            <p style={{ margin: '0 0 10px' }}>
-              For the beta, you can create your actual profile to be posted live on the site when we open — or a test profile that we&apos;ll delete after the beta. Either way, you can always update your profile at any time!
-            </p>
-            <p style={{ margin: 0 }}>
-              <strong>If you&apos;re creating a test profile, please enter your name as: First Name (TEST)</strong>
+
+        {/* ── All done state ── */}
+        {allDone ? (
+          <div style={{ textAlign: 'center', padding: '40px 10px' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>🎉</div>
+            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '1.1rem', marginBottom: 8 }}>
+              Thank you!
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: '#555', lineHeight: 1.6 }}>
+              Your feedback has been submitted. It goes directly to Molly &amp; Regina and will shape how signpost works for interpreters everywhere.
             </p>
           </div>
+        ) : showFinal ? (
+          /* ── Final questions ── */
+          <>
+            <div style={{
+              background: '#fff7f0', border: '1px solid #ffd0b0', borderRadius: 8,
+              padding: '10px 12px', fontSize: '0.79rem', color: '#7a3600', lineHeight: 1.55,
+            }}>
+              Almost done! Answer these final questions, then hit <strong>Submit all feedback</strong>.
+            </div>
+
+            {/* Q1: Signup ease */}
+            <div>
+              <label style={labelStyle}>How easy was signup?</label>
+              {SIGNUP_EASE_OPTIONS.map(opt => (
+                <label key={opt} style={radioLabelStyle}>
+                  <input type="radio" name="signupEase" value={opt} checked={signupEase === opt}
+                    onChange={() => setSignupEase(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                  <span>{opt}</span>
+                </label>
+              ))}
+            </div>
+
+            {/* Q2: Dashboard feel */}
+            <div>
+              <label style={labelStyle}>How did the dashboard feel?</label>
+              {DASHBOARD_FEEL_OPTIONS.map(opt => (
+                <label key={opt} style={radioLabelStyle}>
+                  <input type="radio" name="dashboardFeel" value={opt} checked={dashboardFeel === opt}
+                    onChange={() => setDashboardFeel(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                  <span>{opt}</span>
+                </label>
+              ))}
+            </div>
+
+            {/* Q3: Rates control */}
+            <div>
+              <label style={labelStyle}>Does rate setup give enough control?</label>
+              {RATES_CONTROL_OPTIONS.map(opt => (
+                <label key={opt} style={radioLabelStyle}>
+                  <input type="radio" name="ratesControl" value={opt} checked={ratesControl === opt}
+                    onChange={() => setRatesControl(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                  <span>{opt}</span>
+                </label>
+              ))}
+            </div>
+
+            {/* Q4: Would you use signpost */}
+            <div>
+              <label style={labelStyle}>Would you use signpost?</label>
+              {WOULD_USE_OPTIONS.map(opt => (
+                <label key={opt} style={radioLabelStyle}>
+                  <input type="radio" name="wouldUse" value={opt} checked={wouldUse === opt}
+                    onChange={() => setWouldUse(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                  <span>{opt}</span>
+                </label>
+              ))}
+            </div>
+
+            {/* Q5: What needs to change */}
+            <div>
+              <label style={labelStyle}>What would need to change?</label>
+              <textarea value={whatNeedsChange} onChange={e => setWhatNeedsChange(e.target.value)}
+                placeholder="What would make this work for you professionally?" rows={3} style={textareaStyle} />
+            </div>
+
+            {/* Q6: One thing for Molly */}
+            <div>
+              <label style={labelStyle}>One thing you&apos;d most want Molly to know</label>
+              <textarea value={oneThingForMolly} onChange={e => setOneThingForMolly(e.target.value)}
+                placeholder="The single most important piece of feedback..." rows={3} style={textareaStyle} />
+            </div>
+
+            {/* Submit all */}
+            <button
+              onClick={handleFinalSubmit}
+              disabled={submitting}
+              style={{
+                background: '#ff6b2b', color: '#fff', border: 'none', borderRadius: 8,
+                padding: '13px 16px', fontSize: '0.85rem', fontWeight: 700,
+                cursor: submitting ? 'not-allowed' : 'pointer',
+                opacity: submitting ? 0.6 : 1,
+                transition: 'opacity 0.2s',
+              }}
+            >
+              {submitting ? 'Submitting...' : 'Submit all feedback'}
+            </button>
+
+            {error && (
+              <p style={{ fontSize: '0.78rem', color: '#d32f2f', margin: 0, lineHeight: 1.4 }}>
+                Error: {error}
+              </p>
+            )}
+
+            {/* Back link */}
+            <button onClick={() => setShowFinal(false)} style={{
+              background: 'none', border: 'none', color: '#888', fontSize: '0.77rem',
+              cursor: 'pointer', textDecoration: 'underline', padding: 0,
+            }}>
+              ← Back to page feedback
+            </button>
+          </>
         ) : (
-          <p style={{ fontSize: '0.82rem', lineHeight: 1.65, color: '#1e1e1e', margin: 0 }}>
-            {config.prompt}
-          </p>
-        )}
+          /* ── Per-page feedback (local save) ── */
+          <>
+            {/* Page prompt */}
+            {isWelcomePage ? (
+              <div style={{ fontSize: '0.82rem', lineHeight: 1.65, color: '#1e1e1e' }}>
+                <p style={{ margin: '0 0 10px' }}>
+                  Welcome to the signpost interpreter beta! Take a moment to look over this page — then when you&apos;re ready, go ahead and create your interpreter account.
+                </p>
+                <p style={{ margin: '0 0 10px' }}>
+                  As you move through each step, drop your notes here — anything confusing, broken, missing, or that you love.
+                </p>
+                <p style={{ margin: '0 0 10px' }}>
+                  For the beta, you can create your actual profile to be posted live on the site when we open — or a test profile that we&apos;ll delete after the beta. Either way, you can always update your profile at any time!
+                </p>
+                <p style={{ margin: 0 }}>
+                  <strong>If you&apos;re creating a test profile, please enter your name as: First Name (TEST)</strong>
+                </p>
+              </div>
+            ) : (
+              <p style={{ fontSize: '0.82rem', lineHeight: 1.65, color: '#1e1e1e', margin: 0 }}>
+                {config.prompt}
+              </p>
+            )}
 
-        {/* Scenario callout */}
-        {config.scenario && (
-          <div
-            style={{
-              background: '#fff7f0',
-              border: '1px solid #ffd0b0',
-              borderRadius: 8,
-              padding: '10px 12px',
-              fontSize: '0.77rem',
-              color: '#7a3600',
-              lineHeight: 1.55,
-            }}
-          >
-            <strong style={{ display: 'block', marginBottom: 4 }}>Try this:</strong>
-            {config.scenario}
-          </div>
-        )}
+            {/* Scenario callout */}
+            {config.scenario && (
+              <div
+                style={{
+                  background: '#fff7f0', border: '1px solid #ffd0b0', borderRadius: 8,
+                  padding: '10px 12px', fontSize: '0.77rem', color: '#7a3600', lineHeight: 1.55,
+                }}
+              >
+                <strong style={{ display: 'block', marginBottom: 4 }}>Try this:</strong>
+                {config.scenario}
+              </div>
+            )}
 
-        {/* Open notes */}
-        <div>
-          <label style={labelStyle}>Open Notes</label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Anything confusing, broken, missing, or that you love..."
-            rows={4}
-            style={textareaStyle}
-          />
-        </div>
+            {/* Open notes */}
+            <div>
+              <label style={labelStyle}>Open Notes</label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Anything confusing, broken, missing, or that you love..."
+                rows={4}
+                style={textareaStyle}
+              />
+            </div>
 
-        {/* Specific question */}
-        {config.question && (
-          <div>
-            <label style={labelStyle}>Specific Question</label>
-            <p style={{ fontSize: '0.77rem', color: '#555', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
-              {config.question}
-            </p>
-            <textarea
-              value={specificAnswer}
-              onChange={(e) => setSpecificAnswer(e.target.value)}
-              placeholder="Your answer..."
-              rows={3}
-              style={textareaStyle}
-            />
-          </div>
-        )}
+            {/* Specific question */}
+            {config.question && (
+              <div>
+                <label style={labelStyle}>Specific Question</label>
+                <p style={{ fontSize: '0.77rem', color: '#555', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
+                  {config.question}
+                </p>
+                <textarea
+                  value={specificAnswer}
+                  onChange={(e) => setSpecificAnswer(e.target.value)}
+                  placeholder="Your answer..."
+                  rows={3}
+                  style={textareaStyle}
+                />
+              </div>
+            )}
 
-        {/* Submit button */}
-        <button
-          onClick={handleSubmit}
-          disabled={submitting || (!notes.trim() && !specificAnswer.trim())}
-          style={{
-            background: submitted ? '#00c875' : '#ff6b2b',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 8,
-            padding: '11px 16px',
-            fontSize: '0.8rem',
-            fontWeight: 700,
-            letterSpacing: '0.02em',
-            cursor: !notes.trim() && !specificAnswer.trim() ? 'not-allowed' : 'pointer',
-            opacity: !notes.trim() && !specificAnswer.trim() && !submitted ? 0.45 : 1,
-            transition: 'background 0.2s, opacity 0.2s',
-          }}
-        >
-          {submitted ? '✓ Saved!' : submitting ? 'Saving...' : 'Submit feedback for this page'}
-        </button>
+            {/* Save button — local only */}
+            <button
+              onClick={handlePageSave}
+              disabled={!notes.trim() && !specificAnswer.trim()}
+              style={{
+                background: pageSaved ? '#00c875' : '#ff6b2b',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                padding: '11px 16px',
+                fontSize: '0.8rem',
+                fontWeight: 700,
+                letterSpacing: '0.02em',
+                cursor: !notes.trim() && !specificAnswer.trim() ? 'not-allowed' : 'pointer',
+                opacity: !notes.trim() && !specificAnswer.trim() && !pageSaved ? 0.45 : 1,
+                transition: 'background 0.2s, opacity 0.2s',
+              }}
+            >
+              {pageSaved ? '✓ Saved!' : 'Save feedback for this page'}
+            </button>
 
-        {error && (
-          <p style={{ fontSize: '0.78rem', color: '#d32f2f', margin: 0, lineHeight: 1.4 }}>
-            Error: {error}
-          </p>
-        )}
+            {feedbackRef.current.length > 0 && (
+              <p style={{ fontSize: '0.72rem', color: '#888', margin: 0, textAlign: 'center' }}>
+                {feedbackRef.current.length} page{feedbackRef.current.length !== 1 ? 's' : ''} of feedback saved
+              </p>
+            )}
 
-        {/* End-of-session CTA — only appears after visiting dashboard */}
-        {showEndOfSession && (
-          <a
-            href="/interpreter/dashboard/beta-survey"
-            style={{
-              display: 'block',
-              textAlign: 'center',
-              background: 'transparent',
-              color: '#00e5ff',
-              border: '1px solid #00e5ff',
-              borderRadius: 8,
-              padding: '10px 16px',
-              fontSize: '0.77rem',
-              fontWeight: 600,
-              textDecoration: 'none',
-            }}
-          >
-            I&apos;m done exploring — take me to the final questions →
-          </a>
+            {/* End-of-session CTA */}
+            {showEndOfSession && (
+              <button
+                onClick={() => setShowFinal(true)}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  textAlign: 'center',
+                  background: 'transparent',
+                  color: '#00e5ff',
+                  border: '1px solid #00e5ff',
+                  borderRadius: 8,
+                  padding: '10px 16px',
+                  fontSize: '0.77rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontFamily: "'DM Sans', sans-serif",
+                }}
+              >
+                I&apos;m done exploring — take me to the final questions →
+              </button>
+            )}
+          </>
         )}
       </div>
 

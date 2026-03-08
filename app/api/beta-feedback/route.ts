@@ -15,6 +15,12 @@ async function mondayQuery(token: string, query: string, variables?: Record<stri
   return res.json()
 }
 
+type PageFeedback = {
+  page: string
+  openNotes: string
+  specificAnswer: string
+}
+
 export async function POST(request: NextRequest) {
   const token = process.env.MONDAY_API_TOKEN
   if (!token) {
@@ -23,9 +29,25 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { page, notes, specificAnswer } = body
+    const {
+      pageFeedback,
+      signupEase,
+      dashboardFeel,
+      ratesControl,
+      wouldUse,
+      whatNeedsChange,
+      oneThingForMolly,
+    } = body as {
+      pageFeedback: PageFeedback[]
+      signupEase: string
+      dashboardFeel: string
+      ratesControl: string
+      wouldUse: string
+      whatNeedsChange: string
+      oneThingForMolly: string
+    }
 
-    // Get tester name/email from auth session
+    // Get tester name from auth session
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     let testerName = user?.email ?? 'Anonymous'
@@ -40,53 +62,48 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const timestamp = new Date().toLocaleString('en-US', { timeZone: 'America/New_York', dateStyle: 'short', timeStyle: 'short' })
-    const commentLines = [`<strong>[Page: ${page}]</strong> — ${timestamp}`]
-    if (notes?.trim()) commentLines.push(`<strong>Open notes:</strong> ${notes.trim()}`)
-    if (specificAnswer?.trim()) commentLines.push(`<strong>Specific question:</strong> ${specificAnswer.trim()}`)
-    const commentBody = commentLines.join('<br>')
+    // Concatenate all per-page open notes with page labels
+    const allNotes = (pageFeedback || [])
+      .filter(f => f.openNotes)
+      .map(f => `[${f.page}] ${f.openNotes}`)
+      .join('\n')
 
-    // Search for existing item for this tester
-    const searchResult = await mondayQuery(token,
-      `query ($boardId: ID!, $columnId: String!, $value: String!) {
-        items_page_by_column_values(board_id: $boardId, limit: 1, columns: [{column_id: $columnId, column_values: [$value]}]) {
-          items { id name }
-        }
+    // Concatenate all per-page specific answers with page labels
+    const allSpecific = (pageFeedback || [])
+      .filter(f => f.specificAnswer)
+      .map(f => `[${f.page}] ${f.specificAnswer}`)
+      .join('\n')
+
+    // Build column values for Monday board
+    const columnValues: Record<string, unknown> = {
+      short_textnbhnggeq: testerName,
+      long_text24vbemv7: { text: allNotes },
+      long_text8gfogdy7: { text: allSpecific },
+      long_textwi8vrijw: { text: whatNeedsChange || '' },
+      long_text4snmrdqj: { text: oneThingForMolly || '' },
+    }
+
+    // Status columns use { label: "Option text" } format
+    if (signupEase) columnValues.single_selecti6ipr4d = { label: signupEase }
+    if (dashboardFeel) columnValues.single_selectdigbayv = { label: dashboardFeel }
+    if (ratesControl) columnValues.single_selectd999es5 = { label: ratesControl }
+    if (wouldUse) columnValues.single_selectjdrm38a = { label: wouldUse }
+
+    const createResult = await mondayQuery(token,
+      `mutation ($boardId: ID!, $groupId: String!, $itemName: String!, $columnValues: JSON!) {
+        create_item(board_id: $boardId, group_id: $groupId, item_name: $itemName, column_values: $columnValues) { id }
       }`,
-      { boardId: BOARD_ID, columnId: 'short_textnbhnggeq', value: testerName }
+      {
+        boardId: BOARD_ID,
+        groupId: 'topics',
+        itemName: testerName,
+        columnValues: JSON.stringify(columnValues),
+      }
     )
-    const existingItem = searchResult?.data?.items_page_by_column_values?.items?.[0]
 
-    if (existingItem) {
-      // Add comment to existing tester row
-      const updateResult = await mondayQuery(token,
-        `mutation ($itemId: ID!, $body: String!) {
-          create_update(item_id: $itemId, body: $body) { id }
-        }`,
-        { itemId: existingItem.id, body: commentBody }
-      )
-      if (updateResult.errors) {
-        console.error('Monday update error:', JSON.stringify(updateResult.errors))
-        return NextResponse.json({ error: updateResult.errors[0]?.message ?? 'Monday API error' }, { status: 500 })
-      }
-    } else {
-      // Create new item for this tester
-      const columnValues = JSON.stringify({
-        short_textnbhnggeq: testerName,
-        long_text24vbemv7: { text: notes || '' },
-        long_text8gfogdy7: { text: specificAnswer || '' },
-      })
-
-      const createResult = await mondayQuery(token,
-        `mutation ($boardId: ID!, $groupId: String!, $itemName: String!, $columnValues: JSON!) {
-          create_item(board_id: $boardId, group_id: $groupId, item_name: $itemName, column_values: $columnValues) { id }
-        }`,
-        { boardId: BOARD_ID, groupId: 'topics', itemName: testerName, columnValues }
-      )
-      if (createResult.errors) {
-        console.error('Monday create error:', JSON.stringify(createResult.errors))
-        return NextResponse.json({ error: createResult.errors[0]?.message ?? 'Monday API error' }, { status: 500 })
-      }
+    if (createResult.errors) {
+      console.error('Monday create error:', JSON.stringify(createResult.errors))
+      return NextResponse.json({ error: createResult.errors[0]?.message ?? 'Monday API error' }, { status: 500 })
     }
 
     return NextResponse.json({ success: true })
