@@ -241,13 +241,29 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
     const supabase = createClient()
     ;(async () => {
       const { data: { user } } = await supabase.auth.getUser()
+      console.log('DIAG - auth.getUser():', user?.id, user?.email)
       if (!user) return
-      const { data } = await supabase
+
+      // Check what auth.uid() Postgres sees
+      const { data: session } = await supabase.auth.getSession()
+      console.log('DIAG - session access_token exists:', !!session?.session?.access_token)
+      console.log('DIAG - session access_token prefix:', session?.session?.access_token?.substring(0, 20))
+
+      // Test: can RLS see this user on user_profiles? (simpler RLS: auth.uid() = id)
+      const { data: upTest, error: upErr } = await supabase
+        .from('user_profiles')
+        .select('id, role')
+        .eq('id', user.id)
+        .maybeSingle()
+      console.log('DIAG - user_profiles read:', JSON.stringify({ upTest, upErr }, null, 2))
+
+      // Now try interpreter_profiles
+      const { data, error, status, statusText } = await supabase
         .from('interpreter_profiles')
         .select('name, first_name, last_name, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, sign_languages, spoken_languages, specializations, regions, video_url, video_desc, website_url, linkedin_url, event_coordination, event_coordination_desc, draft_data, status, photo_url, other_specializations')
         .eq('user_id', user.id)
         .maybeSingle()
-      console.log('PROFILE CLIENT-SIDE LOAD:', JSON.stringify({ data, userId: user.id }, null, 2))
+      console.log('PROFILE CLIENT-SIDE LOAD:', JSON.stringify({ data, error, status, statusText, userId: user.id }, null, 2))
       if (!data) return
       const d = data as ProfileData
       if (d.first_name != null) setFirstName(d.first_name)
