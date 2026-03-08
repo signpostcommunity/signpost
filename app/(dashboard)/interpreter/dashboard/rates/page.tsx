@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { PageHeader, InfoBox } from '@/components/dashboard/interpreter/shared'
 import Toast from '@/components/ui/Toast'
@@ -52,7 +52,9 @@ export default function RatesPage() {
   const [open, setOpen] = useState<string[]>(['rp-1'])
   const [saving, setSaving] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
-  async function refetchProfiles() {
+  const hasSeeded = useRef(false)
+
+  async function fetchRateProfiles() {
     console.log('RATES FETCH - triggered at:', new Date().toISOString())
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -75,6 +77,13 @@ export default function RatesPage() {
 
     console.log('RATES FETCH - response:', JSON.stringify({ data: rates, error: ratesError }, null, 2))
 
+    // If the fetch itself errored, show error — do NOT seed
+    if (ratesError) {
+      console.error('RATES FETCH - error, not seeding:', ratesError.message)
+      setToast({ message: `Error loading rates: ${ratesError.message}`, type: 'error' })
+      return
+    }
+
     if (rates && rates.length > 0) {
       setProfiles(rates.map((r, i) => ({
         id: r.id,
@@ -91,29 +100,53 @@ export default function RatesPage() {
         travel: (r.travel_expenses as string[]) || [],
       })))
       setOpen([rates[0]?.id])
-    } else {
-      // Seed 3 default profiles if user has none
-      console.log('RATES SEED - triggered at:', new Date().toISOString())
-      console.log('RATES SEED - interpreter_id:', profile.id)
-      const defaults = [
-        { interpreter_id: profile.id, label: 'Standard Rate', color: '#a78bfa', is_default: true, hourly_rate: 95, currency: 'USD', min_booking: 120, cancellation_policy: '48 hours notice required', late_cancel_fee: 100, travel_expenses: ['Mileage', 'Parking', 'Tolls'], additional_terms: null },
-        { interpreter_id: profile.id, label: 'Community Rate', color: '#34d399', is_default: false, hourly_rate: 65, currency: 'USD', min_booking: 60, cancellation_policy: '48 hours notice required', late_cancel_fee: null, travel_expenses: [], additional_terms: null },
-        { interpreter_id: profile.id, label: 'Multi-Day Rate', color: '#00e5ff', is_default: false, hourly_rate: 750, currency: 'USD', min_booking: 960, cancellation_policy: '2 weeks notice required', late_cancel_fee: null, travel_expenses: ['Mileage', 'Parking', 'Tolls', 'Airfare', 'Lodging', 'Per diem / Meals'], additional_terms: null },
-      ]
-      const { data: seeded, error } = await supabase
-        .from('interpreter_rate_profiles')
-        .insert(defaults)
-        .select()
-      console.log('Seed rate profiles:', { data: seeded, error })
-      if (seeded && seeded.length > 0) {
-        // Refetch to get properly ordered data
-        await refetchProfiles()
-      }
+      return
+    }
+
+    // No rows and no error — seed defaults (once only)
+    if (hasSeeded.current) {
+      console.log('RATES SEED - already seeded, skipping')
+      return
+    }
+    hasSeeded.current = true
+    console.log('RATES SEED - seeding defaults for interpreter_id:', profile.id)
+
+    const defaults = [
+      { interpreter_id: profile.id, label: 'Standard Rate', color: '#a78bfa', is_default: true, hourly_rate: 95, currency: 'USD', min_booking: 120, cancellation_policy: '48 hours notice required', late_cancel_fee: 100, travel_expenses: ['Mileage', 'Parking', 'Tolls'], additional_terms: null },
+      { interpreter_id: profile.id, label: 'Community Rate', color: '#34d399', is_default: false, hourly_rate: 65, currency: 'USD', min_booking: 60, cancellation_policy: '48 hours notice required', late_cancel_fee: null, travel_expenses: [], additional_terms: null },
+      { interpreter_id: profile.id, label: 'Multi-Day Rate', color: '#00e5ff', is_default: false, hourly_rate: 750, currency: 'USD', min_booking: 960, cancellation_policy: '2 weeks notice required', late_cancel_fee: null, travel_expenses: ['Mileage', 'Parking', 'Tolls', 'Airfare', 'Lodging', 'Per diem / Meals'], additional_terms: null },
+    ]
+    const { data: seeded, error: seedError } = await supabase
+      .from('interpreter_rate_profiles')
+      .insert(defaults)
+      .select()
+    console.log('RATES SEED - result:', JSON.stringify({ data: seeded, error: seedError }, null, 2))
+    if (seedError) {
+      setToast({ message: `Error creating default rates: ${seedError.message}`, type: 'error' })
+      return
+    }
+    if (seeded && seeded.length > 0) {
+      setProfiles(seeded.map((r, i) => ({
+        id: r.id,
+        dbId: r.id,
+        name: r.label,
+        color: r.color || (i === 0 ? '#a78bfa' : i === 1 ? '#34d399' : '#00e5ff'),
+        isDefault: r.is_default ?? i === 0,
+        hourlyRate: r.hourly_rate?.toString() || '',
+        currency: r.currency ? `${r.currency} — ${r.currency === 'USD' ? 'US Dollar' : r.currency}` : 'USD — US Dollar',
+        minBooking: r.min_booking ? `${r.min_booking / 60} hour${r.min_booking > 60 ? 's' : ''}` : 'No minimum',
+        cancellationPolicy: r.cancellation_policy || '48 hours notice required',
+        lateFee: r.late_cancel_fee ? `${r.late_cancel_fee}` : 'No fee',
+        notes: r.additional_terms || '',
+        travel: (r.travel_expenses as string[]) || [],
+      })))
+      setOpen([seeded[0].id])
     }
   }
 
   useEffect(() => {
-    refetchProfiles()
+    fetchRateProfiles()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function toggleOpen(id: string) {
@@ -200,7 +233,7 @@ export default function RatesPage() {
       const savedId = result.data[0].id
       setProfiles(prev => prev.map(p => p.id === id ? { ...p, dbId: savedId } : p))
       setToast({ message: 'Rate profile saved.', type: 'success' })
-      await refetchProfiles()
+      await fetchRateProfiles()
     } else {
       setToast({ message: 'Error: save returned no data. Check RLS policies.', type: 'error' })
     }
@@ -243,7 +276,7 @@ export default function RatesPage() {
     if (error) {
       setToast({ message: `Error: ${error.message}`, type: 'error' })
     } else {
-      await refetchProfiles()
+      await fetchRateProfiles()
       if (data && data[0]) {
         setOpen(prev => [...prev, data[0].id])
       }
@@ -260,7 +293,7 @@ export default function RatesPage() {
         return
       }
     }
-    await refetchProfiles()
+    await fetchRateProfiles()
   }
 
   return (

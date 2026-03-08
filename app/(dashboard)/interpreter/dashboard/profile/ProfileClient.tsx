@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { PageHeader } from '@/components/dashboard/interpreter/shared'
@@ -234,6 +234,47 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const [bio, setBio] = useState(p.bio || '')
   const [videoUrl, setVideoUrl] = useState(p.video_url || '')
   const [videoDescription, setVideoDescription] = useState(p.video_desc || '')
+
+  // ── Client-side fallback: load profile if server prop was null ──────
+  useEffect(() => {
+    if (rawProfile) return // Server already provided data
+    const supabase = createClient()
+    ;(async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase
+        .from('interpreter_profiles')
+        .select('name, first_name, last_name, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, sign_languages, spoken_languages, specializations, regions, video_url, video_desc, website_url, linkedin_url, event_coordination, event_coordination_desc, draft_data, status, photo_url, other_specializations')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      console.log('PROFILE CLIENT-SIDE LOAD:', JSON.stringify({ data, userId: user.id }, null, 2))
+      if (!data) return
+      const d = data as ProfileData
+      if (d.first_name != null) setFirstName(d.first_name)
+      if (d.last_name != null) setLastName(d.last_name)
+      if (d.city != null) setCity(d.city)
+      if (d.state != null) setStateProvince(d.state)
+      if (d.country != null) setCountry(d.country)
+      if (d.phone != null) setPhone(d.phone)
+      if (d.years_experience != null) setYearsExperience(d.years_experience)
+      if (d.interpreter_type != null) setInterpreterType(d.interpreter_type)
+      if (d.work_mode != null) setModeOfWork(d.work_mode)
+      if (d.website_url != null) setWebsite(d.website_url)
+      if (d.linkedin_url != null) setLinkedin(d.linkedin_url)
+      if (d.event_coordination != null) setEventCoordination(d.event_coordination)
+      if (d.event_coordination_desc != null) setCoordinationBio(d.event_coordination_desc)
+      if (d.sign_languages) setSignLangs(d.sign_languages)
+      if (d.spoken_languages) setSpokenLangs(d.spoken_languages)
+      if (d.specializations) setSpecs(d.specializations)
+      if (d.other_specializations != null) setOtherSpecs(d.other_specializations)
+      if (d.regions) setRegions(d.regions)
+      if (d.bio != null) setBio(d.bio)
+      if (d.video_url != null) setVideoUrl(d.video_url)
+      if (d.video_desc != null) setVideoDescription(d.video_desc)
+      if (d.photo_url != null) setPhotoUrl(d.photo_url)
+    })()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // ── Helpers ────────────────────────────────────────────────────────────
 
