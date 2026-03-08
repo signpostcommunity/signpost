@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { PageHeader } from '@/components/dashboard/interpreter/shared'
 import Toast from '@/components/ui/Toast'
@@ -196,6 +197,7 @@ function SaveButton({ saving, onClick }: { saving: boolean; onClick: () => void 
 export default function ProfileClient({ profile: rawProfile, userEmail }: ProfileClientProps) {
   const p = (rawProfile || {}) as ProfileData
   const hasProfile = !!rawProfile
+  const router = useRouter()
 
   const [activeTab, setActiveTab] = useState<Tab>('Personal')
   const [saving, setSaving] = useState(false)
@@ -286,7 +288,21 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       console.error('Save returned no rows — RLS may be blocking the write')
       setToast({ message: 'Error: save returned no data. Check RLS policies.', type: 'error' })
     } else {
+      // Update local state from DB response
+      const saved = result.data[0] as ProfileData
+      if (saved.first_name !== undefined) setFirstName(saved.first_name || '')
+      if (saved.last_name !== undefined) setLastName(saved.last_name || '')
+      if (saved.city !== undefined) setCity(saved.city || '')
+      if (saved.state !== undefined) setStateProvince(saved.state || '')
+      if (saved.country !== undefined) setCountry(saved.country || '')
+      if (saved.phone !== undefined) setPhone(saved.phone || '')
+      if (saved.photo_url !== undefined) setPhotoUrl(saved.photo_url || '')
+      if (saved.bio !== undefined) setBio(saved.bio || '')
+      if (saved.video_url !== undefined) setVideoUrl(saved.video_url || '')
+      if (saved.video_desc !== undefined) setVideoDescription(saved.video_desc || '')
       setToast({ message: 'Changes saved.', type: 'success' })
+      // Refresh server components (sidebar name/photo)
+      router.refresh()
     }
   }
 

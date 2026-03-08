@@ -75,7 +75,7 @@ function LogoutButton() {
   )
 }
 
-function SidebarContent({ userName, userInitials }: { userName: string; userInitials: string }) {
+function SidebarContent({ userName, userInitials, photoUrl }: { userName: string; userInitials: string; photoUrl?: string }) {
   const pathname = usePathname()
 
   return (
@@ -83,14 +83,21 @@ function SidebarContent({ userName, userInitials }: { userName: string; userInit
       {/* Header */}
       <div style={{ padding: '24px 20px 20px', borderBottom: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{
-            width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-            background: 'linear-gradient(135deg,#7b61ff,#00e5ff)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.85rem', color: '#fff',
-          }}>
-            {userInitials}
-          </div>
+          {photoUrl ? (
+            <img src={photoUrl} alt={userName} style={{
+              width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+              objectFit: 'cover', border: '2px solid var(--accent)',
+            }} />
+          ) : (
+            <div style={{
+              width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+              background: 'linear-gradient(135deg,#7b61ff,#00e5ff)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.85rem', color: '#fff',
+            }}>
+              {userInitials}
+            </div>
+          )}
           <div>
             <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.92rem' }}>{userName}</div>
             <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 2 }}>Interpreter</div>
@@ -157,7 +164,7 @@ function SidebarContent({ userName, userInitials }: { userName: string; userInit
   )
 }
 
-export default function DashboardSidebar({ userName = 'Interpreter', userInitials = 'IN' }: { userName?: string; userInitials?: string }) {
+export default function DashboardSidebar({ userName = 'Interpreter', userInitials = 'IN', photoUrl }: { userName?: string; userInitials?: string; photoUrl?: string }) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
@@ -169,7 +176,7 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
         display: 'flex', flexDirection: 'column',
         height: '100vh', position: 'sticky', top: 0, overflowY: 'auto',
       }}>
-        <SidebarContent userName={userName} userInitials={userInitials} />
+        <SidebarContent userName={userName} userInitials={userInitials} photoUrl={photoUrl} />
       </div>
 
       {/* Mobile top bar */}
@@ -180,14 +187,21 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
         background: 'var(--surface)', borderBottom: '1px solid var(--border)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: '50%',
-            background: 'linear-gradient(135deg,#7b61ff,#00e5ff)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.7rem', color: '#fff',
-          }}>
-            {userInitials}
-          </div>
+          {photoUrl ? (
+            <img src={photoUrl} alt={userName} style={{
+              width: 32, height: 32, borderRadius: '50%', objectFit: 'cover',
+              border: '2px solid var(--accent)',
+            }} />
+          ) : (
+            <div style={{
+              width: 32, height: 32, borderRadius: '50%',
+              background: 'linear-gradient(135deg,#7b61ff,#00e5ff)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.7rem', color: '#fff',
+            }}>
+              {userInitials}
+            </div>
+          )}
           <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.88rem' }}>
             Dashboard
           </span>
@@ -234,7 +248,7 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
               </button>
             </div>
             <div onClick={() => setMobileOpen(false)}>
-              <SidebarContent userName={userName} userInitials={userInitials} />
+              <SidebarContent userName={userName} userInitials={userInitials} photoUrl={photoUrl} />
             </div>
           </div>
         </div>

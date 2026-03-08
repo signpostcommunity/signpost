@@ -109,12 +109,14 @@ function StatCard({ num, label, href }: { num: number; label: string; href: stri
         style={{
           background: 'var(--card-bg)',
           border: `1px solid ${hover ? 'rgba(0,229,255,0.3)' : 'var(--border)'}`,
-          borderRadius: 'var(--radius)', padding: '24px 28px',
-          transition: 'border-color 0.2s', cursor: 'pointer',
+          borderRadius: 'var(--radius)', padding: '20px',
+          transition: 'border-color 0.18s, transform 0.18s', cursor: 'pointer',
+          transform: hover ? 'translateY(-2px)' : 'none',
+          display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
         }}
       >
-        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '2rem', color: 'var(--accent)' }}>{num}</div>
-        <div style={{ color: 'var(--muted)', fontSize: '0.82rem', marginTop: 4 }}>{label}</div>
+        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '2rem', letterSpacing: '-0.04em', color: 'var(--accent)' }}>{num}</div>
+        <div style={{ color: 'var(--muted)', fontSize: '0.78rem', marginTop: 4 }}>{label}</div>
       </div>
     </Link>
   )
@@ -153,7 +155,7 @@ export default function OverviewClient({ firstName, lastName, profileStatus, sho
       />
 
       {/* Stats */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 14, marginBottom: 40 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16, marginBottom: 32, alignItems: 'stretch' }}>
         <StatCard num={showSampleData ? 2 : 0} label="New Inquiries" href="/interpreter/dashboard/inquiries" />
         <StatCard num={showSampleData ? 3 : 0} label="Confirmed This Month" href="/interpreter/dashboard/confirmed" />
         <StatCard num={showSampleData ? 4 : 0} label="Interpreters in Your Preferred Team" href="/interpreter/dashboard/team" />

@@ -7,22 +7,26 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   let userName = 'Interpreter'
   let userInitials = 'IN'
+  let userPhotoUrl = ''
 
   if (user) {
     const { data } = await supabase
       .from('interpreter_profiles')
-      .select('first_name, last_name')
+      .select('first_name, last_name, photo_url')
       .eq('user_id', user.id)
       .single()
     if (data?.first_name) {
       userName = `${data.first_name} ${data.last_name || ''}`.trim()
       userInitials = `${data.first_name[0] || ''}${data.last_name?.[0] || ''}`.toUpperCase()
     }
+    if (data?.photo_url) {
+      userPhotoUrl = data.photo_url
+    }
   }
 
   return (
     <div className="dash-layout" style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
-      <DashboardSidebar userName={userName} userInitials={userInitials} />
+      <DashboardSidebar userName={userName} userInitials={userInitials} photoUrl={userPhotoUrl} />
       <main className="dash-main" style={{ flex: 1, overflowY: 'auto', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         {children}
       </main>

@@ -188,51 +188,147 @@ function DetailModal({ inquiry, status, onClose }: {
   onClose: () => void
 }) {
   const isPending = status === 'new' || status === 'pending'
+  const isRemote = inquiry.mode === 'Remote'
 
-  const sections = [
-    { label: 'Date & Time', content: `${inquiry.date} · ${inquiry.time}${inquiry.recurrence ? ` · ${inquiry.recurrence}` : ''}` },
-    { label: 'Location', content: inquiry.mode === 'Remote' ? 'Remote — Zoom link will be provided upon confirmation' : `On-site — ${inquiry.location}` },
-    { label: 'Deaf / HH Client', content: isPending ? 'Name withheld until booking confirmed' : inquiry.from, italic: isPending },
-    { label: 'On-site Contact', content: inquiry.mode === 'Remote' ? 'N/A — Remote booking' : 'Contact information provided upon confirmation' },
-    { label: 'Job Context', content: inquiry.note || 'No additional context provided.' },
-    { label: 'Category', content: inquiry.category || '—' },
-    { label: 'Attachments & Materials', content: 'None provided' },
-  ]
+  const sectionLabelStyle: React.CSSProperties = {
+    fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.07em',
+    textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10,
+  }
+
+  const detailRowStyle: React.CSSProperties = {
+    display: 'flex', alignItems: 'flex-start', gap: 10,
+    fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.55, marginBottom: 6,
+  }
+
+  const iconStyle: React.CSSProperties = { color: 'var(--muted)', flexShrink: 0, marginTop: 2 }
+
+  const sectionStyle: React.CSSProperties = {
+    padding: '16px 0', borderBottom: '1px solid var(--border)',
+  }
 
   return (
     <div style={overlayStyle} onClick={onClose}>
-      <div style={{ ...modalStyle, maxWidth: 560, maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem' }}>{inquiry.title}</div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
-        </div>
-
-        {/* Status */}
-        <div style={{ marginBottom: 20 }}>
+      <div style={{
+        background: 'var(--card-bg)', border: '1px solid var(--border)',
+        borderRadius: 'var(--radius)', width: '90%', maxWidth: 560,
+        overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '90vh',
+      }} onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>{inquiry.title}</h3>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem', flexShrink: 0 }}>✕</button>
+          </div>
           <span style={{
-            fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 100,
-            background: isPending ? 'rgba(255,165,0,0.12)' : 'rgba(0,229,255,0.1)',
-            color: isPending ? '#f97316' : 'var(--accent)',
-            fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            fontSize: '0.78rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20,
+            background: isPending ? 'rgba(250,204,21,0.1)' : 'rgba(0,229,255,0.1)',
+            color: isPending ? '#facc15' : 'var(--accent)',
+            border: isPending ? '1px solid rgba(250,204,21,0.25)' : '1px solid rgba(0,229,255,0.25)',
           }}>
             {isPending ? 'Awaiting Response' : status === 'responded' ? 'Responded' : status}
           </span>
         </div>
 
-        {sections.map(section => (
-          <div key={section.label} style={{ marginBottom: 18 }}>
-            <div style={{ ...fieldLabelStyle, marginBottom: 4 }}>{section.label}</div>
-            <div style={{
-              fontSize: '0.88rem', lineHeight: 1.6,
-              color: section.italic ? 'var(--muted)' : 'var(--text)',
-              fontStyle: section.italic ? 'italic' : 'normal',
-            }}>
-              {section.content}
+        {/* Body */}
+        <div style={{ padding: '0 28px 8px', overflowY: 'auto', maxHeight: '62vh' }}>
+          {/* Date & Time */}
+          <div style={sectionStyle}>
+            <div style={sectionLabelStyle}>Date &amp; Time</div>
+            <div style={detailRowStyle}>
+              <svg style={iconStyle} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <rect x="1" y="2" width="12" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                <path d="M1 5.5h12M4.5 1v2M9.5 1v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+              </svg>
+              <div>
+                <div>{inquiry.date}</div>
+                <div style={{ fontWeight: 600 }}>{inquiry.time}</div>
+                {inquiry.recurrence && <div style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>{inquiry.recurrence}</div>}
+              </div>
             </div>
           </div>
-        ))}
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+          {/* Location */}
+          <div style={sectionStyle}>
+            <div style={sectionLabelStyle}>Location</div>
+            <div style={detailRowStyle}>
+              {isRemote ? (
+                <svg style={iconStyle} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <rect x="1" y="1" width="12" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                  <path d="M4 12h6M7 10v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                </svg>
+              ) : (
+                <svg style={iconStyle} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M7 1C4.79 1 3 2.79 3 5C3 8.5 7 13 7 13C7 13 11 8.5 11 5C11 2.79 9.21 1 7 1ZM7 7C5.9 7 5 6.1 5 5C5 3.9 5.9 3 7 3C8.1 3 9 3.9 9 5C9 6.1 8.1 7 7 7Z" fill="currentColor"/>
+                </svg>
+              )}
+              <div>
+                {isRemote ? (
+                  <>
+                    <div>Remote — Zoom link will be provided upon confirmation</div>
+                  </>
+                ) : (
+                  <>
+                    <div>{inquiry.location}</div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Deaf/HH Client */}
+          <div style={sectionStyle}>
+            <div style={sectionLabelStyle}>Deaf / Hard of Hearing Client</div>
+            <div style={detailRowStyle}>
+              <svg style={iconStyle} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <circle cx="7" cy="4.5" r="2.5" stroke="currentColor" strokeWidth="1.2"/>
+                <path d="M2 13c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+              </svg>
+              <div>
+                {isPending ? (
+                  <>
+                    <div style={{ fontWeight: 600 }}>Name withheld</div>
+                    <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>Client identity revealed upon booking confirmation</div>
+                  </>
+                ) : (
+                  <div style={{ fontWeight: 600 }}>{inquiry.from}</div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* On-site Contact */}
+          <div style={sectionStyle}>
+            <div style={sectionLabelStyle}>On-site Contact</div>
+            <div style={detailRowStyle}>
+              <svg style={iconStyle} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M2.5 2h2.5l1.5 3.5L5 7c.8 1.5 2 2.7 3.5 3.5l1.5-1.5L13.5 10.5v2.5c0 .55-.45 1-1 1C6.15 14 1 8.85 1 3.5c0-.55.45-1 1-1h.5z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <div style={{ color: 'var(--muted)' }}>
+                {isRemote ? 'N/A — Remote booking' : 'Contact information provided upon confirmation'}
+              </div>
+            </div>
+          </div>
+
+          {/* Job Context */}
+          {(inquiry.note || inquiry.category) && (
+            <div style={sectionStyle}>
+              <div style={sectionLabelStyle}>Job Context</div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65 }}>
+                {inquiry.note || `${inquiry.category} appointment — no additional context provided.`}
+              </div>
+            </div>
+          )}
+
+          {/* Attachments */}
+          <div style={{ ...sectionStyle, borderBottom: 'none' }}>
+            <div style={sectionLabelStyle}>Attachments &amp; Materials</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>None provided</div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: '16px 28px', borderTop: '1px solid var(--border)', display: 'flex', gap: 10, alignItems: 'center' }}>
           <GhostButton onClick={onClose}>Close</GhostButton>
         </div>
       </div>

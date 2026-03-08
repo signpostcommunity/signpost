@@ -23,7 +23,7 @@ export default function InterpreterCard({ interpreter: i }: { interpreter: Inter
         {/* Card header / visual */}
         <div
           style={{
-            height: 170,
+            height: 180,
             background: i.color,
             position: 'relative',
             overflow: 'hidden',
@@ -82,7 +82,7 @@ export default function InterpreterCard({ interpreter: i }: { interpreter: Inter
         </div>
 
         {/* Card body */}
-        <div style={{ padding: '14px 16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: '18px', flex: 1, display: 'flex', flexDirection: 'column' }}>
           {/* Name + Add to my list */}
           <div
             style={{
@@ -140,19 +140,19 @@ export default function InterpreterCard({ interpreter: i }: { interpreter: Inter
           </div>
 
           {/* Sign languages + Spoken languages */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '10px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginTop: '10px', marginBottom: '12px' }}>
             {i.signLangs.map((lang) => (
               <span
                 key={lang}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  borderRadius: '100px',
-                  padding: '3px 9px',
-                  fontSize: '0.7rem',
-                  border: '1px solid rgba(0,229,255,0.35)',
-                  background: 'rgba(0,229,255,0.08)',
-                  color: 'var(--accent)',
+                  borderRadius: '6px',
+                  padding: '3px 8px',
+                  fontSize: '0.72rem',
+                  border: '1px solid rgba(123,97,255,0.25)',
+                  background: 'rgba(123,97,255,0.1)',
+                  color: '#a891ff',
                 }}
               >
                 {lang}
@@ -164,12 +164,12 @@ export default function InterpreterCard({ interpreter: i }: { interpreter: Inter
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  borderRadius: '100px',
-                  padding: '3px 9px',
-                  fontSize: '0.7rem',
-                  border: '1px solid var(--border)',
-                  background: 'var(--surface)',
-                  color: 'var(--muted)',
+                  borderRadius: '6px',
+                  padding: '3px 8px',
+                  fontSize: '0.72rem',
+                  border: '1px solid rgba(255,77,109,0.2)',
+                  background: 'rgba(255,77,109,0.08)',
+                  color: '#ff8099',
                 }}
               >
                 {lang}
@@ -178,19 +178,19 @@ export default function InterpreterCard({ interpreter: i }: { interpreter: Inter
           </div>
 
           {/* Specializations */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '14px' }}>
             {i.specs.map((spec) => (
               <span
                 key={spec}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  borderRadius: '100px',
-                  padding: '3px 9px',
-                  fontSize: '0.7rem',
+                  borderRadius: '6px',
+                  padding: '3px 8px',
+                  fontSize: '0.72rem',
                   border: '1px solid var(--border)',
                   background: 'var(--surface2)',
-                  color: 'var(--text)',
+                  color: 'var(--muted)',
                 }}
               >
                 {spec}
@@ -251,7 +251,8 @@ export default function InterpreterCard({ interpreter: i }: { interpreter: Inter
         <style>{`
           .interp-card:hover {
             border-color: rgba(0,229,255,0.3);
-            transform: translateY(-2px);
+            transform: translateY(-4px);
+            box-shadow: 0 20px 48px rgba(0,0,0,0.4);
           }
           .add-to-list-btn {
             flex-shrink: 0;

@@ -90,35 +90,105 @@ function DetailModal({ booking, onClose }: {
   booking: typeof DEMO_CONFIRMED[0]
   onClose: () => void
 }) {
-  const sections = [
-    { label: 'Date & Time', content: `${booking.date} · ${booking.time}` },
-    { label: 'Location', content: booking.mode === 'Remote' ? `Remote — ${booking.location}` : `On-site — ${booking.location}` },
-    { label: 'Client', content: booking.client },
-    { label: 'Category', content: booking.category },
-  ]
+  const isRemote = booking.mode === 'Remote'
+
+  const sectionLabelStyle: React.CSSProperties = {
+    fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.07em',
+    textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10,
+  }
+
+  const detailRowStyle: React.CSSProperties = {
+    display: 'flex', alignItems: 'flex-start', gap: 10,
+    fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.55, marginBottom: 6,
+  }
+
+  const iconStyle: React.CSSProperties = { color: 'var(--muted)', flexShrink: 0, marginTop: 2 }
+
+  const sectionStyle: React.CSSProperties = {
+    padding: '16px 0', borderBottom: '1px solid var(--border)',
+  }
 
   return (
     <div style={overlayStyle} onClick={onClose}>
-      <div style={modalStyle} onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem' }}>{booking.title}</div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
+      <div style={{
+        background: 'var(--card-bg)', border: '1px solid var(--border)',
+        borderRadius: 'var(--radius)', width: '90%', maxWidth: 560,
+        overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '90vh',
+      }} onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>{booking.title}</h3>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem', flexShrink: 0 }}>✕</button>
+          </div>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            fontSize: '0.78rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20,
+            background: 'rgba(0,229,255,0.1)', color: 'var(--accent)',
+            border: '1px solid rgba(0,229,255,0.25)',
+          }}>
+            ✓ Confirmed
+          </span>
         </div>
 
-        <div style={{ marginBottom: 20 }}>
-          <StatusBadge status="confirmed" />
-        </div>
-
-        {sections.map(section => (
-          <div key={section.label} style={{ marginBottom: 18 }}>
-            <div style={fieldLabelStyle}>{section.label}</div>
-            <div style={{ fontSize: '0.88rem', lineHeight: 1.6, color: 'var(--text)' }}>
-              {section.content}
+        {/* Body */}
+        <div style={{ padding: '0 28px 8px', overflowY: 'auto', maxHeight: '62vh' }}>
+          {/* Date & Time */}
+          <div style={sectionStyle}>
+            <div style={sectionLabelStyle}>Date &amp; Time</div>
+            <div style={detailRowStyle}>
+              <svg style={iconStyle} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <rect x="1" y="2" width="12" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                <path d="M1 5.5h12M4.5 1v2M9.5 1v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+              </svg>
+              <div>
+                <div>{booking.date}</div>
+                <div style={{ fontWeight: 600 }}>{booking.time}</div>
+              </div>
             </div>
           </div>
-        ))}
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+          {/* Location */}
+          <div style={sectionStyle}>
+            <div style={sectionLabelStyle}>Location</div>
+            <div style={detailRowStyle}>
+              {isRemote ? (
+                <svg style={iconStyle} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <rect x="1" y="1" width="12" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                  <path d="M4 12h6M7 10v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                </svg>
+              ) : (
+                <svg style={iconStyle} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M7 1C4.79 1 3 2.79 3 5C3 8.5 7 13 7 13C7 13 11 8.5 11 5C11 2.79 9.21 1 7 1ZM7 7C5.9 7 5 6.1 5 5C5 3.9 5.9 3 7 3C8.1 3 9 3.9 9 5C9 6.1 8.1 7 7 7Z" fill="currentColor"/>
+                </svg>
+              )}
+              <div>{booking.location}</div>
+            </div>
+          </div>
+
+          {/* Client */}
+          <div style={sectionStyle}>
+            <div style={sectionLabelStyle}>Deaf / Hard of Hearing Client</div>
+            <div style={detailRowStyle}>
+              <svg style={iconStyle} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <circle cx="7" cy="4.5" r="2.5" stroke="currentColor" strokeWidth="1.2"/>
+                <path d="M2 13c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+              </svg>
+              <div style={{ fontWeight: 600 }}>{booking.client}</div>
+            </div>
+          </div>
+
+          {/* Category / Job Context */}
+          <div style={{ ...sectionStyle, borderBottom: 'none' }}>
+            <div style={sectionLabelStyle}>Job Context</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65 }}>
+              {booking.category} booking
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: '16px 28px', borderTop: '1px solid var(--border)', display: 'flex', gap: 10, alignItems: 'center' }}>
           <GhostButton onClick={onClose}>Close</GhostButton>
         </div>
       </div>

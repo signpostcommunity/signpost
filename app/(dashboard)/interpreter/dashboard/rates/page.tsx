@@ -2,8 +2,10 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState } from 'react'
-import { PageHeader, InfoBox, GhostButton } from '@/components/dashboard/interpreter/shared'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { PageHeader, InfoBox } from '@/components/dashboard/interpreter/shared'
+import Toast from '@/components/ui/Toast'
 
 type RateProfile = {
   id: string
@@ -17,6 +19,7 @@ type RateProfile = {
   lateFee: string
   notes: string
   travel: string[]
+  dbId?: string // Supabase row id
 }
 
 const TRAVEL_OPTIONS = ['Mileage', 'Parking', 'Tolls', 'Ferry', 'Public Transit', 'Airfare', 'Lodging', 'Per diem / Meals']
@@ -47,7 +50,49 @@ const inputStyle = {
 export default function RatesPage() {
   const [profiles, setProfiles] = useState<RateProfile[]>(DEFAULT_PROFILES)
   const [open, setOpen] = useState<string[]>(['rp-1'])
-  const [saved, setSaved] = useState<string | null>(null)
+  const [saving, setSaving] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  // Load rate profiles from Supabase on mount
+  useEffect(() => {
+    async function loadRates() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      // Get interpreter_profiles id
+      const { data: profile } = await supabase
+        .from('interpreter_profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (!profile) return
+
+      const { data: rates } = await supabase
+        .from('interpreter_rate_profiles')
+        .select('*')
+        .eq('interpreter_id', profile.id)
+
+      if (rates && rates.length > 0) {
+        setProfiles(rates.map((r, i) => ({
+          id: r.id,
+          dbId: r.id,
+          name: r.label,
+          color: r.color || (i === 0 ? '#00e5ff' : '#34d399'),
+          isDefault: r.is_default ?? i === 0,
+          hourlyRate: r.hourly_rate?.toString() || '',
+          currency: r.currency || 'USD — US Dollar',
+          minBooking: r.min_booking ? `${r.min_booking / 60} hour${r.min_booking > 60 ? 's' : ''}` : 'No minimum',
+          cancellationPolicy: r.cancellation_policy || '48 hours notice required',
+          lateFee: r.late_cancel_fee ? `${r.late_cancel_fee}` : 'No fee',
+          notes: r.additional_terms || '',
+          travel: (r.travel_expenses as string[]) || [],
+        })))
+        setOpen([rates[0]?.id])
+      }
+    }
+    loadRates()
+  }, [])
 
   function toggleOpen(id: string) {
     setOpen(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
@@ -63,9 +108,79 @@ export default function RatesPage() {
     updateProfile(id, { travel: current.includes(option) ? current.filter(t => t !== option) : [...current, option] })
   }
 
-  function saveProfile(id: string) {
-    setSaved(id)
-    setTimeout(() => setSaved(null), 2000)
+  // Parse min booking string to minutes
+  function parseMinBooking(str: string): number | null {
+    if (str === 'No minimum') return null
+    const match = str.match(/([\d.]+)\s*hour/)
+    if (match) return Math.round(parseFloat(match[1]) * 60)
+    if (str.includes('Half day')) return 240
+    if (str.includes('Full day')) return 480
+    return null
+  }
+
+  async function saveProfile(id: string) {
+    const profile = profiles.find(p => p.id === id)
+    if (!profile) return
+
+    setSaving(id)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setSaving(null); return }
+
+    // Get interpreter_profiles id
+    const { data: interpProfile } = await supabase
+      .from('interpreter_profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (!interpProfile) {
+      setSaving(null)
+      setToast({ message: 'Error: No interpreter profile found. Save your profile first.', type: 'error' })
+      return
+    }
+
+    const payload = {
+      interpreter_id: interpProfile.id,
+      label: profile.name,
+      is_default: profile.isDefault,
+      color: profile.color,
+      hourly_rate: parseFloat(profile.hourlyRate) || null,
+      currency: profile.currency.split(' — ')[0] || 'USD',
+      min_booking: parseMinBooking(profile.minBooking),
+      cancellation_policy: profile.cancellationPolicy,
+      late_cancel_fee: profile.lateFee === 'No fee' ? null : parseFloat(profile.lateFee.replace(/[^0-9.]/g, '')) || null,
+      travel_expenses: profile.travel,
+      additional_terms: profile.notes || null,
+    }
+
+    let result
+    if (profile.dbId) {
+      result = await supabase
+        .from('interpreter_rate_profiles')
+        .update(payload)
+        .eq('id', profile.dbId)
+        .select()
+    } else {
+      result = await supabase
+        .from('interpreter_rate_profiles')
+        .insert(payload)
+        .select()
+    }
+
+    console.log('Rate save response:', { data: result.data, error: result.error })
+
+    setSaving(null)
+    if (result.error) {
+      setToast({ message: `Error: ${result.error.message}`, type: 'error' })
+    } else if (result.data && result.data.length > 0) {
+      // Update with DB id for future saves
+      const savedId = result.data[0].id
+      setProfiles(prev => prev.map(p => p.id === id ? { ...p, dbId: savedId } : p))
+      setToast({ message: 'Rate profile saved.', type: 'success' })
+    } else {
+      setToast({ message: 'Error: save returned no data. Check RLS policies.', type: 'error' })
+    }
   }
 
   function addProfile() {
@@ -79,7 +194,12 @@ export default function RatesPage() {
     setOpen(prev => [...prev, id])
   }
 
-  function removeProfile(id: string) {
+  async function removeProfile(id: string) {
+    const profile = profiles.find(p => p.id === id)
+    if (profile?.dbId) {
+      const supabase = createClient()
+      await supabase.from('interpreter_rate_profiles').delete().eq('id', profile.dbId)
+    }
     setProfiles(prev => prev.filter(p => p.id !== id))
   }
 
@@ -260,8 +380,8 @@ export default function RatesPage() {
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <button className="btn-primary" onClick={() => saveProfile(profile.id)} style={{ padding: '9px 22px' }}>
-                    {saved === profile.id ? 'Saved ✓' : 'Save changes'}
+                  <button className="btn-primary" onClick={() => saveProfile(profile.id)} disabled={saving === profile.id} style={{ padding: '9px 22px', opacity: saving === profile.id ? 0.6 : 1 }}>
+                    {saving === profile.id ? 'Saving...' : 'Save Changes'}
                   </button>
                 </div>
               </div>
@@ -284,6 +404,8 @@ export default function RatesPage() {
       >
         + Add Rate Profile
       </button>
+
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   )
 }
