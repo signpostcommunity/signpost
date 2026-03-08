@@ -73,7 +73,7 @@ export default function RatesPage() {
       .from('interpreter_rate_profiles')
       .select('*')
       .eq('interpreter_id', profile.id)
-      .order('created_at', { ascending: true })
+      .order('id', { ascending: true })
 
     console.log('RATES FETCH - response:', JSON.stringify({ data: rates, error: ratesError }, null, 2))
 

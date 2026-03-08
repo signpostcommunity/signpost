@@ -352,6 +352,14 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       if (saved.bio !== undefined) setBio(saved.bio || '')
       if (saved.video_url !== undefined) setVideoUrl(saved.video_url || '')
       if (saved.video_desc !== undefined) setVideoDescription(saved.video_desc || '')
+      // Verify the row is readable immediately after save
+      const { data: verifyData, error: verifyError } = await supabase
+        .from('interpreter_profiles')
+        .select('id, user_id, first_name, status')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      console.log('PROFILE SAVE - verify read-back:', JSON.stringify({ verifyData, verifyError }, null, 2))
+
       setToast({ message: 'Changes saved.', type: 'success' })
       // Refresh server components (sidebar name/photo)
       router.refresh()
