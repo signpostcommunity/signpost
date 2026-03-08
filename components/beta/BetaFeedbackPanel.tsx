@@ -141,21 +141,30 @@ export default function BetaFeedbackPanel() {
     setSubmitted(false);
   }, [pathname]);
 
+  const [error, setError] = useState<string | null>(null);
+
   async function handleSubmit() {
     if (!notes.trim() && !specificAnswer.trim()) return;
     setSubmitting(true);
+    setError(null);
     try {
-      await fetch('/api/beta-feedback', {
+      const res = await fetch('/api/beta-feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ page: pathname, notes, specificAnswer, isEndOfSession: false }),
+        body: JSON.stringify({ page: pathname, notes, specificAnswer }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to submit');
+      }
       setSubmitted(true);
       setNotes('');
       setSpecificAnswer('');
       setTimeout(() => setSubmitted(false), 3000);
     } catch (e) {
       console.error('Feedback submit error:', e);
+      setError((e as Error).message || 'Something went wrong');
+      setTimeout(() => setError(null), 5000);
     } finally {
       setSubmitting(false);
     }
@@ -351,6 +360,12 @@ export default function BetaFeedbackPanel() {
         >
           {submitted ? '✓ Saved!' : submitting ? 'Saving...' : 'Submit feedback for this page'}
         </button>
+
+        {error && (
+          <p style={{ fontSize: '0.78rem', color: '#d32f2f', margin: 0, lineHeight: 1.4 }}>
+            Error: {error}
+          </p>
+        )}
 
         {/* End-of-session CTA — only appears after visiting dashboard */}
         {showEndOfSession && (
