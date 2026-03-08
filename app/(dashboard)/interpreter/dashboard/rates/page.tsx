@@ -53,9 +53,10 @@ export default function RatesPage() {
   const [saving, setSaving] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   async function refetchProfiles() {
+    console.log('RATES FETCH - triggered at:', new Date().toISOString())
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) { console.log('RATES FETCH - no user'); return }
 
     const { data: profile } = await supabase
       .from('interpreter_profiles')
@@ -63,13 +64,16 @@ export default function RatesPage() {
       .eq('user_id', user.id)
       .maybeSingle()
 
-    if (!profile) return
+    console.log('RATES FETCH - interpreter profile:', JSON.stringify(profile, null, 2))
+    if (!profile) { console.log('RATES FETCH - no interpreter profile found'); return }
 
-    const { data: rates } = await supabase
+    const { data: rates, error: ratesError } = await supabase
       .from('interpreter_rate_profiles')
       .select('*')
       .eq('interpreter_id', profile.id)
       .order('created_at', { ascending: true })
+
+    console.log('RATES FETCH - response:', JSON.stringify({ data: rates, error: ratesError }, null, 2))
 
     if (rates && rates.length > 0) {
       setProfiles(rates.map((r, i) => ({
@@ -89,6 +93,8 @@ export default function RatesPage() {
       setOpen([rates[0]?.id])
     } else {
       // Seed 3 default profiles if user has none
+      console.log('RATES SEED - triggered at:', new Date().toISOString())
+      console.log('RATES SEED - interpreter_id:', profile.id)
       const defaults = [
         { interpreter_id: profile.id, label: 'Standard Rate', color: '#a78bfa', is_default: true, hourly_rate: 95, currency: 'USD', min_booking: 120, cancellation_policy: '48 hours notice required', late_cancel_fee: 100, travel_expenses: ['Mileage', 'Parking', 'Tolls'], additional_terms: null },
         { interpreter_id: profile.id, label: 'Community Rate', color: '#34d399', is_default: false, hourly_rate: 65, currency: 'USD', min_booking: 60, cancellation_policy: '48 hours notice required', late_cancel_fee: null, travel_expenses: [], additional_terms: null },

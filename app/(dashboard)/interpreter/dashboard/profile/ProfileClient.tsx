@@ -195,6 +195,7 @@ function SaveButton({ saving, onClick }: { saving: boolean; onClick: () => void 
 // ── Main component ───────────────────────────────────────────────────────────
 
 export default function ProfileClient({ profile: rawProfile, userEmail }: ProfileClientProps) {
+  console.log('PROFILE LOAD - rawProfile from server:', JSON.stringify(rawProfile, null, 2))
   const p = (rawProfile || {}) as ProfileData
   const hasProfile = !!rawProfile
   const router = useRouter()
@@ -280,11 +281,15 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       updated_at: new Date().toISOString(),
     }
 
+    console.log('PROFILE SAVE - user_id:', user.id)
+    console.log('PROFILE SAVE - existing row:', JSON.stringify(existing, null, 2))
+    console.log('PROFILE SAVE - payload:', JSON.stringify(payload, null, 2))
+
     const result = existing
       ? await supabase.from('interpreter_profiles').update(payload).eq('user_id', user.id).select()
       : await supabase.from('interpreter_profiles').insert(payload).select()
 
-    console.log('Save response:', { data: result.data, error: result.error })
+    console.log('PROFILE SAVE - response:', JSON.stringify({ data: result.data, error: result.error, status: result.status }, null, 2))
 
     setSaving(false)
     if (result.error) {
