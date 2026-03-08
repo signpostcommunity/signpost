@@ -402,40 +402,12 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setUploading(false); return }
 
-    // Crop to centered 400x400 square JPEG before uploading
-    let processedFile: Blob
-    try {
-      processedFile = await new Promise<Blob>((resolve, reject) => {
-        const img = new Image()
-        img.onload = () => {
-          const canvas = document.createElement('canvas')
-          canvas.width = 400
-          canvas.height = 400
-          const ctx = canvas.getContext('2d')!
-          const size = Math.min(img.width, img.height)
-          const x = (img.width - size) / 2
-          const y = (img.height - size) / 2
-          ctx.drawImage(img, x, y, size, size, 0, 0, 400, 400)
-          canvas.toBlob(
-            (blob) => blob ? resolve(blob) : reject(new Error('Canvas export failed')),
-            'image/jpeg',
-            0.85
-          )
-        }
-        img.onerror = () => reject(new Error('Failed to load image'))
-        img.src = URL.createObjectURL(file)
-      })
-    } catch (cropErr) {
-      setUploading(false)
-      setUploadMsg({ text: `Image processing failed: ${(cropErr as Error).message}`, type: 'error' })
-      return
-    }
-
-    const path = `${user.id}/avatar.jpg`
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+    const path = `${user.id}/avatar.${ext}`
 
     const { error: uploadError } = await supabase.storage
       .from('avatars')
-      .upload(path, processedFile, { upsert: true, contentType: 'image/jpeg' })
+      .upload(path, file, { upsert: true })
 
     if (uploadError) {
       setUploading(false)

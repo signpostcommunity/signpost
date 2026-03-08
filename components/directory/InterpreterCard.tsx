@@ -42,6 +42,7 @@ export default function InterpreterCard({ interpreter: i }: { interpreter: Inter
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
+                objectPosition: 'center 25%',
               }}
             />
           ) : (
