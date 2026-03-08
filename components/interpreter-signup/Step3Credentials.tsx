@@ -8,7 +8,7 @@ import {
 } from './FormFields'
 
 function newCert(): Certification {
-  return { id: `cert-${Date.now()}`, name: '', issuingBody: '', verificationLink: '' }
+  return { id: `cert-${Date.now()}`, name: '', issuingBody: '', year: '', verificationLink: '' }
 }
 
 function newEdu(): Education {
@@ -224,11 +224,20 @@ export default function Step3Credentials({ onBack, onContinue }: {
                   />
                 </FormField>
                 <FormField>
-                  <FieldLabel>Issuing Body &amp; Year</FieldLabel>
+                  <FieldLabel>Issuing Body</FieldLabel>
                   <TextInput
-                    placeholder="e.g. RID, USA, 2018"
+                    placeholder="e.g. RID"
                     value={cert.issuingBody}
                     onChange={e => updateCert(cert.id, 'issuingBody', e.target.value)}
+                  />
+                </FormField>
+                <FormField>
+                  <FieldLabel>Year</FieldLabel>
+                  <TextInput
+                    placeholder="e.g. 2018"
+                    value={cert.year}
+                    onChange={e => updateCert(cert.id, 'year', e.target.value)}
+                    maxLength={4}
                   />
                 </FormField>
               </div>

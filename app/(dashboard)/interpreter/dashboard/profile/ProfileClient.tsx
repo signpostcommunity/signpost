@@ -77,7 +77,7 @@ function Chip({ label, selected, onToggle }: { label: string; selected: boolean;
 // ── Region toggle tile ───────────────────────────────────────────────────────
 
 const REGIONS = [
-  { label: 'Worldwide', color: '#00e5ff' },
+  { label: '\u{1F30D} Worldwide', color: '#00e5ff' },
   { label: 'NA — North America', color: '#f97316' },
   { label: 'LATAM — Latin America & Caribbean', color: '#a78bfa' },
   { label: 'EU — Europe', color: '#60a5fa' },
@@ -113,6 +113,7 @@ interface ProfileData {
   first_name?: string | null
   last_name?: string | null
   city?: string | null
+  state?: string | null
   country?: string | null
   phone?: string | null
   years_experience?: string | null
@@ -125,6 +126,7 @@ interface ProfileData {
   regions?: string[] | null
   video_url?: string | null
   video_desc?: string | null
+  other_specializations?: string | null
   website_url?: string | null
   linkedin_url?: string | null
   event_coordination?: boolean | null
@@ -203,6 +205,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const [firstName, setFirstName] = useState(p.first_name || '')
   const [lastName, setLastName] = useState(p.last_name || '')
   const [city, setCity] = useState(p.city || '')
+  const [stateProvince, setStateProvince] = useState(p.state || '')
   const [country, setCountry] = useState(p.country || '')
   const [phone, setPhone] = useState(p.phone || '')
   const [yearsExperience, setYearsExperience] = useState(p.years_experience || '')
@@ -217,6 +220,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const [signLangs, setSignLangs] = useState<string[]>(p.sign_languages || [])
   const [spokenLangs, setSpokenLangs] = useState<string[]>(p.spoken_languages || [])
   const [specs, setSpecs] = useState<string[]>(p.specializations || [])
+  const [otherSpecs, setOtherSpecs] = useState(p.other_specializations || '')
   const [signRegional, setSignRegional] = useState<string[]>([])
   const [spokenRegional, setSpokenRegional] = useState<string[]>([])
 
@@ -311,7 +315,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
     const path = `${user.id}/avatar.${ext}`
 
     const { error: uploadError } = await supabase.storage
-      .from('profile-photos')
+      .from('avatars')
       .upload(path, file, { upsert: true })
 
     if (uploadError) {
@@ -320,7 +324,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       return
     }
 
-    const { data: urlData } = supabase.storage.from('profile-photos').getPublicUrl(path)
+    const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path)
     const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`
 
     const { data: dbData, error: dbError } = await supabase
@@ -479,8 +483,14 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
               </select>
             </div>
             <div>
-              <label style={labelStyle}>City / Region</label>
+              <label style={labelStyle}>City</label>
               <input value={city} onChange={e => setCity(e.target.value)} style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, marginBottom: 16 }}>
+            <div>
+              <label style={labelStyle}>State / Province / Region</label>
+              <input value={stateProvince} onChange={e => setStateProvince(e.target.value)} placeholder="e.g. California, Ontario..." style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
             </div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, marginBottom: 16 }}>
@@ -564,7 +574,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           </div>
 
           <SaveButton saving={saving} onClick={() => saveFields({
-            first_name: firstName, last_name: lastName, city, country, phone,
+            first_name: firstName, last_name: lastName, city, state: stateProvince, country, phone,
             years_experience: yearsExperience, interpreter_type: interpreterType,
             work_mode: modeOfWork, website_url: website, linkedin_url: linkedin,
             event_coordination: eventCoordination, event_coordination_desc: coordinationBio,
@@ -671,16 +681,35 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
               <Chip key={spec} label={spec} selected={specs.includes(spec)} onToggle={() => toggleInList(specs, spec, setSpecs)} />
             ))}
           </div>
+          <div style={{ marginTop: 4 }}>
+            <label style={labelStyle}>Other specializations <span style={{ color: 'var(--muted)', fontWeight: 400 }}>(comma-separated)</span></label>
+            <input
+              type="text"
+              placeholder="e.g. Sports, Veterinary..."
+              value={otherSpecs}
+              onChange={e => setOtherSpecs(e.target.value)}
+              style={inputStyle}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+            />
+          </div>
 
           <SaveButton saving={saving} onClick={() => saveFields({
             sign_languages: signLangs, spoken_languages: spokenLangs, specializations: specs,
+            other_specializations: otherSpecs,
           })} />
         </>
       )}
 
       {/* ── Tab 3: Credentials ──────────────────────────────────────────── */}
       {activeTab === 'Credentials' && (
-        <CredentialsTab saving={saving} onSave={saveFields} />
+        <CredentialsTab
+          saving={saving}
+          onSave={saveFields}
+          initialCerts={(p.draft_data as Record<string, unknown>)?.certifications as CertEntry[] | undefined}
+          initialEducation={(p.draft_data as Record<string, unknown>)?.education as EduEntry[] | undefined}
+          existingDraftData={p.draft_data || {}}
+        />
       )}
 
       {/* ── Tab 4: Bio & Video ──────────────────────────────────────────── */}
@@ -729,12 +758,22 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
 
 // ── Credentials tab (isolated state) ─────────────────────────────────────────
 
-interface CertEntry { id: string; name: string; issuingBody: string; verificationLink: string }
+interface CertEntry { id: string; name: string; issuingBody: string; year: string; verificationLink: string }
+interface EduEntry { id: string; degree: string; institution: string }
 
-function CredentialsTab({ saving, onSave }: { saving: boolean; onSave: (fields: Record<string, unknown>) => Promise<void> }) {
-  const [certs, setCerts] = useState<CertEntry[]>([
-    { id: `cert-${Date.now()}`, name: '', issuingBody: '', verificationLink: '' },
-  ])
+function CredentialsTab({ saving, onSave, initialCerts, initialEducation, existingDraftData }: {
+  saving: boolean
+  onSave: (fields: Record<string, unknown>) => Promise<void>
+  initialCerts?: CertEntry[]
+  initialEducation?: EduEntry[]
+  existingDraftData: Record<string, unknown>
+}) {
+  const [certs, setCerts] = useState<CertEntry[]>(
+    initialCerts?.length ? initialCerts : [{ id: `cert-${Date.now()}`, name: '', issuingBody: '', year: '', verificationLink: '' }]
+  )
+  const [education, setEducation] = useState<EduEntry[]>(
+    initialEducation?.length ? initialEducation : [{ id: `edu-${Date.now()}`, degree: '', institution: '' }]
+  )
 
   function updateCert(id: string, field: keyof CertEntry, value: string) {
     setCerts(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c))
@@ -743,6 +782,15 @@ function CredentialsTab({ saving, onSave }: { saving: boolean; onSave: (fields: 
   function removeCert(id: string) {
     if (certs.length === 1) return
     setCerts(prev => prev.filter(c => c.id !== id))
+  }
+
+  function updateEdu(id: string, field: keyof EduEntry, value: string) {
+    setEducation(prev => prev.map(e => e.id === id ? { ...e, [field]: value } : e))
+  }
+
+  function removeEdu(id: string) {
+    if (education.length === 1) return
+    setEducation(prev => prev.filter(e => e.id !== id))
   }
 
   return (
@@ -759,14 +807,18 @@ function CredentialsTab({ saving, onSave }: { saving: boolean; onSave: (fields: 
             background: 'var(--surface2)', border: '1px solid var(--border)',
             borderRadius: 'var(--radius-sm)', padding: '20px 24px',
           }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, marginBottom: 10 }}>
+            <div style={{ marginBottom: 10 }}>
+              <label style={labelStyle}>Certification Name</label>
+              <input value={cert.name} onChange={e => updateCert(cert.id, 'name', e.target.value)} placeholder="e.g. NIC Advanced" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: 12, marginBottom: 10 }}>
               <div>
-                <label style={labelStyle}>Certification Name</label>
-                <input value={cert.name} onChange={e => updateCert(cert.id, 'name', e.target.value)} placeholder="e.g. NIC Advanced" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+                <label style={labelStyle}>Issuing Body</label>
+                <input value={cert.issuingBody} onChange={e => updateCert(cert.id, 'issuingBody', e.target.value)} placeholder="e.g. RID" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
               </div>
               <div>
-                <label style={labelStyle}>Issuing Body &amp; Year</label>
-                <input value={cert.issuingBody} onChange={e => updateCert(cert.id, 'issuingBody', e.target.value)} placeholder="e.g. RID, USA, 2018" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+                <label style={labelStyle}>Year</label>
+                <input value={cert.year} onChange={e => updateCert(cert.id, 'year', e.target.value)} placeholder="2018" maxLength={4} style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
               </div>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, alignItems: 'end' }}>
@@ -786,7 +838,7 @@ function CredentialsTab({ saving, onSave }: { saving: boolean; onSave: (fields: 
         ))}
       </div>
       <button
-        onClick={() => setCerts(prev => [...prev, { id: `cert-${Date.now()}`, name: '', issuingBody: '', verificationLink: '' }])}
+        onClick={() => setCerts(prev => [...prev, { id: `cert-${Date.now()}`, name: '', issuingBody: '', year: '', verificationLink: '' }])}
         style={{
           background: 'none', border: '1px dashed var(--border)',
           color: 'var(--muted)', borderRadius: 'var(--radius-sm)',
@@ -798,11 +850,54 @@ function CredentialsTab({ saving, onSave }: { saving: boolean; onSave: (fields: 
         + Add Another Credential
       </button>
 
+      {/* Education */}
+      <div style={{ ...sectionTitleStyle, marginTop: 36 }}>Education</div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {education.map(edu => (
+          <div key={edu.id} style={{
+            background: 'var(--surface2)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)', padding: '20px 24px',
+          }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, marginBottom: 10 }}>
+              <div>
+                <label style={labelStyle}>Degree / Qualification</label>
+                <input value={edu.degree} onChange={e => updateEdu(edu.id, 'degree', e.target.value)} placeholder="MA Interpreter Studies" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+              </div>
+              <div>
+                <label style={labelStyle}>Institution &amp; Year</label>
+                <input value={edu.institution} onChange={e => updateEdu(edu.id, 'institution', e.target.value)} placeholder="Universidad de Salamanca · 2013" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+              </div>
+            </div>
+            {education.length > 1 && (
+              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <button onClick={() => removeEdu(edu.id)} style={{
+                  background: 'rgba(255,77,109,0.1)', border: '1px solid rgba(255,77,109,0.2)',
+                  color: 'var(--accent3)', borderRadius: 8, padding: '8px 10px', cursor: 'pointer',
+                  fontSize: '0.9rem', transition: 'all 0.2s',
+                }}>✕</button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      <button
+        onClick={() => setEducation(prev => [...prev, { id: `edu-${Date.now()}`, degree: '', institution: '' }])}
+        style={{
+          background: 'none', border: '1px dashed var(--border)',
+          color: 'var(--muted)', borderRadius: 'var(--radius-sm)',
+          padding: 10, width: '100%', cursor: 'pointer',
+          fontFamily: "'DM Sans', sans-serif", fontSize: '0.85rem',
+          transition: 'all 0.2s', marginTop: 10,
+        }}
+      >
+        + Add More Education
+      </button>
+
       <SaveButton saving={saving} onClick={() => {
         const validCerts = certs.filter(c => c.name.trim())
+        const validEdu = education.filter(e => e.degree.trim())
         onSave({
-          // Store credentials as JSON array — the separate table isn't used by the signup flow
-          draft_data: { certifications: validCerts },
+          draft_data: { ...existingDraftData, certifications: validCerts, education: validEdu },
         })
       }} />
     </>

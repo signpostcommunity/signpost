@@ -113,11 +113,22 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
             </SelectInput>
           </FormField>
           <FormField>
-            <FieldLabel>City / Region *</FieldLabel>
+            <FieldLabel>City *</FieldLabel>
             <TextInput
               placeholder="Madrid"
               value={formData.city}
               onChange={e => updateField('city', e.target.value)}
+            />
+          </FormField>
+        </FormRow>
+
+        <FormRow>
+          <FormField>
+            <FieldLabel>State / Province / Region</FieldLabel>
+            <TextInput
+              placeholder="e.g. California, Ontario..."
+              value={formData.state}
+              onChange={e => updateField('state', e.target.value)}
             />
           </FormField>
         </FormRow>

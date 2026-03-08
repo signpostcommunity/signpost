@@ -5,7 +5,101 @@ export const dynamic = 'force-dynamic'
 import { useState } from 'react'
 import Link from 'next/link'
 import { DEMO_TEAM } from '@/lib/data/demo'
-import { BetaBanner, PageHeader, Avatar } from '@/components/dashboard/interpreter/shared'
+import { BetaBanner, PageHeader, Avatar, GhostButton } from '@/components/dashboard/interpreter/shared'
+
+const overlayStyle: React.CSSProperties = {
+  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  zIndex: 1000, padding: 20,
+}
+
+const modalStyle: React.CSSProperties = {
+  background: 'var(--surface)', border: '1px solid var(--border)',
+  borderRadius: 'var(--radius)', padding: '28px 32px',
+  width: '100%', maxWidth: 520,
+}
+
+const fieldInputStyle: React.CSSProperties = {
+  width: '100%', boxSizing: 'border-box',
+  background: 'var(--surface2)', border: '1px solid var(--border)',
+  borderRadius: 'var(--radius-sm)', padding: '10px 14px',
+  color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem',
+  outline: 'none',
+}
+
+const fieldLabelStyle: React.CSSProperties = {
+  display: 'block', fontSize: '0.75rem', color: 'var(--muted)',
+  fontFamily: "'Syne', sans-serif", fontWeight: 700,
+  letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6,
+}
+
+// ── FIX 4: Invite modal ─────────────────────────────────────────────────────
+
+function InviteModal({ onClose }: { onClose: () => void }) {
+  const [email, setEmail] = useState('')
+  const [message, setMessage] = useState(
+    "Hi, I'd like to add you to my preferred interpreter team on signpost. Once you create your profile, I can add you as a teammate for co-interpretation assignments."
+  )
+  const [sent, setSent] = useState(false)
+
+  if (sent) return (
+    <div style={overlayStyle}>
+      <div style={modalStyle}>
+        <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
+          <div style={{ fontSize: '2rem', marginBottom: 12 }}>✓</div>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent)', marginBottom: 8 }}>
+            Invitation sent.
+          </div>
+          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 20px' }}>
+            This is a demo — no email was actually sent.
+          </p>
+          <button className="btn-primary" onClick={onClose} style={{ padding: '10px 28px' }}>Done</button>
+        </div>
+      </div>
+    </div>
+  )
+
+  return (
+    <div style={overlayStyle}>
+      <div style={modalStyle}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Invite to your preferred team</div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
+        </div>
+
+        <div style={{ marginBottom: 14 }}>
+          <label style={fieldLabelStyle}>Email address</label>
+          <input
+            type="email" value={email} onChange={e => setEmail(e.target.value)}
+            placeholder="colleague@example.com"
+            style={fieldInputStyle}
+            onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+            onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
+          />
+        </div>
+
+        <div style={{ marginBottom: 14 }}>
+          <label style={fieldLabelStyle}>Message</label>
+          <textarea
+            value={message} onChange={e => setMessage(e.target.value)}
+            style={{ ...fieldInputStyle, resize: 'vertical', minHeight: 100 }}
+            onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+            onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
+          />
+        </div>
+
+        <div className="dash-card-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+          <GhostButton onClick={onClose}>Cancel</GhostButton>
+          <button className="btn-primary" onClick={() => setSent(true)} style={{ padding: '9px 22px' }}>
+            Send
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Main page ───────────────────────────────────────────────────────────────
 
 export default function TeamPage() {
   const [team, setTeam] = useState(DEMO_TEAM)
@@ -32,7 +126,7 @@ export default function TeamPage() {
             textDecorationColor: 'rgba(0,229,255,0.3)', fontFamily: "'DM Sans', sans-serif",
           }}
         >
-          Don't see an interpreter here who you love working with? Click here to invite them to join the signpost community.
+          Don&apos;t see an interpreter here who you love working with? Click here to invite them to join the signpost community.
         </button>
       </p>
 
@@ -64,28 +158,7 @@ export default function TeamPage() {
         </button>
       </Link>
 
-      {/* Invite toast */}
-      {showInvite && (
-        <div style={{
-          position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
-          background: 'var(--card-bg)', border: '1px solid rgba(0,229,255,0.4)',
-          borderRadius: 'var(--radius)', padding: '20px 28px',
-          boxShadow: '0 8px 40px rgba(0,0,0,0.5)', zIndex: 9999,
-          maxWidth: 400, textAlign: 'center',
-        }}>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.9rem', color: 'var(--accent)', marginBottom: 8 }}>Invite an interpreter</div>
-          <p style={{ color: 'var(--muted)', fontSize: '0.82rem', lineHeight: 1.6, margin: '0 0 14px' }}>
-            Point them to signpost.com to create a free interpreter profile. Once they're on the platform, you can add them to your preferred team.
-          </p>
-          <button
-            className="btn-primary"
-            onClick={() => setShowInvite(false)}
-            style={{ padding: '8px 20px' }}
-          >
-            Got it
-          </button>
-        </div>
-      )}
+      {showInvite && <InviteModal onClose={() => setShowInvite(false)} />}
     </div>
   )
 }

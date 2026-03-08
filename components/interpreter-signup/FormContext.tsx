@@ -29,6 +29,7 @@ export type Certification = {
   id: string
   name: string
   issuingBody: string
+  year: string
   verificationLink: string
 }
 
@@ -47,6 +48,7 @@ export type FormData = {
   password: string
   country: string
   city: string
+  state: string
   bio: string
   interpreterType: string
   modeOfWork: string
@@ -121,11 +123,11 @@ const defaultRateProfiles: RateProfile[] = [
 
 const initialFormData: FormData = {
   firstName: '', lastName: '', phone: '', email: '', password: '',
-  country: '', city: '', bio: '', interpreterType: '', modeOfWork: '',
+  country: '', city: '', state: '', bio: '', interpreterType: '', modeOfWork: '',
   yearsExperience: '', website: '', linkedin: '', regions: [],
   eventCoordination: false, coordinationBio: '',
   signLanguages: [], spokenLanguages: [], specializations: [], otherSpecializations: '',
-  certifications: [{ id: 'cert-1', name: '', issuingBody: '', verificationLink: '' }],
+  certifications: [{ id: 'cert-1', name: '', issuingBody: '', year: '', verificationLink: '' }],
   education: [{ id: 'edu-1', degree: '', institution: '' }],
   rateProfiles: defaultRateProfiles,
   avatarUrl: '', videoUrl: '', videoDescription: '',

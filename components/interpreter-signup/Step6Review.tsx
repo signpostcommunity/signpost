@@ -58,6 +58,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         phone: formData.phone,
         country: formData.country,
         city: formData.city,
+        state: formData.state,
         bio: formData.bio,
         interpreter_type: formData.interpreterType,
         work_mode: formData.modeOfWork,
@@ -72,6 +73,8 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         specializations: formData.specializations,
         video_url: formData.videoUrl,
         video_desc: formData.videoDescription,
+        photo_url: formData.avatarUrl,
+        other_specializations: formData.otherSpecializations,
         submitted_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' })
