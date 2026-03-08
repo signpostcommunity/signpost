@@ -127,7 +127,6 @@ interface ProfileData {
   regions?: string[] | null
   video_url?: string | null
   video_desc?: string | null
-  other_specializations?: string | null
   website_url?: string | null
   linkedin_url?: string | null
   event_coordination?: boolean | null
@@ -223,7 +222,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const [signLangs, setSignLangs] = useState<string[]>(p.sign_languages || [])
   const [spokenLangs, setSpokenLangs] = useState<string[]>(p.spoken_languages || [])
   const [specs, setSpecs] = useState<string[]>(p.specializations || [])
-  const [otherSpecs, setOtherSpecs] = useState(p.other_specializations || '')
+  const [otherSpecs, setOtherSpecs] = useState('')
   const [signRegional, setSignRegional] = useState<string[]>([])
   const [spokenRegional, setSpokenRegional] = useState<string[]>([])
 
@@ -282,7 +281,6 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       if (d.sign_languages) setSignLangs(d.sign_languages)
       if (d.spoken_languages) setSpokenLangs(d.spoken_languages)
       if (d.specializations) setSpecs(d.specializations)
-      if (d.other_specializations != null) setOtherSpecs(d.other_specializations)
       if (d.regions) setRegions(d.regions)
       if (d.bio != null) setBio(d.bio)
       if (d.video_url != null) setVideoUrl(d.video_url)

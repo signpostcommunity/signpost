@@ -74,7 +74,6 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         video_url: formData.videoUrl,
         video_desc: formData.videoDescription,
         photo_url: formData.avatarUrl,
-        other_specializations: formData.otherSpecializations,
         submitted_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' })

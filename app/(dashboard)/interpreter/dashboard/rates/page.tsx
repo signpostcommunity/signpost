@@ -71,7 +71,7 @@ export default function RatesPage() {
 
     const { data: rates, error: ratesError } = await supabase
       .from('interpreter_rate_profiles')
-      .select('*')
+      .select('id, interpreter_id, label, is_default, color, hourly_rate, currency, after_hours_diff, min_booking, cancellation_policy, late_cancel_fee, travel_expenses, eligibility_criteria, additional_terms')
       .eq('interpreter_id', profile.id)
       .order('id', { ascending: true })
 
