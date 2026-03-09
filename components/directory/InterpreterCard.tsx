@@ -187,36 +187,18 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
 
           {/* Specializations removed from card — visible on profile page */}
 
-          {/* Regions + Certs — pushed to bottom */}
-          <div
-            style={{
-              marginTop: 'auto',
-              paddingTop: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              gap: '6px',
-              borderTop: '1px solid var(--border)',
-            }}
-          >
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-              {i.regions.map((region) => (
-                <span
-                  key={region}
-                  style={{
-                    fontSize: '0.68rem',
-                    color: 'var(--muted)',
-                    background: 'var(--surface)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '4px',
-                    padding: '2px 6px',
-                  }}
-                >
-                  {region}
-                </span>
-              ))}
-            </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'flex-end' }}>
+          {/* Certs — pushed to bottom */}
+          {i.certs.length > 0 && (
+            <div
+              style={{
+                marginTop: 'auto',
+                paddingTop: '10px',
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '4px',
+                borderTop: '1px solid var(--border)',
+              }}
+            >
               {i.certs.map((cert) => (
                 <span
                   key={cert}
@@ -234,7 +216,7 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
                 </span>
               ))}
             </div>
-          </div>
+          )}
         </div>
 
         <style>{`

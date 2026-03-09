@@ -245,10 +245,12 @@ export default function Step3Credentials({ onBack, onContinue }: {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, alignItems: 'end' }}>
                 <FormField>
-                  <FieldLabel>Verification link or upload</FieldLabel>
+                  {/* TODO: Add file upload for business documents — PDF only, 5MB max,
+                      upload to Supabase storage "documents" bucket under auth.uid() folder */}
+                  <FieldLabel>Verification link</FieldLabel>
                   <input
                     type="url"
-                    placeholder="https://rid.org/verify/… or upload doc"
+                    placeholder="https://rid.org/verify/…"
                     value={cert.verificationLink}
                     onChange={e => updateCert(cert.id, 'verificationLink', e.target.value)}
                     style={inputStyle}
