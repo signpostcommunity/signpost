@@ -84,12 +84,7 @@ export default function HomePage() {
                 marginBottom: 32,
               }}
             >
-              No need to pay high agency fees, or wait through slow response times.
-              Connect with and book sign language interpreters{' '}
-              <strong style={{ color: 'var(--text)' }}>directly.</strong>
-              <br />
-              Browse real profiles, watch intro videos, and choose the right interpreter
-              for your job.
+              The right interpreter shouldn&apos;t be out of your hands. Browse real profiles, watch intro videos, and connect directly — your interpreter, your choice.
             </p>
 
             <div className="hero-ctas">
