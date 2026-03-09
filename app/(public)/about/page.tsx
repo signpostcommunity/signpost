@@ -12,28 +12,35 @@ export default function AboutPage() {
         <Image src="/founders-together.png" alt="Regina McGinnis and Molly Sano-Mahgoub, co-founders of signpost" width={1200} height={600} className="rounded-xl w-full object-cover" />
       </div>
 
-      {/* Mission */}
+      {/* Founding story */}
       <div style={{ marginBottom: 56 }}>
         <h1 style={{
           fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.6rem, 3vw, 2.2rem)',
-          fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.15, marginBottom: 20,
+          fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.25, marginBottom: 24,
         }}>
-          Built by people who know the problem firsthand.
+          signpost grew out of a conversation between two best friends — a certified interpreter and a Deaf mental health professional — about something they&apos;d both been frustrated by for years.
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '1.02rem', lineHeight: 1.75, marginBottom: 16 }}>
-          signpost was created to give Deaf individuals, interpreters, and organizations a better way to connect — with full
-          transparency on rates, credentials, specializations, and availability. No middlemen. No black boxes. Direct
-          connections between the people who matter.
+          Finding the right interpreter is harder than it should be. Deaf people often have to rely on whoever an agency assigns, with limited visibility into that person&apos;s signing style, cultural background, or domain expertise — and without much say in the matter.
+        </p>
+        <p style={{ color: 'var(--muted)', fontSize: '1.02rem', lineHeight: 1.75, marginBottom: 16 }}>
+          We built signpost to change that. A place where interpreters can present themselves fully and honestly, and where the Deaf community can make informed, empowered choices about who they work with.
         </p>
       </div>
 
       {/* Founder cards */}
       <div style={{ marginBottom: 56 }}>
         <div style={{
-          fontFamily: 'var(--font-syne)', fontSize: '0.7rem', fontWeight: 700,
-          letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 20,
+          display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20,
         }}>
-          Founders
+          <div style={{
+            fontFamily: 'var(--font-syne)', fontSize: '0.7rem', fontWeight: 700,
+            letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)',
+            whiteSpace: 'nowrap',
+          }}>
+            The people behind it
+          </div>
+          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
         </div>
 
         <div className="about-founders-grid" style={{

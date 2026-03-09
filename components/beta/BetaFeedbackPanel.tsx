@@ -6,10 +6,13 @@ import { usePathname } from 'next/navigation';
 // ── Route-specific prompts ────────────────────────────────────────────────────
 
 const ROUTE_CONFIG: Record<string, { prompt?: string; scenario?: string; question?: string; scenario2?: string; question2?: string }> = {
+  '/': {
+    prompt: 'Welcome to signpost! Take a moment to look around the home page.',
+    scenario: 'Find out more about the people who built signpost. Where would you typically look for that?',
+  },
   '/interpreter': {
     prompt:
       "Take a moment to look over this page — then when you're ready, find where you should go to create your interpreter account. As you move through each step, drop your notes here — anything confusing, broken, missing, or that you love.",
-    scenario: 'Find out more about the people who built signpost. Where would you typically look for that?',
   },
   '/interpreter/signup': {
     prompt:
