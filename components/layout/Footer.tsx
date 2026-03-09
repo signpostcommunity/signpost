@@ -23,10 +23,12 @@ export default function Footer() {
         <Link href="/interpreter" className="footer-link">Interpreter Portal</Link>
         <Link href="/request" className="footer-link">Request Interpreters</Link>
         <Link href="/about" className="footer-link">About Us</Link>
+        <Link href="/policies" className="footer-link">Policies &amp; Terms</Link>
+        <a href="mailto:hello@signpost.community" className="footer-link">hello@signpost.community</a>
       </div>
 
       <div style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>
-        © 2025 signpost. Built with care by and for the Deaf community.
+        © 2026 signpost. Built with care by and for the Deaf community.
       </div>
 
       <style>{`

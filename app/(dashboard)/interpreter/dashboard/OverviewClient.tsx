@@ -127,7 +127,7 @@ function CalendarDropdown({ booking, onToast }: {
 function StatCard({ num, label, href }: { num: number; label: string; href: string }) {
   const [hover, setHover] = useState(false)
   return (
-    <Link href={href} style={{ textDecoration: 'none' }}>
+    <Link href={href} style={{ textDecoration: 'none', display: 'flex' }}>
       <div
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
@@ -138,6 +138,7 @@ function StatCard({ num, label, href }: { num: number; label: string; href: stri
           transition: 'border-color 0.18s, transform 0.18s', cursor: 'pointer',
           transform: hover ? 'translateY(-2px)' : 'none',
           display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+          flex: 1,
         }}
       >
         <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '2rem', letterSpacing: '-0.04em', color: 'var(--accent)' }}>{num}</div>

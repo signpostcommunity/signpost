@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import BetaFeedbackPanel from '@/components/beta/BetaFeedbackPanel';
 import DashboardHeaderNav from '@/components/layout/DashboardHeaderNav';
+import Footer from '@/components/layout/Footer';
 import { createClient } from '@/lib/supabase/server';
 
 export default async function DashboardRootLayout({ children }: { children: React.ReactNode }) {
@@ -35,6 +36,7 @@ export default async function DashboardRootLayout({ children }: { children: Reac
           <DashboardHeaderNav portalPath={portalPath} />
         </header>
         {children}
+        <Footer />
       </div>
       {process.env.NEXT_PUBLIC_BETA_MODE === 'true' && <BetaFeedbackPanel />}
     </>
