@@ -46,7 +46,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
       }
 
       // Upsert interpreter_profiles with status: pending (awaiting admin review)
-      await supabase.from('interpreter_profiles').upsert({
+      const { data: profileRow } = await supabase.from('interpreter_profiles').upsert({
         user_id: userId,
         name: [formData.firstName, formData.lastName].filter(Boolean).join(' ') || formData.email || 'Interpreter',
         // BETA: auto-approve profiles. Revert to 'pending' when admin review flow is built.
@@ -75,7 +75,20 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         photo_url: formData.avatarUrl,
         submitted_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' })
+      }, { onConflict: 'user_id' }).select('id').single()
+
+      // BETA: seed demo bookings + messages for new interpreter
+      if (profileRow?.id) {
+        try {
+          await fetch('/api/seed-interpreter', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ interpreterProfileId: profileRow.id }),
+          })
+        } catch (seedErr) {
+          console.warn('Beta: seed call failed, continuing', seedErr)
+        }
+      }
     } catch (insertError) {
       console.warn('Beta: insert failed, proceeding to auto sign-in anyway', insertError)
     }
