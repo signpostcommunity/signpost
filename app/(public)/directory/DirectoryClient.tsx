@@ -1,10 +1,13 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import type { Interpreter, FilterState } from '@/lib/types';
 import FilterSidebar from '@/components/directory/FilterSidebar';
 import InterpreterGrid from '@/components/directory/InterpreterGrid';
+import VideoPreviewModal from '@/components/directory/VideoPreviewModal';
+import AddToListModal from '@/components/directory/AddToListModal';
+import { createClient } from '@/lib/supabase/client';
 
 const defaultFilters: FilterState = {
   signLangs: [],
@@ -29,6 +32,94 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
   // TODO: Replace with real Supabase auth check when login is hooked up.
   // Set to true to preview the logged-in directory.
   const isLoggedIn = true;
+
+  // User role for AddToListModal
+  const [userRole, setUserRole] = useState<'deaf' | 'requester' | 'interpreter' | null>(null);
+
+  // Video preview modal state
+  const [videoModal, setVideoModal] = useState<{
+    isOpen: boolean;
+    name: string;
+    videoUrl: string | null;
+    interpreterId: string;
+  }>({ isOpen: false, name: '', videoUrl: null, interpreterId: '' });
+
+  // Add to list modal state
+  const [addToListModal, setAddToListModal] = useState<{
+    isOpen: boolean;
+    interpreter: {
+      id: string;
+      name: string;
+      first_name?: string;
+      last_name?: string;
+      initials: string;
+      avatar_color: string;
+      sign_languages?: string[];
+      specializations?: string[];
+      location?: string;
+    } | null;
+  }>({ isOpen: false, interpreter: null });
+
+  // Toast state
+  const [toast, setToast] = useState<{ message: string; visible: boolean }>({
+    message: '',
+    visible: false,
+  });
+
+  // Fetch user role on mount
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+        .then(({ data }) => {
+          if (data?.role) {
+            setUserRole(data.role as 'deaf' | 'requester' | 'interpreter');
+          }
+        });
+    });
+  }, []);
+
+  // Handlers
+  const openVideoPreview = (interpreter: Interpreter) => {
+    setVideoModal({
+      isOpen: true,
+      name: interpreter.name,
+      videoUrl: interpreter.videoUrl || null,
+      interpreterId: String(interpreter.id),
+    });
+  };
+
+  const openAddToList = (interpreter: Interpreter) => {
+    const nameParts = interpreter.name.split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+    const initials = ((firstName[0] || '') + (lastName[0] || '')).toUpperCase() || interpreter.name.slice(0, 2).toUpperCase();
+
+    setAddToListModal({
+      isOpen: true,
+      interpreter: {
+        id: String(interpreter.id),
+        name: interpreter.name,
+        first_name: firstName,
+        last_name: lastName,
+        initials,
+        avatar_color: interpreter.color || 'linear-gradient(135deg, #7b61ff, #00e5ff)',
+        sign_languages: interpreter.signLangs,
+        specializations: interpreter.specs,
+        location: interpreter.location,
+      },
+    });
+  };
+
+  const showToast = (message: string) => {
+    setToast({ message, visible: true });
+    setTimeout(() => setToast({ message: '', visible: false }), 3000);
+  };
 
   const filtered = useMemo(() => {
     return interpreters.filter((i) => {
@@ -179,7 +270,11 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
             </div>
           )}
 
-          <InterpreterGrid interpreters={filtered} />
+          <InterpreterGrid
+            interpreters={filtered}
+            onVideoPreview={openVideoPreview}
+            onAddToList={openAddToList}
+          />
         </div>
       </div>
 
@@ -289,6 +384,44 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
               </p>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Video preview modal */}
+      <VideoPreviewModal
+        isOpen={videoModal.isOpen}
+        onClose={() => setVideoModal(prev => ({ ...prev, isOpen: false }))}
+        interpreterName={videoModal.name}
+        videoUrl={videoModal.videoUrl}
+        interpreterId={videoModal.interpreterId}
+      />
+
+      {/* Add to list modal */}
+      <AddToListModal
+        isOpen={addToListModal.isOpen}
+        onClose={() => setAddToListModal({ isOpen: false, interpreter: null })}
+        interpreter={addToListModal.interpreter}
+        userRole={userRole}
+        onSuccess={(name) => showToast(`${name} added to your list`)}
+      />
+
+      {/* Toast */}
+      {toast.visible && (
+        <div style={{
+          position: 'fixed',
+          bottom: '24px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: '#00c875',
+          color: '#000',
+          padding: '12px 24px',
+          borderRadius: '10px',
+          fontWeight: 600,
+          fontSize: '0.9rem',
+          zIndex: 500,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+        }}>
+          {toast.message}
         </div>
       )}
 

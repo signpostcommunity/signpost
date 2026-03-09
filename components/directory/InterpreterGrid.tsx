@@ -3,9 +3,11 @@ import InterpreterCard from './InterpreterCard';
 
 interface Props {
   interpreters: Interpreter[];
+  onVideoPreview?: (interpreter: Interpreter) => void;
+  onAddToList?: (interpreter: Interpreter) => void;
 }
 
-export default function InterpreterGrid({ interpreters }: Props) {
+export default function InterpreterGrid({ interpreters, onVideoPreview, onAddToList }: Props) {
   if (interpreters.length === 0) {
     return (
       <div
@@ -35,7 +37,12 @@ export default function InterpreterGrid({ interpreters }: Props) {
         }}
       >
         {interpreters.map((i) => (
-          <InterpreterCard key={i.id} interpreter={i} />
+          <InterpreterCard
+            key={i.id}
+            interpreter={i}
+            onVideoPreview={onVideoPreview}
+            onAddToList={onAddToList}
+          />
         ))}
       </div>
 

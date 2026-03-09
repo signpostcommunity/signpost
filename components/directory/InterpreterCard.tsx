@@ -1,7 +1,13 @@
 import Link from 'next/link';
 import type { Interpreter } from '@/lib/types';
 
-export default function InterpreterCard({ interpreter: i }: { interpreter: Interpreter }) {
+interface Props {
+  interpreter: Interpreter;
+  onVideoPreview?: (interpreter: Interpreter) => void;
+  onAddToList?: (interpreter: Interpreter) => void;
+}
+
+export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddToList }: Props) {
   return (
     <Link
       href={`/directory/${i.id}`}
@@ -60,7 +66,11 @@ export default function InterpreterCard({ interpreter: i }: { interpreter: Inter
 
           {/* Intro video button */}
           <button
-            onClick={(e) => e.preventDefault()}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onVideoPreview?.(i);
+            }}
             style={{
               position: 'absolute',
               bottom: 10,
@@ -128,11 +138,7 @@ export default function InterpreterCard({ interpreter: i }: { interpreter: Inter
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                const toast = document.createElement('div');
-                toast.textContent = `Added ${i.name} to your list`;
-                toast.style.cssText = 'position:fixed;bottom:32px;left:50%;transform:translateX(-50%);background:#0d1220;border:1px solid rgba(52,211,153,0.3);border-radius:16px;padding:14px 24px;box-shadow:0 8px 40px rgba(0,0,0,0.5);z-index:9999;font-size:0.85rem;color:#34d399;font-family:DM Sans,sans-serif';
-                document.body.appendChild(toast);
-                setTimeout(() => toast.remove(), 3000);
+                onAddToList?.(i);
               }}
               className="add-to-list-btn"
             >
