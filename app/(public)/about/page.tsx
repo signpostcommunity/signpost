@@ -5,30 +5,40 @@ import Image from 'next/image';
 
 export default function AboutPage() {
   return (
-    <div style={{ maxWidth: 800, margin: '0 auto', padding: '80px 40px' }}>
+    <div style={{ maxWidth: 960, margin: '0 auto', padding: '80px 40px' }}>
 
-      {/* Hero photo */}
-      <div style={{ marginBottom: 48, borderRadius: 'var(--radius)', overflow: 'hidden', maxHeight: 360 }}>
-        <Image src="/founders-together.png" alt="Regina McGinnis and Molly Sano-Mahgoub, co-founders of signpost" width={1200} height={600} className="rounded-xl w-full object-cover" style={{ maxHeight: 360, objectFit: 'cover' }} />
-      </div>
-
-      {/* Founding story */}
-      <div style={{ marginBottom: 56 }}>
-        <h1 style={{
-          fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.6rem, 3vw, 2.2rem)',
-          fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.25, marginBottom: 16,
-        }}>
-          signpost grew out of a conversation between two best friends.
-        </h1>
-        <p style={{ color: 'var(--muted)', fontSize: '1.02rem', lineHeight: 1.75, marginBottom: 16 }}>
-          ...a certified interpreter and a Deaf mental health professional, about something they&apos;d both been frustrated by for years.
-        </p>
-        <p style={{ color: 'var(--muted)', fontSize: '1.02rem', lineHeight: 1.75, marginBottom: 16 }}>
-          Finding the right interpreter is harder than it should be. Deaf people often have to rely on whoever an agency sends, with little visibility into that person&apos;s signing style, cultural background, or specialization. Too often, the person who matters most has the least say in the decision.
-        </p>
-        <p style={{ color: 'var(--muted)', fontSize: '1.02rem', lineHeight: 1.75, marginBottom: 16 }}>
-          We built signpost to change that. A place where interpreters present themselves fully and honestly, and where the Deaf community can make informed choices about who they work with.
-        </p>
+      {/* Hero: photo left, text right */}
+      <div className="about-hero-grid" style={{
+        display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: 48,
+        alignItems: 'center', marginBottom: 56,
+      }}>
+        <div style={{ borderRadius: 'var(--radius)', overflow: 'hidden', maxHeight: 480 }}>
+          <Image
+            src="/founders-together.png"
+            alt="Regina McGinnis and Molly Sano-Mahgoub, co-founders of signpost"
+            width={600}
+            height={800}
+            className="rounded-xl object-cover"
+            style={{ width: '100%', height: '100%', maxHeight: 480, objectFit: 'cover' }}
+          />
+        </div>
+        <div>
+          <h1 style={{
+            fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.5rem, 2.8vw, 2rem)',
+            fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.25, marginBottom: 16,
+          }}>
+            signpost grew out of a conversation between two best friends.
+          </h1>
+          <p style={{ color: 'var(--muted)', fontSize: '1rem', lineHeight: 1.75, marginBottom: 16 }}>
+            ...a certified interpreter and a Deaf mental health professional, about something they&apos;d both been frustrated by for years.
+          </p>
+          <p style={{ color: 'var(--muted)', fontSize: '1rem', lineHeight: 1.75, marginBottom: 16 }}>
+            Finding the right interpreter is harder than it should be. Deaf people often have to rely on whoever an agency sends, with little visibility into that person&apos;s signing style, cultural background, or specialization. Too often, the person who matters most has the least say in the decision.
+          </p>
+          <p style={{ color: 'var(--muted)', fontSize: '1rem', lineHeight: 1.75, marginBottom: 0 }}>
+            We built signpost to change that. A place where interpreters present themselves fully and honestly, and where the Deaf community can make informed choices about who they work with.
+          </p>
+        </div>
       </div>
 
       {/* Founder cards */}
@@ -165,7 +175,11 @@ export default function AboutPage() {
       </div>
 
       <style>{`
+        @media (max-width: 768px) {
+          .about-hero-grid { grid-template-columns: 1fr !important; }
+        }
         @media (max-width: 640px) {
+          .about-hero-grid { grid-template-columns: 1fr !important; }
           .about-founders-grid { grid-template-columns: 1fr !important; }
           .about-values-grid { grid-template-columns: 1fr !important; }
         }
