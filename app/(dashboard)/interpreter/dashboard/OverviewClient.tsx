@@ -174,7 +174,16 @@ export default function OverviewClient({ interpreterProfileId, firstName, profil
     async function fetchData() {
       const supabase = createClient()
 
-      // Pending bookings count + data
+      // Pending bookings count (exact)
+      const { count: pendingCount } = await supabase
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('interpreter_id', interpreterProfileId!)
+        .eq('status', 'pending')
+
+      setNewInquiries(pendingCount ?? 0)
+
+      // Pending bookings data (for display, limit 2)
       const { data: pending, error: pendingErr } = await supabase
         .from('bookings')
         .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed')
@@ -185,7 +194,6 @@ export default function OverviewClient({ interpreterProfileId, firstName, profil
 
       if (!pendingErr && pending) {
         setPendingBookings(pending)
-        setNewInquiries(pending.length)
       }
 
       // Confirmed this month count
