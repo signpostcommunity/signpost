@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { BetaBanner, PageHeader, SectionLabel, StatusBadge, DemoBadge, GhostButton, Avatar, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import { sendNotification } from '@/lib/notifications'
@@ -610,6 +611,16 @@ function DetailModal({ booking, onClose }: { booking: Booking; onClose: () => vo
               fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
             }}>
               Cancelled{booking.cancellation_reason ? ` — ${booking.cancellation_reason}` : ''}
+            </span>
+          ) : booking.status === 'completed' ? (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20,
+              background: 'rgba(52,211,153,0.1)', color: '#34d399',
+              border: '1px solid rgba(52,211,153,0.3)',
+              fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
+            }}>
+              Completed
             </span>
           ) : (
             <span style={{
@@ -1306,6 +1317,20 @@ function CancelledBadge({ reason }: { reason: string | null }) {
   )
 }
 
+function CompletedBadge() {
+  return (
+    <span style={{
+      fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px',
+      borderRadius: 100, whiteSpace: 'nowrap',
+      background: 'rgba(52,211,153,0.1)', color: '#34d399',
+      border: '1px solid rgba(52,211,153,0.3)',
+      fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
+    }}>
+      Completed
+    </span>
+  )
+}
+
 /* ── Booking Card ── */
 
 function InvoiceBadge({ invoice }: { invoice: InvoiceInfo }) {
@@ -1345,6 +1370,7 @@ function BookingCard({ booking, onViewDetails, onCancel, onForwardToTeam, onToas
   onSubmitInvoice: () => void
 }) {
   const isCancelled = booking.status === 'cancelled'
+  const isCompleted = booking.status === 'completed'
 
   return (
     <div style={{
@@ -1362,6 +1388,8 @@ function BookingCard({ booking, onViewDetails, onCancel, onForwardToTeam, onToas
           {booking.is_seed && <DemoBadge />}
           {isCancelled
             ? <CancelledBadge reason={booking.cancellation_reason} />
+            : isCompleted
+            ? <CompletedBadge />
             : <StatusBadge status="confirmed" />
           }
         </div>
@@ -1373,7 +1401,7 @@ function BookingCard({ booking, onViewDetails, onCancel, onForwardToTeam, onToas
       </div>
       <div className="dash-card-actions" style={{ display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
         <GhostButton onClick={onViewDetails}>View Details</GhostButton>
-        {!isCancelled && isUpcoming && <CalendarDropdown booking={booking} onToast={onToast} />}
+        {!isCancelled && !isCompleted && isUpcoming && <CalendarDropdown booking={booking} onToast={onToast} />}
         {!isCancelled && showInvoiceBtn && !invoiceInfo?.status?.match(/^(sent|paid)$/) && (
           <GhostButton onClick={onSubmitInvoice}>
             {invoiceInfo?.status === 'draft' ? 'Edit Invoice' : 'Submit Invoice'}
@@ -1384,7 +1412,7 @@ function BookingCard({ booking, onViewDetails, onCancel, onForwardToTeam, onToas
             View Invoice
           </GhostButton>
         )}
-        {!isCancelled && <GhostButton danger onClick={onCancel}>Cancel Booking</GhostButton>}
+        {!isCancelled && !isCompleted && <GhostButton danger onClick={onCancel}>Cancel Booking</GhostButton>}
         {isCancelled && booking.sub_search_initiated && (
           <button
             className="btn-primary"
@@ -1402,6 +1430,7 @@ function BookingCard({ booking, onViewDetails, onCancel, onForwardToTeam, onToas
 /* ── Main Page ── */
 
 export default function ConfirmedPage() {
+  const searchParams = useSearchParams()
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -1413,6 +1442,7 @@ export default function ConfirmedPage() {
   const [toast, setToast] = useState<string | null>(null)
   const [invoicingPref, setInvoicingPref] = useState<string>('own')
   const [invoiceMap, setInvoiceMap] = useState<Record<string, InvoiceInfo>>({})
+  const backfillDone = useRef(false)
 
   const fetchBookings = useCallback(async () => {
     const supabase = createClient()
@@ -1429,11 +1459,29 @@ export default function ConfirmedPage() {
     setInterpreterId(profile.id)
     setInvoicingPref(profile.invoicing_preference || 'own')
 
+    // Backfill completed seed bookings for existing accounts (runs once, no-ops if already seeded)
+    if (!backfillDone.current) {
+      backfillDone.current = true
+      fetch('/api/seed-completed-bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ interpreterProfileId: profile.id }),
+      })
+        .then(res => res.json())
+        .then(result => {
+          if (result.inserted && result.inserted > 0) {
+            // Re-fetch bookings to include newly seeded completed bookings
+            fetchBookings()
+          }
+        })
+        .catch(err => console.error('[confirmed] backfill failed:', err))
+    }
+
     const { data, error } = await supabase
       .from('bookings')
       .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, description, notes, status, is_seed, cancellation_reason, sub_search_initiated, rate_profile_id')
       .eq('interpreter_id', profile.id)
-      .in('status', ['confirmed', 'cancelled'])
+      .in('status', ['confirmed', 'completed', 'cancelled'])
       .order('date', { ascending: true })
 
     if (error) {
@@ -1470,6 +1518,17 @@ export default function ConfirmedPage() {
 
   useEffect(() => { fetchBookings() }, [fetchBookings])
 
+  // Auto-open invoice modal from ?invoice=bookingId query param
+  const invoiceParamHandled = useRef(false)
+  useEffect(() => {
+    if (invoiceParamHandled.current || loading) return
+    const invoiceBookingId = searchParams.get('invoice')
+    if (invoiceBookingId && bookings.some(b => b.id === invoiceBookingId)) {
+      invoiceParamHandled.current = true
+      setInvoicing(invoiceBookingId)
+    }
+  }, [searchParams, loading, bookings])
+
   function showToast(msg: string) {
     setToast(msg)
     setTimeout(() => setToast(null), 3500)
@@ -1493,19 +1552,31 @@ export default function ConfirmedPage() {
     showToast(`Request forwarded to ${names.join(', ')}. The requester will be notified.`)
   }
 
-  const confirmed = bookings.filter(b => b.status === 'confirmed')
-  const cancelled = bookings.filter(b => b.status === 'cancelled')
+  // Timezone-aware today: use local date, not UTC
+  const today = (() => {
+    const d = new Date()
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
+  })()
 
-  const filtered = confirmed.filter(b =>
+  const searchFilter = (b: Booking) =>
     !search || [b.title, b.requester_name, b.specialization, b.location].join(' ').toLowerCase().includes(search.toLowerCase())
-  )
-  const filteredCancelled = cancelled.filter(b =>
-    !search || [b.title, b.requester_name, b.specialization, b.location].join(' ').toLowerCase().includes(search.toLowerCase())
-  )
 
-  const today = new Date().toISOString().slice(0, 10)
-  const in14Days = new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10)
-  const upcoming = filtered.filter(b => b.date >= today && b.date <= in14Days)
+  const upcomingConfirmed = bookings
+    .filter(b => b.status === 'confirmed' && b.date >= today)
+    .filter(searchFilter)
+
+  const pastCompleted = bookings
+    .filter(b => b.status === 'completed' && b.date < today)
+    .filter(searchFilter)
+    .sort((a, b) => b.date.localeCompare(a.date)) // most recent first
+
+  const cancelled = bookings
+    .filter(b => b.status === 'cancelled')
+    .filter(searchFilter)
+
   const hasSeedData = bookings.some(b => b.is_seed)
 
   return (
@@ -1537,18 +1608,46 @@ export default function ConfirmedPage() {
         </div>
       ) : (
         <>
-          {upcoming.length > 0 && (
+          {/* Section 1: Upcoming */}
+          <SectionLabel>Upcoming</SectionLabel>
+          {upcomingConfirmed.length === 0 ? (
+            <div style={{
+              background: 'var(--card-bg)', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius)', padding: '32px 24px',
+              color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center',
+            }}>
+              No upcoming confirmed bookings.
+            </div>
+          ) : (
+            upcomingConfirmed.map(b => (
+              <BookingCard
+                key={b.id}
+                booking={b}
+                onViewDetails={() => setViewing(b.id)}
+                onCancel={() => setCancelling(b.id)}
+                onForwardToTeam={() => setForwarding(b.id)}
+                onToast={showToast}
+                isUpcoming
+                invoiceInfo={invoiceMap[b.id] || null}
+                showInvoiceBtn={invoicingPref === 'signpost'}
+                onSubmitInvoice={() => setInvoicing(b.id)}
+              />
+            ))
+          )}
+
+          {/* Section 2: Past — Completed */}
+          {pastCompleted.length > 0 && (
             <>
-              <SectionLabel>Upcoming — Next 14 Days</SectionLabel>
-              {upcoming.map(b => (
+              <SectionLabel>Past — Completed</SectionLabel>
+              {pastCompleted.map(b => (
                 <BookingCard
-                  key={b.id}
+                  key={`past-${b.id}`}
                   booking={b}
                   onViewDetails={() => setViewing(b.id)}
-                  onCancel={() => setCancelling(b.id)}
-                  onForwardToTeam={() => setForwarding(b.id)}
+                  onCancel={() => {}}
+                  onForwardToTeam={() => {}}
                   onToast={showToast}
-                  isUpcoming
+                  isUpcoming={false}
                   invoiceInfo={invoiceMap[b.id] || null}
                   showInvoiceBtn={invoicingPref === 'signpost'}
                   onSubmitInvoice={() => setInvoicing(b.id)}
@@ -1557,36 +1656,11 @@ export default function ConfirmedPage() {
             </>
           )}
 
-          <SectionLabel>All Confirmed</SectionLabel>
-          {filtered.length === 0 ? (
-            <div style={{
-              background: 'var(--card-bg)', border: '1px solid var(--border)',
-              borderRadius: 'var(--radius)', padding: '32px 24px',
-              color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center',
-            }}>
-              No confirmed bookings yet.
-            </div>
-          ) : (
-            filtered.map(b => (
-              <BookingCard
-                key={`all-${b.id}`}
-                booking={b}
-                onViewDetails={() => setViewing(b.id)}
-                onCancel={() => setCancelling(b.id)}
-                onForwardToTeam={() => setForwarding(b.id)}
-                onToast={showToast}
-                isUpcoming={b.date >= today}
-                invoiceInfo={invoiceMap[b.id] || null}
-                showInvoiceBtn={invoicingPref === 'signpost'}
-                onSubmitInvoice={() => setInvoicing(b.id)}
-              />
-            ))
-          )}
-
-          {filteredCancelled.length > 0 && (
+          {/* Section 3: Cancelled */}
+          {cancelled.length > 0 && (
             <>
               <SectionLabel>Cancelled</SectionLabel>
-              {filteredCancelled.map(b => (
+              {cancelled.map(b => (
                 <BookingCard
                   key={`cancelled-${b.id}`}
                   booking={b}

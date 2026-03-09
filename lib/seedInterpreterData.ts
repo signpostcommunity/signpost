@@ -69,6 +69,43 @@ export async function seedInterpreterData(interpreterProfileId: string): Promise
         status: 'pending' as const,
         is_seed: true,
       },
+      // Completed (past) bookings
+      {
+        interpreter_id: interpreterProfileId,
+        requester_id: null,
+        title: 'Annual Employee Benefits Meeting',
+        requester_name: 'Lakewood Community College — HR Dept',
+        specialization: 'Workplace & Professional',
+        date: '2026-02-28',
+        time_start: '09:00',
+        time_end: '11:30',
+        location: 'Lakewood Community College, Admin Building Room 204',
+        format: 'in_person' as const,
+        status: 'completed' as const,
+        description: 'Annual open enrollment benefits presentation for all employees. Two Deaf staff members attending. HR will present slides — interpreter may want to request materials in advance.',
+        notes: 'D/HH Client: Marcus Webb. Communication prefs: ASL preferred, uses some gestures for technical terms.',
+        recurrence: 'one-time',
+        interpreter_count: 1,
+        is_seed: true,
+      },
+      {
+        interpreter_id: interpreterProfileId,
+        requester_id: null,
+        title: 'Physical Therapy Session',
+        requester_name: 'Dr. Sarah Kim, PT — Bayside Physical Therapy',
+        specialization: 'Medical & Wellness',
+        date: '2026-03-03',
+        time_start: '14:00',
+        time_end: '15:00',
+        location: 'Bayside Physical Therapy, 4200 Stone Way N, Seattle WA',
+        format: 'in_person' as const,
+        status: 'completed' as const,
+        description: 'Ongoing PT session — shoulder rehab. Interpreter needs to be comfortable with medical/anatomical terminology. Client will be doing physical exercises during session.',
+        notes: 'D/HH Client: Jordan Rivera. Communication prefs: Black ASL preferred. Prefers interpreter positioned on left side.',
+        recurrence: 'one-time',
+        interpreter_count: 1,
+        is_seed: true,
+      },
       // Confirmed bookings
       {
         interpreter_id: interpreterProfileId,
@@ -236,7 +273,7 @@ export async function seedInterpreterData(interpreterProfileId: string): Promise
       return { success: false, error: `${bookingsErr?.message || ''} ${messagesErr?.message || ''}`.trim() }
     }
 
-    console.log(`[seed] seeded 6 bookings + 4 messages + 1 notification for interpreter ${interpreterProfileId}`)
+    console.log(`[seed] seeded 8 bookings + 4 messages + 1 notification for interpreter ${interpreterProfileId}`)
     return { success: true }
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Unknown seed error'

@@ -10,10 +10,24 @@ import Toast from '@/components/ui/Toast'
 
 /* ── Types ── */
 
+interface CompletedBooking {
+  id: string
+  title: string | null
+  requester_name: string | null
+  specialization: string | null
+  date: string
+  time_start: string
+  time_end: string
+  location: string | null
+  format: string | null
+  is_seed: boolean | null
+}
+
 interface Invoice {
   id: string
   invoice_number: string
   status: string
+  booking_id: string | null
   job_title: string | null
   job_date: string | null
   job_location: string | null
@@ -212,17 +226,19 @@ Thank you`
 export default function InvoicesPage() {
   const router = useRouter()
   const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [completedBookings, setCompletedBookings] = useState<CompletedBooking[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState<FilterTab>('all')
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
   const [reminderInvoice, setReminderInvoice] = useState<Invoice | null>(null)
+  const [interpreterId, setInterpreterId] = useState<string | null>(null)
 
   function showToast(message: string, type: 'success' | 'error' | 'info' = 'success') {
     setToast({ message, type })
   }
 
-  const fetchInvoices = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setLoading(false); return }
@@ -235,23 +251,42 @@ export default function InvoicesPage() {
       .single()
 
     if (profileErr || !profile) { setLoading(false); return }
+    setInterpreterId(profile.id)
 
-    const { data, error } = await supabase
+    // Fetch invoices
+    const { data: invData, error: invErr } = await supabase
       .from('invoices')
-      .select('id, invoice_number, status, job_title, job_date, job_location, job_format, requester_name, requester_billing_email, total, subtotal, base_rate, base_rate_type, actual_hours, payment_terms, due_date, created_at, sent_at, paid_at, last_reminder_sent_at')
+      .select('id, invoice_number, status, booking_id, job_title, job_date, job_location, job_format, requester_name, requester_billing_email, total, subtotal, base_rate, base_rate_type, actual_hours, payment_terms, due_date, created_at, sent_at, paid_at, last_reminder_sent_at')
       .eq('interpreter_id', profile.id)
       .order('created_at', { ascending: false })
 
-    if (error) {
-      console.error('[invoices] fetch failed:', error.message)
-      showToast('Failed to load invoices', 'error')
-    } else {
-      setInvoices(data || [])
+    if (invErr) {
+      console.error('[invoices] fetch failed:', invErr.message)
     }
+    const allInvoices = invData || []
+    setInvoices(allInvoices)
+
+    // Fetch completed bookings
+    const { data: bookingsData, error: bookingsErr } = await supabase
+      .from('bookings')
+      .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, is_seed')
+      .eq('interpreter_id', profile.id)
+      .eq('status', 'completed')
+      .order('date', { ascending: false })
+
+    if (bookingsErr) {
+      console.error('[invoices] completed bookings fetch failed:', bookingsErr.message)
+    }
+
+    // Filter out bookings that already have an invoice
+    const invoicedBookingIds = new Set(allInvoices.map(inv => inv.booking_id).filter(Boolean))
+    const uninvoiced = (bookingsData || []).filter(b => !invoicedBookingIds.has(b.id))
+    setCompletedBookings(uninvoiced)
+
     setLoading(false)
   }, [])
 
-  useEffect(() => { fetchInvoices() }, [fetchInvoices])
+  useEffect(() => { fetchData() }, [fetchData])
 
   /* ── Actions ── */
 
@@ -266,7 +301,7 @@ export default function InvoicesPage() {
       showToast('Failed to mark as paid', 'error')
     } else {
       showToast(`Invoice ${invoice.invoice_number} marked as paid`)
-      fetchInvoices()
+      fetchData()
     }
   }
 
@@ -283,7 +318,7 @@ export default function InvoicesPage() {
       showToast('Failed to delete invoice', 'error')
     } else {
       showToast(`Invoice ${invoice.invoice_number} deleted`)
-      fetchInvoices()
+      fetchData()
     }
   }
 
@@ -300,14 +335,14 @@ export default function InvoicesPage() {
       showToast('Failed to void invoice', 'error')
     } else {
       showToast(`Invoice ${invoice.invoice_number} voided`)
-      fetchInvoices()
+      fetchData()
     }
   }
 
   function handleReminderSent() {
     setReminderInvoice(null)
     showToast('Reminder copied to clipboard. Paste it into your email to send.', 'info')
-    fetchInvoices()
+    fetchData()
   }
 
   /* ── Filtering ── */
@@ -361,7 +396,76 @@ export default function InvoicesPage() {
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 900 }}>
       <DashMobileStyles />
-      <PageHeader title="Invoices" subtitle="All invoices you've submitted through signpost." />
+      <PageHeader title="Invoices" subtitle="Manage invoices for completed jobs." />
+
+      {/* Section 1: Past Jobs — Not Yet Invoiced */}
+      {!loading && (
+        <>
+          <SectionLabel>Past Jobs — Not Yet Invoiced</SectionLabel>
+          {completedBookings.length === 0 ? (
+            <div style={{
+              background: 'var(--card-bg)', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius)', padding: '32px 24px',
+              color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center',
+              marginBottom: 28,
+            }}>
+              All caught up — no uninvoiced jobs.
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
+              {completedBookings.map(b => (
+                <div key={b.id} style={{
+                  background: 'var(--card-bg)', border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius)', padding: '20px 24px',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif" }}>
+                        {b.title || 'Booking'}
+                      </div>
+                      <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>
+                        {b.requester_name || 'Client'} · {b.specialization || 'General'}
+                      </div>
+                    </div>
+                    <span style={{
+                      fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px',
+                      borderRadius: 100, whiteSpace: 'nowrap',
+                      background: 'rgba(52,211,153,0.1)', color: '#34d399',
+                      border: '1px solid rgba(52,211,153,0.3)',
+                      fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
+                    }}>
+                      Completed
+                    </span>
+                  </div>
+                  <div style={{
+                    display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--muted)',
+                    padding: '10px 0', borderTop: '1px solid var(--border)',
+                  }}>
+                    <span>📅 {formatDate(b.date)}</span>
+                    <span>🕐 {(() => {
+                      const fmt = (t: string) => { const [h, m] = t.split(':').map(Number); const ampm = h >= 12 ? 'PM' : 'AM'; const h12 = h % 12 || 12; return `${h12}:${String(m).padStart(2, '0')} ${ampm}` }
+                      return `${fmt(b.time_start)} – ${fmt(b.time_end)}`
+                    })()}</span>
+                    <span>📍 {b.location || 'TBD'}</span>
+                  </div>
+                  <div className="dash-card-actions" style={{ display: 'flex', gap: 10, marginTop: 12 }}>
+                    <button
+                      className="btn-primary"
+                      onClick={() => router.push(`/interpreter/dashboard/confirmed?invoice=${b.id}`)}
+                      style={{ fontSize: '0.82rem', padding: '8px 18px' }}
+                    >
+                      Submit Invoice →
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Section 2: Invoiced */}
+      {!loading && <SectionLabel>Invoiced</SectionLabel>}
 
       {/* Search bar */}
       <div style={{ marginBottom: 16 }}>
@@ -400,7 +504,7 @@ export default function InvoicesPage() {
           textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.7,
         }}>
           {invoices.length === 0
-            ? 'No invoices yet. When you submit an invoice from a confirmed booking, it will appear here.'
+            ? 'No invoices yet. Submit your first invoice from a completed job above.'
             : 'No invoices match your current filter.'}
         </div>
       ) : (

@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 
 // ── Route-specific prompts ────────────────────────────────────────────────────
 
-const ROUTE_CONFIG: Record<string, { prompt: string; scenario?: string; question?: string }> = {
+const ROUTE_CONFIG: Record<string, { prompt: string; scenario?: string; question?: string; scenario2?: string; question2?: string }> = {
   '/': {
     prompt:
       "Welcome to the signpost interpreter beta! Take a moment to look over this page — then when you're ready, go ahead and create your interpreter account. As you move through each step, drop your notes here — anything confusing, broken, missing, or that you love.\n\nFor the beta, you can create your actual profile to be posted live on the site when we open — or a test profile that we'll delete after the beta. Either way, you can always update your profile at any time! If you're creating a test profile, please enter your name as: First Name (TEST)",
@@ -51,6 +51,18 @@ const ROUTE_CONFIG: Record<string, { prompt: string; scenario?: string; question
   '/interpreter/dashboard/availability': {
     prompt: "You're setting your availability.",
     question: "Does this give you enough control over when and how you're booked?",
+  },
+  '/interpreter/dashboard/confirmed': {
+    prompt: 'These are your confirmed bookings — upcoming, completed, and cancelled.',
+    scenario: "Look at a specific job to see if you have all of the information you need.",
+    question: 'Did the layout feel logical, was anything missing?',
+    scenario2: "Cancel a job that you have already confirmed. (I know, it makes me nauseous thinking about it too, but these are fake!)",
+    question2: 'How did you feel about the flow? Does it feel reasonable, easy to understand?',
+  },
+  '/interpreter/dashboard/invoices': {
+    prompt: 'This is where you manage invoices for completed jobs.',
+    scenario: "Find a past job that hasn't been invoiced yet and submit an invoice for it. Review the pre-filled details, adjust if needed, and send it.",
+    question: "Was the invoicing flow clear? Is there anything missing that you'd need to invoice professionally?",
   },
   '/interpreter/dashboard/team': {
     prompt: 'This is where you manage your preferred team interpreters.',
@@ -99,6 +111,15 @@ const WOULD_USE_OPTIONS = [
   'Probably — depends on how it develops',
   'Maybe — I have some concerns',
   'Probably not',
+];
+
+const TRIED_INVOICING_OPTIONS = ['Yes', 'No'];
+
+const INVOICING_COMPARE_OPTIONS = [
+  'Much better',
+  'About the same',
+  'Worse',
+  "I don't currently invoice",
 ];
 
 // ── Shared styles ─────────────────────────────────────────────────────────────
@@ -167,6 +188,8 @@ export default function BetaFeedbackPanel() {
   const [dashboardFeel, setDashboardFeel] = useState('');
   const [ratesControl, setRatesControl] = useState('');
   const [wouldUse, setWouldUse] = useState('');
+  const [triedInvoicing, setTriedInvoicing] = useState('');
+  const [invoicingCompare, setInvoicingCompare] = useState('');
   const [whatNeedsChange, setWhatNeedsChange] = useState('');
   const [oneThingForMolly, setOneThingForMolly] = useState('');
 
@@ -249,6 +272,8 @@ export default function BetaFeedbackPanel() {
           dashboardFeel,
           ratesControl,
           wouldUse,
+          triedInvoicing,
+          invoicingCompare,
           whatNeedsChange,
           oneThingForMolly,
         }),
@@ -445,7 +470,33 @@ export default function BetaFeedbackPanel() {
               ))}
             </div>
 
-            {/* Q5: What needs to change */}
+            {/* Q5: Did you try invoicing */}
+            <div>
+              <label style={labelStyle}>Did you try the invoicing feature?</label>
+              {TRIED_INVOICING_OPTIONS.map(opt => (
+                <label key={opt} style={radioLabelStyle}>
+                  <input type="radio" name="triedInvoicing" value={opt} checked={triedInvoicing === opt}
+                    onChange={() => setTriedInvoicing(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                  <span>{opt}</span>
+                </label>
+              ))}
+            </div>
+
+            {/* Q6: Invoicing comparison */}
+            {triedInvoicing === 'Yes' && (
+              <div>
+                <label style={labelStyle}>If yes — how did it compare to how you currently invoice?</label>
+                {INVOICING_COMPARE_OPTIONS.map(opt => (
+                  <label key={opt} style={radioLabelStyle}>
+                    <input type="radio" name="invoicingCompare" value={opt} checked={invoicingCompare === opt}
+                      onChange={() => setInvoicingCompare(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                    <span>{opt}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+
+            {/* Q7: What needs to change */}
             <div>
               <label style={labelStyle}>What would need to change?</label>
               <textarea value={whatNeedsChange} onChange={e => setWhatNeedsChange(e.target.value)}
@@ -521,7 +572,7 @@ export default function BetaFeedbackPanel() {
                   padding: '10px 12px', fontSize: '0.77rem', color: '#7a3600', lineHeight: 1.55,
                 }}
               >
-                <strong style={{ display: 'block', marginBottom: 4 }}>Try this:</strong>
+                <strong style={{ display: 'block', marginBottom: 4 }}>Try this 👇</strong>
                 {config.scenario}
               </div>
             )}
@@ -552,6 +603,29 @@ export default function BetaFeedbackPanel() {
                   rows={3}
                   style={textareaStyle}
                 />
+              </div>
+            )}
+
+            {/* Second scenario callout */}
+            {config.scenario2 && (
+              <div
+                style={{
+                  background: '#fff7f0', border: '1px solid #ffd0b0', borderRadius: 8,
+                  padding: '10px 12px', fontSize: '0.77rem', color: '#7a3600', lineHeight: 1.55,
+                }}
+              >
+                <strong style={{ display: 'block', marginBottom: 4 }}>Try this 👇</strong>
+                {config.scenario2}
+              </div>
+            )}
+
+            {/* Second specific question */}
+            {config.question2 && (
+              <div>
+                <label style={labelStyle}>Specific Question</label>
+                <p style={{ fontSize: '0.77rem', color: '#555', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
+                  {config.question2}
+                </p>
               </div>
             )}
 
