@@ -1,11 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
-const NAV = [
+interface NavItem {
+  label: string
+  href: string
+  icon: React.ReactNode
+  badgeKey?: 'inquiries' | 'confirmed' | 'inbox' | 'clientLists'
+  badgeCyan?: boolean
+}
+
+interface NavGroup {
+  section: string
+  items: NavItem[]
+}
+
+const NAV: NavGroup[] = [
   {
     section: 'Overview',
     items: [
@@ -15,9 +28,9 @@ const NAV = [
   {
     section: 'Bookings',
     items: [
-      { label: 'Inquiries', href: '/interpreter/dashboard/inquiries', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M5 7h6M5 10h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>, badge: 2 },
-      { label: 'Confirmed', href: '/interpreter/dashboard/confirmed', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>, badge: 3, badgeCyan: true },
-      { label: 'Inbox', href: '/interpreter/dashboard/inbox', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M2 5l6 4.5L14 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>, badge: 2 },
+      { label: 'Inquiries', href: '/interpreter/dashboard/inquiries', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M5 7h6M5 10h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>, badgeKey: 'inquiries' },
+      { label: 'Confirmed', href: '/interpreter/dashboard/confirmed', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>, badgeKey: 'confirmed', badgeCyan: true },
+      { label: 'Inbox', href: '/interpreter/dashboard/inbox', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M2 5l6 4.5L14 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>, badgeKey: 'inbox' },
     ],
   },
   {
@@ -27,7 +40,7 @@ const NAV = [
       { label: 'Rates & Terms', href: '/interpreter/dashboard/rates', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.3"/><path d="M8 5v1.5M8 9.5V11M6.5 7a1.5 1.5 0 1 1 3 0c0 1-1.5 1.5-1.5 2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg> },
       { label: 'Availability', href: '/interpreter/dashboard/availability', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M5 2v2M11 2v2M2 7h12" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg> },
       { label: 'Preferred Team', href: '/interpreter/dashboard/team', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="4" r="2" stroke="currentColor" strokeWidth="1.3"/><circle cx="3" cy="11" r="2" stroke="currentColor" strokeWidth="1.3"/><circle cx="13" cy="11" r="2" stroke="currentColor" strokeWidth="1.3"/><path d="M6 5.5L4 9M10 5.5L12 9M5.5 11h5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg> },
-      { label: 'Client Lists', href: '/interpreter/dashboard/client-lists', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.2" stroke="currentColor" strokeWidth="1.3"/><path d="M1.5 13.5c0-2.5 2-4.5 4.5-4.5s4.5 2 4.5 4.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><path d="M10.5 7.5h4M12.5 5.5v4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>, badge: 1, badgeCyan: true },
+      { label: 'Client Lists', href: '/interpreter/dashboard/client-lists', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.2" stroke="currentColor" strokeWidth="1.3"/><path d="M1.5 13.5c0-2.5 2-4.5 4.5-4.5s4.5 2 4.5 4.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><path d="M10.5 7.5h4M12.5 5.5v4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>, badgeKey: 'clientLists', badgeCyan: true },
     ],
   },
   {
@@ -75,7 +88,10 @@ function LogoutButton() {
   )
 }
 
-function SidebarContent({ userName, userInitials, photoUrl }: { userName: string; userInitials: string; photoUrl?: string }) {
+function SidebarContent({ userName, userInitials, photoUrl, badges }: {
+  userName: string; userInitials: string; photoUrl?: string
+  badges: Record<string, number>
+}) {
   const pathname = usePathname()
 
   return (
@@ -121,6 +137,7 @@ function SidebarContent({ userName, userInitials, photoUrl }: { userName: string
               const active = item.href === '/interpreter/dashboard'
                 ? pathname === item.href
                 : pathname.startsWith(item.href)
+              const badgeCount = item.badgeKey ? (badges[item.badgeKey] ?? 0) : 0
               return (
                 <Link
                   key={item.href}
@@ -138,7 +155,7 @@ function SidebarContent({ userName, userInitials, photoUrl }: { userName: string
                     {item.icon}
                   </span>
                   <span style={{ flex: 1 }}>{item.label}</span>
-                  {item.badge && (
+                  {badgeCount > 0 && (
                     <span style={{
                       fontSize: '0.7rem', fontWeight: 700, minWidth: 18, height: 18,
                       borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -146,7 +163,7 @@ function SidebarContent({ userName, userInitials, photoUrl }: { userName: string
                       background: item.badgeCyan ? 'rgba(0,229,255,0.15)' : 'rgba(255,107,133,0.2)',
                       color: item.badgeCyan ? 'var(--accent)' : 'var(--accent3)',
                     }}>
-                      {item.badge}
+                      {badgeCount}
                     </span>
                   )}
                 </Link>
@@ -166,6 +183,51 @@ function SidebarContent({ userName, userInitials, photoUrl }: { userName: string
 
 export default function DashboardSidebar({ userName = 'Interpreter', userInitials = 'IN', photoUrl }: { userName?: string; userInitials?: string; photoUrl?: string }) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [badges, setBadges] = useState<Record<string, number>>({})
+
+  useEffect(() => {
+    async function fetchBadges() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data: profile } = await supabase
+        .from('interpreter_profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single()
+
+      if (!profile) return
+
+      // Pending inquiries count
+      const { count: inquiriesCount } = await supabase
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('interpreter_id', profile.id)
+        .eq('status', 'pending')
+
+      // Confirmed bookings count
+      const { count: confirmedCount } = await supabase
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('interpreter_id', profile.id)
+        .eq('status', 'confirmed')
+
+      // Unread messages count
+      const { count: inboxCount } = await supabase
+        .from('messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('interpreter_id', profile.id)
+        .eq('is_read', false)
+
+      setBadges({
+        inquiries: inquiriesCount ?? 0,
+        confirmed: confirmedCount ?? 0,
+        inbox: inboxCount ?? 0,
+      })
+    }
+    fetchBadges()
+  }, [])
 
   return (
     <>
@@ -176,7 +238,7 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
         display: 'flex', flexDirection: 'column',
         height: '100vh', position: 'sticky', top: 0, overflowY: 'auto',
       }}>
-        <SidebarContent userName={userName} userInitials={userInitials} photoUrl={photoUrl} />
+        <SidebarContent userName={userName} userInitials={userInitials} photoUrl={photoUrl} badges={badges} />
       </div>
 
       {/* Mobile top bar */}
@@ -248,7 +310,7 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
               </button>
             </div>
             <div onClick={() => setMobileOpen(false)}>
-              <SidebarContent userName={userName} userInitials={userInitials} photoUrl={photoUrl} />
+              <SidebarContent userName={userName} userInitials={userInitials} photoUrl={photoUrl} badges={badges} />
             </div>
           </div>
         </div>

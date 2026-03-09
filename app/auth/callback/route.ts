@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     const { data: existing } = await supabase
       .from('interpreter_profiles').select('id').eq('user_id', user.id).maybeSingle();
     if (!existing) {
-      const { data: newProfile } = await supabase
+      const { data: newProfile, error: insertErr } = await supabase
         .from('interpreter_profiles')
         .insert({
           user_id: user.id,
@@ -60,13 +60,22 @@ export async function GET(request: NextRequest) {
         .select('id')
         .single();
 
+      if (insertErr) {
+        console.error('[auth/callback] interpreter_profiles insert error:', insertErr.message, insertErr.code);
+      }
+
       // BETA: seed demo data for new interpreters
       if (newProfile?.id) {
         try {
-          await seedInterpreterData(newProfile.id);
+          const seedResult = await seedInterpreterData(newProfile.id);
+          if (!seedResult.success) {
+            console.error('[auth/callback] seed returned error:', seedResult.error);
+          }
         } catch (e) {
-          console.error('[auth/callback] seed failed:', e);
+          console.error('[auth/callback] seed threw:', e instanceof Error ? e.message : e);
         }
+      } else {
+        console.error('[auth/callback] no profile ID after insert — seed skipped. insertErr:', insertErr?.message, 'newProfile:', newProfile);
       }
     }
   } else if (assignedRole === 'deaf') {

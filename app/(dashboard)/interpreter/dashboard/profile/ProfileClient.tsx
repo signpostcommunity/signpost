@@ -10,6 +10,7 @@ import {
   SPOKEN_LANGUAGES_TOP6, SPOKEN_LANGUAGES_BY_REGION,
   SPECIALIZATIONS,
 } from '@/lib/data/languages'
+import { getVideoEmbedUrl, isValidVideoUrl } from '@/lib/videoUtils'
 
 // ── Shared styles ────────────────────────────────────────────────────────────
 
@@ -232,6 +233,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   // ── Bio & Video state ──────────────────────────────────────────────────
   const [bio, setBio] = useState(p.bio || '')
   const [videoUrl, setVideoUrl] = useState(p.video_url || '')
+  const [videoUrlError, setVideoUrlError] = useState<string | null>(null)
   const [videoDescription, setVideoDescription] = useState(p.video_desc || '')
 
   // ── Client-side fallback: load profile if server prop was null ──────
@@ -821,8 +823,52 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           </p>
           <div style={{ marginBottom: 16 }}>
             <label style={labelStyle}>Video URL</label>
-            <input type="url" value={videoUrl} onChange={e => setVideoUrl(e.target.value)} placeholder="https://youtube.com/... or https://vimeo.com/..." style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+            <input
+              type="text"
+              value={videoUrl}
+              onChange={e => { setVideoUrl(e.target.value); setVideoUrlError(null) }}
+              onBlur={() => {
+                if (videoUrl.trim() && !isValidVideoUrl(videoUrl)) {
+                  setVideoUrlError('Please enter a YouTube or Vimeo link. Direct file upload coming soon.')
+                } else {
+                  setVideoUrlError(null)
+                }
+              }}
+              placeholder="YouTube or Vimeo link (e.g. youtube.com/watch?v=...)"
+              style={{ ...inputStyle, borderColor: videoUrlError ? 'var(--accent3)' : undefined }}
+              onFocus={handleFocus}
+            />
+            {videoUrlError && (
+              <div style={{ color: 'var(--accent3)', fontSize: '0.78rem', marginTop: 6 }}>{videoUrlError}</div>
+            )}
+            {/* TODO: direct video upload — spec in master doc */}
           </div>
+
+          {/* Live preview */}
+          {(() => {
+            const embedUrl = getVideoEmbedUrl(videoUrl)
+            if (!embedUrl) return null
+            if (embedUrl.includes('supabase.co/storage')) {
+              return (
+                <div style={{ marginBottom: 20 }}>
+                  <label style={labelStyle}>Preview</label>
+                  <video controls width="100%" style={{ borderRadius: 12, border: '1px solid var(--border)', maxHeight: 340, background: '#000' }} src={embedUrl} />
+                </div>
+              )
+            }
+            return (
+              <div style={{ marginBottom: 20 }}>
+                <label style={labelStyle}>Preview</label>
+                <iframe
+                  width="100%" height="315" src={embedUrl}
+                  title="Interpreter introduction video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  style={{ borderRadius: 12, border: 'none' }}
+                />
+              </div>
+            )
+          })()}
 
           <div style={sectionTitleStyle}>Video Description</div>
           <div style={{ marginBottom: 16 }}>
@@ -835,9 +881,13 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
             />
           </div>
 
-          <SaveButton saving={saving} onClick={() => saveFields({
-            bio, video_url: videoUrl, video_desc: videoDescription,
-          })} />
+          <SaveButton saving={saving} onClick={() => {
+            if (videoUrl.trim() && !isValidVideoUrl(videoUrl)) {
+              setVideoUrlError('Please enter a YouTube or Vimeo link. Direct file upload coming soon.')
+              return
+            }
+            saveFields({ bio, video_url: videoUrl, video_desc: videoDescription })
+          }} />
         </>
       )}
 

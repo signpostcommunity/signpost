@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import type { Interpreter } from '@/lib/types';
+import { getVideoEmbedUrl } from '@/lib/videoUtils';
 
 const TABS = ['Overview', 'Credentials', 'Availability'] as const;
 type Tab = (typeof TABS)[number];
@@ -464,40 +465,32 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
 function OverviewTab({ interpreter: i }: { interpreter: Interpreter }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <Section title="Introduction Video">
-        <div
-          style={{
-            background: 'var(--surface2)',
-            border: '1px solid var(--border)',
-            borderRadius: '12px',
-            padding: '60px 24px',
-            textAlign: 'center',
-            color: 'var(--muted)',
-          }}
-        >
-          <div style={{ fontSize: '0.85rem', marginBottom: '12px' }}>INTRO VIDEO</div>
-          <div
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: '50%',
-              background: 'rgba(0,229,255,0.15)',
-              border: '2px solid rgba(0,229,255,0.3)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 12px',
-              fontSize: '1.4rem',
-              cursor: 'pointer',
-            }}
-          >
-            ▶
-          </div>
-          <div style={{ fontSize: '0.8rem' }}>
-            {i.name} signing in {i.signLangs.join(' + ')} · 2:34
-          </div>
-        </div>
-      </Section>
+      {(() => {
+        const embedUrl = i.videoUrl ? getVideoEmbedUrl(i.videoUrl) : null;
+        if (!embedUrl) return null;
+        return (
+          <Section title="Introduction Video">
+            {embedUrl.includes('supabase.co/storage') ? (
+              <video
+                controls
+                width="100%"
+                src={embedUrl}
+                style={{ borderRadius: '12px', border: '1px solid var(--border)', maxHeight: 420, background: '#000' }}
+              />
+            ) : (
+              <iframe
+                width="100%"
+                height="315"
+                src={embedUrl}
+                title="Interpreter introduction video"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                style={{ borderRadius: '12px', border: 'none' }}
+              />
+            )}
+          </Section>
+        );
+      })()}
 
       <Section title="About">
         <p style={{ color: 'var(--muted)', lineHeight: 1.7, fontSize: '0.95rem' }}>
