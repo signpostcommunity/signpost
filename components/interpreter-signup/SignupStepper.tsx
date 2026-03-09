@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from './FormContext'
 
@@ -15,10 +16,14 @@ const STEPS = [
 export default function SignupStepper() {
   const { currentStep, setCurrentStep, saveDraft, isSaving, draftUserId } = useForm()
   const router = useRouter()
+  const [draftToast, setDraftToast] = useState(false)
 
   async function handleSaveExit() {
     await saveDraft()
-    router.push('/interpreter/signup/draft-saved')
+    setDraftToast(true)
+    setTimeout(() => {
+      router.push(draftUserId ? '/interpreter/dashboard' : '/interpreter')
+    }, 1500)
   }
 
   return (
@@ -60,7 +65,7 @@ export default function SignupStepper() {
                 ;(e.target as HTMLButtonElement).style.color = 'var(--muted)'
               }}
             >
-              {isSaving ? 'Saving…' : 'Save & exit'}
+              {isSaving ? 'Saving…' : 'Save Draft'}
             </button>
           )}
         </div>
@@ -108,6 +113,18 @@ export default function SignupStepper() {
       }}>
         Step {currentStep} of {STEPS.length}
       </div>
+
+      {/* Draft saved toast */}
+      {draftToast && (
+        <div style={{
+          position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
+          background: '#00c875', color: '#000', padding: '12px 24px',
+          borderRadius: 10, fontWeight: 600, fontSize: '0.9rem', zIndex: 500,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+        }}>
+          Draft saved. You can pick up where you left off from your dashboard.
+        </div>
+      )}
 
       <style>{`
         @media (max-width: 640px) {

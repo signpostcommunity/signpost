@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import type { Interpreter } from '@/lib/types';
 import { getVideoEmbedUrl } from '@/lib/videoUtils';
+import FlagProfileModal from '@/components/directory/FlagProfileModal';
 
 const TABS = ['Overview', 'Credentials', 'Availability'] as const;
 type Tab = (typeof TABS)[number];
@@ -30,6 +31,7 @@ const CERT_FULL_NAMES: Record<string, string> = {
 export default function ProfileClient({ interpreter: i }: { interpreter: Interpreter }) {
   const [activeTab, setActiveTab] = useState<Tab>('Overview');
   const [toast, setToast] = useState<string | null>(null);
+  const [flagModalOpen, setFlagModalOpen] = useState(false);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -437,6 +439,35 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
           </div>
         </div>
       </div>
+
+      {/* Flag this profile link */}
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px 40px', textAlign: 'center' }}>
+        <button
+          onClick={() => setFlagModalOpen(true)}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: 'var(--muted)', fontSize: '0.78rem',
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            opacity: 0.6, transition: 'opacity 0.15s',
+            fontFamily: "'DM Sans', sans-serif",
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '1' }}
+          onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = '0.6' }}
+        >
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+            <path d="M3 2v12M3 2l8 3.5L3 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Flag this profile
+        </button>
+      </div>
+
+      {/* Flag modal */}
+      <FlagProfileModal
+        isOpen={flagModalOpen}
+        onClose={() => setFlagModalOpen(false)}
+        interpreterProfileId={String(i.id)}
+        onSuccess={() => showToast('Thank you. Your report has been submitted and will be reviewed.')}
+      />
 
       {/* Toast */}
       {toast && (

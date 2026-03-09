@@ -45,11 +45,10 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         )
       }
 
-      // Upsert interpreter_profiles with status: pending (awaiting admin review)
+      // Upsert interpreter_profiles — BETA: auto-approve, no admin review
       const { data: profileRow } = await supabase.from('interpreter_profiles').upsert({
         user_id: userId,
         name: [formData.firstName, formData.lastName].filter(Boolean).join(' ') || formData.email || 'Interpreter',
-        // BETA: auto-approve profiles. Revert to 'pending' when admin review flow is built.
         status: 'approved',
         draft_step: 6,
         draft_data: formData,
@@ -228,7 +227,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         totalSteps={6}
         onBack={onBack}
         onContinue={handleSubmit}
-        continueLabel={isSubmitting ? 'Submitting…' : 'Submit Profile for Review'}
+        continueLabel={isSubmitting ? 'Submitting…' : 'Submit Profile'}
         continueDisabled={!allAgreed || isSubmitting}
       />
     </StepWrapper>

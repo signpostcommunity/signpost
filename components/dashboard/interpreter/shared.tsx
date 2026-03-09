@@ -189,15 +189,17 @@ export function RequestCard({
 
 // ── Ghost Button ──────────────────────────────────────────────────────────────
 
-export function GhostButton({ children, onClick, danger }: {
+export function GhostButton({ children, onClick, danger, disabled }: {
   children: React.ReactNode
   onClick?: () => void
   danger?: boolean
+  disabled?: boolean
 }) {
   const [hover, setHover] = useState(false)
   return (
     <button
       onClick={onClick}
+      disabled={disabled}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{
@@ -206,8 +208,9 @@ export function GhostButton({ children, onClick, danger }: {
         borderRadius: 'var(--radius-sm)',
         color: hover ? (danger ? 'var(--accent3)' : 'var(--accent)') : 'var(--muted)',
         fontSize: '0.82rem', padding: '8px 16px',
-        cursor: 'pointer', transition: 'all 0.15s',
+        cursor: disabled ? 'not-allowed' : 'pointer', transition: 'all 0.15s',
         fontFamily: "'DM Sans', sans-serif",
+        opacity: disabled ? 0.5 : 1,
       }}
     >
       {children}

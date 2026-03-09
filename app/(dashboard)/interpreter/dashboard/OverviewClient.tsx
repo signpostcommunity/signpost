@@ -158,7 +158,7 @@ interface OverviewClientProps {
 
 export default function OverviewClient({ interpreterProfileId, firstName, profileStatus }: OverviewClientProps) {
   const displayName = firstName || 'there'
-  const hasPendingProfile = profileStatus === 'pending'
+  const hasDraftProfile = profileStatus === 'draft'
   const [toast, setToast] = useState<string | null>(null)
   const [newInquiries, setNewInquiries] = useState(0)
   const [confirmedThisMonth, setConfirmedThisMonth] = useState(0)
@@ -266,11 +266,32 @@ export default function OverviewClient({ interpreterProfileId, firstName, profil
       <PageHeader
         title={`Welcome back, ${displayName}.`}
         subtitle={
-          hasPendingProfile
-            ? 'Your profile is pending review. You\'ll be notified once it\'s approved.'
-            : 'Here\'s a snapshot of your activity on signpost.'
+          'Here\'s a snapshot of your activity on signpost.'
         }
       />
+
+      {/* Draft resume banner */}
+      {hasDraftProfile && (
+        <div style={{
+          background: 'rgba(0,229,255,0.06)', border: '1px solid rgba(0,229,255,0.2)',
+          borderRadius: 'var(--radius-sm)', padding: '16px 20px', marginBottom: 24,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+          flexWrap: 'wrap',
+        }}>
+          <span style={{ color: 'var(--text)', fontSize: '0.9rem' }}>
+            You have an unfinished profile. Pick up where you left off.
+          </span>
+          <a
+            href="/interpreter/signup?resume=true"
+            style={{
+              color: 'var(--accent)', fontWeight: 600, fontSize: '0.85rem',
+              textDecoration: 'none', whiteSpace: 'nowrap',
+            }}
+          >
+            Resume signup →
+          </a>
+        </div>
+      )}
 
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16, marginBottom: 32, alignItems: 'stretch' }}>
@@ -280,7 +301,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, profil
         <StatCard num={daysAvailable} label="Days Available This Week" href="/interpreter/dashboard/availability" />
       </div>
 
-      {!hasPendingProfile && !loading && (
+      {!hasDraftProfile && !loading && (
         <>
           {/* Pending Inquiries */}
           <SectionLabel>Pending Inquiries</SectionLabel>

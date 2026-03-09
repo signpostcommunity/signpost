@@ -11,6 +11,9 @@ import Step4Rates from '@/components/interpreter-signup/Step4Rates'
 import Step5Video from '@/components/interpreter-signup/Step5Video'
 import Step6Review from '@/components/interpreter-signup/Step6Review'
 
+// TODO: Wire draft resume — load draft_data and draft_step from interpreter_profiles,
+// pre-fill the signup form, and jump to the saved step when ?resume=true is in the URL
+
 function SignupForm() {
   const { currentStep, setCurrentStep, formData, updateFormData, setDraftUserId, saveDraft } = useForm()
   const [step1Error, setStep1Error] = useState<string | null>(null)
