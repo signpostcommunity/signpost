@@ -2,11 +2,11 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { DEMO_TEAM } from '@/lib/data/demo'
 import { BetaBanner, PageHeader, Avatar, GhostButton } from '@/components/dashboard/interpreter/shared'
+import Toast from '@/components/ui/Toast'
 
 const overlayStyle: React.CSSProperties = {
   position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
@@ -34,34 +34,73 @@ const fieldLabelStyle: React.CSSProperties = {
   letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6,
 }
 
-// ── FIX 4: Invite modal ─────────────────────────────────────────────────────
+// ── Types ─────────────────────────────────────────────────────────────────────
 
-function InviteModal({ onClose, interpreterFullName }: { onClose: () => void; interpreterFullName: string }) {
+type TeamMember = {
+  id: string
+  first_name: string
+  last_name: string
+  email: string
+  status: string
+  member_interpreter_id: string | null
+}
+
+// ── Invite Modal ──────────────────────────────────────────────────────────────
+
+function InviteModal({ onClose, onSaved, interpreterId, interpreterFullName }: {
+  onClose: () => void
+  onSaved: () => void
+  interpreterId: string
+  interpreterFullName: string
+}) {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
-  const [toast, setToast] = useState<string | null>(null)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
 
   const defaultMessage = `Hey ${firstName || '[First Name]'}!\n\nI would love to add you to my preferred interpreter team on signpost, but I don't believe you have created a profile yet. Once you create a profile I can add you as a preferred team member for upcoming jobs.\n\nIf you would like to create a profile, click here: https://signpost.community/signup\n\n${interpreterFullName}`
 
   const [message, setMessage] = useState('')
-
-  // Update message when firstName changes
   const currentMessage = message || defaultMessage
 
   function handleFirstNameChange(val: string) {
     setFirstName(val)
-    // Auto-update the message with new first name
     setMessage(`Hey ${val || '[First Name]'}!\n\nI would love to add you to my preferred interpreter team on signpost, but I don't believe you have created a profile yet. Once you create a profile I can add you as a preferred team member for upcoming jobs.\n\nIf you would like to create a profile, click here: https://signpost.community/signup\n\n${interpreterFullName}`)
   }
 
-  if (toast) return (
+  async function handleSave() {
+    if (!firstName.trim() || !lastName.trim() || !email.trim()) {
+      setError('All fields are required.')
+      return
+    }
+    setSaving(true)
+    setError(null)
+    const supabase = createClient()
+    const { error: insertErr } = await supabase.from('interpreter_preferred_team').insert({
+      interpreter_id: interpreterId,
+      first_name: firstName.trim(),
+      last_name: lastName.trim(),
+      email: email.trim(),
+    })
+    setSaving(false)
+    if (insertErr) {
+      console.error('Invite insert error:', insertErr)
+      setError(`Failed to save: ${insertErr.message}`)
+      return
+    }
+    setSuccess(true)
+    onSaved()
+  }
+
+  if (success) return (
     <div style={overlayStyle}>
       <div style={modalStyle}>
         <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
           <div style={{ fontSize: '2rem', marginBottom: 12 }}>✓</div>
           <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent)', marginBottom: 8 }}>
-            {toast}
+            {firstName} has been added to your Preferred Team!
           </div>
           <button className="btn-primary" onClick={onClose} style={{ padding: '10px 28px' }}>Done</button>
         </div>
@@ -80,58 +119,49 @@ function InviteModal({ onClose, interpreterFullName }: { onClose: () => void; in
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
           <div>
             <label style={fieldLabelStyle}>First Name</label>
-            <input
-              type="text" value={firstName} onChange={e => handleFirstNameChange(e.target.value)}
-              placeholder="First name"
-              style={fieldInputStyle}
+            <input type="text" value={firstName} onChange={e => handleFirstNameChange(e.target.value)}
+              placeholder="First name" style={fieldInputStyle}
               onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
               onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
-              required
             />
           </div>
           <div>
             <label style={fieldLabelStyle}>Last Name</label>
-            <input
-              type="text" value={lastName} onChange={e => setLastName(e.target.value)}
-              placeholder="Last name"
-              style={fieldInputStyle}
+            <input type="text" value={lastName} onChange={e => setLastName(e.target.value)}
+              placeholder="Last name" style={fieldInputStyle}
               onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
               onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
-              required
             />
           </div>
         </div>
 
         <div style={{ marginBottom: 14 }}>
           <label style={fieldLabelStyle}>Email Address</label>
-          <input
-            type="email" value={email} onChange={e => setEmail(e.target.value)}
-            placeholder="colleague@example.com"
-            style={fieldInputStyle}
+          <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+            placeholder="colleague@example.com" style={fieldInputStyle}
             onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
             onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
-            required
           />
         </div>
 
         <div style={{ marginBottom: 14 }}>
           <label style={fieldLabelStyle}>Message</label>
-          <textarea
-            value={currentMessage} onChange={e => setMessage(e.target.value)}
+          <textarea value={currentMessage} onChange={e => setMessage(e.target.value)}
             style={{ ...fieldInputStyle, resize: 'vertical', minHeight: 160 }}
             onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
             onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
           />
         </div>
 
+        {error && (
+          <p style={{ fontSize: '0.82rem', color: '#f87171', marginBottom: 12 }}>{error}</p>
+        )}
+
         <div className="dash-card-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
           <GhostButton onClick={onClose}>Cancel</GhostButton>
-          <button className="btn-primary" onClick={() => {
-            if (firstName && lastName && email) {
-              setToast(`Invitation sent to ${firstName}!`)
-            }
-          }} style={{ padding: '9px 22px' }}>
-            Send
+          <button className="btn-primary" onClick={handleSave} disabled={saving}
+            style={{ padding: '9px 22px', opacity: saving ? 0.6 : 1 }}>
+            {saving ? 'Saving...' : 'Send'}
           </button>
         </div>
       </div>
@@ -139,30 +169,59 @@ function InviteModal({ onClose, interpreterFullName }: { onClose: () => void; in
   )
 }
 
-// ── Main page ───────────────────────────────────────────────────────────────
+// ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function TeamPage() {
-  const [team, setTeam] = useState(DEMO_TEAM)
+  const [team, setTeam] = useState<TeamMember[]>([])
+  const [loading, setLoading] = useState(true)
   const [showInvite, setShowInvite] = useState(false)
+  const [interpreterId, setInterpreterId] = useState<string | null>(null)
   const [interpreterName, setInterpreterName] = useState('')
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
-  useEffect(() => {
-    async function loadName() {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const { data } = await supabase
-        .from('interpreter_profiles')
-        .select('first_name, last_name')
-        .eq('user_id', user.id)
-        .maybeSingle()
-      if (data) setInterpreterName(`${data.first_name || ''} ${data.last_name || ''}`.trim())
+  const fetchTeam = useCallback(async () => {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setLoading(false); return }
+
+    // Get interpreter profile id
+    const { data: profile } = await supabase
+      .from('interpreter_profiles')
+      .select('id, first_name, last_name')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (!profile) { setLoading(false); return }
+    setInterpreterId(profile.id)
+    setInterpreterName(`${profile.first_name || ''} ${profile.last_name || ''}`.trim())
+
+    const { data: members, error } = await supabase
+      .from('interpreter_preferred_team')
+      .select('id, first_name, last_name, email, status, member_interpreter_id')
+      .eq('interpreter_id', profile.id)
+      .order('id', { ascending: false })
+
+    if (error) {
+      console.error('Team fetch error:', error)
+      // Table may not exist yet — show empty state, not an error
+      setTeam([])
+    } else {
+      setTeam(members || [])
     }
-    loadName()
+    setLoading(false)
   }, [])
 
-  function remove(id: string) {
-    setTeam(prev => prev.filter(t => t.id !== id))
+  useEffect(() => { fetchTeam() }, [fetchTeam])
+
+  async function removeMember(id: string) {
+    const supabase = createClient()
+    const { error } = await supabase.from('interpreter_preferred_team').delete().eq('id', id)
+    if (error) {
+      setToast({ message: `Error: ${error.message}`, type: 'error' })
+      return
+    }
+    setToast({ message: 'Removed from your Preferred Team.', type: 'success' })
+    fetchTeam()
   }
 
   return (
@@ -187,14 +246,19 @@ export default function TeamPage() {
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
-        {team.length === 0 && (
-          <div style={{ padding: 32, textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem', background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
-            Your preferred team is empty. Browse the directory to add interpreters.
+        {loading ? (
+          <div style={{ padding: 32, textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem' }}>
+            Loading...
           </div>
+        ) : team.length === 0 ? (
+          <div style={{ padding: 32, textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem', background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
+            Your Preferred Team is empty. Invite interpreters you trust to build your go-to team.
+          </div>
+        ) : (
+          team.map(member => (
+            <TeamCard key={member.id} member={member} onRemove={() => removeMember(member.id)} />
+          ))
         )}
-        {team.map(interp => (
-          <TeamCard key={interp.id} interp={interp} onRemove={() => remove(interp.id)} />
-        ))}
       </div>
 
       <Link href="/directory" style={{ textDecoration: 'none' }}>
@@ -214,13 +278,27 @@ export default function TeamPage() {
         </button>
       </Link>
 
-      {showInvite && <InviteModal onClose={() => setShowInvite(false)} interpreterFullName={interpreterName || 'Your Name'} />}
+      {showInvite && interpreterId && (
+        <InviteModal
+          onClose={() => setShowInvite(false)}
+          onSaved={() => fetchTeam()}
+          interpreterId={interpreterId}
+          interpreterFullName={interpreterName || 'Your Name'}
+        />
+      )}
+
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   )
 }
 
-function TeamCard({ interp, onRemove }: { interp: typeof DEMO_TEAM[0]; onRemove: () => void }) {
+// ── Team Card ─────────────────────────────────────────────────────────────────
+
+function TeamCard({ member, onRemove }: { member: TeamMember; onRemove: () => void }) {
   const [hover, setHover] = useState(false)
+  const initials = `${(member.first_name[0] || '').toUpperCase()}${(member.last_name[0] || '').toUpperCase()}`
+  const fullName = `${member.first_name} ${member.last_name}`
+
   return (
     <div
       onMouseEnter={() => setHover(true)}
@@ -232,19 +310,21 @@ function TeamCard({ interp, onRemove }: { interp: typeof DEMO_TEAM[0]; onRemove:
         display: 'flex', alignItems: 'center', gap: 16, transition: 'border-color 0.2s',
       }}
     >
-      <Avatar initials={interp.avatar} gradient={interp.avatarGradient} size={44} />
+      <Avatar initials={initials} gradient="linear-gradient(135deg,#7b61ff,#00e5ff)" size={44} />
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>{interp.name}</div>
+        <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>{fullName}</div>
         <div style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 2 }}>
-          {interp.languages} · {interp.specializations} · {interp.location}
+          {member.email}
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 7 }}>
-          {interp.certifications.map(c => (
-            <span key={c} style={{ fontSize: '0.7rem', background: 'rgba(123,97,255,0.12)', border: '1px solid rgba(123,97,255,0.25)', color: '#a78bfa', padding: '2px 9px', borderRadius: 20 }}>{c}</span>
-          ))}
-          {interp.verified && (
-            <span style={{ fontSize: '0.7rem', background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.2)', color: 'var(--accent)', padding: '2px 9px', borderRadius: 20 }}>✓ Verified</span>
-          )}
+          <span style={{
+            fontSize: '0.7rem', padding: '2px 9px', borderRadius: 20,
+            background: member.status === 'accepted' ? 'rgba(52,211,153,0.12)' : 'rgba(0,229,255,0.08)',
+            border: `1px solid ${member.status === 'accepted' ? 'rgba(52,211,153,0.3)' : 'rgba(0,229,255,0.2)'}`,
+            color: member.status === 'accepted' ? '#34d399' : 'var(--accent)',
+          }}>
+            {member.status === 'accepted' ? 'Accepted' : member.status === 'declined' ? 'Declined' : 'Invited'}
+          </span>
         </div>
       </div>
       <button
