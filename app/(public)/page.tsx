@@ -84,7 +84,7 @@ export default function HomePage() {
                 marginBottom: 32,
               }}
             >
-              The right interpreter shouldn&apos;t be out of your hands. Browse real profiles, watch intro videos, and connect directly — your interpreter, your choice.
+              Finding the right interpreter shouldn&apos;t be out of your hands. Browse real profiles, watch intro videos, and connect directly — your interpreter, your choice.
             </p>
 
             <div className="hero-ctas">
