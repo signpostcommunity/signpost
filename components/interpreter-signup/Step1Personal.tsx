@@ -6,6 +6,42 @@ import {
   TextInput, PasswordInput, SelectInput, TextareaInput,
   ToggleTile, FormNav,
 } from './FormFields'
+
+function CommunityToggle({ label, description, checked, onChange }: {
+  label: string
+  description: string
+  checked: boolean
+  onChange: (v: boolean) => void
+}) {
+  return (
+    <div style={{
+      background: 'var(--surface2)', border: `1px solid ${checked ? 'rgba(0,229,255,0.25)' : 'var(--border)'}`,
+      borderRadius: 'var(--radius-sm)', padding: '14px 18px',
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+      transition: 'border-color 0.2s',
+    }}>
+      <div>
+        <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>{label}</div>
+        <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>{description}</div>
+      </div>
+      <button
+        type="button"
+        onClick={() => onChange(!checked)}
+        style={{
+          width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer',
+          background: checked ? 'var(--accent)' : 'var(--border)',
+          position: 'relative', transition: 'background 0.2s', flexShrink: 0,
+        }}
+      >
+        <span style={{
+          position: 'absolute', top: 2, left: checked ? 22 : 2,
+          width: 20, height: 20, borderRadius: '50%', background: '#fff',
+          transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+        }} />
+      </button>
+    </div>
+  )
+}
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton'
 
 const REGIONS = [
@@ -266,6 +302,109 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
               </FormField>
             </div>
           )}
+        </div>
+      </FormSection>
+
+      {/* Community & Identity */}
+      <FormSection style={{ marginTop: 32 }}>
+        <SectionTitle>Community &amp; Identity (Optional)</SectionTitle>
+        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
+          Help requesters find interpreters who share their lived experience. All fields are optional and visible on your public profile.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <CommunityToggle
+            label="LGBTQ+"
+            description="I identify as a member of the LGBTQ+ community"
+            checked={formData.lgbtq}
+            onChange={v => updateField('lgbtq', v)}
+          />
+          <CommunityToggle
+            label="Deaf-parented"
+            description="I was raised by Deaf parent(s) (CODA)"
+            checked={formData.deafParented}
+            onChange={v => updateField('deafParented', v)}
+          />
+          <CommunityToggle
+            label="BIPOC"
+            description="I identify as Black, Indigenous, or a Person of Color"
+            checked={formData.bipoc}
+            onChange={v => updateField('bipoc', v)}
+          />
+          {formData.bipoc && (
+            <div style={{ paddingLeft: 20, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {['Black/African American', 'Indigenous/Native American', 'Hispanic/Latine', 'Asian/Pacific Islander', 'Middle Eastern/North African', 'Multiracial'].map(opt => {
+                const selected = formData.bipocDetails.includes(opt)
+                return (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => updateField('bipocDetails', selected
+                      ? formData.bipocDetails.filter(x => x !== opt)
+                      : [...formData.bipocDetails, opt]
+                    )}
+                    style={{
+                      padding: '5px 12px', borderRadius: 100, fontSize: '0.78rem', fontWeight: 500,
+                      border: `1px solid ${selected ? 'rgba(0,229,255,0.5)' : 'var(--border)'}`,
+                      background: selected ? 'rgba(0,229,255,0.1)' : 'var(--surface2)',
+                      color: selected ? 'var(--accent)' : 'var(--muted)',
+                      cursor: 'pointer', transition: 'all 0.15s',
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}
+                  >
+                    {opt}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+          <CommunityToggle
+            label="Religious Affiliation"
+            description="I'd like to share my religious or spiritual background"
+            checked={formData.religiousAffiliation}
+            onChange={v => updateField('religiousAffiliation', v)}
+          />
+          {formData.religiousAffiliation && (
+            <div style={{ paddingLeft: 20, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {['Christian', 'Jewish', 'Muslim', 'Buddhist', 'Hindu', 'Sikh', 'Other'].map(opt => {
+                const selected = formData.religiousDetails.includes(opt)
+                return (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() => updateField('religiousDetails', selected
+                      ? formData.religiousDetails.filter(x => x !== opt)
+                      : [...formData.religiousDetails, opt]
+                    )}
+                    style={{
+                      padding: '5px 12px', borderRadius: 100, fontSize: '0.78rem', fontWeight: 500,
+                      border: `1px solid ${selected ? 'rgba(0,229,255,0.5)' : 'var(--border)'}`,
+                      background: selected ? 'rgba(0,229,255,0.1)' : 'var(--surface2)',
+                      color: selected ? 'var(--accent)' : 'var(--muted)',
+                      cursor: 'pointer', transition: 'all 0.15s',
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}
+                  >
+                    {opt}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+          <div style={{
+            background: 'var(--surface2)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)', padding: '14px 18px',
+          }}>
+            <FieldLabel>Gender Identity (optional)</FieldLabel>
+            <SelectInput
+              value={formData.genderIdentity}
+              onChange={e => updateField('genderIdentity', e.target.value)}
+            >
+              <option value="">Prefer not to say</option>
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+              <option value="nonbinary">Non-binary</option>
+            </SelectInput>
+          </div>
         </div>
       </FormSection>
 

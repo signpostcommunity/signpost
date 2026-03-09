@@ -140,6 +140,13 @@ interface ProfileData {
   default_payment_terms?: string | null
   notification_preferences?: NotificationPreferences | null
   notification_phone?: string | null
+  lgbtq?: boolean | null
+  deaf_parented?: boolean | null
+  bipoc?: boolean | null
+  bipoc_details?: string[] | null
+  religious_affiliation?: boolean | null
+  religious_details?: string[] | null
+  gender_identity?: string | null
 }
 
 interface NotificationPreferences {
@@ -181,7 +188,7 @@ interface ProfileClientProps {
 
 // ── Tabs ─────────────────────────────────────────────────────────────────────
 
-const TABS = ['Personal', 'Languages', 'Credentials', 'Bio & Video', 'Skills', 'Settings'] as const
+const TABS = ['Personal', 'Languages', 'Credentials', 'Bio & Video', 'Skills', 'Community & Identity', 'Settings'] as const
 type Tab = typeof TABS[number]
 
 function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
@@ -281,6 +288,14 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const [notifPrefs, setNotifPrefs] = useState<NotificationPreferences>(p.notification_preferences || DEFAULT_NOTIFICATION_PREFS)
   const [notifPhone, setNotifPhone] = useState(p.notification_phone || '')
   const [notifSaving, setNotifSaving] = useState(false)
+
+  // ── Community & Identity state ────────────────────────────────────
+  const [lgbtq, setLgbtq] = useState(p.lgbtq || false)
+  const [deafParented, setDeafParented] = useState(p.deaf_parented || false)
+  const [bipoc, setBipoc] = useState(p.bipoc || false)
+  const [bipocDetails, setBipocDetails] = useState<string[]>(p.bipoc_details || [])
+  const [religiousAff, setReligiousAff] = useState(p.religious_affiliation || false)
+  const [religiousDetails, setReligiousDetails] = useState<string[]>(p.religious_details || [])
 
   // ── Client-side fallback: load profile if server prop was null ──────
   useEffect(() => {
@@ -905,7 +920,64 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
         />
       )}
 
-      {/* ── Tab 6: Settings ──────────────────────────────────────────── */}
+      {/* ── Tab 6: Community & Identity ────────────────────────────── */}
+      {activeTab === 'Community & Identity' && (
+        <>
+          <div style={sectionTitleStyle}>Community &amp; Identity</div>
+          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 20, marginTop: -12, lineHeight: 1.6 }}>
+            Optionally share identity information. This helps clients find interpreters who share their background or community.
+          </p>
+
+          {/* LGBTQ+ */}
+          <CommunityToggle label="LGBTQ+" checked={lgbtq} onChange={() => setLgbtq(!lgbtq)} />
+
+          {/* Deaf-parented */}
+          <CommunityToggle label="Deaf-parented (CODA)" checked={deafParented} onChange={() => setDeafParented(!deafParented)} />
+
+          {/* BIPOC */}
+          <CommunityToggle label="BIPOC" checked={bipoc} onChange={() => { if (bipoc) { setBipoc(false); setBipocDetails([]) } else { setBipoc(true) } }} />
+          {bipoc && (
+            <div style={{ marginLeft: 16, marginBottom: 16, paddingLeft: 16, borderLeft: '2px solid var(--border)', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {['Black/African American', 'Asian/Pacific Islander', 'Hispanic/Latino(a)', 'Indigenous/Native American', 'Middle Eastern/North African', 'Multiracial'].map(opt => (
+                <button key={opt} onClick={() => setBipocDetails(prev => prev.includes(opt) ? prev.filter(v => v !== opt) : [...prev, opt])} style={{
+                  padding: '5px 14px', borderRadius: 20, fontSize: '0.8rem', cursor: 'pointer',
+                  border: bipocDetails.includes(opt) ? '1px solid rgba(0,229,255,0.5)' : '1px solid var(--border)',
+                  background: bipocDetails.includes(opt) ? 'rgba(0,229,255,0.1)' : 'var(--surface2)',
+                  color: bipocDetails.includes(opt) ? 'var(--accent)' : 'var(--muted)',
+                  fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
+                }}>{opt}</button>
+              ))}
+            </div>
+          )}
+
+          {/* Religious affiliation */}
+          <CommunityToggle label="Religious affiliation" checked={religiousAff} onChange={() => { if (religiousAff) { setReligiousAff(false); setReligiousDetails([]) } else { setReligiousAff(true) } }} />
+          {religiousAff && (
+            <div style={{ marginLeft: 16, marginBottom: 16, paddingLeft: 16, borderLeft: '2px solid var(--border)', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {['Buddhist', 'Christian', 'Hindu', 'Jewish', 'Muslim', 'Sikh', 'Other'].map(opt => (
+                <button key={opt} onClick={() => setReligiousDetails(prev => prev.includes(opt) ? prev.filter(v => v !== opt) : [...prev, opt])} style={{
+                  padding: '5px 14px', borderRadius: 20, fontSize: '0.8rem', cursor: 'pointer',
+                  border: religiousDetails.includes(opt) ? '1px solid rgba(0,229,255,0.5)' : '1px solid var(--border)',
+                  background: religiousDetails.includes(opt) ? 'rgba(0,229,255,0.1)' : 'var(--surface2)',
+                  color: religiousDetails.includes(opt) ? 'var(--accent)' : 'var(--muted)',
+                  fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
+                }}>{opt}</button>
+              ))}
+            </div>
+          )}
+
+          <SaveButton saving={saving} onClick={() => saveFields({
+            lgbtq,
+            deaf_parented: deafParented,
+            bipoc,
+            bipoc_details: bipocDetails,
+            religious_affiliation: religiousAff,
+            religious_details: religiousDetails,
+          })} />
+        </>
+      )}
+
+      {/* ── Tab 7: Settings ──────────────────────────────────────────── */}
       {activeTab === 'Settings' && (
         <SettingsTab
           invoicingPref={invoicingPref}
@@ -937,7 +1009,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
 // ── Credentials tab (isolated state) ─────────────────────────────────────────
 
 interface CertEntry { id: string; name: string; issuingBody: string; year: string; verificationLink: string }
-interface EduEntry { id: string; degree: string; institution: string }
+interface EduEntry { id: string; degree: string; institution: string; year: string }
 
 function CredentialsTab({ saving, onSave, initialCerts, initialEducation, existingDraftData }: {
   saving: boolean
@@ -950,7 +1022,7 @@ function CredentialsTab({ saving, onSave, initialCerts, initialEducation, existi
     initialCerts?.length ? initialCerts : [{ id: `cert-${Date.now()}`, name: '', issuingBody: '', year: '', verificationLink: '' }]
   )
   const [education, setEducation] = useState<EduEntry[]>(
-    initialEducation?.length ? initialEducation : [{ id: `edu-${Date.now()}`, degree: '', institution: '' }]
+    initialEducation?.length ? initialEducation : [{ id: `edu-${Date.now()}`, degree: '', institution: '', year: '' }]
   )
 
   function updateCert(id: string, field: keyof CertEntry, value: string) {
@@ -1036,14 +1108,18 @@ function CredentialsTab({ saving, onSave, initialCerts, initialEducation, existi
             background: 'var(--surface2)', border: '1px solid var(--border)',
             borderRadius: 'var(--radius-sm)', padding: '20px 24px',
           }}>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, marginBottom: 10 }}>
+            <div style={{ marginBottom: 10 }}>
+              <label style={labelStyle}>Degree / Qualification</label>
+              <input value={edu.degree} onChange={e => updateEdu(edu.id, 'degree', e.target.value)} placeholder="MA Interpreter Studies" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: 12, marginBottom: 10 }}>
               <div>
-                <label style={labelStyle}>Degree / Qualification</label>
-                <input value={edu.degree} onChange={e => updateEdu(edu.id, 'degree', e.target.value)} placeholder="MA Interpreter Studies" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+                <label style={labelStyle}>Institution</label>
+                <input value={edu.institution} onChange={e => updateEdu(edu.id, 'institution', e.target.value)} placeholder="Universidad de Salamanca" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
               </div>
               <div>
-                <label style={labelStyle}>Institution &amp; Year</label>
-                <input value={edu.institution} onChange={e => updateEdu(edu.id, 'institution', e.target.value)} placeholder="Universidad de Salamanca · 2013" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+                <label style={labelStyle}>Year</label>
+                <input value={edu.year || ''} onChange={e => updateEdu(edu.id, 'year', e.target.value)} placeholder="2013" maxLength={4} style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
               </div>
             </div>
             {education.length > 1 && (
@@ -1059,7 +1135,7 @@ function CredentialsTab({ saving, onSave, initialCerts, initialEducation, existi
         ))}
       </div>
       <button
-        onClick={() => setEducation(prev => [...prev, { id: `edu-${Date.now()}`, degree: '', institution: '' }])}
+        onClick={() => setEducation(prev => [...prev, { id: `edu-${Date.now()}`, degree: '', institution: '', year: '' }])}
         style={{
           background: 'none', border: '1px dashed var(--border)',
           color: 'var(--muted)', borderRadius: 'var(--radius-sm)',
@@ -1092,7 +1168,15 @@ function SkillsTab({ specs, setSpecs, specializedSkills, setSpecializedSkills, s
   saving: boolean
   onSave: () => void
 }) {
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
+  // Default all categories collapsed except the first one (Arts & Performance)
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {}
+    const categories = Object.keys(SPECIALIZATION_CATEGORIES)
+    categories.forEach((cat, idx) => {
+      initial[cat] = idx !== 0 // first category starts expanded (not collapsed)
+    })
+    return initial
+  })
 
   function toggleSpec(spec: string) {
     setSpecs(specs.includes(spec) ? specs.filter(s => s !== spec) : [...specs, spec])
@@ -1225,6 +1309,37 @@ function SkillsTab({ specs, setSpecs, specializedSkills, setSpecializedSkills, s
 
       <SaveButton saving={saving} onClick={onSave} />
     </>
+  )
+}
+
+// ── Community toggle ──────────────────────────────────────────────────────────
+
+function CommunityToggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: () => void }) {
+  return (
+    <button onClick={onChange} style={{
+      display: 'flex', alignItems: 'center', gap: 12, width: '100%',
+      padding: '10px 0', marginBottom: 8, background: 'none', border: 'none',
+      cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+    }}>
+      <div style={{
+        width: 40, height: 20, borderRadius: 100, flexShrink: 0,
+        background: checked ? 'var(--accent)' : 'var(--surface2)',
+        border: checked ? 'none' : '1px solid var(--border)',
+        position: 'relative', transition: 'background 0.2s',
+      }}>
+        <div style={{
+          width: 16, height: 16, borderRadius: '50%',
+          background: checked ? '#000' : 'var(--muted)',
+          position: 'absolute', top: 2,
+          left: checked ? 22 : 2, transition: 'left 0.2s',
+        }} />
+      </div>
+      <span style={{
+        fontSize: '0.9rem',
+        color: checked ? 'var(--accent)' : 'var(--muted)',
+        fontWeight: checked ? 600 : 400,
+      }}>{label}</span>
+    </button>
   )
 }
 

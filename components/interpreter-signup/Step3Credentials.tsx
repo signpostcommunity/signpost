@@ -12,7 +12,7 @@ function newCert(): Certification {
 }
 
 function newEdu(): Education {
-  return { id: `edu-${Date.now()}`, degree: '', institution: '' }
+  return { id: `edu-${Date.now()}`, degree: '', institution: '', year: '' }
 }
 
 const BUSINESS_DOC_TYPES = [
@@ -112,11 +112,13 @@ function BusinessDocRow({ id, label, hint, doc, onChange }: {
             </FormField>
           )}
 
+          {/* TODO: Add file upload for business documents — PDF only, 5MB max,
+              upload to Supabase storage "documents" bucket under auth.uid() folder */}
           <FormField style={{ marginBottom: 12 }}>
-            <FieldLabel>Verification link or upload</FieldLabel>
+            <FieldLabel>Verification link</FieldLabel>
             <input
               type="url"
-              placeholder="https://… or paste a link to your documentation"
+              placeholder="https://… paste a link to your documentation"
               value={doc.linkOrFile}
               onChange={e => onChange({ linkOrFile: e.target.value })}
               style={inputStyle}
@@ -275,7 +277,7 @@ export default function Step3Credentials({ onBack, onContinue }: {
               display: 'flex', flexDirection: 'column', gap: 10,
               width: '100%', boxSizing: 'border-box',
             }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}>
                 <FormField>
                   <FieldLabel>Degree / Qualification</FieldLabel>
                   <TextInput
@@ -284,12 +286,23 @@ export default function Step3Credentials({ onBack, onContinue }: {
                     onChange={e => updateEdu(edu.id, 'degree', e.target.value)}
                   />
                 </FormField>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: 16 }}>
                 <FormField>
-                  <FieldLabel>Institution &amp; Year</FieldLabel>
+                  <FieldLabel>Institution</FieldLabel>
                   <TextInput
-                    placeholder="Universidad de Salamanca · 2013"
+                    placeholder="Universidad de Salamanca"
                     value={edu.institution}
                     onChange={e => updateEdu(edu.id, 'institution', e.target.value)}
+                  />
+                </FormField>
+                <FormField>
+                  <FieldLabel>Year</FieldLabel>
+                  <TextInput
+                    placeholder="2013"
+                    value={edu.year}
+                    onChange={e => updateEdu(edu.id, 'year', e.target.value)}
+                    maxLength={4}
                   />
                 </FormField>
               </div>

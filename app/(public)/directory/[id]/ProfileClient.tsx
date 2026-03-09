@@ -530,6 +530,40 @@ function OverviewTab({ interpreter: i }: { interpreter: Interpreter }) {
         </p>
       </Section>
 
+      {i.affinities.length > 0 && (
+        <Section title="Community & Identity">
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {i.affinities.map(a => (
+              <span key={a} style={{
+                padding: '5px 14px', borderRadius: 100, fontSize: '0.82rem', fontWeight: 600,
+                border: '1px solid rgba(0,229,255,0.3)', background: 'rgba(0,229,255,0.08)',
+                color: 'var(--accent)',
+              }}>
+                {a}
+              </span>
+            ))}
+            {i.racialIdentity.map(r => (
+              <span key={r} style={{
+                padding: '5px 14px', borderRadius: 100, fontSize: '0.82rem',
+                border: '1px solid var(--border)', background: 'var(--surface2)',
+                color: 'var(--text)',
+              }}>
+                {r}
+              </span>
+            ))}
+            {i.religiousAffiliation.map(r => (
+              <span key={r} style={{
+                padding: '5px 14px', borderRadius: 100, fontSize: '0.82rem',
+                border: '1px solid var(--border)', background: 'var(--surface2)',
+                color: 'var(--text)',
+              }}>
+                {r}
+              </span>
+            ))}
+          </div>
+        </Section>
+      )}
+
       <Section title="Settings & Specializations">
         {(() => {
           const grouped = groupSpecsByCategory(i.specs);

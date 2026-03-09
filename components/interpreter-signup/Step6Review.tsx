@@ -72,6 +72,13 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         specialized_skills: formData.otherSpecializations
           ? formData.otherSpecializations.split(',').map(s => s.trim()).filter(Boolean)
           : [],
+        lgbtq: formData.lgbtq,
+        deaf_parented: formData.deafParented,
+        bipoc: formData.bipoc,
+        bipoc_details: formData.bipocDetails,
+        religious_affiliation: formData.religiousAffiliation,
+        religious_details: formData.religiousDetails,
+        gender_identity: formData.genderIdentity || null,
         video_url: formData.videoUrl,
         video_desc: formData.videoDescription,
         photo_url: formData.avatarUrl,

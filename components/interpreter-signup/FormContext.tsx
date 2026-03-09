@@ -37,6 +37,7 @@ export type Education = {
   id: string
   degree: string
   institution: string
+  year: string
 }
 
 export type FormData = {
@@ -56,6 +57,14 @@ export type FormData = {
   regions: string[]
   eventCoordination: boolean
   coordinationBio: string
+  // Community & Identity
+  lgbtq: boolean
+  deafParented: boolean
+  bipoc: boolean
+  bipocDetails: string[]
+  religiousAffiliation: boolean
+  religiousDetails: string[]
+  genderIdentity: string
   // Step 2 - Languages
   signLanguages: string[]
   spokenLanguages: string[]
@@ -124,9 +133,11 @@ const initialFormData: FormData = {
   country: '', city: '', state: '', bio: '', interpreterType: '', modeOfWork: '',
   yearsExperience: '', regions: [],
   eventCoordination: false, coordinationBio: '',
+  lgbtq: false, deafParented: false, bipoc: false, bipocDetails: [],
+  religiousAffiliation: false, religiousDetails: [], genderIdentity: '',
   signLanguages: [], spokenLanguages: [], specializations: [], otherSpecializations: '',
   certifications: [{ id: 'cert-1', name: '', issuingBody: '', year: '', verificationLink: '' }],
-  education: [{ id: 'edu-1', degree: '', institution: '' }],
+  education: [{ id: 'edu-1', degree: '', institution: '', year: '' }],
   rateProfiles: defaultRateProfiles,
   avatarUrl: '', videoUrl: '', videoDescription: '',
   agreeTerms: false, agreeBooking: false, agreeCredentials: false,

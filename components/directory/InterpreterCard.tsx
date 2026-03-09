@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import type { Interpreter } from '@/lib/types';
-import { groupSpecsByCategory } from '@/lib/constants/specializations';
 
 interface Props {
   interpreter: Interpreter;
@@ -186,31 +185,7 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
             ))}
           </div>
 
-          {/* Specializations — grouped by category */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
-            {(() => {
-              const grouped = groupSpecsByCategory(i.specs);
-              return Object.entries(grouped).map(([cat, subs]) => (
-                <div key={cat} style={{ fontSize: '0.72rem', color: 'var(--muted)', lineHeight: 1.4 }}>
-                  <span style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.68rem' }}>{cat}:</span>{' '}
-                  {subs.join(', ')}
-                </div>
-              ));
-            })()}
-            {i.specializedSkills && i.specializedSkills.length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '2px' }}>
-                {i.specializedSkills.map(skill => (
-                  <span key={skill} style={{
-                    display: 'inline-flex', alignItems: 'center', borderRadius: '6px',
-                    padding: '2px 7px', fontSize: '0.68rem', fontWeight: 600,
-                    border: '1px solid rgba(123,97,255,0.25)', background: 'rgba(123,97,255,0.08)', color: '#a891ff',
-                  }}>
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* Specializations removed from card — visible on profile page */}
 
           {/* Regions + Certs — pushed to bottom */}
           <div
