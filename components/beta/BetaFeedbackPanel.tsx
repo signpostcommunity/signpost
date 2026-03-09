@@ -5,56 +5,31 @@ import { usePathname } from 'next/navigation';
 
 // ── Route-specific prompts ────────────────────────────────────────────────────
 
-const ROUTE_CONFIG: Record<string, { prompt: string; scenario?: string; question?: string; scenario2?: string; question2?: string }> = {
-  '/': {
-    prompt:
-      "Welcome to the signpost interpreter beta! Take a moment to look over this page — then when you're ready, go ahead and create your interpreter account. As you move through each step, drop your notes here — anything confusing, broken, missing, or that you love.\n\nFor the beta, you can create your actual profile to be posted live on the site when we open — or a test profile that we'll delete after the beta. Either way, you can always update your profile at any time! If you're creating a test profile, please enter your name as: First Name (TEST)",
-  },
+const ROUTE_CONFIG: Record<string, { prompt?: string; scenario?: string; question?: string; scenario2?: string; question2?: string }> = {
   '/interpreter': {
     prompt:
-      "Welcome to the signpost interpreter beta! Take a moment to look over this page — then when you're ready, go ahead and create your interpreter account. As you move through each step, drop your notes here — anything confusing, broken, missing, or that you love.\n\nFor the beta, you can create your actual profile to be posted live on the site when we open — or a test profile that we'll delete after the beta. Either way, you can always update your profile at any time! If you're creating a test profile, please enter your name as: First Name (TEST)",
-  },
-  '/interpreter/login': {
-    prompt:
-      "Welcome to the signpost interpreter beta! Take a moment to look over this page — then when you're ready, go ahead and create your interpreter account. As you move through each step, drop your notes here — anything confusing, broken, missing, or that you love.\n\nFor the beta, you can create your actual profile to be posted live on the site when we open — or a test profile that we'll delete after the beta. Either way, you can always update your profile at any time! If you're creating a test profile, please enter your name as: First Name (TEST)",
+      "Take a moment to look over this page — then when you're ready, find where you should go to create your interpreter account. As you move through each step, drop your notes here — anything confusing, broken, missing, or that you love.",
+    scenario: 'Find out more about the people who built signpost. Where would you typically look for that?',
   },
   '/interpreter/signup': {
     prompt:
-      "You're building your interpreter profile. Note anything that's missing, confusing, or doesn't work as expected.",
+      "You're building your interpreter profile. Note anything that's missing, confusing, or doesn't work as expected. We will look at each section in more depth in the Dashboard, so don't worry about getting it perfect now.",
     question: 'Is there anything missing that Deaf clients or organizations would need to see?',
   },
   '/interpreter/dashboard': {
     prompt: 'This is your home base — have a look around!',
-    scenario:
-      "It's 8pm and you're feeling sick. You have a job tomorrow. How do you let the requester know and start looking for a sub?",
-    question: "What's the first thing you went looking for?",
+    question: "What's the first thing you went looking for? Did you find it easily?",
   },
   '/interpreter/dashboard/inquiries': {
-    prompt: 'You have a new booking request. Try checking and responding to it.',
-    scenario: 'Check and respond to a pending request.',
+    scenario: 'You have several new booking requests. Try responding to them in different ways.',
     question: 'Was it clear what you were supposed to do and what would happen next?',
   },
   '/interpreter/dashboard/inbox': {
-    prompt: 'You have a message. Try reading and responding to it.',
-    scenario: 'Respond to a message in your inbox.',
+    scenario: 'You have a message. Try reading and responding to it.',
     question: 'Did messaging feel natural, or was anything awkward or missing?',
   },
-  '/interpreter/dashboard/profile': {
-    prompt: "You're looking at your public profile — this is what Deaf clients and organizations will see.",
-    question: "Does this represent you the way you'd want to be seen?",
-  },
-  '/interpreter/dashboard/rates': {
-    prompt: "You're setting your rates and terms.",
-    question:
-      "What's missing that you'd need to work professionally? (minimum call time, cancellation windows, travel pay, etc.)",
-  },
-  '/interpreter/dashboard/availability': {
-    prompt: "You're setting your availability.",
-    question: "Does this give you enough control over when and how you're booked?",
-  },
   '/interpreter/dashboard/confirmed': {
-    prompt: 'These are your confirmed bookings — upcoming, completed, and cancelled.',
-    scenario: "Look at a specific job to see if you have all of the information you need.",
+    scenario: 'Look at a specific job to see if you have all of the information you need.',
     question: 'Did the layout feel logical, was anything missing?',
     scenario2: "Cancel a job that you have already confirmed. (I know, it makes me nauseous thinking about it too, but these are fake!)",
     question2: 'How did you feel about the flow? Does it feel reasonable, easy to understand?',
@@ -64,16 +39,27 @@ const ROUTE_CONFIG: Record<string, { prompt: string; scenario?: string; question
     scenario: "Find a past job that hasn't been invoiced yet and submit an invoice for it. Review the pre-filled details, adjust if needed, and send it.",
     question: "Was the invoicing flow clear? Is there anything missing that you'd need to invoice professionally?",
   },
+  '/interpreter/dashboard/profile': {
+    prompt: "You're looking at your public profile — this is what Deaf clients and organizations will see.",
+    question: "Does this represent you the way you'd want to be seen? Is there anything missing?",
+    question2: 'Are there any work settings, skillsets, or identity groups that should be added?',
+  },
+  '/interpreter/dashboard/rates': {
+    prompt: "You're setting your rates and terms.",
+    question: "What's missing that you'd need to easily set your rates and policies?",
+  },
+  '/interpreter/dashboard/availability': {
+    prompt: "You're setting your availability.",
+    question: "Does this give you enough control over when and how you're booked?",
+  },
   '/interpreter/dashboard/team': {
     prompt: 'This is where you manage your preferred team interpreters.',
     scenario: 'Add an interpreter to your Preferred Team list. Try finding them in the directory.',
     question: 'Was finding and adding them straightforward?',
   },
   '/directory': {
-    prompt:
-      "This is where Deaf clients and organizations search for interpreters — but it's also where you can find and add colleagues to your Preferred Team list. Have a look around from both perspectives.",
-    question:
-      "Does your profile show up the way you'd expect? Is there anything about how interpreters are displayed that you'd want to change?",
+    question: "Does your profile show up the way you'd expect? Is there anything about how interpreters are displayed that you'd want to change?",
+    scenario: "Your favorite team interpreter of all time isn't in the directory. How would you invite them?",
   },
 };
 
@@ -84,42 +70,63 @@ function getConfig(pathname: string) {
   return { prompt: `You're on ${pageName}. Note anything that feels off, confusing, or missing.` };
 }
 
-// ── Final question definitions ────────────────────────────────────────────────
+// ── End-of-session question definitions ──────────────────────────────────────
 
-const SIGNUP_EASE_OPTIONS = [
-  'Very easy — no issues',
-  'Mostly easy — a few small things',
-  'Struggled — needed to figure things out',
-  'Really difficult — something was broken',
+const PROFESSIONAL_NEEDS_OPTIONS = [
+  'Exceeds my needs',
+  'Meets my needs',
+  'Partially meets — some things missing',
+  "Doesn't meet my needs yet",
+  "I don't use other platforms",
 ];
 
-const DASHBOARD_FEEL_OPTIONS = [
-  'Intuitive — I knew where everything was',
-  'Mostly clear — a few things took a second',
-  "Confusing — I wasn't sure what to do",
-  "I couldn't figure it out",
+const LIKELIHOOD_OPTIONS = [
+  'I love it! I wish I could use it for all of my work.',
+  'I like it, I will add it to places I accept jobs from.',
+  'Meh, my jury is still out.',
+  "I'm not a fan, count me out.",
 ];
 
-const RATES_CONTROL_OPTIONS = [
-  'Yes — I can set what I need',
-  'Mostly — a few things are missing',
-  'No — I\'d need significant changes to use this professionally',
+const YES_NO = ['Yes', 'No'];
+
+const STAR_RATING_FEEL_OPTIONS = [
+  'Love it',
+  "It's fine",
+  'Not sure',
+  "I don't like it",
 ];
 
-const WOULD_USE_OPTIONS = [
-  'Yes, absolutely',
-  'Probably — depends on how it develops',
-  'Maybe — I have some concerns',
-  'Probably not',
+const WHO_SHOULD_RATE_OPTIONS = [
+  'Deaf/HoH consumers only',
+  'Organizations only',
+  'Both',
 ];
 
-const TRIED_INVOICING_OPTIONS = ['Yes', 'No'];
+const RATING_DISPLAY_OPTIONS = [
+  'Separately',
+  'Combined average only',
+  'Both — overall average with expandable groups',
+];
 
 const INVOICING_COMPARE_OPTIONS = [
   'Much better',
   'About the same',
   'Worse',
   "I don't currently invoice",
+];
+
+const PREMIUM_INTEREST_OPTIONS = [
+  'Definitely',
+  'Maybe',
+  'Probably not',
+  'No',
+];
+
+const PREMIUM_PRICE_OPTIONS = [
+  '$5–10',
+  '$10–20',
+  '$20–30',
+  'More, if the features are right',
 ];
 
 // ── Shared styles ─────────────────────────────────────────────────────────────
@@ -160,6 +167,15 @@ const radioLabelStyle: React.CSSProperties = {
   padding: '4px 0',
 };
 
+const checkboxLabelStyle: React.CSSProperties = {
+  ...radioLabelStyle,
+};
+
+const separatorStyle: React.CSSProperties = {
+  borderTop: '1px solid #e0ddd6',
+  margin: '6px 0',
+};
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type PageFeedback = {
@@ -184,14 +200,35 @@ export default function BetaFeedbackPanel() {
 
   // Final questions state
   const [showFinal, setShowFinal] = useState(false);
-  const [signupEase, setSignupEase] = useState('');
-  const [dashboardFeel, setDashboardFeel] = useState('');
-  const [ratesControl, setRatesControl] = useState('');
-  const [wouldUse, setWouldUse] = useState('');
+
+  // Q1: Professional needs
+  const [professionalNeeds, setProfessionalNeeds] = useState('');
+  const [whatsWorkingMissing, setWhatsWorkingMissing] = useState('');
+
+  // Q2: Likelihood to use
+  const [likelihood, setLikelihood] = useState('');
+
+  // Q3: Mobile
+  const [usedMobile, setUsedMobile] = useState('');
+  const [mobileFeedback, setMobileFeedback] = useState('');
+
+  // Q4: Star ratings
+  const [starRatingFeel, setStarRatingFeel] = useState('');
+  const [whoShouldRate, setWhoShouldRate] = useState<string[]>([]);
+  const [dhhRatingCategories, setDhhRatingCategories] = useState('');
+  const [orgRatingCategories, setOrgRatingCategories] = useState('');
+  const [ratingDisplay, setRatingDisplay] = useState('');
+
+  // Q5: Invoicing
   const [triedInvoicing, setTriedInvoicing] = useState('');
   const [invoicingCompare, setInvoicingCompare] = useState('');
-  const [whatNeedsChange, setWhatNeedsChange] = useState('');
-  const [oneThingForMolly, setOneThingForMolly] = useState('');
+
+  // Q6: Premium
+  const [premiumInterest, setPremiumInterest] = useState('');
+  const [premiumPrice, setPremiumPrice] = useState('');
+
+  // Q7: Final
+  const [dreamPlatform, setDreamPlatform] = useState('');
 
   // Submit state
   const [submitting, setSubmitting] = useState(false);
@@ -201,7 +238,6 @@ export default function BetaFeedbackPanel() {
   const [showEndOfSession, setShowEndOfSession] = useState(false);
 
   const config = getConfig(pathname);
-  const isWelcomePage = ['/', '/interpreter', '/interpreter/login'].includes(pathname);
 
   // Track dashboard visit for end-of-session trigger
   useEffect(() => {
@@ -240,7 +276,6 @@ export default function BetaFeedbackPanel() {
   // Save per-page feedback to local state only
   function handlePageSave() {
     if (!notes.trim() && !specificAnswer.trim()) return;
-    // Replace existing feedback for same page, or add new
     const existing = feedbackRef.current;
     const idx = existing.findIndex(f => f.page === pathname);
     const entry: PageFeedback = { page: pathname, openNotes: notes.trim(), specificAnswer: specificAnswer.trim() };
@@ -253,12 +288,11 @@ export default function BetaFeedbackPanel() {
     setTimeout(() => setPageSaved(false), 3000);
   }
 
-  // Submit everything to Monday.com
+  // Submit everything
   async function handleFinalSubmit() {
     setSubmitting(true);
     setError(null);
     try {
-      // Include current page fields if they have content and haven't been saved yet
       if (notes.trim() || specificAnswer.trim()) {
         handlePageSave();
       }
@@ -268,14 +302,21 @@ export default function BetaFeedbackPanel() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           pageFeedback: feedbackRef.current,
-          signupEase,
-          dashboardFeel,
-          ratesControl,
-          wouldUse,
+          professionalNeeds,
+          whatsWorkingMissing,
+          likelihood,
+          usedMobile,
+          mobileFeedback,
+          starRatingFeel,
+          whoShouldRate,
+          dhhRatingCategories,
+          orgRatingCategories,
+          ratingDisplay,
           triedInvoicing,
           invoicingCompare,
-          whatNeedsChange,
-          oneThingForMolly,
+          premiumInterest,
+          premiumPrice,
+          dreamPlatform,
         }),
       });
       if (!res.ok) {
@@ -290,6 +331,10 @@ export default function BetaFeedbackPanel() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function toggleCheckbox(value: string, arr: string[], setter: (v: string[]) => void) {
+    setter(arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value]);
   }
 
   // ── Collapsed tab ───────────────────────────────────────────────────────────
@@ -319,7 +364,7 @@ export default function BetaFeedbackPanel() {
           boxShadow: '-2px 0 12px rgba(0,0,0,0.3)',
         }}
       >
-        Beta Feedback ✏️
+        Beta Feedback
       </button>
     );
   }
@@ -387,7 +432,7 @@ export default function BetaFeedbackPanel() {
             padding: '0 2px',
           }}
         >
-          ×
+          &times;
         </button>
       </div>
 
@@ -415,6 +460,17 @@ export default function BetaFeedbackPanel() {
         ) : showFinal ? (
           /* ── Final questions ── */
           <>
+            {/* Back to dashboard link */}
+            <a
+              href="/interpreter/dashboard"
+              style={{
+                fontSize: '0.77rem', color: '#00e5ff', textDecoration: 'none',
+                fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4,
+              }}
+            >
+              &larr; Go back to Interpreter Portal
+            </a>
+
             <div style={{
               background: '#fff7f0', border: '1px solid #ffd0b0', borderRadius: 8,
               padding: '10px 12px', fontSize: '0.79rem', color: '#7a3600', lineHeight: 1.55,
@@ -422,70 +478,131 @@ export default function BetaFeedbackPanel() {
               Almost done! Answer these final questions, then hit <strong>Submit all feedback</strong>.
             </div>
 
-            {/* Q1: Signup ease */}
+            {/* ── Q1: Professional needs ── */}
+            <div style={separatorStyle} />
             <div>
-              <label style={labelStyle}>How easy was signup?</label>
-              {SIGNUP_EASE_OPTIONS.map(opt => (
+              <label style={labelStyle}>1. Professional Needs</label>
+              <p style={{ fontSize: '0.77rem', color: '#555', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
+                Thinking about efficiency, visibility, customization, and control &mdash; how does signpost compare to agencies, other platforms, or other software you currently use to manage your interpreting work?
+              </p>
+              {PROFESSIONAL_NEEDS_OPTIONS.map(opt => (
                 <label key={opt} style={radioLabelStyle}>
-                  <input type="radio" name="signupEase" value={opt} checked={signupEase === opt}
-                    onChange={() => setSignupEase(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                  <input type="radio" name="professionalNeeds" value={opt} checked={professionalNeeds === opt}
+                    onChange={() => setProfessionalNeeds(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                  <span>{opt}</span>
+                </label>
+              ))}
+            </div>
+            <div>
+              <label style={labelStyle}>What&apos;s working well, and what&apos;s missing?</label>
+              <textarea value={whatsWorkingMissing} onChange={e => setWhatsWorkingMissing(e.target.value)}
+                placeholder="What's working, what's missing..." rows={3} style={textareaStyle} />
+            </div>
+
+            {/* ── Q2: Likelihood to use ── */}
+            <div style={separatorStyle} />
+            <div>
+              <label style={labelStyle}>2. Likelihood to Use</label>
+              <p style={{ fontSize: '0.77rem', color: '#555', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
+                How likely are you to use signpost as part of your interpreting work?
+              </p>
+              {LIKELIHOOD_OPTIONS.map(opt => (
+                <label key={opt} style={radioLabelStyle}>
+                  <input type="radio" name="likelihood" value={opt} checked={likelihood === opt}
+                    onChange={() => setLikelihood(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
                   <span>{opt}</span>
                 </label>
               ))}
             </div>
 
-            {/* Q2: Dashboard feel */}
+            {/* ── Q3: Mobile ── */}
+            <div style={separatorStyle} />
             <div>
-              <label style={labelStyle}>How did the dashboard feel?</label>
-              {DASHBOARD_FEEL_OPTIONS.map(opt => (
+              <label style={labelStyle}>3. Mobile</label>
+              <p style={{ fontSize: '0.77rem', color: '#555', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
+                Did you use signpost on your phone or tablet?
+              </p>
+              {YES_NO.map(opt => (
                 <label key={opt} style={radioLabelStyle}>
-                  <input type="radio" name="dashboardFeel" value={opt} checked={dashboardFeel === opt}
-                    onChange={() => setDashboardFeel(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                  <input type="radio" name="usedMobile" value={opt} checked={usedMobile === opt}
+                    onChange={() => setUsedMobile(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                  <span>{opt}</span>
+                </label>
+              ))}
+            </div>
+            {usedMobile === 'Yes' && (
+              <div>
+                <label style={labelStyle}>If yes &mdash; were any buttons, menus, or text difficult to tap or read?</label>
+                <textarea value={mobileFeedback} onChange={e => setMobileFeedback(e.target.value)}
+                  placeholder="Any mobile issues..." rows={3} style={textareaStyle} />
+              </div>
+            )}
+
+            {/* ── Q4: Star ratings ── */}
+            <div style={separatorStyle} />
+            <div>
+              <label style={labelStyle}>4. Star Ratings</label>
+              <p style={{ fontSize: '0.77rem', color: '#555', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
+                How would you feel about a star rating system for interpreters on signpost?
+              </p>
+              {STAR_RATING_FEEL_OPTIONS.map(opt => (
+                <label key={opt} style={radioLabelStyle}>
+                  <input type="radio" name="starRatingFeel" value={opt} checked={starRatingFeel === opt}
+                    onChange={() => setStarRatingFeel(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                  <span>{opt}</span>
+                </label>
+              ))}
+            </div>
+            <div>
+              <label style={labelStyle}>Who should be able to rate interpreters? (select all)</label>
+              {WHO_SHOULD_RATE_OPTIONS.map(opt => (
+                <label key={opt} style={checkboxLabelStyle}>
+                  <input type="checkbox" checked={whoShouldRate.includes(opt)}
+                    onChange={() => toggleCheckbox(opt, whoShouldRate, setWhoShouldRate)}
+                    style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                  <span>{opt}</span>
+                </label>
+              ))}
+            </div>
+            <div>
+              <label style={labelStyle}>If D/HH consumers could rate interpreters, what categories would matter most?</label>
+              <textarea value={dhhRatingCategories} onChange={e => setDhhRatingCategories(e.target.value)}
+                placeholder="e.g. clarity, professionalism, signing style..." rows={2} style={textareaStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>If organizations could rate interpreters, what categories would matter most?</label>
+              <textarea value={orgRatingCategories} onChange={e => setOrgRatingCategories(e.target.value)}
+                placeholder="e.g. punctuality, reliability, communication..." rows={2} style={textareaStyle} />
+            </div>
+            <div>
+              <label style={labelStyle}>If both groups can rate, how should ratings be displayed?</label>
+              {RATING_DISPLAY_OPTIONS.map(opt => (
+                <label key={opt} style={radioLabelStyle}>
+                  <input type="radio" name="ratingDisplay" value={opt} checked={ratingDisplay === opt}
+                    onChange={() => setRatingDisplay(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
                   <span>{opt}</span>
                 </label>
               ))}
             </div>
 
-            {/* Q3: Rates control */}
+            {/* ── Q5: Invoicing ── */}
+            <div style={separatorStyle} />
             <div>
-              <label style={labelStyle}>Does rate setup give enough control?</label>
-              {RATES_CONTROL_OPTIONS.map(opt => (
-                <label key={opt} style={radioLabelStyle}>
-                  <input type="radio" name="ratesControl" value={opt} checked={ratesControl === opt}
-                    onChange={() => setRatesControl(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
-                  <span>{opt}</span>
-                </label>
-              ))}
-            </div>
-
-            {/* Q4: Would you use signpost */}
-            <div>
-              <label style={labelStyle}>Would you use signpost?</label>
-              {WOULD_USE_OPTIONS.map(opt => (
-                <label key={opt} style={radioLabelStyle}>
-                  <input type="radio" name="wouldUse" value={opt} checked={wouldUse === opt}
-                    onChange={() => setWouldUse(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
-                  <span>{opt}</span>
-                </label>
-              ))}
-            </div>
-
-            {/* Q5: Did you try invoicing */}
-            <div>
-              <label style={labelStyle}>Did you try the invoicing feature?</label>
-              {TRIED_INVOICING_OPTIONS.map(opt => (
-                <label key={opt} style={radioLabelStyle}>
+              <label style={labelStyle}>5. Invoicing</label>
+              <p style={{ fontSize: '0.77rem', color: '#555', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
+                Did you try the invoicing feature?
+              </p>
+              {YES_NO.map(opt => (
+                <label key={`inv-${opt}`} style={radioLabelStyle}>
                   <input type="radio" name="triedInvoicing" value={opt} checked={triedInvoicing === opt}
                     onChange={() => setTriedInvoicing(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
                   <span>{opt}</span>
                 </label>
               ))}
             </div>
-
-            {/* Q6: Invoicing comparison */}
             {triedInvoicing === 'Yes' && (
               <div>
-                <label style={labelStyle}>If yes — how did it compare to how you currently invoice?</label>
+                <label style={labelStyle}>If yes &mdash; how did it compare to how you currently invoice?</label>
                 {INVOICING_COMPARE_OPTIONS.map(opt => (
                   <label key={opt} style={radioLabelStyle}>
                     <input type="radio" name="invoicingCompare" value={opt} checked={invoicingCompare === opt}
@@ -496,18 +613,43 @@ export default function BetaFeedbackPanel() {
               </div>
             )}
 
-            {/* Q7: What needs to change */}
+            {/* ── Q6: Premium subscription ── */}
+            <div style={separatorStyle} />
             <div>
-              <label style={labelStyle}>What would need to change?</label>
-              <textarea value={whatNeedsChange} onChange={e => setWhatNeedsChange(e.target.value)}
-                placeholder="What would make this work for you professionally?" rows={3} style={textareaStyle} />
+              <label style={labelStyle}>6. Premium Subscription</label>
+              <p style={{ fontSize: '0.77rem', color: '#555', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
+                signpost will always be free for interpreters to create a profile and receive job offers. If there were a paid premium tier offering features like full-service invoicing, getting paid directly through the site, tax and financial reports, and freelance job tracking &mdash; would you be interested?
+              </p>
+              {PREMIUM_INTEREST_OPTIONS.map(opt => (
+                <label key={opt} style={radioLabelStyle}>
+                  <input type="radio" name="premiumInterest" value={opt} checked={premiumInterest === opt}
+                    onChange={() => setPremiumInterest(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                  <span>{opt}</span>
+                </label>
+              ))}
             </div>
+            {(premiumInterest === 'Definitely' || premiumInterest === 'Maybe') && (
+              <div>
+                <label style={labelStyle}>If yes &mdash; what would you expect to pay monthly?</label>
+                {PREMIUM_PRICE_OPTIONS.map(opt => (
+                  <label key={opt} style={radioLabelStyle}>
+                    <input type="radio" name="premiumPrice" value={opt} checked={premiumPrice === opt}
+                      onChange={() => setPremiumPrice(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                    <span>{opt}</span>
+                  </label>
+                ))}
+              </div>
+            )}
 
-            {/* Q6: One thing for Molly */}
+            {/* ── Q7: Dream platform ── */}
+            <div style={separatorStyle} />
             <div>
-              <label style={labelStyle}>One thing you&apos;d most want Molly to know</label>
-              <textarea value={oneThingForMolly} onChange={e => setOneThingForMolly(e.target.value)}
-                placeholder="The single most important piece of feedback..." rows={3} style={textareaStyle} />
+              <label style={labelStyle}>7. Final Question</label>
+              <p style={{ fontSize: '0.77rem', color: '#555', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
+                What would your dream interpreter platform include that we haven&apos;t thought of?
+              </p>
+              <textarea value={dreamPlatform} onChange={e => setDreamPlatform(e.target.value)}
+                placeholder="Your dream interpreter platform..." rows={4} style={textareaStyle} />
             </div>
 
             {/* Submit all */}
@@ -536,29 +678,14 @@ export default function BetaFeedbackPanel() {
               background: 'none', border: 'none', color: '#888', fontSize: '0.77rem',
               cursor: 'pointer', textDecoration: 'underline', padding: 0,
             }}>
-              ← Back to page feedback
+              &larr; Back to page feedback
             </button>
           </>
         ) : (
           /* ── Per-page feedback (local save) ── */
           <>
             {/* Page prompt */}
-            {isWelcomePage ? (
-              <div style={{ fontSize: '0.82rem', lineHeight: 1.65, color: '#1e1e1e' }}>
-                <p style={{ margin: '0 0 10px' }}>
-                  Welcome to the signpost interpreter beta! Take a moment to look over this page — then when you&apos;re ready, go ahead and create your interpreter account.
-                </p>
-                <p style={{ margin: '0 0 10px' }}>
-                  As you move through each step, drop your notes here — anything confusing, broken, missing, or that you love.
-                </p>
-                <p style={{ margin: '0 0 10px' }}>
-                  For the beta, you can create your actual profile to be posted live on the site when we open — or a test profile that we&apos;ll delete after the beta. Either way, you can always update your profile at any time!
-                </p>
-                <p style={{ margin: 0 }}>
-                  <strong>If you&apos;re creating a test profile, please enter your name as: First Name (TEST)</strong>
-                </p>
-              </div>
-            ) : (
+            {config.prompt && (
               <p style={{ fontSize: '0.82rem', lineHeight: 1.65, color: '#1e1e1e', margin: 0 }}>
                 {config.prompt}
               </p>
@@ -572,7 +699,7 @@ export default function BetaFeedbackPanel() {
                   padding: '10px 12px', fontSize: '0.77rem', color: '#7a3600', lineHeight: 1.55,
                 }}
               >
-                <strong style={{ display: 'block', marginBottom: 4 }}>Try this 👇</strong>
+                <strong style={{ display: 'block', marginBottom: 4 }}>Try this! 👇</strong>
                 {config.scenario}
               </div>
             )}
@@ -606,6 +733,11 @@ export default function BetaFeedbackPanel() {
               </div>
             )}
 
+            {/* Separator between first and second scenario/question */}
+            {(config.scenario2 || config.question2) && (
+              <div style={separatorStyle} />
+            )}
+
             {/* Second scenario callout */}
             {config.scenario2 && (
               <div
@@ -614,7 +746,7 @@ export default function BetaFeedbackPanel() {
                   padding: '10px 12px', fontSize: '0.77rem', color: '#7a3600', lineHeight: 1.55,
                 }}
               >
-                <strong style={{ display: 'block', marginBottom: 4 }}>Try this 👇</strong>
+                <strong style={{ display: 'block', marginBottom: 4 }}>Try this! 👇</strong>
                 {config.scenario2}
               </div>
             )}
@@ -675,7 +807,7 @@ export default function BetaFeedbackPanel() {
                   fontFamily: "'DM Sans', sans-serif",
                 }}
               >
-                I&apos;m done exploring — take me to the final questions →
+                I&apos;m done exploring &mdash; take me to the final questions &rarr;
               </button>
             )}
           </>

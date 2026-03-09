@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Syne, DM_Sans } from 'next/font/google';
 import './globals.css';
+import BetaWelcomeModal from '@/components/beta/BetaWelcomeModal';
 
 const syne = Syne({
   subsets: ['latin'],
@@ -30,7 +31,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${syne.variable} ${dmSans.variable}`}>
-      <body>{children}</body>
+      <body>
+        {process.env.NEXT_PUBLIC_BETA_MODE === 'true' && <BetaWelcomeModal />}
+        {children}
+      </body>
     </html>
   );
 }

@@ -31,20 +31,38 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const {
       pageFeedback,
-      signupEase,
-      dashboardFeel,
-      ratesControl,
-      wouldUse,
-      whatNeedsChange,
-      oneThingForMolly,
+      professionalNeeds,
+      whatsWorkingMissing,
+      likelihood,
+      usedMobile,
+      mobileFeedback,
+      starRatingFeel,
+      whoShouldRate,
+      dhhRatingCategories,
+      orgRatingCategories,
+      ratingDisplay,
+      triedInvoicing,
+      invoicingCompare,
+      premiumInterest,
+      premiumPrice,
+      dreamPlatform,
     } = body as {
       pageFeedback: PageFeedback[]
-      signupEase: string
-      dashboardFeel: string
-      ratesControl: string
-      wouldUse: string
-      whatNeedsChange: string
-      oneThingForMolly: string
+      professionalNeeds: string
+      whatsWorkingMissing: string
+      likelihood: string
+      usedMobile: string
+      mobileFeedback: string
+      starRatingFeel: string
+      whoShouldRate: string[]
+      dhhRatingCategories: string
+      orgRatingCategories: string
+      ratingDisplay: string
+      triedInvoicing: string
+      invoicingCompare: string
+      premiumInterest: string
+      premiumPrice: string
+      dreamPlatform: string
     }
 
     // Get tester name from auth session
@@ -74,20 +92,37 @@ export async function POST(request: NextRequest) {
       .map(f => `[${f.page}] ${f.specificAnswer}`)
       .join('\n')
 
+    // Format end-of-session answers as structured text
+    const endOfSessionLines: string[] = []
+
+    if (professionalNeeds) endOfSessionLines.push(`Professional needs: ${professionalNeeds}`)
+    if (whatsWorkingMissing) endOfSessionLines.push(`What's working/missing: ${whatsWorkingMissing}`)
+    if (likelihood) endOfSessionLines.push(`Likelihood to use: ${likelihood}`)
+    if (usedMobile) endOfSessionLines.push(`Used mobile: ${usedMobile}`)
+    if (mobileFeedback) endOfSessionLines.push(`Mobile feedback: ${mobileFeedback}`)
+    if (starRatingFeel) endOfSessionLines.push(`Star rating feel: ${starRatingFeel}`)
+    if (whoShouldRate?.length) endOfSessionLines.push(`Who should rate: ${whoShouldRate.join(', ')}`)
+    if (dhhRatingCategories) endOfSessionLines.push(`D/HH rating categories: ${dhhRatingCategories}`)
+    if (orgRatingCategories) endOfSessionLines.push(`Org rating categories: ${orgRatingCategories}`)
+    if (ratingDisplay) endOfSessionLines.push(`Rating display: ${ratingDisplay}`)
+    if (triedInvoicing) endOfSessionLines.push(`Tried invoicing: ${triedInvoicing}`)
+    if (invoicingCompare) endOfSessionLines.push(`Invoicing compare: ${invoicingCompare}`)
+    if (premiumInterest) endOfSessionLines.push(`Premium interest: ${premiumInterest}`)
+    if (premiumPrice) endOfSessionLines.push(`Premium price: ${premiumPrice}`)
+    if (dreamPlatform) endOfSessionLines.push(`Dream platform: ${dreamPlatform}`)
+
+    const endOfSession = endOfSessionLines.join('\n')
+
     // Build column values for Monday board
     const columnValues: Record<string, unknown> = {
       short_textnbhnggeq: testerName,
       long_text24vbemv7: { text: allNotes },
       long_text8gfogdy7: { text: allSpecific },
-      long_textwi8vrijw: { text: whatNeedsChange || '' },
-      long_text4snmrdqj: { text: oneThingForMolly || '' },
+      long_textwi8vrijw: { text: endOfSession },
     }
 
-    // Status columns use { label: "Option text" } format
-    if (signupEase) columnValues.single_selecti6ipr4d = { label: signupEase }
-    if (dashboardFeel) columnValues.single_selectdigbayv = { label: dashboardFeel }
-    if (ratesControl) columnValues.single_selectd999es5 = { label: ratesControl }
-    if (wouldUse) columnValues.single_selectjdrm38a = { label: wouldUse }
+    // Status columns
+    if (likelihood) columnValues.single_selectjdrm38a = { label: likelihood }
 
     const createResult = await mondayQuery(token,
       `mutation ($boardId: ID!, $groupId: String!, $itemName: String!, $columnValues: JSON!) {
