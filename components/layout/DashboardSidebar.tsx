@@ -9,7 +9,7 @@ interface NavItem {
   label: string
   href: string
   icon: React.ReactNode
-  badgeKey?: 'inquiries' | 'confirmed' | 'inbox' | 'clientLists' | 'invoiceDrafts'
+  badgeKey?: 'inquiries' | 'confirmed' | 'inbox' | 'clientLists' | 'invoiceDrafts' | 'notifications'
   badgeCyan?: boolean
 }
 
@@ -115,10 +115,24 @@ function SidebarContent({ userName, userInitials, photoUrl, badges }: {
               {userInitials}
             </div>
           )}
-          <div>
+          <div style={{ flex: 1 }}>
             <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.92rem' }}>{userName}</div>
             <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 2 }}>Interpreter</div>
           </div>
+          {/* Notification bell */}
+          <Link href="/interpreter/dashboard/profile" style={{ position: 'relative', color: 'var(--muted)', textDecoration: 'none', padding: 4 }}>
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M13.5 6.75a4.5 4.5 0 1 0-9 0c0 4.5-2.25 5.625-2.25 5.625h13.5s-2.25-1.125-2.25-5.625M10.3 14.625a1.5 1.5 0 0 1-2.6 0" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            {(badges.notifications ?? 0) > 0 && (
+              <span style={{
+                position: 'absolute', top: 0, right: 0,
+                width: 8, height: 8, borderRadius: '50%',
+                background: 'var(--accent)',
+                border: '2px solid var(--surface)',
+              }} />
+            )}
+          </Link>
         </div>
       </div>
 
@@ -236,11 +250,21 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
 
       if (invErr) console.error('[sidebar] invoice drafts count failed:', invErr.message)
 
+      // Unread notifications count
+      const { count: notifCount, error: notifErr } = await supabase
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('recipient_user_id', user.id)
+        .neq('status', 'read')
+
+      if (notifErr) console.error('[sidebar] notifications count failed:', notifErr.message)
+
       setBadges({
         inquiries: !inqErr ? (inquiriesCount ?? 0) : 0,
         confirmed: !confErr ? (confirmedCount ?? 0) : 0,
         inbox: !inboxErr ? (inboxCount ?? 0) : 0,
         invoiceDrafts: !invErr ? (invoiceDraftsCount ?? 0) : 0,
+        notifications: !notifErr ? (notifCount ?? 0) : 0,
       })
     }
     fetchBadges()

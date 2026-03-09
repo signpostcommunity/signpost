@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { BetaBanner, PageHeader, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+import { sendNotification } from '@/lib/notifications'
 
 /* ── Types ── */
 
@@ -96,6 +97,7 @@ function AcceptModal({ booking, onClose, onAccepted }: {
   async function handleSend() {
     setSaving(true)
     const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
     const { error } = await supabase
       .from('bookings')
       .update({ status: 'confirmed' })
@@ -106,6 +108,23 @@ function AcceptModal({ booking, onClose, onAccepted }: {
       setSaving(false)
       return
     }
+
+    // Send booking_confirmed notification
+    if (user) {
+      const location = booking.format === 'remote' ? 'Virtual' : (booking.location?.split(',')[0] || 'TBD')
+      const dateStr = booking.date ? new Date(booking.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'TBD'
+      const timeStr = booking.time_start || ''
+      sendNotification({
+        recipientUserId: user.id,
+        type: 'booking_confirmed',
+        subject: `signpost — Booking confirmed: ${dateStr}, ${timeStr}, ${location}`,
+        body: `You accepted the inquiry "${booking.title || 'Booking'}" on ${dateStr} at ${timeStr}. The requester has been notified.`,
+        metadata: { booking_id: booking.id },
+      }).catch(err => console.error('[inquiries] confirm notification failed:', err))
+      // TODO: new_request — when request form is built
+      // TODO: booking_reminder — needs a scheduled job (Supabase cron or Edge Function)
+    }
+
     setSent(true)
     setSaving(false)
   }

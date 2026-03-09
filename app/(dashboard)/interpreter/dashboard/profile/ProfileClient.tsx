@@ -11,6 +11,7 @@ import {
 } from '@/lib/data/languages'
 import { SPECIALIZATION_CATEGORIES, SPECIALIZED_SKILLS } from '@/lib/constants/specializations'
 import { getVideoEmbedUrl, isValidVideoUrl } from '@/lib/videoUtils'
+import { sendNotification } from '@/lib/notifications'
 
 // ── Shared styles ────────────────────────────────────────────────────────────
 
@@ -137,6 +138,35 @@ interface ProfileData {
   invoicing_preference?: string | null
   payment_methods?: PaymentMethod[] | null
   default_payment_terms?: string | null
+  notification_preferences?: NotificationPreferences | null
+  notification_phone?: string | null
+}
+
+interface NotificationPreferences {
+  email_enabled: boolean
+  sms_enabled: boolean
+  categories: Record<string, { email: boolean; sms: boolean }>
+}
+
+const DEFAULT_NOTIFICATION_PREFS: NotificationPreferences = {
+  email_enabled: true,
+  sms_enabled: false,
+  categories: {
+    profile_saved: { email: true, sms: false },
+    profile_approved: { email: true, sms: false },
+    profile_denied: { email: true, sms: false },
+    new_request: { email: true, sms: false },
+    booking_confirmed: { email: true, sms: false },
+    rate_response: { email: true, sms: false },
+    cancelled_by_requester: { email: true, sms: false },
+    cancelled_by_you: { email: true, sms: false },
+    sub_search_update: { email: true, sms: false },
+    booking_reminder: { email: true, sms: false },
+    new_message: { email: true, sms: false },
+    invoice_paid: { email: true, sms: false },
+    team_invite: { email: true, sms: false },
+    added_to_preferred_list: { email: false, sms: false },
+  },
 }
 
 interface PaymentMethod {
@@ -151,7 +181,7 @@ interface ProfileClientProps {
 
 // ── Tabs ─────────────────────────────────────────────────────────────────────
 
-const TABS = ['Personal', 'Languages', 'Credentials', 'Bio & Video', 'Skills', 'Payment & Invoicing'] as const
+const TABS = ['Personal', 'Languages', 'Credentials', 'Bio & Video', 'Skills', 'Settings'] as const
 type Tab = typeof TABS[number]
 
 function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
@@ -247,6 +277,11 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>(p.payment_methods || [])
   const [defaultPaymentTerms, setDefaultPaymentTerms] = useState(p.default_payment_terms || 'net_30')
 
+  // ── Notification state ──────────────────────────────────────────────
+  const [notifPrefs, setNotifPrefs] = useState<NotificationPreferences>(p.notification_preferences || DEFAULT_NOTIFICATION_PREFS)
+  const [notifPhone, setNotifPhone] = useState(p.notification_phone || '')
+  const [notifSaving, setNotifSaving] = useState(false)
+
   // ── Client-side fallback: load profile if server prop was null ──────
   useEffect(() => {
     if (rawProfile) return // Server already provided data
@@ -272,7 +307,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       // Now try interpreter_profiles
       const { data, error, status, statusText } = await supabase
         .from('interpreter_profiles')
-        .select('name, first_name, last_name, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, sign_languages, spoken_languages, specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms')
+        .select('name, first_name, last_name, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, sign_languages, spoken_languages, specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms, notification_preferences, notification_phone')
         .eq('user_id', user.id)
         .maybeSingle()
       console.log('PROFILE CLIENT-SIDE LOAD:', JSON.stringify({ data, error, status, statusText, userId: user.id }, null, 2))
@@ -301,6 +336,8 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       if (d.invoicing_preference != null) setInvoicingPref(d.invoicing_preference)
       if (d.payment_methods != null) setPaymentMethods(d.payment_methods)
       if (d.default_payment_terms != null) setDefaultPaymentTerms(d.default_payment_terms)
+      if (d.notification_preferences != null) setNotifPrefs(d.notification_preferences)
+      if (d.notification_phone != null) setNotifPhone(d.notification_phone)
     })()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -391,6 +428,13 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       console.log('PROFILE SAVE - verify read-back:', JSON.stringify({ verifyData, verifyError }, null, 2))
 
       setToast({ message: 'Changes saved.', type: 'success' })
+      // Send profile_saved notification
+      sendNotification({
+        recipientUserId: user.id,
+        type: 'profile_saved',
+        subject: 'signpost — Profile changes saved',
+        body: 'Your profile changes have been saved successfully.',
+      }).catch(err => console.error('[profile] notification send failed:', err))
       // Refresh server components (sidebar name/photo)
       router.refresh()
     }
@@ -861,147 +905,28 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
         />
       )}
 
-      {/* ── Tab 6: Payment & Invoicing ─────────────────────────────────── */}
-      {activeTab === 'Payment & Invoicing' && (
-        <>
-          {/* Invoicing Preference */}
-          <div style={sectionTitleStyle}>Invoicing Preference</div>
-          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12, lineHeight: 1.6 }}>
-            This controls whether the &ldquo;Submit Invoice&rdquo; button appears on your confirmed bookings. You can change this anytime.
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 28 }}>
-            {([
-              { value: 'own', label: 'I use my own invoicing system', desc: 'No invoice tools will appear in signpost.' },
-              { value: 'signpost', label: "I'd like to submit invoices through signpost", desc: 'A "Submit Invoice" button will appear on confirmed bookings.' },
-            ] as const).map(opt => (
-              <label
-                key={opt.value}
-                onClick={() => setInvoicingPref(opt.value)}
-                style={{
-                  display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px 16px',
-                  background: invoicingPref === opt.value ? 'rgba(0,229,255,0.06)' : 'var(--surface2)',
-                  border: `1.5px solid ${invoicingPref === opt.value ? 'rgba(0,229,255,0.4)' : 'var(--border)'}`,
-                  borderRadius: 'var(--radius-sm)', cursor: 'pointer', transition: 'all 0.15s',
-                }}
-              >
-                <div style={{
-                  width: 18, height: 18, borderRadius: '50%', flexShrink: 0, marginTop: 2,
-                  border: `2px solid ${invoicingPref === opt.value ? 'var(--accent)' : 'var(--border)'}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  {invoicingPref === opt.value && (
-                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)' }} />
-                  )}
-                </div>
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: '0.88rem', color: invoicingPref === opt.value ? 'var(--text)' : 'var(--muted)' }}>{opt.label}</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: 4, lineHeight: 1.5 }}>{opt.desc}</div>
-                </div>
-              </label>
-            ))}
-          </div>
-
-          {/* Default Payment Terms */}
-          <div style={sectionTitleStyle}>Default Payment Terms</div>
-          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 12, marginTop: -12, lineHeight: 1.6 }}>
-            This sets the default due date on new invoices. You can adjust it per invoice.
-          </p>
-          <div style={{ marginBottom: 28, maxWidth: 320 }}>
-            <select
-              value={defaultPaymentTerms}
-              onChange={e => setDefaultPaymentTerms(e.target.value)}
-              style={inputStyle}
-              onFocus={handleFocus} onBlur={handleBlur}
-            >
-              <option value="due_on_receipt">Due on Receipt</option>
-              <option value="net_15">Net 15</option>
-              <option value="net_30">Net 30</option>
-              <option value="net_45">Net 45</option>
-              <option value="net_60">Net 60</option>
-            </select>
-          </div>
-
-          {/* Payment Methods */}
-          <div style={sectionTitleStyle}>Payment Methods</div>
-          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12, lineHeight: 1.6 }}>
-            These payment links appear on your invoices so requesters know how to pay you. signpost does not process payments or store financial account information.
-          </p>
-
-          {paymentMethods.map((pm, i) => (
-            <div key={i} style={{
-              display: 'flex', gap: 10, marginBottom: 10, alignItems: 'flex-start',
-            }}>
-              <select
-                value={pm.type}
-                onChange={e => {
-                  const updated = [...paymentMethods]
-                  updated[i] = { ...updated[i], type: e.target.value }
-                  setPaymentMethods(updated)
-                }}
-                style={{ ...inputStyle, width: 160, flexShrink: 0 }}
-                onFocus={handleFocus} onBlur={handleBlur}
-              >
-                <option value="venmo">Venmo</option>
-                <option value="paypal">PayPal</option>
-                <option value="zelle">Zelle</option>
-                <option value="melio">Melio</option>
-                <option value="check">Check</option>
-                <option value="ach">ACH</option>
-                <option value="other">Other</option>
-              </select>
-              <input
-                type="text"
-                value={pm.value}
-                onChange={e => {
-                  const updated = [...paymentMethods]
-                  updated[i] = { ...updated[i], value: e.target.value }
-                  setPaymentMethods(updated)
-                }}
-                placeholder={
-                  pm.type === 'venmo' ? '@username' :
-                  pm.type === 'paypal' ? 'paypal.me/yourlink' :
-                  pm.type === 'zelle' ? 'Email or phone registered with Zelle' :
-                  pm.type === 'melio' ? 'melio.me/yourlink' :
-                  pm.type === 'check' ? 'Mailing address for checks' :
-                  pm.type === 'ach' ? 'Contact me for ACH details' :
-                  'Payment instructions'
-                }
-                style={{ ...inputStyle, flex: 1 }}
-                onFocus={handleFocus} onBlur={handleBlur}
-              />
-              <button
-                onClick={() => setPaymentMethods(paymentMethods.filter((_, j) => j !== i))}
-                style={{
-                  background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
-                  color: 'var(--muted)', fontSize: '0.85rem', padding: '9px 12px', cursor: 'pointer',
-                  flexShrink: 0, fontFamily: "'DM Sans', sans-serif",
-                }}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-
-          <button
-            onClick={() => setPaymentMethods([...paymentMethods, { type: 'venmo', value: '' }])}
-            style={{
-              background: 'transparent', border: '1.5px dashed var(--border)',
-              borderRadius: 'var(--radius-sm)', padding: '10px 16px',
-              color: 'var(--muted)', fontSize: '0.85rem', cursor: 'pointer',
-              fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s', marginBottom: 28,
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
-          >
-            + Add payment method
-          </button>
-
-          <SaveButton saving={saving} onClick={() => saveFields({
+      {/* ── Tab 6: Settings ──────────────────────────────────────────── */}
+      {activeTab === 'Settings' && (
+        <SettingsTab
+          invoicingPref={invoicingPref}
+          setInvoicingPref={setInvoicingPref}
+          defaultPaymentTerms={defaultPaymentTerms}
+          setDefaultPaymentTerms={setDefaultPaymentTerms}
+          paymentMethods={paymentMethods}
+          setPaymentMethods={setPaymentMethods}
+          notifPrefs={notifPrefs}
+          setNotifPrefs={setNotifPrefs}
+          notifPhone={notifPhone}
+          setNotifPhone={setNotifPhone}
+          notifSaving={notifSaving}
+          setNotifSaving={setNotifSaving}
+          saving={saving}
+          onSave={() => saveFields({
             invoicing_preference: invoicingPref,
             payment_methods: paymentMethods,
             default_payment_terms: defaultPaymentTerms,
-          })} />
-        </>
+          })}
+        />
       )}
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
@@ -1299,6 +1224,416 @@ function SkillsTab({ specs, setSpecs, specializedSkills, setSpecializedSkills, s
       </div>
 
       <SaveButton saving={saving} onClick={onSave} />
+    </>
+  )
+}
+
+// ── Notification category config ──────────────────────────────────────────────
+
+const NOTIF_SECTIONS: { section: string; items: { key: string; label: string; desc: string }[] }[] = [
+  {
+    section: 'Profile',
+    items: [
+      { key: 'profile_saved', label: 'Profile saved', desc: 'Your profile changes were saved' },
+      { key: 'profile_approved', label: 'Profile approved', desc: 'Your profile has been approved' },
+      { key: 'profile_denied', label: 'Profile denied', desc: 'Your profile needs changes' },
+    ],
+  },
+  {
+    section: 'Bookings',
+    items: [
+      { key: 'new_request', label: 'New request received', desc: 'Date, time, and location in subject' },
+      { key: 'booking_confirmed', label: 'Booking confirmed', desc: 'Requester accepted your rate' },
+      { key: 'rate_response', label: 'Rate response', desc: 'Requester responded to your rate' },
+      { key: 'cancelled_by_requester', label: 'Cancelled by requester', desc: 'Date, time, and location in subject' },
+      { key: 'cancelled_by_you', label: 'Cancellation confirmation', desc: 'Your cancellation processed' },
+      { key: 'sub_search_update', label: 'Sub search update', desc: 'Replacement interpreter responded' },
+      { key: 'booking_reminder', label: 'Booking reminder', desc: '24 hours before assignment' },
+    ],
+  },
+  {
+    section: 'Communication',
+    items: [
+      { key: 'new_message', label: 'New message', desc: 'New message in signpost inbox' },
+    ],
+  },
+  {
+    section: 'Invoicing',
+    items: [
+      { key: 'invoice_paid', label: 'Invoice marked as paid', desc: 'Requester confirmed payment' },
+    ],
+  },
+  {
+    section: 'Community',
+    items: [
+      { key: 'team_invite', label: 'Preferred team invite', desc: 'Another interpreter added you' },
+      { key: 'added_to_preferred_list', label: 'Added to preferred list', desc: 'A Deaf individual added you' },
+    ],
+  },
+]
+
+// ── Toggle switch component ───────────────────────────────────────────────────
+
+function ToggleSwitch({ on, onChange, disabled }: { on: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
+  return (
+    <button
+      onClick={() => !disabled && onChange(!on)}
+      style={{
+        width: 36, height: 20, borderRadius: 10, border: 'none', cursor: disabled ? 'default' : 'pointer',
+        background: on ? 'var(--accent)' : 'var(--border)',
+        position: 'relative', transition: 'background 0.15s', flexShrink: 0,
+        opacity: disabled ? 0.4 : 1,
+      }}
+    >
+      <div style={{
+        width: 16, height: 16, borderRadius: '50%', background: '#fff',
+        position: 'absolute', top: 2,
+        left: on ? 18 : 2,
+        transition: 'left 0.15s',
+      }} />
+    </button>
+  )
+}
+
+// ── Settings tab ──────────────────────────────────────────────────────────────
+
+function SettingsTab({
+  invoicingPref, setInvoicingPref,
+  defaultPaymentTerms, setDefaultPaymentTerms,
+  paymentMethods, setPaymentMethods,
+  notifPrefs, setNotifPrefs,
+  notifPhone, setNotifPhone,
+  notifSaving, setNotifSaving,
+  saving, onSave,
+}: {
+  invoicingPref: string
+  setInvoicingPref: (v: string) => void
+  defaultPaymentTerms: string
+  setDefaultPaymentTerms: (v: string) => void
+  paymentMethods: PaymentMethod[]
+  setPaymentMethods: (v: PaymentMethod[]) => void
+  notifPrefs: NotificationPreferences
+  setNotifPrefs: (v: NotificationPreferences) => void
+  notifPhone: string
+  setNotifPhone: (v: string) => void
+  notifSaving: boolean
+  setNotifSaving: (v: boolean) => void
+  saving: boolean
+  onSave: () => void
+}) {
+  const [notifToast, setNotifToast] = useState<string | null>(null)
+
+  // Save notification prefs immediately to DB
+  async function saveNotifPrefs(updated: NotificationPreferences, phone?: string) {
+    setNotifSaving(true)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setNotifSaving(false); return }
+
+    const payload: Record<string, unknown> = { notification_preferences: updated }
+    if (phone !== undefined) payload.notification_phone = phone
+
+    const { error } = await supabase
+      .from('interpreter_profiles')
+      .update(payload)
+      .eq('user_id', user.id)
+
+    if (error) {
+      console.error('[settings] notification prefs save failed:', error.message)
+      setNotifToast('Failed to save notification preferences')
+    } else {
+      setNotifToast('Notification preferences saved')
+    }
+    setNotifSaving(false)
+    setTimeout(() => setNotifToast(null), 2000)
+  }
+
+  function toggleMasterEmail() {
+    const updated = { ...notifPrefs, email_enabled: !notifPrefs.email_enabled }
+    setNotifPrefs(updated)
+    saveNotifPrefs(updated)
+  }
+
+  function toggleMasterSms() {
+    const updated = { ...notifPrefs, sms_enabled: !notifPrefs.sms_enabled }
+    setNotifPrefs(updated)
+    saveNotifPrefs(updated)
+  }
+
+  function toggleCategory(key: string, channel: 'email' | 'sms') {
+    const current = notifPrefs.categories[key] ?? { email: true, sms: false }
+    const updated = {
+      ...notifPrefs,
+      categories: {
+        ...notifPrefs.categories,
+        [key]: { ...current, [channel]: !current[channel] },
+      },
+    }
+    setNotifPrefs(updated)
+    saveNotifPrefs(updated)
+  }
+
+  function savePhone() {
+    saveNotifPrefs(notifPrefs, notifPhone)
+  }
+
+  const cardStyle: React.CSSProperties = {
+    background: 'var(--card-bg)',
+    border: '1px solid var(--border)',
+    borderRadius: 'var(--radius)',
+    padding: '28px 28px',
+    marginBottom: 24,
+  }
+
+  return (
+    <>
+      {/* ── Section 1: Invoicing ─────────────────────────────────────── */}
+      <div style={cardStyle}>
+        <div style={sectionTitleStyle}>Invoicing</div>
+
+        {/* Invoicing Preference */}
+        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, lineHeight: 1.6 }}>
+          This controls whether the &ldquo;Submit Invoice&rdquo; button appears on your confirmed bookings. You can change this anytime.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 28 }}>
+          {([
+            { value: 'own', label: 'I use my own invoicing system', desc: 'No invoice tools will appear in signpost.' },
+            { value: 'signpost', label: "I'd like to submit invoices through signpost", desc: 'A "Submit Invoice" button will appear on confirmed bookings.' },
+          ] as const).map(opt => (
+            <label
+              key={opt.value}
+              onClick={() => setInvoicingPref(opt.value)}
+              style={{
+                display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px 16px',
+                background: invoicingPref === opt.value ? 'rgba(0,229,255,0.06)' : 'var(--surface2)',
+                border: `1.5px solid ${invoicingPref === opt.value ? 'rgba(0,229,255,0.4)' : 'var(--border)'}`,
+                borderRadius: 'var(--radius-sm)', cursor: 'pointer', transition: 'all 0.15s',
+              }}
+            >
+              <div style={{
+                width: 18, height: 18, borderRadius: '50%', flexShrink: 0, marginTop: 2,
+                border: `2px solid ${invoicingPref === opt.value ? 'var(--accent)' : 'var(--border)'}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {invoicingPref === opt.value && (
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)' }} />
+                )}
+              </div>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '0.88rem', color: invoicingPref === opt.value ? 'var(--text)' : 'var(--muted)' }}>{opt.label}</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: 4, lineHeight: 1.5 }}>{opt.desc}</div>
+              </div>
+            </label>
+          ))}
+        </div>
+
+        {/* Default Payment Terms */}
+        <div style={{ ...sectionTitleStyle, marginTop: 0 }}>Default Payment Terms</div>
+        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 12, lineHeight: 1.6 }}>
+          This sets the default due date on new invoices. You can adjust it per invoice.
+        </p>
+        <div style={{ marginBottom: 28, maxWidth: 320 }}>
+          <select
+            value={defaultPaymentTerms}
+            onChange={e => setDefaultPaymentTerms(e.target.value)}
+            style={inputStyle}
+            onFocus={handleFocus} onBlur={handleBlur}
+          >
+            <option value="due_on_receipt">Due on Receipt</option>
+            <option value="net_15">Net 15</option>
+            <option value="net_30">Net 30</option>
+            <option value="net_45">Net 45</option>
+            <option value="net_60">Net 60</option>
+          </select>
+        </div>
+
+        {/* Payment Methods */}
+        <div style={{ ...sectionTitleStyle, marginTop: 0 }}>Payment Methods</div>
+        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, lineHeight: 1.6 }}>
+          These payment links appear on your invoices so requesters know how to pay you. signpost does not process payments or store financial account information.
+        </p>
+
+        {paymentMethods.map((pm, i) => (
+          <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 10, alignItems: 'flex-start' }}>
+            <select
+              value={pm.type}
+              onChange={e => {
+                const updated = [...paymentMethods]
+                updated[i] = { ...updated[i], type: e.target.value }
+                setPaymentMethods(updated)
+              }}
+              style={{ ...inputStyle, width: 160, flexShrink: 0 }}
+              onFocus={handleFocus} onBlur={handleBlur}
+            >
+              <option value="venmo">Venmo</option>
+              <option value="paypal">PayPal</option>
+              <option value="zelle">Zelle</option>
+              <option value="melio">Melio</option>
+              <option value="check">Check</option>
+              <option value="ach">ACH</option>
+              <option value="other">Other</option>
+            </select>
+            <input
+              type="text"
+              value={pm.value}
+              onChange={e => {
+                const updated = [...paymentMethods]
+                updated[i] = { ...updated[i], value: e.target.value }
+                setPaymentMethods(updated)
+              }}
+              placeholder={
+                pm.type === 'venmo' ? '@username' :
+                pm.type === 'paypal' ? 'paypal.me/yourlink' :
+                pm.type === 'zelle' ? 'Email or phone registered with Zelle' :
+                pm.type === 'melio' ? 'melio.me/yourlink' :
+                pm.type === 'check' ? 'Mailing address for checks' :
+                pm.type === 'ach' ? 'Contact me for ACH details' :
+                'Payment instructions'
+              }
+              style={{ ...inputStyle, flex: 1 }}
+              onFocus={handleFocus} onBlur={handleBlur}
+            />
+            <button
+              onClick={() => setPaymentMethods(paymentMethods.filter((_, j) => j !== i))}
+              style={{
+                background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
+                color: 'var(--muted)', fontSize: '0.85rem', padding: '9px 12px', cursor: 'pointer',
+                flexShrink: 0, fontFamily: "'DM Sans', sans-serif",
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+
+        <button
+          onClick={() => setPaymentMethods([...paymentMethods, { type: 'venmo', value: '' }])}
+          style={{
+            background: 'transparent', border: '1.5px dashed var(--border)',
+            borderRadius: 'var(--radius-sm)', padding: '10px 16px',
+            color: 'var(--muted)', fontSize: '0.85rem', cursor: 'pointer',
+            fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s', marginBottom: 4,
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
+        >
+          + Add payment method
+        </button>
+      </div>
+
+      {/* Save button for invoicing section */}
+      <SaveButton saving={saving} onClick={onSave} />
+
+      {/* ── Section 2: Notifications ─────────────────────────────────── */}
+      <div style={{ ...cardStyle, marginTop: 8 }}>
+        <div style={sectionTitleStyle}>Notifications</div>
+
+        {/* Master toggles */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 28 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>Email notifications</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: 2 }}>Receive notifications via email</div>
+            </div>
+            <ToggleSwitch on={notifPrefs.email_enabled} onChange={toggleMasterEmail} disabled={notifSaving} />
+          </div>
+
+          <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>SMS notifications</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: 2 }}>Standard messaging rates may apply. You can opt out anytime.</div>
+              </div>
+              <ToggleSwitch on={notifPrefs.sms_enabled} onChange={toggleMasterSms} disabled={notifSaving} />
+            </div>
+            {notifPrefs.sms_enabled && (
+              <div style={{ marginTop: 12, display: 'flex', gap: 10, alignItems: 'flex-end', maxWidth: 400 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={labelStyle}>Phone number for SMS</label>
+                  <input
+                    type="tel"
+                    value={notifPhone}
+                    onChange={e => setNotifPhone(e.target.value)}
+                    placeholder="+1 (555) 123-4567"
+                    style={inputStyle}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
+                  />
+                </div>
+                <button
+                  onClick={savePhone}
+                  className="btn-primary"
+                  style={{ padding: '10px 16px', fontSize: '0.82rem', flexShrink: 0, marginBottom: 0 }}
+                  disabled={notifSaving}
+                >
+                  Save
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Category toggles */}
+        {NOTIF_SECTIONS.map(section => (
+          <div key={section.section} style={{ marginBottom: 20 }}>
+            <div style={{
+              fontFamily: "'Syne', sans-serif", fontSize: '0.65rem', fontWeight: 700,
+              letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)',
+              marginBottom: 10, paddingBottom: 6, borderBottom: '1px solid var(--border)',
+            }}>
+              {section.section}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {section.items.map(item => {
+                const pref = notifPrefs.categories[item.key] ?? { email: true, sms: false }
+                return (
+                  <div key={item.key} style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '10px 12px', borderRadius: 'var(--radius-sm)',
+                  }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '0.86rem', fontWeight: 500 }}>{item.label}</div>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 1 }}>{item.desc}</div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                        <span style={{ fontSize: '0.62rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email</span>
+                        <ToggleSwitch
+                          on={notifPrefs.email_enabled && pref.email}
+                          onChange={() => toggleCategory(item.key, 'email')}
+                          disabled={notifSaving || !notifPrefs.email_enabled}
+                        />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                        <span style={{ fontSize: '0.62rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>SMS</span>
+                        <ToggleSwitch
+                          on={notifPrefs.sms_enabled && pref.sms}
+                          onChange={() => toggleCategory(item.key, 'sms')}
+                          disabled={notifSaving || !notifPrefs.sms_enabled}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        ))}
+
+        {/* Subtle save confirmation */}
+        {notifToast && (
+          <div style={{
+            padding: '8px 14px', borderRadius: 'var(--radius-sm)',
+            background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.2)',
+            fontSize: '0.82rem', color: 'var(--accent)', marginTop: 8,
+            transition: 'opacity 0.3s',
+          }}>
+            {notifToast}
+          </div>
+        )}
+      </div>
+
+      {/* Section 3 reserved for future account settings */}
     </>
   )
 }

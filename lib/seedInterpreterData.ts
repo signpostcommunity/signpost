@@ -200,11 +200,43 @@ export async function seedInterpreterData(interpreterProfileId: string): Promise
       console.error('[seed] messages insert failed:', messagesErr.message)
     }
 
+    // ── Seed notification so inbox isn't empty ─────────────────────────
+
+    // Look up user_id from interpreter_profiles
+    const { data: interpProfile, error: ipErr } = await supabase
+      .from('interpreter_profiles')
+      .select('user_id')
+      .eq('id', interpreterProfileId)
+      .single()
+
+    if (ipErr) {
+      console.error('[seed] interpreter_profiles lookup failed:', ipErr.message)
+    }
+
+    if (interpProfile?.user_id) {
+      const { error: notifErr } = await supabase
+        .from('notifications')
+        .insert({
+          recipient_user_id: interpProfile.user_id,
+          type: 'profile_saved',
+          channel: 'in_app',
+          subject: 'signpost — Welcome! Your profile has been created',
+          body: 'Your interpreter profile has been set up with demo data. Explore your dashboard, fill out your profile, and customize your notification preferences in Settings.',
+          metadata: {},
+          status: 'sent',
+          sent_at: new Date().toISOString(),
+        })
+
+      if (notifErr) {
+        console.error('[seed] notification insert failed:', notifErr.message)
+      }
+    }
+
     if (bookingsErr || messagesErr) {
       return { success: false, error: `${bookingsErr?.message || ''} ${messagesErr?.message || ''}`.trim() }
     }
 
-    console.log(`[seed] seeded 6 bookings + 4 messages for interpreter ${interpreterProfileId}`)
+    console.log(`[seed] seeded 6 bookings + 4 messages + 1 notification for interpreter ${interpreterProfileId}`)
     return { success: true }
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Unknown seed error'

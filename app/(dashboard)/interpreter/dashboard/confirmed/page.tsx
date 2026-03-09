@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { BetaBanner, PageHeader, SectionLabel, StatusBadge, DemoBadge, GhostButton, Avatar, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+import { sendNotification } from '@/lib/notifications'
 
 /* ── Types ── */
 
@@ -165,7 +166,7 @@ function CancelModal({ booking, onClose, onCancelled }: {
       })
       .eq('id', booking.id)
 
-    // TODO: Send notification to requester — email + in-app inbox message
+    // TODO: cancelled_by_requester — when requester cancellation flow is built
     // TODO: If sub_search_initiated, send requester approval prompt
     // TODO: If D/HH consumer is linked to booking, send them a status update
 
@@ -174,6 +175,18 @@ function CancelModal({ booking, onClose, onCancelled }: {
       setSaving(false)
       return
     }
+
+    // Send cancellation notification to interpreter (self-confirmation)
+    const location = booking.format === 'remote' ? 'Virtual' : (booking.location?.split(',')[0] || 'TBD')
+    const dateStr = booking.date ? new Date(booking.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'TBD'
+    const timeStr = booking.time_start || ''
+    sendNotification({
+      recipientUserId: user.id,
+      type: 'cancelled_by_you',
+      subject: `signpost — Booking cancelled: ${dateStr}, ${timeStr}, ${location}`,
+      body: `Your cancellation for "${booking.title || 'Booking'}" on ${dateStr} at ${timeStr} has been processed. Reason: ${finalReason}`,
+      metadata: { booking_id: booking.id },
+    }).catch(err => console.error('[confirmed] cancel notification failed:', err))
 
     onCancelled(subOption === 'help')
   }
