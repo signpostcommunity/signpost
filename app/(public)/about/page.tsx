@@ -1,20 +1,15 @@
 export const dynamic = 'force-dynamic';
 
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function AboutPage() {
   return (
     <div style={{ maxWidth: 800, margin: '0 auto', padding: '80px 40px' }}>
 
-      {/* Hero photo placeholder */}
-      <div style={{
-        width: '100%', height: 320, borderRadius: 'var(--radius)',
-        background: 'linear-gradient(135deg, rgba(0,229,255,0.08), rgba(123,97,255,0.08))',
-        border: '1px solid var(--border)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        marginBottom: 48, overflow: 'hidden',
-      }}>
-        <span style={{ color: 'var(--muted)', fontSize: '0.9rem', fontStyle: 'italic' }}>Photo coming soon</span>
+      {/* Hero photo */}
+      <div style={{ marginBottom: 48, borderRadius: 'var(--radius)', overflow: 'hidden' }}>
+        <Image src="/founders-together.png" alt="Regina McGinnis and Molly Sano-Mahgoub, co-founders of signpost" width={1200} height={600} className="rounded-xl w-full object-cover" />
       </div>
 
       {/* Mission */}
@@ -49,14 +44,8 @@ export default function AboutPage() {
             padding: 28, background: 'var(--surface)', border: '1px solid var(--border)',
             borderRadius: 'var(--radius)', display: 'flex', flexDirection: 'column',
           }}>
-            <div style={{
-              width: 72, height: 72, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.2rem', color: '#fff',
-              marginBottom: 16,
-            }}>
-              RM
+            <div style={{ width: 72, height: 72, marginBottom: 16 }}>
+              <Image src="/regina-headshot.png" alt="Regina McGinnis" width={400} height={400} className="rounded-full object-cover" style={{ width: 72, height: 72 }} />
             </div>
             <div style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: '1.1rem', marginBottom: 2 }}>
               Regina McGinnis
@@ -77,14 +66,8 @@ export default function AboutPage() {
             padding: 28, background: 'var(--surface)', border: '1px solid var(--border)',
             borderRadius: 'var(--radius)', display: 'flex', flexDirection: 'column',
           }}>
-            <div style={{
-              width: 72, height: 72, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #00e5ff, #7b61ff)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.2rem', color: '#fff',
-              marginBottom: 16,
-            }}>
-              MS
+            <div style={{ width: 72, height: 72, marginBottom: 16 }}>
+              <Image src="/molly-headshot.jpg" alt="Molly Sano-Mahgoub" width={400} height={400} className="rounded-full object-cover" style={{ width: 72, height: 72 }} />
             </div>
             <div style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: '1.1rem', marginBottom: 2 }}>
               Molly Sano-Mahgoub
