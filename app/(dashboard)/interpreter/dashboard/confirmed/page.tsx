@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { BetaBanner, PageHeader, SectionLabel, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+import { BetaBanner, PageHeader, SectionLabel, StatusBadge, DemoBadge, GhostButton, Avatar, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 
 /* ── Types ── */
 
@@ -22,6 +22,18 @@ interface Booking {
   notes: string | null
   status: string
   is_seed: boolean | null
+  cancellation_reason: string | null
+  sub_search_initiated: boolean | null
+}
+
+interface TeamMember {
+  id: string
+  first_name: string
+  last_name: string
+  email: string
+  member_interpreter_id: string | null
+  photo_url: string | null
+  avatar_color: string | null
 }
 
 /* ── Helpers ── */
@@ -66,6 +78,376 @@ const overlayStyle: React.CSSProperties = {
   zIndex: 1000, padding: 20,
 }
 
+const modalStyle: React.CSSProperties = {
+  background: 'var(--surface)', border: '1px solid var(--border)',
+  borderRadius: 'var(--radius)', padding: '28px 32px',
+  width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto',
+}
+
+/* ── Cancel Modal (2-step) ── */
+
+const CANCEL_REASONS = ['Illness', 'Transportation or logistics issue', 'Scheduling conflict / double booking', 'Other reason'] as const
+
+function CancelModal({ booking, onClose, onCancelled }: {
+  booking: Booking
+  onClose: () => void
+  onCancelled: (subSearch: boolean) => void
+}) {
+  const [step, setStep] = useState<1 | 2>(1)
+  const [reason, setReason] = useState<string | null>(null)
+  const [otherText, setOtherText] = useState('')
+  const [subOption, setSubOption] = useState<'help' | 'skip' | null>(null)
+  const [saving, setSaving] = useState(false)
+
+  async function handleSubmit() {
+    if (!reason || !subOption) return
+    setSaving(true)
+
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setSaving(false); return }
+
+    const finalReason = reason === 'Other reason' && otherText.trim()
+      ? otherText.trim()
+      : reason
+
+    const { error } = await supabase
+      .from('bookings')
+      .update({
+        status: 'cancelled',
+        cancellation_reason: finalReason,
+        cancelled_by: user.id,
+        cancelled_at: new Date().toISOString(),
+        sub_search_initiated: subOption === 'help',
+      })
+      .eq('id', booking.id)
+
+    // TODO: Send notification to requester — email + in-app inbox message
+    // TODO: If sub_search_initiated, send requester approval prompt
+    // TODO: If D/HH consumer is linked to booking, send them a status update
+
+    if (error) {
+      console.error('[confirmed] cancel failed:', error.message)
+      setSaving(false)
+      return
+    }
+
+    onCancelled(subOption === 'help')
+  }
+
+  const cardStyle = (selected: boolean): React.CSSProperties => ({
+    background: selected ? 'rgba(0,229,255,0.06)' : 'var(--surface2)',
+    border: `1.5px solid ${selected ? 'rgba(0,229,255,0.5)' : 'var(--border)'}`,
+    borderRadius: 'var(--radius-sm)', padding: '16px 18px',
+    cursor: 'pointer', transition: 'all 0.15s', textAlign: 'left',
+  })
+
+  return (
+    <div style={overlayStyle} onClick={onClose}>
+      <div style={modalStyle} onClick={e => e.stopPropagation()}>
+
+        {/* Step 1: Reason */}
+        {step === 1 && (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.05rem' }}>Cancel this booking</div>
+              <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
+            </div>
+            <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 20px' }}>
+              Let the requester know why so they can find coverage.
+            </p>
+
+            {/* Booking summary */}
+            <div style={{
+              background: 'var(--surface2)', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)', padding: '14px 16px', marginBottom: 20,
+              fontSize: '0.84rem', color: 'var(--muted)', lineHeight: 1.6,
+            }}>
+              <div style={{ fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>{booking.title || 'Booking'}</div>
+              <div>{booking.requester_name || 'Requester'} · {formatDate(booking.date)} · {formatTime(booking.time_start, booking.time_end)}</div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
+              {CANCEL_REASONS.map(r => (
+                <button
+                  key={r}
+                  onClick={() => setReason(r)}
+                  style={{
+                    background: reason === r ? 'rgba(255,107,133,0.08)' : 'var(--surface2)',
+                    border: `1px solid ${reason === r ? 'rgba(255,107,133,0.4)' : 'var(--border)'}`,
+                    borderRadius: 'var(--radius-sm)', padding: '12px 16px',
+                    color: reason === r ? '#ff6b85' : 'var(--text)',
+                    fontSize: '0.88rem', cursor: 'pointer', textAlign: 'left',
+                    fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
+                  }}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+
+            {reason === 'Other reason' && (
+              <div style={{ marginBottom: 24, marginTop: -16 }}>
+                <textarea
+                  placeholder="Please describe your reason..."
+                  value={otherText} onChange={e => setOtherText(e.target.value)}
+                  style={{
+                    width: '100%', boxSizing: 'border-box',
+                    background: 'var(--surface2)', border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-sm)', padding: '10px 14px',
+                    color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem',
+                    outline: 'none', resize: 'vertical', minHeight: 70,
+                  }}
+                  onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+                  onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
+                />
+              </div>
+            )}
+
+            <div className="dash-card-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+              <GhostButton onClick={onClose}>Nevermind, keep this booking</GhostButton>
+              <button
+                onClick={() => setStep(2)}
+                disabled={!reason || (reason === 'Other reason' && !otherText.trim())}
+                style={{
+                  background: 'none', border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-sm)', padding: '8px 18px',
+                  color: 'var(--text)', fontSize: '0.82rem', cursor: 'pointer',
+                  fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
+                  opacity: reason && !(reason === 'Other reason' && !otherText.trim()) ? 1 : 0.4,
+                  pointerEvents: reason && !(reason === 'Other reason' && !otherText.trim()) ? 'auto' : 'none',
+                }}
+              >
+                Next &rarr;
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* Step 2: Sub search offer */}
+        {step === 2 && (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.05rem' }}>Help find a replacement?</div>
+              <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
+            </div>
+            <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 8px' }}>
+              Optional, but it could make all the difference.
+            </p>
+            <p style={{ color: 'var(--muted)', fontSize: '0.82rem', lineHeight: 1.6, margin: '0 0 22px' }}>
+              Cancelling a booking can cause incredible disruption for the D/HH consumer and the organization. Offering to help the requester find a replacement is optional, but highly recommended. A little help goes a long way.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
+              <div onClick={() => setSubOption('help')} style={cardStyle(subOption === 'help')}>
+                <div style={{ fontWeight: 600, fontSize: '0.88rem', color: subOption === 'help' ? 'var(--accent)' : 'var(--text)', marginBottom: 6 }}>
+                  Offer to check with my Preferred Team Interpreters
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.55 }}>
+                  The requester will be notified of your cancellation and asked if they&apos;d like you to forward this request to your trusted team. If they approve, you&apos;ll select who to contact.
+                </div>
+              </div>
+
+              <div onClick={() => setSubOption('skip')} style={cardStyle(subOption === 'skip')}>
+                <div style={{ fontWeight: 600, fontSize: '0.88rem', color: subOption === 'skip' ? 'var(--accent)' : 'var(--text)', marginBottom: 6 }}>
+                  Skip &mdash; just cancel
+                </div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.55 }}>
+                  The requester will still be notified with your reason, but no sub search will be initiated.
+                </div>
+              </div>
+            </div>
+
+            <div className="dash-card-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+              <GhostButton onClick={() => setStep(1)}>&larr; Back</GhostButton>
+              <button
+                onClick={handleSubmit}
+                disabled={!subOption || saving}
+                style={{
+                  background: subOption && !saving ? 'rgba(255,107,133,0.15)' : 'var(--surface2)',
+                  border: `1px solid ${subOption && !saving ? 'rgba(255,107,133,0.4)' : 'var(--border)'}`,
+                  borderRadius: 'var(--radius-sm)', padding: '8px 18px',
+                  color: subOption && !saving ? '#ff6b85' : 'var(--muted)',
+                  fontSize: '0.82rem', cursor: subOption && !saving ? 'pointer' : 'default',
+                  fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
+                  opacity: subOption && !saving ? 1 : 0.4,
+                }}
+              >
+                {saving ? 'Cancelling...' : 'Submit & Cancel Booking'}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ── Forward to Team Modal (Step 3) ── */
+
+function ForwardToTeamModal({ booking, interpreterId, onClose, onForwarded }: {
+  booking: Booking
+  interpreterId: string
+  onClose: () => void
+  onForwarded: (names: string[]) => void
+}) {
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [loading, setLoading] = useState(true)
+  const [sending, setSending] = useState(false)
+
+  useEffect(() => {
+    async function fetchTeam() {
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from('interpreter_preferred_team')
+        .select('id, first_name, last_name, email, member_interpreter_id, interpreter_profiles:member_interpreter_id(photo_url, avatar_color)')
+        .eq('interpreter_id', interpreterId)
+        .order('id', { ascending: false })
+
+      if (error) {
+        console.error('[forward] team fetch failed:', error.message)
+      } else {
+        const mapped = (data || []).map((m: Record<string, unknown>) => {
+          const joined = m.interpreter_profiles as { photo_url?: string; avatar_color?: string } | null
+          return {
+            id: m.id as string,
+            first_name: m.first_name as string,
+            last_name: m.last_name as string,
+            email: m.email as string,
+            member_interpreter_id: m.member_interpreter_id as string | null,
+            photo_url: joined?.photo_url || null,
+            avatar_color: joined?.avatar_color || null,
+          }
+        })
+        setTeamMembers(mapped)
+      }
+      setLoading(false)
+    }
+    fetchTeam()
+  }, [interpreterId])
+
+  function toggle(id: string) {
+    setSelected(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function handleForward() {
+    setSending(true)
+    // TODO: Wire to real notification/message system — send request details to selected team members
+    const names = teamMembers.filter(m => selected.has(m.id)).map(m => `${m.first_name} ${m.last_name}`)
+    setTimeout(() => {
+      onForwarded(names)
+    }, 400)
+  }
+
+  return (
+    <div style={overlayStyle} onClick={onClose}>
+      <div style={modalStyle} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.05rem' }}>Forward to Team</div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
+        </div>
+        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 16px' }}>
+          Select team members to forward this request to.
+        </p>
+
+        {/* Booking summary */}
+        <div style={{
+          background: 'var(--surface2)', border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-sm)', padding: '14px 16px', marginBottom: 16,
+          fontSize: '0.84rem', color: 'var(--muted)', lineHeight: 1.6,
+        }}>
+          <div style={{ fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>{booking.title || 'Booking'}</div>
+          <div>{booking.requester_name || 'Requester'} · {formatDate(booking.date)} · {formatTime(booking.time_start, booking.time_end)}</div>
+        </div>
+
+        {/* Pre-filled message */}
+        <div style={{
+          background: 'rgba(0,229,255,0.04)', border: '1px solid rgba(0,229,255,0.15)',
+          borderRadius: 'var(--radius-sm)', padding: '12px 16px', marginBottom: 20,
+          fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6, fontStyle: 'italic',
+        }}>
+          &ldquo;Unfortunately I&apos;m unable to fulfill this request that I had previously accepted. The requester asked that I check availability with trusted interpreters. Any chance you can take this?&rdquo;
+        </div>
+
+        {/* Team members list */}
+        {loading ? (
+          <div style={{ padding: 20, textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem' }}>Loading team...</div>
+        ) : teamMembers.length === 0 ? (
+          <div style={{
+            padding: '24px 16px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem',
+            background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
+            marginBottom: 20,
+          }}>
+            No team members found. Add interpreters to your Preferred Team first.
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20, maxHeight: 280, overflowY: 'auto' }}>
+            {teamMembers.map(m => {
+              const isSelected = selected.has(m.id)
+              const initials = `${(m.first_name[0] || '').toUpperCase()}${(m.last_name[0] || '').toUpperCase()}`
+              return (
+                <div
+                  key={m.id}
+                  onClick={() => toggle(m.id)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px',
+                    background: isSelected ? 'rgba(0,229,255,0.06)' : 'var(--surface2)',
+                    border: `1px solid ${isSelected ? 'rgba(0,229,255,0.4)' : 'var(--border)'}`,
+                    borderRadius: 'var(--radius-sm)', cursor: 'pointer', transition: 'all 0.15s',
+                  }}
+                >
+                  <div style={{
+                    width: 20, height: 20, borderRadius: 4, flexShrink: 0,
+                    border: `2px solid ${isSelected ? 'var(--accent)' : 'var(--border)'}`,
+                    background: isSelected ? 'var(--accent)' : 'transparent',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    transition: 'all 0.15s',
+                  }}>
+                    {isSelected && <span style={{ color: '#000', fontSize: '0.7rem', fontWeight: 800 }}>✓</span>}
+                  </div>
+                  {m.photo_url ? (
+                    <img src={m.photo_url} alt={`${m.first_name} ${m.last_name}`} style={{
+                      width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', flexShrink: 0,
+                    }} />
+                  ) : (
+                    <Avatar initials={initials} gradient={m.avatar_color || 'linear-gradient(135deg,#7b61ff,#00e5ff)'} size={36} />
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>{m.first_name} {m.last_name}</div>
+                    <div style={{ fontSize: '0.76rem', color: 'var(--muted)' }}>{m.email}</div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        <div className="dash-card-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+          <GhostButton onClick={onClose}>Cancel</GhostButton>
+          <button
+            className="btn-primary"
+            onClick={handleForward}
+            disabled={selected.size === 0 || sending}
+            style={{
+              padding: '8px 18px', fontSize: '0.82rem',
+              opacity: selected.size > 0 && !sending ? 1 : 0.4,
+              pointerEvents: selected.size > 0 && !sending ? 'auto' : 'none',
+            }}
+          >
+            {sending ? 'Forwarding...' : `Forward to Selected Interpreter${selected.size !== 1 ? 's' : ''} →`}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ── Detail Modal ── */
 
 function DetailModal({ booking, onClose }: { booking: Booking; onClose: () => void }) {
@@ -91,17 +473,29 @@ function DetailModal({ booking, onClose }: { booking: Booking; onClose: () => vo
       }} onClick={e => e.stopPropagation()}>
         <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>{booking.title || 'Confirmed Booking'}</h3>
+            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>{booking.title || 'Booking'}</h3>
             <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem', flexShrink: 0 }}>✕</button>
           </div>
-          <span style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            fontSize: '0.78rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20,
-            background: 'rgba(0,229,255,0.1)', color: 'var(--accent)',
-            border: '1px solid rgba(0,229,255,0.25)',
-          }}>
-            ✓ Confirmed
-          </span>
+          {booking.status === 'cancelled' ? (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20,
+              background: 'rgba(255,107,133,0.1)', color: '#ff6b85',
+              border: '1px solid rgba(255,107,133,0.3)',
+              fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
+            }}>
+              Cancelled{booking.cancellation_reason ? ` — ${booking.cancellation_reason}` : ''}
+            </span>
+          ) : (
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              fontSize: '0.78rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20,
+              background: 'rgba(0,229,255,0.1)', color: 'var(--accent)',
+              border: '1px solid rgba(0,229,255,0.25)',
+            }}>
+              ✓ Confirmed
+            </span>
+          )}
         </div>
 
         <div style={{ padding: '0 28px 8px', overflowY: 'auto', maxHeight: '62vh' }}>
@@ -148,7 +542,7 @@ function DetailModal({ booking, onClose }: { booking: Booking; onClose: () => vo
           </div>
 
           <div style={{ padding: '16px 0' }}>
-            <div style={sectionLabelStyle}>Job Context</div>
+            <div style={sectionLabelStyle}>Booking Context</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65 }}>
               {booking.notes || `${booking.specialization || 'General'} booking`}
             </div>
@@ -236,27 +630,51 @@ function CalendarDropdown({ booking, onToast }: {
   )
 }
 
+/* ── Cancelled Status Badge ── */
+
+function CancelledBadge({ reason }: { reason: string | null }) {
+  return (
+    <span style={{
+      fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px',
+      borderRadius: 100, whiteSpace: 'nowrap',
+      background: 'rgba(255,107,133,0.1)', color: '#ff6b85',
+      border: '1px solid rgba(255,107,133,0.3)',
+      fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
+    }}>
+      Cancelled{reason ? ` — ${reason}` : ''}
+    </span>
+  )
+}
+
 /* ── Booking Card ── */
 
-function BookingCard({ booking, onViewDetails, onToast, isUpcoming }: {
+function BookingCard({ booking, onViewDetails, onCancel, onForwardToTeam, onToast, isUpcoming }: {
   booking: Booking
   onViewDetails: () => void
+  onCancel: () => void
+  onForwardToTeam: () => void
   onToast: (msg: string) => void
   isUpcoming: boolean
 }) {
+  const isCancelled = booking.status === 'cancelled'
+
   return (
     <div style={{
       background: 'var(--card-bg)', border: '1px solid var(--border)',
       borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 12,
+      opacity: isCancelled ? 0.75 : 1,
     }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
         <div>
-          <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif" }}>{booking.title || 'Confirmed Booking'}</div>
+          <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif" }}>{booking.title || 'Booking'}</div>
           <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>{booking.requester_name || 'Client'} · {booking.specialization || 'General'}</div>
         </div>
         <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
           {booking.is_seed && <DemoBadge />}
-          <StatusBadge status="confirmed" />
+          {isCancelled
+            ? <CancelledBadge reason={booking.cancellation_reason} />
+            : <StatusBadge status="confirmed" />
+          }
         </div>
       </div>
       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--muted)', padding: '10px 0', borderTop: '1px solid var(--border)' }}>
@@ -266,7 +684,17 @@ function BookingCard({ booking, onViewDetails, onToast, isUpcoming }: {
       </div>
       <div className="dash-card-actions" style={{ display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
         <GhostButton onClick={onViewDetails}>View Details</GhostButton>
-        {isUpcoming && <CalendarDropdown booking={booking} onToast={onToast} />}
+        {!isCancelled && isUpcoming && <CalendarDropdown booking={booking} onToast={onToast} />}
+        {!isCancelled && <GhostButton danger onClick={onCancel}>Cancel Booking</GhostButton>}
+        {isCancelled && booking.sub_search_initiated && (
+          <button
+            className="btn-primary"
+            onClick={onForwardToTeam}
+            style={{ fontSize: '0.82rem', padding: '8px 18px' }}
+          >
+            Forward to Team &rarr;
+          </button>
+        )}
       </div>
     </div>
   )
@@ -279,6 +707,9 @@ export default function ConfirmedPage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [viewing, setViewing] = useState<string | null>(null)
+  const [cancelling, setCancelling] = useState<string | null>(null)
+  const [forwarding, setForwarding] = useState<string | null>(null)
+  const [interpreterId, setInterpreterId] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
 
   const fetchBookings = useCallback(async () => {
@@ -293,12 +724,13 @@ export default function ConfirmedPage() {
       .single()
 
     if (profileErr || !profile) { setLoading(false); return }
+    setInterpreterId(profile.id)
 
     const { data, error } = await supabase
       .from('bookings')
-      .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed')
+      .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed, cancellation_reason, sub_search_initiated')
       .eq('interpreter_id', profile.id)
-      .eq('status', 'confirmed')
+      .in('status', ['confirmed', 'cancelled'])
       .order('date', { ascending: true })
 
     if (error) {
@@ -313,10 +745,34 @@ export default function ConfirmedPage() {
 
   function showToast(msg: string) {
     setToast(msg)
-    setTimeout(() => setToast(null), 3000)
+    setTimeout(() => setToast(null), 3500)
   }
 
-  const filtered = bookings.filter(b =>
+  function handleCancelled(bookingId: string, subSearch: boolean) {
+    setCancelling(null)
+    // Update local state to reflect cancellation without refetch
+    setBookings(prev => prev.map(b =>
+      b.id === bookingId
+        ? { ...b, status: 'cancelled', sub_search_initiated: subSearch, cancellation_reason: 'Cancelled' }
+        : b
+    ))
+    showToast('Booking cancelled. The requester has been notified.')
+    // Refetch to get the actual reason from DB
+    fetchBookings()
+  }
+
+  function handleForwarded(names: string[]) {
+    setForwarding(null)
+    showToast(`Request forwarded to ${names.join(', ')}. The requester will be notified.`)
+  }
+
+  const confirmed = bookings.filter(b => b.status === 'confirmed')
+  const cancelled = bookings.filter(b => b.status === 'cancelled')
+
+  const filtered = confirmed.filter(b =>
+    !search || [b.title, b.requester_name, b.specialization, b.location].join(' ').toLowerCase().includes(search.toLowerCase())
+  )
+  const filteredCancelled = cancelled.filter(b =>
     !search || [b.title, b.requester_name, b.specialization, b.location].join(' ').toLowerCase().includes(search.toLowerCase())
   )
 
@@ -328,13 +784,13 @@ export default function ConfirmedPage() {
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 900 }}>
       {hasSeedData && <BetaBanner />}
-      <PageHeader title="Confirmed Bookings" subtitle="All your accepted and confirmed jobs." />
+      <PageHeader title="Confirmed Bookings" subtitle="All your accepted and confirmed bookings." />
 
       {/* Search */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 28, flexWrap: 'wrap', alignItems: 'center' }}>
         <input
           type="text"
-          placeholder="Search by client, location, type…"
+          placeholder="Search by client, location, type..."
           value={search}
           onChange={e => setSearch(e.target.value)}
           style={{
@@ -350,7 +806,7 @@ export default function ConfirmedPage() {
 
       {loading ? (
         <div style={{ padding: '40px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem' }}>
-          Loading…
+          Loading...
         </div>
       ) : (
         <>
@@ -358,12 +814,20 @@ export default function ConfirmedPage() {
             <>
               <SectionLabel>Upcoming — Next 14 Days</SectionLabel>
               {upcoming.map(b => (
-                <BookingCard key={b.id} booking={b} onViewDetails={() => setViewing(b.id)} onToast={showToast} isUpcoming />
+                <BookingCard
+                  key={b.id}
+                  booking={b}
+                  onViewDetails={() => setViewing(b.id)}
+                  onCancel={() => setCancelling(b.id)}
+                  onForwardToTeam={() => setForwarding(b.id)}
+                  onToast={showToast}
+                  isUpcoming
+                />
               ))}
             </>
           )}
 
-          <SectionLabel>All Bookings</SectionLabel>
+          <SectionLabel>All Confirmed</SectionLabel>
           {filtered.length === 0 ? (
             <div style={{
               background: 'var(--card-bg)', border: '1px solid var(--border)',
@@ -374,12 +838,38 @@ export default function ConfirmedPage() {
             </div>
           ) : (
             filtered.map(b => (
-              <BookingCard key={`all-${b.id}`} booking={b} onViewDetails={() => setViewing(b.id)} onToast={showToast} isUpcoming={b.date >= today} />
+              <BookingCard
+                key={`all-${b.id}`}
+                booking={b}
+                onViewDetails={() => setViewing(b.id)}
+                onCancel={() => setCancelling(b.id)}
+                onForwardToTeam={() => setForwarding(b.id)}
+                onToast={showToast}
+                isUpcoming={b.date >= today}
+              />
             ))
+          )}
+
+          {filteredCancelled.length > 0 && (
+            <>
+              <SectionLabel>Cancelled</SectionLabel>
+              {filteredCancelled.map(b => (
+                <BookingCard
+                  key={`cancelled-${b.id}`}
+                  booking={b}
+                  onViewDetails={() => setViewing(b.id)}
+                  onCancel={() => {}}
+                  onForwardToTeam={() => setForwarding(b.id)}
+                  onToast={showToast}
+                  isUpcoming={false}
+                />
+              ))}
+            </>
           )}
         </>
       )}
 
+      {/* Detail modal */}
       {viewing && bookings.find(b => b.id === viewing) && (
         <DetailModal
           booking={bookings.find(b => b.id === viewing)!}
@@ -387,6 +877,26 @@ export default function ConfirmedPage() {
         />
       )}
 
+      {/* Cancel modal */}
+      {cancelling && bookings.find(b => b.id === cancelling) && (
+        <CancelModal
+          booking={bookings.find(b => b.id === cancelling)!}
+          onClose={() => setCancelling(null)}
+          onCancelled={(subSearch) => handleCancelled(cancelling, subSearch)}
+        />
+      )}
+
+      {/* Forward to team modal */}
+      {forwarding && interpreterId && bookings.find(b => b.id === forwarding) && (
+        <ForwardToTeamModal
+          booking={bookings.find(b => b.id === forwarding)!}
+          interpreterId={interpreterId}
+          onClose={() => setForwarding(null)}
+          onForwarded={handleForwarded}
+        />
+      )}
+
+      {/* Toast */}
       {toast && (
         <div style={{
           position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
