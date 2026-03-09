@@ -2235,6 +2235,59 @@
 }
 .modal-close-btn:hover { background: var(--border); color: var(--text); }
 
+  /* D/HH BOOKINGS PANEL */
+  .dhh-booking-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+    overflow: hidden;
+  }
+  .dhh-booking-card:hover { border-color: rgba(0,229,255,0.2); }
+  .dhh-booking-card-body { padding: 24px; }
+  .dhh-booking-section-label {
+    font-family: 'Syne', sans-serif; font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+    margin: 28px 0 14px;
+  }
+  .dhh-booking-section-label:first-child { margin-top: 0; }
+  .dhh-interp-assigned {
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px; display: flex;
+    align-items: center; gap: 12px; margin-top: 12px;
+  }
+  .dhh-replacement-box {
+    background: rgba(0,229,255,0.05); border: 1px solid rgba(0,229,255,0.2);
+    border-radius: var(--radius-sm); padding: 14px 16px; margin-top: 14px;
+  }
+  .dhh-replacement-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .dhh-replacement-row:last-child { border-bottom: none; }
+  .dhh-dnb-warning {
+    background: rgba(255,77,109,0.08); border: 1px solid rgba(255,77,109,0.25);
+    border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  .dhh-alert-banner {
+    background: rgba(255,107,133,0.06); border-bottom: 1px solid rgba(255,107,133,0.15);
+    padding: 10px 18px; font-size: 0.8rem; color: #ff8099;
+  }
+  .status-cancelled-custom {
+    font-size: 0.72rem; font-weight: 700; padding: 4px 10px;
+    border-radius: 20px; border: 1px solid rgba(255,107,133,0.35);
+    background: rgba(255,107,133,0.1); color: #ff6b85;
+    font-family: 'Syne', sans-serif; letter-spacing: 0.04em; text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .dhh-booking-empty {
+    color: var(--muted); font-size: 0.88rem; padding: 24px;
+    background: var(--surface); border-radius: 10px;
+    border: 1px dashed var(--border); text-align: center;
+  }
+
 </style>
 </head>
 <body>
@@ -8801,6 +8854,10 @@ function renderDeafDashboard() {
         <span class="dash-nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="2" rx="1" fill="currentColor" opacity=".7"/><rect x="2" y="7" width="12" height="2" rx="1" fill="currentColor" opacity=".7"/><rect x="2" y="11" width="8" height="2" rx="1" fill="currentColor" opacity=".7"/></svg></span> My Preferred Interpreters
         <span class="dash-badge" style="background:rgba(0,229,255,0.15);color:var(--accent);">${preferred.length + approved.length}</span>
       </button>
+      <button class="dash-nav-item" id="ddtab-bookings" onclick="showDeafTab('bookings')">
+        <span class="dash-nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M2 6h12M5 1v2M11 1v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M5 9h2M5 11.5h4" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg></span> My Bookings
+        <span class="dash-badge" style="background:rgba(0,229,255,0.15);color:var(--accent);">2</span>
+      </button>
       <button class="dash-nav-item" id="ddtab-request" onclick="showDeafTab('request')">
         <span class="dash-nav-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L13 6L5 14H2V11L10 3Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M8.5 4.5L11.5 7.5" stroke="currentColor" stroke-width="1.3"/></svg></span> New Request
       </button>
@@ -9052,6 +9109,139 @@ function renderDeafDashboard() {
         </div>
       </div>
     </div>
+
+      <!-- BOOKINGS PANEL -->
+      <div class="dash-panel" id="ddpanel-bookings">
+        <div class="dash-page-title">My Bookings</div>
+        <div class="dash-page-subtitle">Interpreter requests you've made, and requests others have made on your behalf. You'll see real-time updates here as bookings progress.</div>
+
+        <!-- Section A: Requests Made by You -->
+        <div class="dhh-booking-section-label">Requests Made by You</div>
+
+        ${(function(){
+          const myBookings = [
+            {
+              id: 'dhh-my-1',
+              title: 'Physical Therapy Session',
+              requesterLine: 'You · Medical',
+              status: 'confirmed',
+              statusLabel: 'Confirmed',
+              meta: 'Mar 10, 2026 · 1:00 – 2:00 PM · Seattle PT Clinic · On-site',
+              interpreter: { name: 'Sofia Reyes', initials: 'SR', gradient: 'linear-gradient(135deg,#7b61ff,#00e5ff)', detail: 'ASL · Medical' },
+              madeByYou: true,
+              cancelled: false,
+            }
+          ];
+          if (myBookings.length === 0) {
+            return '<div class="dhh-booking-empty">No bookings yet. When a request is made, it will appear here with real-time updates.</div>';
+          }
+          return myBookings.map(b => {
+            const dnbMatch = deafProfile.interpreters.find(i => i.dnb && i.name === b.interpreter.name);
+            return '<div class="dhh-booking-card">' +
+              '<div class="dhh-booking-card-body">' +
+                (dnbMatch ? '<div class="dhh-dnb-warning"><span style="font-size:0.85rem;font-weight:600;">⚠ This interpreter is on your Do Not Book list.</span><button class="fav-btn" onclick="showToast(\'Message sent to your requester. They\\\'ll see it in their signpost inbox.\',\'success\')" style="color:var(--accent2);border-color:rgba(157,135,255,0.3);white-space:nowrap;flex-shrink:0;">Message Requester</button></div>' : '') +
+                '<div class="request-card-header"><div><div class="request-title">' + b.title + '</div><div style="color:var(--muted);font-size:0.82rem;margin-top:2px;">' + b.requesterLine + '</div></div><span class="request-status status-confirmed">' + b.statusLabel + '</span></div>' +
+                '<div class="request-meta"><span>' + b.meta + '</span></div>' +
+                '<div class="dhh-interp-assigned"><div class="dash-avatar" style="width:32px;height:32px;font-size:0.65rem;background:' + b.interpreter.gradient + ';">' + b.interpreter.initials + '</div><div><div style="font-weight:600;font-size:0.88rem;">' + b.interpreter.name + '</div><div style="color:var(--muted);font-size:0.8rem;">' + b.interpreter.detail + '</div></div></div>' +
+                '<div class="request-actions" style="margin-top:16px;"><button class="fav-btn" onclick="viewDhhBookingDetails(this,\'' + b.id + '\')">View Details</button><button class="fav-btn" disabled style="opacity:0.4;cursor:not-allowed;" title="You made this request directly">Message Requester</button></div>' +
+              '</div></div>';
+          }).join('');
+        })()}
+
+        <!-- Section B: Requests Made on Your Behalf -->
+        <div class="dhh-booking-section-label" style="margin-top:36px;">Requests Made on Your Behalf</div>
+
+        ${(function(){
+          const onBehalfBookings = [
+            {
+              id: 'dhh-behalf-1',
+              title: 'Cardiology Appointment',
+              requesterLine: 'Alex Rivera (Seattle Medical Center) · Medical',
+              requesterName: 'Alex Rivera',
+              status: 'confirmed',
+              statusLabel: 'Confirmed',
+              meta: 'Mar 4, 2026 · 2:00 – 4:00 PM · Seattle Medical Center, Floor 3 · On-site',
+              interpreter: { name: 'Sofia Reyes', initials: 'SR', gradient: 'linear-gradient(135deg,#7b61ff,#00e5ff)', detail: 'ASL · Medical' },
+              cancelled: false,
+              alert: null,
+              replacementSearch: null,
+            },
+            {
+              id: 'dhh-behalf-2',
+              title: 'Legal Consultation — Family Law',
+              requesterLine: 'Alex Rivera · Legal',
+              requesterName: 'Alex Rivera',
+              status: 'cancelled',
+              statusLabel: 'Cancelled — Illness',
+              meta: 'Feb 22, 2026 · 10:30 AM – 12:00 PM · Remote (Zoom)',
+              interpreter: { name: 'Sofia Reyes', initials: 'SR', gradient: 'linear-gradient(135deg,#7b61ff,#00e5ff)', detail: 'ASL · Medical', cancelledNote: '(cancelled)' },
+              cancelled: true,
+              alert: '⚠ A replacement is being found for this appointment. You\\'ll be updated as it progresses.',
+              replacementSearch: {
+                note: 'Your requester is looking for a replacement interpreter. The request has been forwarded to 2 interpreters. Check back for updates.',
+                candidates: [
+                  { name: 'Marcus Kim', detail: 'ASL · Medical, Legal', status: '⏳ Awaiting response', statusStyle: 'color:var(--muted);font-style:italic;font-size:0.82rem;' },
+                  { name: 'Priya Nair', detail: 'ASL · Medical', status: '✓ Available', statusStyle: 'color:var(--accent);font-weight:600;font-size:0.82rem;' },
+                ]
+              },
+            }
+          ];
+          if (onBehalfBookings.length === 0) {
+            return '<div class="dhh-booking-empty">No bookings yet. When a request is made, it will appear here with real-time updates.</div>';
+          }
+          return onBehalfBookings.map(b => {
+            const dnbMatch = b.interpreter ? deafProfile.interpreters.find(i => i.dnb && i.name === b.interpreter.name) : null;
+            let html = '<div class="dhh-booking-card">';
+
+            // Alert banner for cancelled bookings with replacement search
+            if (b.alert) {
+              html += '<div class="dhh-alert-banner">' + b.alert + '</div>';
+            }
+
+            html += '<div class="dhh-booking-card-body">';
+
+            // DNB warning
+            if (dnbMatch) {
+              html += '<div class="dhh-dnb-warning"><span style="font-size:0.85rem;font-weight:600;">⚠ This interpreter is on your Do Not Book list.</span><button class="fav-btn" onclick="showToast(\'Message sent to ' + b.requesterName + '. They\\\'ll see it in their signpost inbox.\',\'success\')" style="color:var(--accent2);border-color:rgba(157,135,255,0.3);white-space:nowrap;flex-shrink:0;">Message Requester</button></div>';
+            }
+
+            // Header
+            html += '<div class="request-card-header"><div><div class="request-title">' + b.title + '</div><div style="color:var(--muted);font-size:0.82rem;margin-top:2px;">' + b.requesterLine + '</div></div>';
+            if (b.cancelled) {
+              html += '<span class="status-cancelled-custom">' + b.statusLabel + '</span>';
+            } else {
+              html += '<span class="request-status status-confirmed">' + b.statusLabel + '</span>';
+            }
+            html += '</div>';
+
+            // Meta
+            html += '<div class="request-meta"><span>' + b.meta + '</span></div>';
+
+            // Interpreter assigned / was
+            if (b.interpreter) {
+              const interpLabel = b.cancelled ? 'Interpreter was:' : '';
+              html += '<div class="dhh-interp-assigned"><div class="dash-avatar" style="width:32px;height:32px;font-size:0.65rem;background:' + b.interpreter.gradient + ';">' + b.interpreter.initials + '</div><div><div style="font-weight:600;font-size:0.88rem;">' + b.interpreter.name + (b.interpreter.cancelledNote ? ' <span style="color:var(--muted);font-weight:400;">' + b.interpreter.cancelledNote + '</span>' : '') + '</div><div style="color:var(--muted);font-size:0.8rem;">' + b.interpreter.detail + '</div></div></div>';
+            }
+
+            // Replacement search box
+            if (b.replacementSearch) {
+              html += '<div class="dhh-replacement-box">';
+              html += '<div style="font-size:0.85rem;color:var(--text);margin-bottom:12px;">' + b.replacementSearch.note + '</div>';
+              b.replacementSearch.candidates.forEach(c => {
+                html += '<div class="dhh-replacement-row"><div style="display:flex;align-items:center;gap:8px;"><span style="font-weight:600;font-size:0.85rem;">' + c.name + '</span><span style="color:var(--muted);font-size:0.8rem;">· ' + c.detail + '</span></div><span style="' + c.statusStyle + '">' + c.status + '</span></div>';
+              });
+              html += '</div>';
+            }
+
+            // Actions
+            html += '<div class="request-actions" style="margin-top:16px;"><button class="fav-btn" onclick="viewDhhBookingDetails(this,\'' + b.id + '\')">View Details</button>';
+            html += '<button class="fav-btn" onclick="showToast(\'Message sent to ' + b.requesterName + '. They\\\'ll see it in their signpost inbox.\',\'success\')" style="color:var(--accent2);border-color:rgba(157,135,255,0.3);">Message Requester</button>';
+            html += '</div></div></div>';
+            return html;
+          }).join('');
+        })()}
+
+      </div>
 
       <!-- ROSTER PANEL -->
       <div class="dash-panel" id="ddpanel-roster">
@@ -9332,7 +9522,7 @@ function renderDeafDashboard() {
 }
 
 function showDeafTab(tab) {
-  ['request','roster','prefs','requesters'].forEach(t => {
+  ['bookings','request','roster','prefs','requesters'].forEach(t => {
     const panel = document.getElementById('ddpanel-' + t);
     if (panel) {
       panel.classList.toggle('active', t === tab);
@@ -9931,6 +10121,86 @@ function toggleInterpApproval(id, type) {
   const approvedClass = type === 'work' ? 'approved-work' : 'approved-personal';
   pill.className = `approval-pill ${approved ? approvedClass : 'not-approved'}`;
   pill.querySelector('.pill-icon').textContent = approved ? '✓' : '✕';
+}
+
+// ===== D/HH BOOKING DETAILS (read-only modal) =====
+const dhhBookingData = {
+  'dhh-my-1': {
+    title: 'Physical Therapy Session',
+    status: 'confirmed',
+    statusLabel: 'Confirmed',
+    date: 'Tuesday, March 10, 2026',
+    time: '1:00 – 2:00 PM PST',
+    location: 'Seattle PT Clinic · On-site',
+    interpreter: 'Sofia Reyes',
+    prefsShared: 'Black ASL preferred. Prefers interpreter positioned directly across.',
+    madeByYou: true,
+    requesterName: null,
+  },
+  'dhh-behalf-1': {
+    title: 'Cardiology Appointment',
+    status: 'confirmed',
+    statusLabel: 'Confirmed',
+    date: 'Tuesday, March 4, 2026',
+    time: '2:00 – 4:00 PM PST',
+    location: 'Seattle Medical Center, Floor 3 · On-site',
+    interpreter: 'Sofia Reyes',
+    prefsShared: 'Black ASL preferred. Prefers interpreter positioned directly across. Needs clear sight lines — interpreter should be well-lit.',
+    madeByYou: false,
+    requesterName: 'Alex Rivera',
+  },
+  'dhh-behalf-2': {
+    title: 'Legal Consultation — Family Law',
+    status: 'cancelled',
+    statusLabel: 'Cancelled — Illness',
+    date: 'Sunday, February 22, 2026',
+    time: '10:30 AM – 12:00 PM PST',
+    location: 'Remote (Zoom)',
+    interpreter: 'Sofia Reyes (cancelled)',
+    prefsShared: 'Black ASL preferred. Prefers interpreter positioned directly across.',
+    madeByYou: false,
+    requesterName: 'Alex Rivera',
+  },
+};
+
+function viewDhhBookingDetails(btn, bookingId) {
+  const b = dhhBookingData[bookingId];
+  if (!b) return;
+
+  document.getElementById('detail-modal-title').textContent = b.title;
+
+  const badge = document.getElementById('detail-modal-status-badge');
+  if (b.status === 'confirmed') {
+    badge.innerHTML = '<span class="request-status status-confirmed">✓ ' + b.statusLabel + '</span>';
+  } else {
+    badge.innerHTML = '<span class="status-cancelled-custom">' + b.statusLabel + '</span>';
+  }
+
+  let body = '';
+  body += '<div class="detail-section"><div class="detail-section-label">Date &amp; Time</div>';
+  body += '<div class="detail-row"><span class="detail-row-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M1 5.5h12M4.5 1v2M9.5 1v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></span>';
+  body += '<div>' + b.date + '<br><strong>' + b.time + '</strong></div></div></div>';
+
+  body += '<div class="detail-section"><div class="detail-section-label">Location</div>';
+  body += '<div class="detail-row"><span class="detail-row-icon"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1C4.79 1 3 2.79 3 5c0 3.25 4 8 4 8s4-4.75 4-8c0-2.21-1.79-4-4-4zm0 5.5A1.5 1.5 0 1 1 7 3a1.5 1.5 0 0 1 0 3z" fill="currentColor" opacity="0.7"/></svg></span>';
+  body += '<div>' + b.location + '</div></div></div>';
+
+  body += '<div class="detail-section"><div class="detail-section-label">Interpreter</div>';
+  body += '<div style="font-size:0.88rem;">' + b.interpreter + '</div></div>';
+
+  body += '<div class="detail-section"><div class="detail-section-label">Your Communication Preferences Shared</div>';
+  body += '<div class="detail-note" style="background:rgba(157,135,255,0.06);border:1px solid rgba(157,135,255,0.15);border-radius:var(--radius-sm);padding:12px 16px;font-size:0.85rem;color:var(--muted);line-height:1.6;">' + b.prefsShared + '</div></div>';
+
+  body += '<div style="display:flex;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">';
+  body += '<button class="btn-secondary" style="font-size:0.85rem;padding:8px 20px;" onclick="closeDetailModal()">Close</button>';
+  if (!b.madeByYou && b.requesterName) {
+    body += '<button class="fav-btn" onclick="showToast(\'Message sent to ' + b.requesterName + '. They\\\'ll see it in their signpost inbox.\',\'success\');closeDetailModal();" style="color:var(--accent2);border-color:rgba(157,135,255,0.3);">Message Requester</button>';
+  }
+  body += '</div>';
+
+  document.getElementById('detail-modal-body').innerHTML = body;
+  document.getElementById('detail-modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
 </script>
