@@ -19,6 +19,7 @@ interface Booking {
   location: string | null
   format: string | null
   recurrence: string | null
+  description: string | null
   notes: string | null
   status: string
   is_seed: boolean | null
@@ -450,12 +451,26 @@ function ForwardToTeamModal({ booking, interpreterId, onClose, onForwarded }: {
 
 /* ── Detail Modal ── */
 
+// TODO: Add these columns to bookings table:
+// - dhh_client_name (text)
+// - dhh_client_preferences (text) — communication preferences
+// - onsite_contact_name (text)
+// - onsite_contact_phone (text)
+// - attachments (jsonb) — array of {name, size, url}
+
+interface Attachment {
+  name: string
+  size: string
+  url: string
+}
+
 function DetailModal({ booking, onClose }: { booking: Booking; onClose: () => void }) {
   const isRemote = booking.format === 'remote'
 
   const sectionLabelStyle: React.CSSProperties = {
-    fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.07em',
+    fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.1em',
     textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10,
+    fontFamily: "'Syne', sans-serif",
   }
   const detailRowStyle: React.CSSProperties = {
     display: 'flex', alignItems: 'flex-start', gap: 10,
@@ -463,6 +478,43 @@ function DetailModal({ booking, onClose }: { booking: Booking; onClose: () => vo
   }
   const iconStyle: React.CSSProperties = { color: 'var(--muted)', flexShrink: 0, marginTop: 2 }
   const sectionStyle: React.CSSProperties = { padding: '16px 0', borderBottom: '1px solid var(--border)' }
+  const linkStyle: React.CSSProperties = { color: 'var(--accent)', textDecoration: 'none' }
+
+  // Full date format matching prototype (e.g. "Sunday, February 22, 2026")
+  const fullDate = (() => {
+    const d = new Date(booking.date + 'T00:00:00')
+    return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+  })()
+
+  // Timezone abbreviation
+  const timezone = (() => {
+    try {
+      const d = new Date(booking.date + 'T12:00:00')
+      const parts = new Intl.DateTimeFormat('en-US', { timeZoneName: 'short' }).formatToParts(d)
+      const tz = parts.find(p => p.type === 'timeZoneName')?.value || ''
+      const offset = d.getTimezoneOffset()
+      const sign = offset <= 0 ? '+' : '−'
+      const absH = Math.floor(Math.abs(offset) / 60)
+      return `${tz} (UTC${sign}${absH})`
+    } catch { return '' }
+  })()
+
+  // TODO: Replace with real data from bookings table columns once added
+  // For beta, use requester_name as DHH client fallback, notes for context
+  const dhhClientName = booking.requester_name || 'Client'
+  const dhhClientPrefs: string | null = null // TODO: booking.dhh_client_preferences
+  const onsiteContactName: string | null = null // TODO: booking.onsite_contact_name
+  const onsiteContactPhone: string | null = null // TODO: booking.onsite_contact_phone
+  const attachments: Attachment[] = [] // TODO: booking.attachments || []
+
+  // Parse location for remote links
+  const locationUrl = (() => {
+    if (!booking.location) return null
+    const match = booking.location.match(/(https?:\/\/[^\s]+)/)
+    return match ? match[1] : null
+  })()
+  const meetingIdMatch = booking.location?.match(/Meeting\s*ID[:\s]*([0-9\s]+)/i)
+  const meetingId = meetingIdMatch ? meetingIdMatch[0] : null
 
   return (
     <div style={overlayStyle} onClick={onClose}>
@@ -471,6 +523,7 @@ function DetailModal({ booking, onClose }: { booking: Booking; onClose: () => vo
         borderRadius: 'var(--radius)', width: '90%', maxWidth: 560,
         overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '90vh',
       }} onClick={e => e.stopPropagation()}>
+        {/* Header: Title + Status Badge */}
         <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
             <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>{booking.title || 'Booking'}</h3>
@@ -499,6 +552,7 @@ function DetailModal({ booking, onClose }: { booking: Booking; onClose: () => vo
         </div>
 
         <div style={{ padding: '0 28px 8px', overflowY: 'auto', maxHeight: '62vh' }}>
+          {/* 1. Date & Time */}
           <div style={sectionStyle}>
             <div style={sectionLabelStyle}>Date &amp; Time</div>
             <div style={detailRowStyle}>
@@ -507,48 +561,152 @@ function DetailModal({ booking, onClose }: { booking: Booking; onClose: () => vo
                 <path d="M1 5.5h12M4.5 1v2M9.5 1v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
               </svg>
               <div>
-                <div>{formatDate(booking.date)}</div>
-                <div style={{ fontWeight: 600 }}>{formatTime(booking.time_start, booking.time_end)}</div>
+                <div>{fullDate}</div>
+                <div><strong>{formatTime(booking.time_start, booking.time_end)}</strong>{' '}
+                  <span style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>{timezone}</span>
+                </div>
               </div>
             </div>
           </div>
 
+          {/* 2. Location — clickable */}
           <div style={sectionStyle}>
             <div style={sectionLabelStyle}>Location</div>
             <div style={detailRowStyle}>
               {isRemote ? (
                 <svg style={iconStyle} width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <rect x="1" y="1" width="12" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
-                  <path d="M4 12h6M7 10v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                  <rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.3"/>
+                  <path d="M5 5h4M5 8h2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/>
                 </svg>
               ) : (
                 <svg style={iconStyle} width="14" height="14" viewBox="0 0 14 14" fill="none">
-                  <path d="M7 1C4.79 1 3 2.79 3 5C3 8.5 7 13 7 13C7 13 11 8.5 11 5C11 2.79 9.21 1 7 1ZM7 7C5.9 7 5 6.1 5 5C5 3.9 5.9 3 7 3C8.1 3 9 3.9 9 5C9 6.1 8.1 7 7 7Z" fill="currentColor"/>
+                  <path d="M7 1C4.79 1 3 2.79 3 5c0 3.25 4 8 4 8s4-4.75 4-8c0-2.21-1.79-4-4-4zm0 5.5A1.5 1.5 0 1 1 7 3a1.5 1.5 0 0 1 0 3z" fill="currentColor" opacity="0.7"/>
                 </svg>
               )}
-              <div>{booking.location || 'TBD'}</div>
+              <div>
+                {isRemote ? (
+                  <>
+                    <span>Remote (Zoom)</span>
+                    {locationUrl && (
+                      <>
+                        <br />
+                        <a href={locationUrl} target="_blank" rel="noopener noreferrer" style={linkStyle}
+                          onMouseEnter={e => { e.currentTarget.style.textDecoration = 'underline' }}
+                          onMouseLeave={e => { e.currentTarget.style.textDecoration = 'none' }}
+                        >{locationUrl}</a>
+                      </>
+                    )}
+                    {meetingId && (
+                      <>
+                        <br />
+                        <span style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>{meetingId}</span>
+                      </>
+                    )}
+                    {!locationUrl && !meetingId && booking.location && (
+                      <>
+                        <br />
+                        <span style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>{booking.location}</span>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    On-site —{' '}
+                    {booking.location ? (
+                      <a
+                        href={`https://maps.google.com/?q=${encodeURIComponent(booking.location)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={linkStyle}
+                        onMouseEnter={e => { e.currentTarget.style.textDecoration = 'underline' }}
+                        onMouseLeave={e => { e.currentTarget.style.textDecoration = 'none' }}
+                      >
+                        {booking.location}
+                      </a>
+                    ) : (
+                      <span>TBD</span>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
+          {/* 3. Deaf/Hard of Hearing Client */}
           <div style={sectionStyle}>
-            <div style={sectionLabelStyle}>Client</div>
+            <div style={sectionLabelStyle}>Deaf/Hard of Hearing Client</div>
             <div style={detailRowStyle}>
               <svg style={iconStyle} width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <circle cx="7" cy="4.5" r="2.5" stroke="currentColor" strokeWidth="1.2"/>
-                <path d="M2 13c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                <path d="M1.5 12.5c0-3 2.24-4.5 5.5-4.5s5.5 1.5 5.5 4.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
               </svg>
-              <div style={{ fontWeight: 600 }}>{booking.requester_name || 'Client'}</div>
+              <div><span style={{ fontWeight: 600 }}>{dhhClientName}</span></div>
+            </div>
+            {dhhClientPrefs && (
+              <div style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65, marginTop: 8, paddingLeft: 24 }}>
+                {dhhClientPrefs}
+              </div>
+            )}
+          </div>
+
+          {/* 4. On-site Contact */}
+          <div style={sectionStyle}>
+            <div style={sectionLabelStyle}>On-site Contact</div>
+            <div style={detailRowStyle}>
+              <svg style={iconStyle} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M2 2h3l1.5 3.5-2 1.5a9 9 0 0 0 2.5 2.5l1.5-2L12 9v3c-5.5.5-11-5-10-10z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <div>
+                {onsiteContactName && onsiteContactPhone
+                  ? `${onsiteContactName} — ${onsiteContactPhone}`
+                  : onsiteContactName || onsiteContactPhone || <span style={{ color: 'var(--muted)', fontStyle: 'italic' }}>Not provided</span>
+                }
+              </div>
             </div>
           </div>
 
-          <div style={{ padding: '16px 0' }}>
-            <div style={sectionLabelStyle}>Booking Context</div>
+          {/* 5. Job Context */}
+          <div style={sectionStyle}>
+            <div style={sectionLabelStyle}>Job Context</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65 }}>
-              {booking.notes || `${booking.specialization || 'General'} booking`}
+              {booking.description || booking.notes || `${booking.specialization || 'General'} booking`}
             </div>
           </div>
+
+          {/* 6. Attachments & Materials */}
+          {attachments.length > 0 && (
+            <div style={{ padding: '16px 0' }}>
+              <div style={sectionLabelStyle}>Attachments &amp; Materials</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {attachments.map(a => (
+                  <a
+                    key={a.name}
+                    href={a.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 7,
+                      background: 'var(--surface2)', border: '1px solid var(--border)',
+                      borderRadius: 8, padding: '7px 12px', fontSize: '0.82rem',
+                      color: 'var(--text)', cursor: 'pointer', transition: 'border-color 0.15s',
+                      textDecoration: 'none',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text)' }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <rect x="2" y="1" width="8" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                      <path d="M5 4h4M5 7h4M5 10h2" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
+                    </svg>
+                    {a.name} <span style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>{a.size}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
+        {/* Footer */}
         <div style={{ padding: '16px 28px', borderTop: '1px solid var(--border)', display: 'flex', gap: 10, alignItems: 'center' }}>
           <GhostButton onClick={onClose}>Close</GhostButton>
         </div>
@@ -728,7 +886,7 @@ export default function ConfirmedPage() {
 
     const { data, error } = await supabase
       .from('bookings')
-      .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed, cancellation_reason, sub_search_initiated')
+      .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, description, notes, status, is_seed, cancellation_reason, sub_search_initiated')
       .eq('interpreter_id', profile.id)
       .in('status', ['confirmed', 'cancelled'])
       .order('date', { ascending: true })
