@@ -69,6 +69,9 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         sign_languages: formData.signLanguages,
         spoken_languages: formData.spokenLanguages,
         specializations: formData.specializations,
+        specialized_skills: formData.otherSpecializations
+          ? formData.otherSpecializations.split(',').map(s => s.trim()).filter(Boolean)
+          : [],
         video_url: formData.videoUrl,
         video_desc: formData.videoDescription,
         photo_url: formData.avatarUrl,

@@ -9,6 +9,7 @@ export interface Interpreter {
   signLangs: string[];
   spokenLangs: string[];
   specs: string[];
+  specializedSkills?: string[];
   certs: string[];
   rating: number;
   reviews: number;

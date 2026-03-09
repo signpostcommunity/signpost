@@ -4,11 +4,11 @@ import { useState } from 'react';
 import {
   ALL_SIGN_LANGS,
   ALL_SPOKEN_LANGS,
-  ALL_SPECS,
   ALL_REGIONS,
   ALL_RACIAL_IDENTITIES,
   ALL_RELIGIOUS_AFFILIATIONS,
 } from '@/lib/data/seed';
+import { SPECIALIZATION_CATEGORIES, SPECIALIZED_SKILLS } from '@/lib/constants/specializations';
 import type { FilterState } from '@/lib/types';
 
 interface Props {
@@ -225,18 +225,60 @@ export default function FilterSidebar({ filters, onChange }: Props) {
 
       <Divider />
 
-      {/* 5. Specialization — purple pills */}
+      {/* 5. Specialization — category groups */}
       <CollapsibleSection label="Specialization">
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-          {ALL_SPECS.map((spec) => (
-            <FilterChip
-              key={spec}
-              label={spec}
-              selected={filters.specs.includes(spec)}
-              onClick={() => toggleArray('specs', spec)}
-              colorScheme="purple"
-            />
-          ))}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {Object.entries(SPECIALIZATION_CATEGORIES).map(([category, subs]) => {
+            const selectedCount = subs.filter(s => filters.specs.includes(s)).length;
+            const allSelected = selectedCount === subs.length;
+            return (
+              <div key={category}>
+                <button
+                  onClick={() => {
+                    if (allSelected) {
+                      onChange({ ...filters, specs: filters.specs.filter(s => !subs.includes(s)) });
+                    } else {
+                      const newSpecs = [...new Set([...filters.specs, ...subs])];
+                      onChange({ ...filters, specs: newSpecs });
+                    }
+                  }}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0',
+                    fontFamily: 'var(--font-syne)', fontSize: '0.65rem', fontWeight: 700,
+                    letterSpacing: '0.08em', textTransform: 'uppercase',
+                    color: selectedCount > 0 ? 'var(--accent)' : 'var(--muted)',
+                    display: 'flex', alignItems: 'center', gap: '6px', width: '100%',
+                  }}
+                >
+                  {category}
+                  {selectedCount > 0 && (
+                    <span style={{ fontSize: '0.6rem', background: 'rgba(0,229,255,0.15)', color: 'var(--accent)', borderRadius: 100, padding: '0 5px', fontFamily: "'DM Sans', sans-serif" }}>{selectedCount}</span>
+                  )}
+                </button>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', paddingLeft: '4px' }}>
+                  {subs.map(sub => (
+                    <FilterChip key={sub} label={sub} selected={filters.specs.includes(sub)} onClick={() => toggleArray('specs', sub)} colorScheme="purple" />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Specialized Skills */}
+        <div style={{ marginTop: '12px', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
+          <div style={{
+            fontFamily: 'var(--font-syne)', fontSize: '0.65rem', fontWeight: 700,
+            letterSpacing: '0.08em', textTransform: 'uppercase', color: '#a891ff',
+            marginBottom: '6px',
+          }}>
+            Specialized Skills
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+            {SPECIALIZED_SKILLS.map(skill => (
+              <FilterChip key={skill} label={skill} selected={filters.specs.includes(skill)} onClick={() => toggleArray('specs', skill)} colorScheme="purple" />
+            ))}
+          </div>
         </div>
       </CollapsibleSection>
 

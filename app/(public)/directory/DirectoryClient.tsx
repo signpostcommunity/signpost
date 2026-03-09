@@ -147,7 +147,7 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
       if (filters.spokenLangs.length > 0 && !filters.spokenLangs.some((l) => i.spokenLangs.includes(l))) return false;
 
       // Specializations
-      if (filters.specs.length > 0 && !filters.specs.some((s) => i.specs.includes(s))) return false;
+      if (filters.specs.length > 0 && !filters.specs.some((s) => i.specs.includes(s) || (i.specializedSkills || []).includes(s))) return false;
 
       // Certification toggle — require at least one cert
       if (filters.certs.includes('__any_cert__') && i.certs.length === 0) return false;

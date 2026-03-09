@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { Interpreter } from '@/lib/types';
 import { getVideoEmbedUrl } from '@/lib/videoUtils';
 import FlagProfileModal from '@/components/directory/FlagProfileModal';
+import { groupSpecsByCategory } from '@/lib/constants/specializations';
 
 const TABS = ['Overview', 'Credentials', 'Availability'] as const;
 type Tab = (typeof TABS)[number];
@@ -529,14 +530,46 @@ function OverviewTab({ interpreter: i }: { interpreter: Interpreter }) {
         </p>
       </Section>
 
-      <Section title="Specializations">
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-          {i.specs.map((s) => (
-            <div key={s} style={{ padding: '8px 16px', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '0.85rem' }}>
-              {s}
+      <Section title="Settings & Specializations">
+        {(() => {
+          const grouped = groupSpecsByCategory(i.specs);
+          const categories = Object.entries(grouped);
+          if (categories.length === 0 && (!i.specializedSkills || i.specializedSkills.length === 0)) {
+            return <p style={{ color: 'var(--muted)', fontSize: '0.88rem' }}>No specializations listed.</p>;
+          }
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              {categories.map(([cat, subs]) => (
+                <div key={cat}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px', fontFamily: 'var(--font-syne)' }}>
+                    {cat}
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {subs.map(s => (
+                      <span key={s} style={{ padding: '5px 12px', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '0.82rem', color: 'var(--text)' }}>
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {i.specializedSkills && i.specializedSkills.length > 0 && (
+                <div>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#a891ff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px', fontFamily: 'var(--font-syne)' }}>
+                    Specialized Skills
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {i.specializedSkills.map(s => (
+                      <span key={s} style={{ padding: '5px 12px', background: 'rgba(123,97,255,0.08)', border: '1px solid rgba(123,97,255,0.3)', borderRadius: '8px', fontSize: '0.82rem', color: '#a891ff', fontWeight: 600 }}>
+                        {s}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          ))}
-        </div>
+          );
+        })()}
       </Section>
     </div>
   );

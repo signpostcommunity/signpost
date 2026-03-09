@@ -8,8 +8,8 @@ import Toast from '@/components/ui/Toast'
 import {
   SIGN_LANGUAGES_TOP6, SIGN_LANGUAGES_BY_REGION,
   SPOKEN_LANGUAGES_TOP6, SPOKEN_LANGUAGES_BY_REGION,
-  SPECIALIZATIONS,
 } from '@/lib/data/languages'
+import { SPECIALIZATION_CATEGORIES, SPECIALIZED_SKILLS } from '@/lib/constants/specializations'
 import { getVideoEmbedUrl, isValidVideoUrl } from '@/lib/videoUtils'
 
 // ── Shared styles ────────────────────────────────────────────────────────────
@@ -125,6 +125,7 @@ interface ProfileData {
   sign_languages?: string[] | null
   spoken_languages?: string[] | null
   specializations?: string[] | null
+  specialized_skills?: string[] | null
   regions?: string[] | null
   video_url?: string | null
   video_desc?: string | null
@@ -150,7 +151,7 @@ interface ProfileClientProps {
 
 // ── Tabs ─────────────────────────────────────────────────────────────────────
 
-const TABS = ['Personal', 'Languages', 'Credentials', 'Bio & Video', 'Payment & Invoicing'] as const
+const TABS = ['Personal', 'Languages', 'Credentials', 'Bio & Video', 'Skills', 'Payment & Invoicing'] as const
 type Tab = typeof TABS[number]
 
 function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
@@ -227,6 +228,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const [signLangs, setSignLangs] = useState<string[]>(p.sign_languages || [])
   const [spokenLangs, setSpokenLangs] = useState<string[]>(p.spoken_languages || [])
   const [specs, setSpecs] = useState<string[]>(p.specializations || [])
+  const [specializedSkills, setSpecializedSkills] = useState<string[]>(p.specialized_skills || [])
   const [otherSpecs, setOtherSpecs] = useState('')
   const [signRegional, setSignRegional] = useState<string[]>([])
   const [spokenRegional, setSpokenRegional] = useState<string[]>([])
@@ -270,7 +272,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       // Now try interpreter_profiles
       const { data, error, status, statusText } = await supabase
         .from('interpreter_profiles')
-        .select('name, first_name, last_name, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, sign_languages, spoken_languages, specializations, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms')
+        .select('name, first_name, last_name, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, sign_languages, spoken_languages, specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms')
         .eq('user_id', user.id)
         .maybeSingle()
       console.log('PROFILE CLIENT-SIDE LOAD:', JSON.stringify({ data, error, status, statusText, userId: user.id }, null, 2))
@@ -290,6 +292,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       if (d.sign_languages) setSignLangs(d.sign_languages)
       if (d.spoken_languages) setSpokenLangs(d.spoken_languages)
       if (d.specializations) setSpecs(d.specializations)
+      if (d.specialized_skills) setSpecializedSkills(d.specialized_skills)
       if (d.regions) setRegions(d.regions)
       if (d.bio != null) setBio(d.bio)
       if (d.video_url != null) setVideoUrl(d.video_url)
@@ -742,28 +745,8 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
             </div>
           )}
 
-          {/* Specializations */}
-          <div style={{ ...sectionTitleStyle, marginTop: 36 }}>Specializations</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 180px), 1fr))', gap: 6, marginBottom: 16 }}>
-            {SPECIALIZATIONS.map(spec => (
-              <Chip key={spec} label={spec} selected={specs.includes(spec)} onToggle={() => toggleInList(specs, spec, setSpecs)} />
-            ))}
-          </div>
-          <div style={{ marginTop: 4 }}>
-            <label style={labelStyle}>Other specializations <span style={{ color: 'var(--muted)', fontWeight: 400 }}>(comma-separated)</span></label>
-            <input
-              type="text"
-              placeholder="e.g. Sports, Veterinary..."
-              value={otherSpecs}
-              onChange={e => setOtherSpecs(e.target.value)}
-              style={inputStyle}
-              onFocus={handleFocus}
-              onBlur={handleBlur}
-            />
-          </div>
-
           <SaveButton saving={saving} onClick={() => saveFields({
-            sign_languages: signLangs, spoken_languages: spokenLangs, specializations: specs,
+            sign_languages: signLangs, spoken_languages: spokenLangs,
           })} />
         </>
       )}
@@ -866,7 +849,19 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
         </>
       )}
 
-      {/* ── Tab 5: Payment & Invoicing ─────────────────────────────────── */}
+      {/* ── Tab 5: Skills ──────────────────────────────────────────────── */}
+      {activeTab === 'Skills' && (
+        <SkillsTab
+          specs={specs}
+          setSpecs={setSpecs}
+          specializedSkills={specializedSkills}
+          setSpecializedSkills={setSpecializedSkills}
+          saving={saving}
+          onSave={() => saveFields({ specializations: specs, specialized_skills: specializedSkills })}
+        />
+      )}
+
+      {/* ── Tab 6: Payment & Invoicing ─────────────────────────────────── */}
       {activeTab === 'Payment & Invoicing' && (
         <>
           {/* Invoicing Preference */}
@@ -1158,6 +1153,152 @@ function CredentialsTab({ saving, onSave, initialCerts, initialEducation, existi
           draft_data: { ...existingDraftData, certifications: validCerts, education: validEdu },
         })
       }} />
+    </>
+  )
+}
+
+// ── Skills tab ────────────────────────────────────────────────────────────────
+
+function SkillsTab({ specs, setSpecs, specializedSkills, setSpecializedSkills, saving, onSave }: {
+  specs: string[]
+  setSpecs: (v: string[]) => void
+  specializedSkills: string[]
+  setSpecializedSkills: (v: string[]) => void
+  saving: boolean
+  onSave: () => void
+}) {
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
+
+  function toggleSpec(spec: string) {
+    setSpecs(specs.includes(spec) ? specs.filter(s => s !== spec) : [...specs, spec])
+  }
+
+  function toggleSkill(skill: string) {
+    setSpecializedSkills(specializedSkills.includes(skill) ? specializedSkills.filter(s => s !== skill) : [...specializedSkills, skill])
+  }
+
+  function toggleCategory(category: string) {
+    setCollapsed(prev => ({ ...prev, [category]: !prev[category] }))
+  }
+
+  return (
+    <>
+      {/* Section 1: Settings & Specializations */}
+      <div style={sectionTitleStyle}>Settings & Specializations</div>
+      <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12, lineHeight: 1.6 }}>
+        Select the settings and specialization areas where you work. These help clients find you.
+      </p>
+
+      <div style={{
+        fontSize: '0.82rem', color: 'var(--accent)', fontWeight: 600, marginBottom: 16,
+      }}>
+        {specs.length} specialization{specs.length !== 1 ? 's' : ''} selected
+      </div>
+
+      {/* Selected tags */}
+      {specs.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 20 }}>
+          {specs.map(spec => (
+            <span key={spec} style={{
+              padding: '4px 12px', fontSize: '0.78rem',
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              borderRadius: 20, border: '1px solid rgba(0,229,255,0.4)',
+              background: 'rgba(0,229,255,0.1)', color: 'var(--accent)',
+              fontFamily: "'DM Sans', sans-serif",
+            }}>
+              {spec}
+              <span onClick={() => toggleSpec(spec)} style={{ cursor: 'pointer', opacity: 0.6, fontSize: '0.85rem' }}>✕</span>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Category groups */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 32 }}>
+        {Object.entries(SPECIALIZATION_CATEGORIES).map(([category, subs]) => {
+          const isCollapsed = collapsed[category]
+          const selectedCount = subs.filter(s => specs.includes(s)).length
+          return (
+            <div key={category} style={{
+              background: 'var(--surface2)', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)', overflow: 'hidden',
+            }}>
+              <button
+                onClick={() => toggleCategory(category)}
+                style={{
+                  width: '100%', padding: '12px 16px',
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  fontFamily: "'Syne', sans-serif", fontSize: '0.72rem', fontWeight: 700,
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
+                  color: selectedCount > 0 ? 'var(--accent)' : 'var(--muted)',
+                }}
+              >
+                <span>{category}</span>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {selectedCount > 0 && (
+                    <span style={{
+                      background: 'rgba(0,229,255,0.15)', color: 'var(--accent)',
+                      borderRadius: 100, padding: '1px 7px', fontSize: '0.7rem', fontWeight: 700,
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}>{selectedCount}</span>
+                  )}
+                  <span style={{ fontSize: '0.7rem', transition: 'transform 0.15s', transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▾</span>
+                </span>
+              </button>
+              {!isCollapsed && (
+                <div style={{ padding: '0 12px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {subs.map(sub => (
+                    <label key={sub} style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
+                      background: specs.includes(sub) ? 'rgba(0,229,255,0.06)' : 'transparent',
+                      transition: 'background 0.15s',
+                      fontSize: '0.85rem', color: specs.includes(sub) ? 'var(--text)' : 'var(--muted)',
+                    }}>
+                      <input
+                        type="checkbox"
+                        checked={specs.includes(sub)}
+                        onChange={() => toggleSpec(sub)}
+                        style={{ accentColor: 'var(--accent)', width: 'auto', flexShrink: 0 }}
+                      />
+                      {sub}
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Section 2: Specialized Skills */}
+      <div style={sectionTitleStyle}>Specialized Skills</div>
+      <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12, lineHeight: 1.6 }}>
+        Select any highly specialized skills you hold. These are highlighted separately on your profile.
+      </p>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 24 }}>
+        {SPECIALIZED_SKILLS.map(skill => (
+          <label key={skill} style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '10px 14px', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+            background: specializedSkills.includes(skill) ? 'rgba(123,97,255,0.08)' : 'var(--surface2)',
+            border: specializedSkills.includes(skill) ? '1px solid rgba(123,97,255,0.3)' : '1px solid var(--border)',
+            transition: 'all 0.15s',
+            fontSize: '0.85rem', color: specializedSkills.includes(skill) ? 'var(--text)' : 'var(--muted)',
+          }}>
+            <input
+              type="checkbox"
+              checked={specializedSkills.includes(skill)}
+              onChange={() => toggleSkill(skill)}
+              style={{ accentColor: '#7b61ff', width: 'auto', flexShrink: 0 }}
+            />
+            {skill}
+          </label>
+        ))}
+      </div>
+
+      <SaveButton saving={saving} onClick={onSave} />
     </>
   )
 }
