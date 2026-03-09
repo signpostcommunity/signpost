@@ -254,6 +254,8 @@ export default function AddToListModal({
             last_name: interpreter.last_name || interpreter.name.split(' ').slice(1).join(' '),
             email: '',
             status: 'accepted',
+            tier: selectedTier,
+            notes: note || null,
           });
 
         if (insertErr) {

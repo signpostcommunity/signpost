@@ -43,6 +43,10 @@ type TeamMember = {
   email: string
   status: string
   member_interpreter_id: string | null
+  tier: string | null
+  notes: string | null
+  photo_url: string | null
+  avatar_color: string | null
 }
 
 // ── Invite Modal ──────────────────────────────────────────────────────────────
@@ -197,16 +201,31 @@ export default function TeamPage() {
 
     const { data: members, error } = await supabase
       .from('interpreter_preferred_team')
-      .select('id, first_name, last_name, email, status, member_interpreter_id')
+      .select('id, first_name, last_name, email, status, member_interpreter_id, tier, notes, interpreter_profiles:member_interpreter_id(photo_url, avatar_color)')
       .eq('interpreter_id', profile.id)
       .order('id', { ascending: false })
 
     if (error) {
       console.error('Team fetch error:', error)
-      // Table may not exist yet — show empty state, not an error
       setTeam([])
     } else {
-      setTeam(members || [])
+      // Flatten the joined interpreter_profiles data
+      const mapped = (members || []).map((m: Record<string, unknown>) => {
+        const joined = m.interpreter_profiles as { photo_url?: string; avatar_color?: string } | null
+        return {
+          id: m.id as string,
+          first_name: m.first_name as string,
+          last_name: m.last_name as string,
+          email: m.email as string,
+          status: m.status as string,
+          member_interpreter_id: m.member_interpreter_id as string | null,
+          tier: (m.tier as string) || null,
+          notes: (m.notes as string) || null,
+          photo_url: joined?.photo_url || null,
+          avatar_color: joined?.avatar_color || null,
+        }
+      })
+      setTeam(mapped)
     }
     setLoading(false)
   }, [])
@@ -299,6 +318,12 @@ function TeamCard({ member, onRemove }: { member: TeamMember; onRemove: () => vo
   const initials = `${(member.first_name[0] || '').toUpperCase()}${(member.last_name[0] || '').toUpperCase()}`
   const fullName = `${member.first_name} ${member.last_name}`
 
+  const isGoTo = member.tier === 'preferred'
+  const tierLabel = isGoTo ? '★ Go-to' : '✓ Available'
+  const tierBg = isGoTo ? 'rgba(0,229,255,0.08)' : 'rgba(157,135,255,0.08)'
+  const tierBorder = isGoTo ? 'rgba(0,229,255,0.25)' : 'rgba(157,135,255,0.25)'
+  const tierColor = isGoTo ? 'var(--accent)' : '#9d87ff'
+
   return (
     <div
       onMouseEnter={() => setHover(true)}
@@ -310,13 +335,30 @@ function TeamCard({ member, onRemove }: { member: TeamMember; onRemove: () => vo
         display: 'flex', alignItems: 'center', gap: 16, transition: 'border-color 0.2s',
       }}
     >
-      <Avatar initials={initials} gradient="linear-gradient(135deg,#7b61ff,#00e5ff)" size={44} />
+      {member.photo_url ? (
+        <img src={member.photo_url} alt={fullName} style={{
+          width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', flexShrink: 0,
+          border: '2px solid var(--accent)',
+        }} />
+      ) : (
+        <Avatar initials={initials} gradient={member.avatar_color || 'linear-gradient(135deg,#7b61ff,#00e5ff)'} size={44} />
+      )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>{fullName}</div>
-        <div style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 2 }}>
-          {member.email}
-        </div>
+        {member.email && (
+          <div style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 2 }}>
+            {member.email}
+          </div>
+        )}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 7 }}>
+          {member.tier && (
+            <span style={{
+              fontSize: '0.7rem', padding: '2px 9px', borderRadius: 20,
+              background: tierBg, border: `1px solid ${tierBorder}`, color: tierColor,
+            }}>
+              {tierLabel}
+            </span>
+          )}
           <span style={{
             fontSize: '0.7rem', padding: '2px 9px', borderRadius: 20,
             background: member.status === 'accepted' ? 'rgba(52,211,153,0.12)' : 'rgba(0,229,255,0.08)',
@@ -326,6 +368,14 @@ function TeamCard({ member, onRemove }: { member: TeamMember; onRemove: () => vo
             {member.status === 'accepted' ? 'Accepted' : member.status === 'declined' ? 'Declined' : 'Invited'}
           </span>
         </div>
+        {member.notes && (
+          <div style={{
+            fontSize: '0.78rem', color: 'var(--muted)', marginTop: 8,
+            fontStyle: 'italic', lineHeight: 1.5,
+          }}>
+            &ldquo;{member.notes}&rdquo;
+          </div>
+        )}
       </div>
       <button
         onClick={onRemove}
@@ -334,6 +384,7 @@ function TeamCard({ member, onRemove }: { member: TeamMember; onRemove: () => vo
           borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
           fontSize: '0.75rem', padding: '5px 12px', cursor: 'pointer',
           whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'DM Sans', sans-serif",
+          alignSelf: 'flex-start',
         }}
         onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,80,80,0.4)'; e.currentTarget.style.color = '#f87171' }}
         onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
