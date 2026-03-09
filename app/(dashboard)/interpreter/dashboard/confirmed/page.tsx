@@ -25,6 +25,48 @@ interface Booking {
   is_seed: boolean | null
   cancellation_reason: string | null
   sub_search_initiated: boolean | null
+  rate_profile_id: string | null
+}
+
+interface InvoiceInfo {
+  id: string
+  status: string
+  invoice_number: string
+  due_date: string | null
+}
+
+interface AdditionalCost {
+  category: string
+  description: string
+  amount: number
+}
+
+interface RateProfileData {
+  id: string
+  label: string
+  hourly_rate: number | null
+}
+
+interface PaymentMethodEntry {
+  type: string
+  value: string
+}
+
+const COST_CATEGORIES = [
+  'Travel - Mileage', 'Travel - Parking', 'Travel - Tolls', 'Travel - Airfare',
+  'Travel - Lodging', 'Prep Time', 'Materials', 'Rush Fee', 'After Hours', 'Other',
+] as const
+
+const TERMS_LABELS: Record<string, string> = {
+  'due_on_receipt': 'Due on Receipt',
+  'net_15': 'Net 15',
+  'net_30': 'Net 30',
+  'net_45': 'Net 45',
+  'net_60': 'Net 60',
+}
+
+const TERMS_DAYS: Record<string, number> = {
+  'due_on_receipt': 0, 'net_15': 15, 'net_30': 30, 'net_45': 45, 'net_60': 60,
 }
 
 interface TeamMember {
@@ -827,6 +869,414 @@ function CalendarDropdown({ booking, onToast }: {
   )
 }
 
+/* ── Invoice Modal ── */
+
+function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
+  booking: Booking
+  interpreterId: string
+  onClose: () => void
+  onSaved: (status: string) => void
+}) {
+  const [invoiceNumber, setInvoiceNumber] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [existingInvoiceId, setExistingInvoiceId] = useState<string | null>(null)
+
+  // Editable fields
+  const [billingName, setBillingName] = useState(booking.requester_name || '')
+  const [billingEmail, setBillingEmail] = useState('')
+  const [actualStart, setActualStart] = useState(booking.time_start || '09:00')
+  const [actualEnd, setActualEnd] = useState(booking.time_end || '10:00')
+  const [actualHours, setActualHours] = useState(0)
+  const [hourlyRate, setHourlyRate] = useState(0)
+  const [additionalCosts, setAdditionalCosts] = useState<AdditionalCost[]>([])
+  const [paymentTerms, setPaymentTerms] = useState('net_30')
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethodEntry[]>([])
+
+  // Calculate hours from time
+  useEffect(() => {
+    const [sh, sm] = actualStart.split(':').map(Number)
+    const [eh, em] = actualEnd.split(':').map(Number)
+    const hours = Math.max(0, (eh * 60 + em - sh * 60 - sm) / 60)
+    setActualHours(Math.round(hours * 100) / 100)
+  }, [actualStart, actualEnd])
+
+  const subtotal = (actualHours * hourlyRate) + additionalCosts.reduce((sum, c) => sum + (c.amount || 0), 0)
+  const total = subtotal
+
+  // Calculate due date
+  const dueDate = (() => {
+    const days = TERMS_DAYS[paymentTerms] || 30
+    const d = new Date(booking.date + 'T00:00:00')
+    d.setDate(d.getDate() + days)
+    return d.toISOString().split('T')[0]
+  })()
+
+  const dueDateFormatted = (() => {
+    if (paymentTerms === 'due_on_receipt') return 'Due on Receipt'
+    const d = new Date(dueDate + 'T00:00:00')
+    return `Due by ${d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
+  })()
+
+  // Load data on mount
+  useEffect(() => {
+    async function init() {
+      const supabase = createClient()
+
+      // Check for existing draft invoice for this booking
+      const { data: existingInv } = await supabase
+        .from('invoices')
+        .select('id, invoice_number, status, requester_billing_email, actual_start_time, actual_end_time, actual_hours, base_rate, additional_costs, payment_terms, payment_methods_snapshot')
+        .eq('booking_id', booking.id)
+        .eq('interpreter_id', interpreterId)
+        .in('status', ['draft'])
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+      if (existingInv && existingInv.length > 0) {
+        const inv = existingInv[0]
+        setExistingInvoiceId(inv.id)
+        setInvoiceNumber(inv.invoice_number)
+        if (inv.requester_billing_email) setBillingEmail(inv.requester_billing_email)
+        if (inv.actual_start_time) setActualStart(inv.actual_start_time.slice(0, 5))
+        if (inv.actual_end_time) setActualEnd(inv.actual_end_time.slice(0, 5))
+        if (inv.actual_hours) setActualHours(Number(inv.actual_hours))
+        if (inv.base_rate) setHourlyRate(Number(inv.base_rate))
+        if (inv.additional_costs) setAdditionalCosts(inv.additional_costs as AdditionalCost[])
+        if (inv.payment_terms) setPaymentTerms(inv.payment_terms)
+        if (inv.payment_methods_snapshot) setPaymentMethods(inv.payment_methods_snapshot as PaymentMethodEntry[])
+        setLoading(false)
+        return
+      }
+
+      // Generate new invoice number
+      const { data: numData } = await supabase.rpc('generate_invoice_number')
+      if (numData) setInvoiceNumber(numData as string)
+
+      // Fetch rate profile if linked
+      if (booking.rate_profile_id) {
+        const { data: rp } = await supabase
+          .from('interpreter_rate_profiles')
+          .select('hourly_rate')
+          .eq('id', booking.rate_profile_id)
+          .single()
+        if (rp?.hourly_rate) setHourlyRate(Number(rp.hourly_rate))
+      } else {
+        // Fallback: get default rate
+        const { data: defaultRate } = await supabase
+          .from('interpreter_rate_profiles')
+          .select('hourly_rate')
+          .eq('interpreter_id', interpreterId)
+          .eq('is_default', true)
+          .limit(1)
+        if (defaultRate && defaultRate.length > 0 && defaultRate[0].hourly_rate) {
+          setHourlyRate(Number(defaultRate[0].hourly_rate))
+        }
+      }
+
+      // Fetch interpreter payment methods + default terms
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: interpData } = await supabase
+          .from('interpreter_profiles')
+          .select('payment_methods, default_payment_terms')
+          .eq('user_id', user.id)
+          .single()
+        if (interpData) {
+          if (interpData.payment_methods) setPaymentMethods(interpData.payment_methods as PaymentMethodEntry[])
+          if (interpData.default_payment_terms) setPaymentTerms(interpData.default_payment_terms)
+        }
+      }
+
+      setLoading(false)
+    }
+    init()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  async function saveInvoice(sendNow: boolean) {
+    setSaving(true)
+    const supabase = createClient()
+
+    const payload = {
+      interpreter_id: interpreterId,
+      booking_id: booking.id,
+      invoice_number: invoiceNumber,
+      status: sendNow ? 'sent' : 'draft',
+      job_title: booking.title,
+      job_date: booking.date,
+      job_location: booking.location,
+      job_format: booking.format,
+      requester_name: billingName,
+      requester_billing_email: billingEmail || null,
+      actual_start_time: actualStart,
+      actual_end_time: actualEnd,
+      actual_hours: actualHours,
+      base_rate: hourlyRate,
+      base_rate_type: 'hourly',
+      additional_costs: additionalCosts,
+      subtotal: Math.round(subtotal * 100) / 100,
+      total: Math.round(total * 100) / 100,
+      payment_terms: paymentTerms,
+      due_date: paymentTerms === 'due_on_receipt' ? booking.date : dueDate,
+      payment_methods_snapshot: paymentMethods,
+      updated_at: new Date().toISOString(),
+      ...(sendNow ? { sent_at: new Date().toISOString() } : {}),
+    }
+
+    let result
+    if (existingInvoiceId) {
+      result = await supabase.from('invoices').update(payload).eq('id', existingInvoiceId).select('id')
+    } else {
+      result = await supabase.from('invoices').insert(payload).select('id')
+    }
+
+    setSaving(false)
+    if (result.error) {
+      console.error('[invoice] save failed:', result.error.message)
+      return
+    }
+
+    const savedId = result.data?.[0]?.id || existingInvoiceId
+    if (sendNow && savedId) {
+      window.open(`/interpreter/dashboard/invoices/${savedId}`, '_blank')
+    }
+
+    onSaved(sendNow ? 'sent' : 'draft')
+  }
+
+  const inputSt: React.CSSProperties = {
+    background: 'var(--surface2)', border: '1px solid var(--border)',
+    borderRadius: 'var(--radius-sm)', padding: '9px 12px',
+    color: 'var(--text)', fontFamily: "'DM Sans', sans-serif",
+    fontSize: '0.88rem', outline: 'none', width: '100%', boxSizing: 'border-box',
+  }
+  const labelSt: React.CSSProperties = { display: 'block', fontSize: '0.75rem', color: 'var(--muted)', marginBottom: 6 }
+
+  if (loading) {
+    return (
+      <div style={overlayStyle} onClick={onClose}>
+        <div style={{ ...modalStyle, maxWidth: 620 }} onClick={e => e.stopPropagation()}>
+          <div style={{ padding: 40, textAlign: 'center', color: 'var(--muted)' }}>Loading invoice...</div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div style={overlayStyle} onClick={onClose}>
+      <div style={{
+        background: 'var(--card-bg)', border: '1px solid var(--border)',
+        borderRadius: 'var(--radius)', width: '92%', maxWidth: 620,
+        overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '92vh',
+      }} onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div style={{ padding: '24px 28px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem', margin: '0 0 6px' }}>Submit Invoice</h3>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>{invoiceNumber}</span>
+              <span style={{
+                fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: 6,
+                background: 'rgba(180,180,180,0.1)', color: 'var(--muted)',
+                border: '1px solid var(--border)',
+              }}>Draft</span>
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: '0 28px 16px', overflowY: 'auto', maxHeight: '64vh' }}>
+          {/* Job details (read-only) */}
+          <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>Job Details</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6 }}>
+              <div style={{ fontWeight: 600 }}>{booking.title || 'Booking'}</div>
+              <div style={{ color: 'var(--muted)' }}>{formatDate(booking.date)} · {formatTime(booking.time_start, booking.time_end)}</div>
+              <div style={{ color: 'var(--muted)' }}>{booking.location || 'TBD'}</div>
+            </div>
+          </div>
+
+          {/* Billing recipient */}
+          <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>Bill To</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div>
+                <label style={labelSt}>Requester Name</label>
+                <input type="text" value={billingName} onChange={e => setBillingName(e.target.value)} style={inputSt}
+                  onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+                  onBlur={e => { e.target.style.borderColor = 'var(--border)' }} />
+              </div>
+              <div>
+                <label style={labelSt}>Billing Email</label>
+                <input type="email" value={billingEmail} onChange={e => setBillingEmail(e.target.value)} placeholder="billing@company.com" style={inputSt}
+                  onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+                  onBlur={e => { e.target.style.borderColor = 'var(--border)' }} />
+              </div>
+            </div>
+          </div>
+
+          {/* Time & Rate */}
+          <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>Time &amp; Rate</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
+              <div>
+                <label style={labelSt}>Start Time</label>
+                <input type="time" value={actualStart} onChange={e => setActualStart(e.target.value)} style={inputSt}
+                  onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+                  onBlur={e => { e.target.style.borderColor = 'var(--border)' }} />
+              </div>
+              <div>
+                <label style={labelSt}>End Time</label>
+                <input type="time" value={actualEnd} onChange={e => setActualEnd(e.target.value)} style={inputSt}
+                  onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+                  onBlur={e => { e.target.style.borderColor = 'var(--border)' }} />
+              </div>
+              <div>
+                <label style={labelSt}>Hours</label>
+                <input type="number" step="0.25" value={actualHours} onChange={e => setActualHours(parseFloat(e.target.value) || 0)} style={inputSt}
+                  onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+                  onBlur={e => { e.target.style.borderColor = 'var(--border)' }} />
+              </div>
+            </div>
+            <div style={{ maxWidth: 200 }}>
+              <label style={labelSt}>Hourly Rate ($)</label>
+              <input type="number" step="0.01" value={hourlyRate} onChange={e => setHourlyRate(parseFloat(e.target.value) || 0)} style={inputSt}
+                onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+                onBlur={e => { e.target.style.borderColor = 'var(--border)' }} />
+            </div>
+          </div>
+
+          {/* Additional Costs */}
+          <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>Additional Costs</div>
+            {additionalCosts.map((cost, i) => (
+              <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'flex-end' }}>
+                <div style={{ flex: 1 }}>
+                  {i === 0 && <label style={labelSt}>Category</label>}
+                  <select value={cost.category} onChange={e => {
+                    const updated = [...additionalCosts]; updated[i] = { ...updated[i], category: e.target.value }; setAdditionalCosts(updated)
+                  }} style={inputSt}
+                    onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+                    onBlur={e => { e.target.style.borderColor = 'var(--border)' }}>
+                    {COST_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div style={{ flex: 1 }}>
+                  {i === 0 && <label style={labelSt}>Description</label>}
+                  <input type="text" value={cost.description} placeholder="e.g. 45 miles round trip" onChange={e => {
+                    const updated = [...additionalCosts]; updated[i] = { ...updated[i], description: e.target.value }; setAdditionalCosts(updated)
+                  }} style={inputSt}
+                    onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+                    onBlur={e => { e.target.style.borderColor = 'var(--border)' }} />
+                </div>
+                <div style={{ width: 100 }}>
+                  {i === 0 && <label style={labelSt}>Amount ($)</label>}
+                  <input type="number" step="0.01" value={cost.amount || ''} onChange={e => {
+                    const updated = [...additionalCosts]; updated[i] = { ...updated[i], amount: parseFloat(e.target.value) || 0 }; setAdditionalCosts(updated)
+                  }} style={inputSt}
+                    onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+                    onBlur={e => { e.target.style.borderColor = 'var(--border)' }} />
+                </div>
+                <button onClick={() => setAdditionalCosts(additionalCosts.filter((_, j) => j !== i))}
+                  style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--muted)', padding: '9px 10px', cursor: 'pointer', fontSize: '0.82rem' }}>✕</button>
+              </div>
+            ))}
+            <button onClick={() => setAdditionalCosts([...additionalCosts, { category: COST_CATEGORIES[0], description: '', amount: 0 }])}
+              style={{
+                background: 'transparent', border: '1.5px dashed var(--border)', borderRadius: 'var(--radius-sm)',
+                padding: '8px 14px', color: 'var(--muted)', fontSize: '0.82rem', cursor: 'pointer',
+                fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}>
+              + Add cost
+            </button>
+          </div>
+
+          {/* Totals */}
+          <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', marginBottom: 6 }}>
+              <span style={{ color: 'var(--muted)' }}>Interpreting ({actualHours}h × ${hourlyRate.toFixed(2)})</span>
+              <span>${(actualHours * hourlyRate).toFixed(2)}</span>
+            </div>
+            {additionalCosts.map((c, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: 4 }}>
+                <span style={{ color: 'var(--muted)' }}>{c.category}{c.description ? ` — ${c.description}` : ''}</span>
+                <span>${(c.amount || 0).toFixed(2)}</span>
+              </div>
+            ))}
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border)' }}>
+              <span style={{ color: 'var(--muted)' }}>Subtotal</span>
+              <span>${subtotal.toFixed(2)}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '1rem', fontWeight: 700, marginTop: 6 }}>
+              <span>Total</span>
+              <span style={{ color: 'var(--accent)' }}>${total.toFixed(2)}</span>
+            </div>
+          </div>
+
+          {/* Payment Terms */}
+          <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>Payment Terms</div>
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <select value={paymentTerms} onChange={e => setPaymentTerms(e.target.value)} style={{ ...inputSt, maxWidth: 200 }}
+                onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+                onBlur={e => { e.target.style.borderColor = 'var(--border)' }}>
+                <option value="due_on_receipt">Due on Receipt</option>
+                <option value="net_15">Net 15</option>
+                <option value="net_30">Net 30</option>
+                <option value="net_45">Net 45</option>
+                <option value="net_60">Net 60</option>
+              </select>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text)', fontWeight: 600 }}>{dueDateFormatted}</span>
+            </div>
+          </div>
+
+          {/* Payment Methods */}
+          <div style={{ padding: '16px 0' }}>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>Payment Methods</div>
+            {paymentMethods.length > 0 ? (
+              <div style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.8 }}>
+                {paymentMethods.map((pm, i) => (
+                  <div key={i}><span style={{ fontWeight: 600, textTransform: 'capitalize' }}>{pm.type}:</span> {pm.value}</div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ fontSize: '0.85rem', color: 'var(--muted)', fontStyle: 'italic' }}>
+                No payment methods configured. <a href="/interpreter/dashboard/profile" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Add them in your profile</a> under Payment &amp; Invoicing.
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: '16px 28px', borderTop: '1px solid var(--border)', display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+          <GhostButton onClick={onClose}>Cancel</GhostButton>
+          <button
+            onClick={() => saveInvoice(false)}
+            disabled={saving}
+            style={{
+              background: 'none', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)', padding: '8px 18px',
+              color: 'var(--text)', fontSize: '0.82rem', cursor: saving ? 'default' : 'pointer',
+              fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
+              opacity: saving ? 0.5 : 1,
+            }}
+          >
+            {saving ? 'Saving...' : 'Save Draft'}
+          </button>
+          <button className="btn-primary" onClick={() => saveInvoice(true)} disabled={saving}
+            style={{ padding: '8px 20px', fontSize: '0.82rem', opacity: saving ? 0.5 : 1 }}>
+            {saving ? 'Sending...' : 'Send Invoice'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ── Cancelled Status Badge ── */
 
 function CancelledBadge({ reason }: { reason: string | null }) {
@@ -845,13 +1295,41 @@ function CancelledBadge({ reason }: { reason: string | null }) {
 
 /* ── Booking Card ── */
 
-function BookingCard({ booking, onViewDetails, onCancel, onForwardToTeam, onToast, isUpcoming }: {
+function InvoiceBadge({ invoice }: { invoice: InvoiceInfo }) {
+  const today = new Date().toISOString().slice(0, 10)
+  const isOverdue = invoice.status === 'sent' && invoice.due_date && invoice.due_date < today
+
+  const config = isOverdue
+    ? { label: 'Invoice: Overdue', bg: 'rgba(255,107,133,0.1)', color: '#ff6b85', border: 'rgba(255,107,133,0.3)' }
+    : invoice.status === 'draft'
+    ? { label: 'Invoice: Draft', bg: 'rgba(180,180,180,0.08)', color: 'var(--muted)', border: 'var(--border)' }
+    : invoice.status === 'sent'
+    ? { label: 'Invoice: Sent', bg: 'rgba(0,229,255,0.1)', color: 'var(--accent)', border: 'rgba(0,229,255,0.25)' }
+    : invoice.status === 'paid'
+    ? { label: 'Invoice: Paid', bg: 'rgba(52,211,153,0.1)', color: '#34d399', border: 'rgba(52,211,153,0.3)' }
+    : { label: `Invoice: ${invoice.status}`, bg: 'rgba(180,180,180,0.08)', color: 'var(--muted)', border: 'var(--border)' }
+
+  return (
+    <span style={{
+      fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: 6,
+      background: config.bg, color: config.color, border: `1px solid ${config.border}`,
+      whiteSpace: 'nowrap',
+    }}>
+      {config.label}
+    </span>
+  )
+}
+
+function BookingCard({ booking, onViewDetails, onCancel, onForwardToTeam, onToast, isUpcoming, invoiceInfo, showInvoiceBtn, onSubmitInvoice }: {
   booking: Booking
   onViewDetails: () => void
   onCancel: () => void
   onForwardToTeam: () => void
   onToast: (msg: string) => void
   isUpcoming: boolean
+  invoiceInfo: InvoiceInfo | null
+  showInvoiceBtn: boolean
+  onSubmitInvoice: () => void
 }) {
   const isCancelled = booking.status === 'cancelled'
 
@@ -866,7 +1344,8 @@ function BookingCard({ booking, onViewDetails, onCancel, onForwardToTeam, onToas
           <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif" }}>{booking.title || 'Booking'}</div>
           <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>{booking.requester_name || 'Client'} · {booking.specialization || 'General'}</div>
         </div>
-        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+        <div style={{ display: 'flex', gap: 8, flexShrink: 0, alignItems: 'center' }}>
+          {invoiceInfo && <InvoiceBadge invoice={invoiceInfo} />}
           {booking.is_seed && <DemoBadge />}
           {isCancelled
             ? <CancelledBadge reason={booking.cancellation_reason} />
@@ -882,6 +1361,16 @@ function BookingCard({ booking, onViewDetails, onCancel, onForwardToTeam, onToas
       <div className="dash-card-actions" style={{ display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
         <GhostButton onClick={onViewDetails}>View Details</GhostButton>
         {!isCancelled && isUpcoming && <CalendarDropdown booking={booking} onToast={onToast} />}
+        {!isCancelled && showInvoiceBtn && !invoiceInfo?.status?.match(/^(sent|paid)$/) && (
+          <GhostButton onClick={onSubmitInvoice}>
+            {invoiceInfo?.status === 'draft' ? 'Edit Invoice' : 'Submit Invoice'}
+          </GhostButton>
+        )}
+        {!isCancelled && invoiceInfo?.status?.match(/^(sent|paid)$/) && (
+          <GhostButton onClick={() => window.open(`/interpreter/dashboard/invoices/${invoiceInfo.id}`, '_blank')}>
+            View Invoice
+          </GhostButton>
+        )}
         {!isCancelled && <GhostButton danger onClick={onCancel}>Cancel Booking</GhostButton>}
         {isCancelled && booking.sub_search_initiated && (
           <button
@@ -906,8 +1395,11 @@ export default function ConfirmedPage() {
   const [viewing, setViewing] = useState<string | null>(null)
   const [cancelling, setCancelling] = useState<string | null>(null)
   const [forwarding, setForwarding] = useState<string | null>(null)
+  const [invoicing, setInvoicing] = useState<string | null>(null)
   const [interpreterId, setInterpreterId] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  const [invoicingPref, setInvoicingPref] = useState<string>('own')
+  const [invoiceMap, setInvoiceMap] = useState<Record<string, InvoiceInfo>>({})
 
   const fetchBookings = useCallback(async () => {
     const supabase = createClient()
@@ -916,16 +1408,17 @@ export default function ConfirmedPage() {
 
     const { data: profile, error: profileErr } = await supabase
       .from('interpreter_profiles')
-      .select('id')
+      .select('id, invoicing_preference')
       .eq('user_id', user.id)
       .single()
 
     if (profileErr || !profile) { setLoading(false); return }
     setInterpreterId(profile.id)
+    setInvoicingPref(profile.invoicing_preference || 'own')
 
     const { data, error } = await supabase
       .from('bookings')
-      .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, description, notes, status, is_seed, cancellation_reason, sub_search_initiated')
+      .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, description, notes, status, is_seed, cancellation_reason, sub_search_initiated, rate_profile_id')
       .eq('interpreter_id', profile.id)
       .in('status', ['confirmed', 'cancelled'])
       .order('date', { ascending: true })
@@ -934,6 +1427,30 @@ export default function ConfirmedPage() {
       console.error('[confirmed] fetch failed:', error.message)
     } else {
       setBookings(data || [])
+
+      // Fetch invoice status for all bookings
+      const bookingIds = (data || []).map(b => b.id)
+      if (bookingIds.length > 0) {
+        const { data: invoices, error: invErr } = await supabase
+          .from('invoices')
+          .select('id, booking_id, status, invoice_number, due_date')
+          .eq('interpreter_id', profile.id)
+          .in('booking_id', bookingIds)
+
+        if (!invErr && invoices) {
+          const map: Record<string, InvoiceInfo> = {}
+          for (const inv of invoices) {
+            if (inv.booking_id) {
+              // Keep the most relevant invoice per booking (sent > draft > void)
+              const existing = map[inv.booking_id]
+              if (!existing || inv.status === 'sent' || inv.status === 'paid' || (inv.status === 'draft' && existing.status === 'void')) {
+                map[inv.booking_id] = { id: inv.id, status: inv.status, invoice_number: inv.invoice_number, due_date: inv.due_date }
+              }
+            }
+          }
+          setInvoiceMap(map)
+        }
+      }
     }
     setLoading(false)
   }, [])
@@ -1019,6 +1536,9 @@ export default function ConfirmedPage() {
                   onForwardToTeam={() => setForwarding(b.id)}
                   onToast={showToast}
                   isUpcoming
+                  invoiceInfo={invoiceMap[b.id] || null}
+                  showInvoiceBtn={invoicingPref === 'signpost'}
+                  onSubmitInvoice={() => setInvoicing(b.id)}
                 />
               ))}
             </>
@@ -1043,6 +1563,9 @@ export default function ConfirmedPage() {
                 onForwardToTeam={() => setForwarding(b.id)}
                 onToast={showToast}
                 isUpcoming={b.date >= today}
+                invoiceInfo={invoiceMap[b.id] || null}
+                showInvoiceBtn={invoicingPref === 'signpost'}
+                onSubmitInvoice={() => setInvoicing(b.id)}
               />
             ))
           )}
@@ -1059,6 +1582,9 @@ export default function ConfirmedPage() {
                   onForwardToTeam={() => setForwarding(b.id)}
                   onToast={showToast}
                   isUpcoming={false}
+                  invoiceInfo={invoiceMap[b.id] || null}
+                  showInvoiceBtn={false}
+                  onSubmitInvoice={() => {}}
                 />
               ))}
             </>
@@ -1090,6 +1616,20 @@ export default function ConfirmedPage() {
           interpreterId={interpreterId}
           onClose={() => setForwarding(null)}
           onForwarded={handleForwarded}
+        />
+      )}
+
+      {/* Invoice modal */}
+      {invoicing && interpreterId && bookings.find(b => b.id === invoicing) && (
+        <InvoiceModal
+          booking={bookings.find(b => b.id === invoicing)!}
+          interpreterId={interpreterId}
+          onClose={() => setInvoicing(null)}
+          onSaved={(status) => {
+            setInvoicing(null)
+            showToast(status === 'sent' ? 'Invoice sent. A printable copy has been generated.' : 'Invoice draft saved.')
+            fetchBookings()
+          }}
         />
       )}
 

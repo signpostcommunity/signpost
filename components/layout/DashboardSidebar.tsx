@@ -9,7 +9,7 @@ interface NavItem {
   label: string
   href: string
   icon: React.ReactNode
-  badgeKey?: 'inquiries' | 'confirmed' | 'inbox' | 'clientLists'
+  badgeKey?: 'inquiries' | 'confirmed' | 'inbox' | 'clientLists' | 'invoiceDrafts'
   badgeCyan?: boolean
 }
 
@@ -30,6 +30,7 @@ const NAV: NavGroup[] = [
     items: [
       { label: 'Inquiries', href: '/interpreter/dashboard/inquiries', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M5 7h6M5 10h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>, badgeKey: 'inquiries' },
       { label: 'Confirmed', href: '/interpreter/dashboard/confirmed', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>, badgeKey: 'confirmed', badgeCyan: true },
+      { label: 'Invoices', href: '/interpreter/dashboard/invoices', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3" y="1.5" width="10" height="13" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M6 5h4M6 7.5h4M6 10h2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>, badgeKey: 'invoiceDrafts', badgeCyan: true },
       { label: 'Inbox', href: '/interpreter/dashboard/inbox', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M2 5l6 4.5L14 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>, badgeKey: 'inbox' },
     ],
   },
@@ -226,10 +227,20 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
 
       if (inboxErr) console.error('[sidebar] inbox count failed:', inboxErr.message)
 
+      // Draft invoices count
+      const { count: invoiceDraftsCount, error: invErr } = await supabase
+        .from('invoices')
+        .select('id', { count: 'exact', head: true })
+        .eq('interpreter_id', profile.id)
+        .eq('status', 'draft')
+
+      if (invErr) console.error('[sidebar] invoice drafts count failed:', invErr.message)
+
       setBadges({
         inquiries: !inqErr ? (inquiriesCount ?? 0) : 0,
         confirmed: !confErr ? (confirmedCount ?? 0) : 0,
         inbox: !inboxErr ? (inboxCount ?? 0) : 0,
+        invoiceDrafts: !invErr ? (invoiceDraftsCount ?? 0) : 0,
       })
     }
     fetchBadges()

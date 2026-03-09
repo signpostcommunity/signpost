@@ -133,6 +133,14 @@ interface ProfileData {
   photo_url?: string | null
   draft_data?: Record<string, unknown> | null
   status?: string | null
+  invoicing_preference?: string | null
+  payment_methods?: PaymentMethod[] | null
+  default_payment_terms?: string | null
+}
+
+interface PaymentMethod {
+  type: string
+  value: string
 }
 
 interface ProfileClientProps {
@@ -142,7 +150,7 @@ interface ProfileClientProps {
 
 // ── Tabs ─────────────────────────────────────────────────────────────────────
 
-const TABS = ['Personal', 'Languages', 'Credentials', 'Bio & Video'] as const
+const TABS = ['Personal', 'Languages', 'Credentials', 'Bio & Video', 'Payment & Invoicing'] as const
 type Tab = typeof TABS[number]
 
 function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
@@ -232,6 +240,11 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const [videoUrlError, setVideoUrlError] = useState<string | null>(null)
   const [videoDescription, setVideoDescription] = useState(p.video_desc || '')
 
+  // ── Payment & Invoicing state ───────────────────────────────────────
+  const [invoicingPref, setInvoicingPref] = useState(p.invoicing_preference || 'own')
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>(p.payment_methods || [])
+  const [defaultPaymentTerms, setDefaultPaymentTerms] = useState(p.default_payment_terms || 'net_30')
+
   // ── Client-side fallback: load profile if server prop was null ──────
   useEffect(() => {
     if (rawProfile) return // Server already provided data
@@ -257,7 +270,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       // Now try interpreter_profiles
       const { data, error, status, statusText } = await supabase
         .from('interpreter_profiles')
-        .select('name, first_name, last_name, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, sign_languages, spoken_languages, specializations, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url')
+        .select('name, first_name, last_name, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, sign_languages, spoken_languages, specializations, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms')
         .eq('user_id', user.id)
         .maybeSingle()
       console.log('PROFILE CLIENT-SIDE LOAD:', JSON.stringify({ data, error, status, statusText, userId: user.id }, null, 2))
@@ -282,6 +295,9 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       if (d.video_url != null) setVideoUrl(d.video_url)
       if (d.video_desc != null) setVideoDescription(d.video_desc)
       if (d.photo_url != null) setPhotoUrl(d.photo_url)
+      if (d.invoicing_preference != null) setInvoicingPref(d.invoicing_preference)
+      if (d.payment_methods != null) setPaymentMethods(d.payment_methods)
+      if (d.default_payment_terms != null) setDefaultPaymentTerms(d.default_payment_terms)
     })()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -457,36 +473,12 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
         background: 'var(--card-bg)', border: '1px solid var(--border)',
         borderRadius: 'var(--radius)', padding: '24px 28px', marginBottom: 28,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          {photoUrl ? (
-            <img src={photoUrl} alt="Profile" style={{
-              width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
-              objectFit: 'cover', border: '2px solid var(--accent)',
-            }} />
-          ) : (
-            <div style={{
-              width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
-              background: 'linear-gradient(135deg,#7b61ff,#00e5ff)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: '#fff',
-            }}>{initials}</div>
-          )}
-          <div>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '1.1rem' }}>{displayName}</div>
-            {p.status && (
-              <span style={{
-                display: 'inline-block', marginTop: 4,
-                fontSize: '0.72rem', fontWeight: 700,
-                background: p.status === 'approved' ? 'rgba(0,229,255,0.1)' : 'rgba(255,165,0,0.12)',
-                border: p.status === 'approved' ? '1px solid rgba(0,229,255,0.25)' : '1px solid rgba(255,165,0,0.3)',
-                color: p.status === 'approved' ? 'var(--accent)' : '#f97316',
-                borderRadius: 6, padding: '2px 8px',
-              }}>
-                {p.status === 'approved' ? '✓ Approved' : p.status === 'pending' ? '⏳ Pending Review' : p.status}
-              </span>
-            )}
+        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '1.3rem' }}>{displayName}</div>
+        {(p.city || p.state) && (
+          <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: 4 }}>
+            {[p.city, p.state].filter(Boolean).join(', ')}
           </div>
-        </div>
+        )}
       </div>
 
       {/* Tabs */}
@@ -871,6 +863,149 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
             }
             saveFields({ bio, video_url: videoUrl, video_desc: videoDescription })
           }} />
+        </>
+      )}
+
+      {/* ── Tab 5: Payment & Invoicing ─────────────────────────────────── */}
+      {activeTab === 'Payment & Invoicing' && (
+        <>
+          {/* Invoicing Preference */}
+          <div style={sectionTitleStyle}>Invoicing Preference</div>
+          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12, lineHeight: 1.6 }}>
+            This controls whether the &ldquo;Submit Invoice&rdquo; button appears on your confirmed bookings. You can change this anytime.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 28 }}>
+            {([
+              { value: 'own', label: 'I use my own invoicing system', desc: 'No invoice tools will appear in signpost.' },
+              { value: 'signpost', label: "I'd like to submit invoices through signpost", desc: 'A "Submit Invoice" button will appear on confirmed bookings.' },
+            ] as const).map(opt => (
+              <label
+                key={opt.value}
+                onClick={() => setInvoicingPref(opt.value)}
+                style={{
+                  display: 'flex', alignItems: 'flex-start', gap: 12, padding: '14px 16px',
+                  background: invoicingPref === opt.value ? 'rgba(0,229,255,0.06)' : 'var(--surface2)',
+                  border: `1.5px solid ${invoicingPref === opt.value ? 'rgba(0,229,255,0.4)' : 'var(--border)'}`,
+                  borderRadius: 'var(--radius-sm)', cursor: 'pointer', transition: 'all 0.15s',
+                }}
+              >
+                <div style={{
+                  width: 18, height: 18, borderRadius: '50%', flexShrink: 0, marginTop: 2,
+                  border: `2px solid ${invoicingPref === opt.value ? 'var(--accent)' : 'var(--border)'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {invoicingPref === opt.value && (
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)' }} />
+                  )}
+                </div>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '0.88rem', color: invoicingPref === opt.value ? 'var(--text)' : 'var(--muted)' }}>{opt.label}</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: 4, lineHeight: 1.5 }}>{opt.desc}</div>
+                </div>
+              </label>
+            ))}
+          </div>
+
+          {/* Default Payment Terms */}
+          <div style={sectionTitleStyle}>Default Payment Terms</div>
+          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 12, marginTop: -12, lineHeight: 1.6 }}>
+            This sets the default due date on new invoices. You can adjust it per invoice.
+          </p>
+          <div style={{ marginBottom: 28, maxWidth: 320 }}>
+            <select
+              value={defaultPaymentTerms}
+              onChange={e => setDefaultPaymentTerms(e.target.value)}
+              style={inputStyle}
+              onFocus={handleFocus} onBlur={handleBlur}
+            >
+              <option value="due_on_receipt">Due on Receipt</option>
+              <option value="net_15">Net 15</option>
+              <option value="net_30">Net 30</option>
+              <option value="net_45">Net 45</option>
+              <option value="net_60">Net 60</option>
+            </select>
+          </div>
+
+          {/* Payment Methods */}
+          <div style={sectionTitleStyle}>Payment Methods</div>
+          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12, lineHeight: 1.6 }}>
+            These payment links appear on your invoices so requesters know how to pay you. signpost does not process payments or store financial account information.
+          </p>
+
+          {paymentMethods.map((pm, i) => (
+            <div key={i} style={{
+              display: 'flex', gap: 10, marginBottom: 10, alignItems: 'flex-start',
+            }}>
+              <select
+                value={pm.type}
+                onChange={e => {
+                  const updated = [...paymentMethods]
+                  updated[i] = { ...updated[i], type: e.target.value }
+                  setPaymentMethods(updated)
+                }}
+                style={{ ...inputStyle, width: 160, flexShrink: 0 }}
+                onFocus={handleFocus} onBlur={handleBlur}
+              >
+                <option value="venmo">Venmo</option>
+                <option value="paypal">PayPal</option>
+                <option value="zelle">Zelle</option>
+                <option value="melio">Melio</option>
+                <option value="check">Check</option>
+                <option value="ach">ACH</option>
+                <option value="other">Other</option>
+              </select>
+              <input
+                type="text"
+                value={pm.value}
+                onChange={e => {
+                  const updated = [...paymentMethods]
+                  updated[i] = { ...updated[i], value: e.target.value }
+                  setPaymentMethods(updated)
+                }}
+                placeholder={
+                  pm.type === 'venmo' ? '@username' :
+                  pm.type === 'paypal' ? 'paypal.me/yourlink' :
+                  pm.type === 'zelle' ? 'Email or phone registered with Zelle' :
+                  pm.type === 'melio' ? 'melio.me/yourlink' :
+                  pm.type === 'check' ? 'Mailing address for checks' :
+                  pm.type === 'ach' ? 'Contact me for ACH details' :
+                  'Payment instructions'
+                }
+                style={{ ...inputStyle, flex: 1 }}
+                onFocus={handleFocus} onBlur={handleBlur}
+              />
+              <button
+                onClick={() => setPaymentMethods(paymentMethods.filter((_, j) => j !== i))}
+                style={{
+                  background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
+                  color: 'var(--muted)', fontSize: '0.85rem', padding: '9px 12px', cursor: 'pointer',
+                  flexShrink: 0, fontFamily: "'DM Sans', sans-serif",
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+
+          <button
+            onClick={() => setPaymentMethods([...paymentMethods, { type: 'venmo', value: '' }])}
+            style={{
+              background: 'transparent', border: '1.5px dashed var(--border)',
+              borderRadius: 'var(--radius-sm)', padding: '10px 16px',
+              color: 'var(--muted)', fontSize: '0.85rem', cursor: 'pointer',
+              fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s', marginBottom: 28,
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
+          >
+            + Add payment method
+          </button>
+
+          <SaveButton saving={saving} onClick={() => saveFields({
+            invoicing_preference: invoicingPref,
+            payment_methods: paymentMethods,
+            default_payment_terms: defaultPaymentTerms,
+          })} />
         </>
       )}
 
