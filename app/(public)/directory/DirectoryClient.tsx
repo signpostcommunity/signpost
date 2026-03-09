@@ -29,9 +29,8 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [filterOpen, setFilterOpen] = useState(false);
 
-  // TODO: Replace with real Supabase auth check when login is hooked up.
-  // Set to true to preview the logged-in directory.
-  const isLoggedIn = true;
+  // Auth state — starts null (loading), then true/false
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   // User role for AddToListModal
   const [userRole, setUserRole] = useState<'deaf' | 'requester' | 'interpreter' | null>(null);
@@ -66,11 +65,15 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
     visible: false,
   });
 
-  // Fetch user role on mount
+  // Fetch auth state and user role on mount
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return;
+      if (!user) {
+        setIsLoggedIn(false);
+        return;
+      }
+      setIsLoggedIn(true);
       supabase
         .from('user_profiles')
         .select('role')
@@ -198,9 +201,9 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
           display: 'flex',
           gap: '32px',
           alignItems: 'flex-start',
-          filter: isLoggedIn ? 'none' : 'blur(6px)',
-          pointerEvents: isLoggedIn ? 'auto' : 'none',
-          userSelect: isLoggedIn ? 'auto' : 'none',
+          filter: isLoggedIn === false ? 'blur(8px)' : 'none',
+          pointerEvents: isLoggedIn === false ? 'none' : 'auto',
+          userSelect: isLoggedIn === false ? 'none' : 'auto',
           transition: 'filter 0.3s',
         }}
       >
@@ -280,7 +283,7 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
       </div>
 
       {/* ── Login overlay (shown when logged out) ── */}
-      {!isLoggedIn && (
+      {isLoggedIn === false && (
         <div
           style={{
             position: 'fixed',
@@ -299,90 +302,70 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
               borderRadius: 'var(--radius)',
               padding: '40px 48px',
               textAlign: 'center',
-              maxWidth: 440,
+              maxWidth: 480,
+              width: '90%',
               boxShadow: '0 24px 64px rgba(0,0,0,0.6)',
               pointerEvents: 'auto',
             }}
           >
-            <div
-              style={{
-                width: 56,
-                height: 56,
-                borderRadius: '50%',
-                background: 'rgba(0,229,255,0.1)',
-                border: '1px solid rgba(0,229,255,0.25)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 20px',
-                fontSize: '1.4rem',
-              }}
-            >
-              🔒
+            <div className="wordmark" style={{ fontSize: '1.1rem', marginBottom: 24 }}>
+              sign<span>post</span>
             </div>
             <h2
               style={{
                 fontFamily: 'var(--font-syne)',
-                fontSize: '1.3rem',
+                fontSize: '1.25rem',
                 fontWeight: 800,
                 letterSpacing: '-0.02em',
-                marginBottom: '8px',
+                marginBottom: 10,
+                lineHeight: 1.3,
               }}
             >
-              Sign in to browse interpreters
+              Create an account to browse the interpreter directory
             </h2>
             <p
               style={{
                 color: 'var(--muted)',
                 fontSize: '0.9rem',
-                lineHeight: 1.6,
-                marginBottom: '24px',
+                lineHeight: 1.65,
+                marginBottom: 28,
               }}
             >
-              Create a free account to search the full directory, view interpreter profiles, and start booking.
+              signpost connects you directly with qualified sign language interpreters. Create a free account to search profiles, view credentials, and start booking.
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <Link
-                href="/dhh"
+                href="/interpreter"
                 className="btn-primary"
                 style={{
                   display: 'block',
-                  padding: '12px 24px',
-                  borderRadius: '100px',
+                  padding: '13px 24px',
                   textAlign: 'center',
                   textDecoration: 'none',
-                  fontSize: '0.9rem',
-                  fontWeight: 600,
+                  fontSize: '0.92rem',
+                  fontWeight: 700,
                 }}
               >
-                Sign up — I&apos;m Deaf / Hard of Hearing
+                Create an Account &rarr;
               </Link>
               <Link
-                href="/request"
+                href="/interpreter/login"
                 style={{
                   display: 'block',
-                  padding: '12px 24px',
-                  borderRadius: '100px',
+                  padding: '13px 24px',
                   textAlign: 'center',
                   textDecoration: 'none',
                   fontSize: '0.9rem',
                   fontWeight: 600,
                   border: '1px solid var(--border)',
-                  background: 'var(--surface2)',
-                  color: 'var(--text)',
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'none',
+                  color: 'var(--muted)',
+                  transition: 'color 0.15s, border-color 0.15s',
                 }}
               >
-                Sign up — I&apos;m booking for an organization
+                Already have an account? Log in
               </Link>
-              <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '8px' }}>
-                Already have an account?{' '}
-                <Link
-                  href="/dhh/login"
-                  style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}
-                >
-                  Log in
-                </Link>
-              </p>
             </div>
           </div>
         </div>
