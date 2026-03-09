@@ -5816,7 +5816,7 @@ function closeFilterDrawer() {
             <div class="dash-stat-label">Interpreters in your Preferred Team</div>
           </div>
           <div class="dash-stat-card" onclick="showDashPanel('interp-availability', document.querySelector('.dash-nav-item[onclick*=\'interp-availability\']'))" title="Manage Availability">
-            <div class="dash-stat-num">4</div>
+            <div class="dash-stat-num" id="stat-days-available">4</div>
             <div class="dash-stat-label">Days Available This Week</div>
           </div>
         </div>
@@ -8252,6 +8252,11 @@ function statusLabel(s) {
   return '<span style="color:var(--muted);">● Not available</span>';
 }
 
+function updateAvailStat() {
+  const el = document.getElementById('stat-days-available');
+  if (el) el.textContent = availDayData.filter(d => d.status !== 'none').length;
+}
+
 function renderAvailDays() {
   const container = document.getElementById('avail-days');
   if (!container) return;
@@ -8266,6 +8271,7 @@ function renderAvailDays() {
       </div>
     </div>
   `).join('');
+  updateAvailStat();
 }
 
 function setDayStatus(index, status) {
