@@ -22,6 +22,14 @@ interface AddToListModalProps {
   interpreter: Interpreter | null;
   userRole: 'deaf' | 'requester' | 'interpreter' | null;
   onSuccess?: (interpreterName: string) => void;
+  /** Edit mode: pass existing row ID to UPDATE instead of INSERT */
+  editRowId?: string | null;
+  /** Pre-populate tier in edit mode */
+  editTier?: string | null;
+  /** Pre-populate notes in edit mode */
+  editNotes?: string | null;
+  /** Called after successful delete in edit mode */
+  onRemove?: (interpreterName: string) => void;
 }
 
 // ─── Role-specific config ────────────────────────────────────────
@@ -106,18 +114,18 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
     requireApproval: true,
   },
   interpreter: {
-    step1Label: 'Which role do they play in your team?',
+    step1Label: 'Which tier should they be on?',
     tiers: [
       {
         id: 'preferred',
-        label: '★ Go-to Team Interpreter',
+        label: '★ Top Tier Team Interpreter',
         desc: 'Interpreters you actively seek out for team assignments. When you need a partner for a job, these are your first calls.',
         accentVar: 'accent',
       },
       {
         id: 'secondary',
-        label: '✓ Available Team Interpreter',
-        desc: "Colleagues you're open to teaming with. A good pool to draw from when your go-to interpreters aren't available.",
+        label: '✓ Secondary Tier Team Interpreter',
+        desc: "Colleagues you're open to teaming with. A good pool to draw from when your top tier interpreters aren't available.",
         accentVar: 'accent2',
       },
     ],
@@ -170,31 +178,40 @@ export default function AddToListModal({
   interpreter,
   userRole,
   onSuccess,
+  editRowId,
+  editTier,
+  editNotes,
+  onRemove,
 }: AddToListModalProps) {
+  const isEditMode = !!editRowId;
   const [selectedTier, setSelectedTier] = useState<string | null>(null);
   const [approveWork, setApproveWork] = useState(false);
   const [approvePersonal, setApprovePersonal] = useState(false);
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmingRemove, setConfirmingRemove] = useState(false);
+  const [removing, setRemoving] = useState(false);
 
   const supabase = createClient();
   const cfg = ROLE_CONFIGS[userRole || 'default'];
 
   useEffect(() => {
     if (isOpen) {
-      setSelectedTier(null);
+      setSelectedTier(isEditMode ? (editTier || null) : null);
       setApproveWork(false);
       setApprovePersonal(false);
-      setNote('');
+      setNote(isEditMode ? (editNotes || '') : '');
       setError(null);
       setSaving(false);
+      setConfirmingRemove(false);
+      setRemoving(false);
       document.body.style.overflow = 'hidden';
     }
     return () => {
       document.body.style.overflow = '';
     };
-  }, [isOpen]);
+  }, [isOpen, isEditMode, editTier, editNotes]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -231,38 +248,53 @@ export default function AddToListModal({
       }
 
       if (userRole === 'interpreter') {
-        // Interpreter → interpreter_preferred_team
-        const { data: profile, error: profileErr } = await supabase
-          .from('interpreter_profiles')
-          .select('id')
-          .eq('user_id', user.id)
-          .single();
+        if (isEditMode) {
+          // Edit mode — UPDATE existing row
+          const { error: updateErr } = await supabase
+            .from('interpreter_preferred_team')
+            .update({ tier: selectedTier, notes: note || null })
+            .eq('id', editRowId);
 
-        if (profileErr || !profile) {
-          console.error('Profile lookup error:', profileErr);
-          setError('Could not find your interpreter profile.');
-          setSaving(false);
-          return;
-        }
+          if (updateErr) {
+            console.error('Update error (interpreter_preferred_team):', updateErr);
+            setError(`Save failed: ${updateErr.message}`);
+            setSaving(false);
+            return;
+          }
+        } else {
+          // Add mode — INSERT new row
+          const { data: profile, error: profileErr } = await supabase
+            .from('interpreter_profiles')
+            .select('id')
+            .eq('user_id', user.id)
+            .single();
 
-        const { error: insertErr } = await supabase
-          .from('interpreter_preferred_team')
-          .insert({
-            interpreter_id: profile.id,
-            member_interpreter_id: interpreter.id,
-            first_name: interpreter.first_name || interpreter.name.split(' ')[0],
-            last_name: interpreter.last_name || interpreter.name.split(' ').slice(1).join(' '),
-            email: '',
-            status: 'accepted',
-            tier: selectedTier,
-            notes: note || null,
-          });
+          if (profileErr || !profile) {
+            console.error('Profile lookup error:', profileErr);
+            setError('Could not find your interpreter profile.');
+            setSaving(false);
+            return;
+          }
 
-        if (insertErr) {
-          console.error('Insert error (interpreter_preferred_team):', insertErr);
-          setError(`Save failed: ${insertErr.message}`);
-          setSaving(false);
-          return;
+          const { error: insertErr } = await supabase
+            .from('interpreter_preferred_team')
+            .insert({
+              interpreter_id: profile.id,
+              member_interpreter_id: interpreter.id,
+              first_name: interpreter.first_name || interpreter.name.split(' ')[0],
+              last_name: interpreter.last_name || interpreter.name.split(' ').slice(1).join(' '),
+              email: '',
+              status: 'accepted',
+              tier: selectedTier,
+              notes: note || null,
+            });
+
+          if (insertErr) {
+            console.error('Insert error (interpreter_preferred_team):', insertErr);
+            setError(`Save failed: ${insertErr.message}`);
+            setSaving(false);
+            return;
+          }
         }
       } else {
         // Deaf / Requester / Default → deaf_roster
@@ -310,6 +342,30 @@ export default function AddToListModal({
       setError('An unexpected error occurred. Check the console.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleRemove = async () => {
+    if (!editRowId || !interpreter) return;
+    setRemoving(true);
+    setError(null);
+    try {
+      const { error: deleteErr } = await supabase
+        .from('interpreter_preferred_team')
+        .delete()
+        .eq('id', editRowId);
+      if (deleteErr) {
+        setError(`Remove failed: ${deleteErr.message}`);
+        setRemoving(false);
+        return;
+      }
+      onRemove?.(interpreter.name);
+      onClose();
+    } catch (err) {
+      console.error('Remove error:', err);
+      setError('An unexpected error occurred.');
+    } finally {
+      setRemoving(false);
     }
   };
 
@@ -399,7 +455,7 @@ export default function AddToListModal({
                 marginBottom: '3px',
               }}
             >
-              {interpreter.name}
+              {isEditMode ? `Edit — ${interpreter.name}` : interpreter.name}
             </div>
             <div
               style={{
@@ -758,9 +814,68 @@ export default function AddToListModal({
             borderTop: '1px solid var(--border, #1e2433)',
             display: 'flex',
             gap: '10px',
-            justifyContent: 'flex-end',
+            alignItems: 'center',
           }}
         >
+          {isEditMode && (
+            confirmingRemove ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginRight: 'auto' }}>
+                <span style={{ fontSize: '0.82rem', color: '#ff8099' }}>Remove from team?</span>
+                <button
+                  onClick={handleRemove}
+                  disabled={removing}
+                  style={{
+                    background: 'rgba(255, 107, 133, 0.12)',
+                    border: '1px solid rgba(255, 107, 133, 0.3)',
+                    borderRadius: '8px',
+                    padding: '6px 14px',
+                    color: '#ff8099',
+                    fontWeight: 600,
+                    fontSize: '0.8rem',
+                    cursor: removing ? 'not-allowed' : 'pointer',
+                    fontFamily: "'DM Sans', sans-serif",
+                    opacity: removing ? 0.5 : 1,
+                  }}
+                >
+                  {removing ? 'Removing...' : 'Yes, remove'}
+                </button>
+                <button
+                  onClick={() => setConfirmingRemove(false)}
+                  style={{
+                    background: 'none',
+                    border: '1px solid var(--border, #1e2433)',
+                    borderRadius: '8px',
+                    padding: '6px 14px',
+                    color: 'var(--muted, #b0b8d0)',
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
+                    fontFamily: "'DM Sans', sans-serif",
+                  }}
+                >
+                  No
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setConfirmingRemove(true)}
+                style={{
+                  background: 'none',
+                  border: '1px solid rgba(255, 107, 133, 0.3)',
+                  borderRadius: '10px',
+                  padding: '10px 16px',
+                  color: '#ff8099',
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: '0.82rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                  marginRight: 'auto',
+                }}
+              >
+                Remove from team
+              </button>
+            )
+          )}
+          {!isEditMode && <div style={{ marginRight: 'auto' }} />}
           <button
             onClick={onClose}
             style={{
@@ -794,7 +909,7 @@ export default function AddToListModal({
               fontFamily: "'DM Sans', sans-serif",
             }}
           >
-            {saving ? 'Saving...' : cfg.confirmLabel}
+            {saving ? 'Saving...' : isEditMode ? 'Save changes' : cfg.confirmLabel}
           </button>
         </div>
       </div>

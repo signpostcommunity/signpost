@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { BetaBanner, PageHeader, Avatar, GhostButton } from '@/components/dashboard/interpreter/shared'
+import AddToListModal from '@/components/directory/AddToListModal'
 import Toast from '@/components/ui/Toast'
 
 const overlayStyle: React.CSSProperties = {
@@ -173,6 +174,55 @@ function InviteModal({ onClose, onSaved, interpreterId, interpreterFullName }: {
   )
 }
 
+// ── Section Header ────────────────────────────────────────────────────────────
+
+function TierSection({ title, accentColor, members, onMoveTier, onRemove, onEdit, targetTierLabel }: {
+  title: string
+  accentColor: string
+  members: TeamMember[]
+  onMoveTier: (id: string) => void
+  onRemove: (id: string) => void
+  onEdit: (member: TeamMember) => void
+  targetTierLabel: string
+}) {
+  return (
+    <div style={{ marginBottom: 32 }}>
+      <div style={{
+        fontFamily: "'Syne', sans-serif", fontWeight: 700,
+        fontSize: '0.72rem', letterSpacing: '0.1em',
+        textTransform: 'uppercase', color: accentColor,
+        marginBottom: 12, paddingBottom: 8,
+        borderBottom: `1px solid ${accentColor}22`,
+      }}>
+        {title}
+      </div>
+      {members.length === 0 ? (
+        <div style={{
+          padding: '24px 20px', textAlign: 'center', color: 'var(--muted)',
+          fontSize: '0.85rem', background: 'var(--card-bg)',
+          border: '1px solid var(--border)', borderRadius: 'var(--radius)',
+          fontStyle: 'italic',
+        }}>
+          No interpreters in this tier yet
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {members.map(member => (
+            <TeamCard
+              key={member.id}
+              member={member}
+              onMoveTier={() => onMoveTier(member.id)}
+              onRemove={() => onRemove(member.id)}
+              onEdit={() => onEdit(member)}
+              moveLabel={targetTierLabel}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function TeamPage() {
@@ -182,13 +232,13 @@ export default function TeamPage() {
   const [interpreterId, setInterpreterId] = useState<string | null>(null)
   const [interpreterName, setInterpreterName] = useState('')
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null)
 
   const fetchTeam = useCallback(async () => {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setLoading(false); return }
 
-    // Get interpreter profile id
     const { data: profile } = await supabase
       .from('interpreter_profiles')
       .select('id, first_name, last_name')
@@ -209,7 +259,6 @@ export default function TeamPage() {
       console.error('Team fetch error:', error)
       setTeam([])
     } else {
-      // Flatten the joined interpreter_profiles data
       const mapped = (members || []).map((m: Record<string, unknown>) => {
         const joined = m.interpreter_profiles as { photo_url?: string; avatar_color?: string } | null
         return {
@@ -219,7 +268,7 @@ export default function TeamPage() {
           email: m.email as string,
           status: m.status as string,
           member_interpreter_id: m.member_interpreter_id as string | null,
-          tier: (m.tier as string) || null,
+          tier: (m.tier as string) || 'preferred',
           notes: (m.notes as string) || null,
           photo_url: joined?.photo_url || null,
           avatar_color: joined?.avatar_color || null,
@@ -239,9 +288,44 @@ export default function TeamPage() {
       setToast({ message: `Error: ${error.message}`, type: 'error' })
       return
     }
-    setToast({ message: 'Removed from your Preferred Team.', type: 'success' })
+    setToast({ message: 'Removed from your team.', type: 'success' })
     fetchTeam()
   }
+
+  async function moveTier(id: string) {
+    const member = team.find(m => m.id === id)
+    if (!member) return
+    const newTier = member.tier === 'preferred' ? 'secondary' : 'preferred'
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('interpreter_preferred_team')
+      .update({ tier: newTier })
+      .eq('id', id)
+    if (error) {
+      setToast({ message: `Error: ${error.message}`, type: 'error' })
+      return
+    }
+    const label = newTier === 'preferred' ? 'Top Tier' : 'Secondary Tier'
+    setToast({ message: `Moved to ${label}.`, type: 'success' })
+    fetchTeam()
+  }
+
+  function openEdit(member: TeamMember) {
+    setEditingMember(member)
+  }
+
+  const topTier = team.filter(m => m.tier === 'preferred')
+  const secondaryTier = team.filter(m => m.tier === 'secondary')
+
+  // Build interpreter shape for AddToListModal edit mode
+  const editInterpreter = editingMember ? {
+    id: editingMember.member_interpreter_id || editingMember.id,
+    name: `${editingMember.first_name} ${editingMember.last_name}`,
+    first_name: editingMember.first_name,
+    last_name: editingMember.last_name,
+    initials: `${(editingMember.first_name[0] || '').toUpperCase()}${(editingMember.last_name[0] || '').toUpperCase()}`,
+    avatar_color: editingMember.avatar_color || 'linear-gradient(135deg, #7b61ff, #00e5ff)',
+  } : null
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 760 }}>
@@ -264,21 +348,40 @@ export default function TeamPage() {
         </button>
       </p>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
-        {loading ? (
-          <div style={{ padding: 32, textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem' }}>
-            Loading...
-          </div>
-        ) : team.length === 0 ? (
-          <div style={{ padding: 32, textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem', background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
-            Your Preferred Team is empty. Invite interpreters you trust to build your go-to team.
-          </div>
-        ) : (
-          team.map(member => (
-            <TeamCard key={member.id} member={member} onRemove={() => removeMember(member.id)} />
-          ))
-        )}
-      </div>
+      {loading ? (
+        <div style={{ padding: 32, textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem' }}>
+          Loading...
+        </div>
+      ) : team.length === 0 ? (
+        <div style={{
+          padding: 32, textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem',
+          background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)',
+          marginBottom: 24,
+        }}>
+          Your Preferred Team is empty. Browse the directory or invite interpreters you trust to build your team.
+        </div>
+      ) : (
+        <>
+          <TierSection
+            title="Top Tier Team Interpreters"
+            accentColor="var(--accent, #00e5ff)"
+            members={topTier}
+            onMoveTier={moveTier}
+            onRemove={removeMember}
+            onEdit={openEdit}
+            targetTierLabel="Move to Secondary Tier"
+          />
+          <TierSection
+            title="Secondary Tier Team Interpreters"
+            accentColor="var(--accent2, #9d87ff)"
+            members={secondaryTier}
+            onMoveTier={moveTier}
+            onRemove={removeMember}
+            onEdit={openEdit}
+            targetTierLabel="Move to Top Tier"
+          />
+        </>
+      )}
 
       <Link href="/directory" style={{ textDecoration: 'none' }}>
         <button
@@ -306,6 +409,27 @@ export default function TeamPage() {
         />
       )}
 
+      {/* Edit modal — reuses AddToListModal in edit mode */}
+      <AddToListModal
+        isOpen={!!editingMember}
+        onClose={() => setEditingMember(null)}
+        interpreter={editInterpreter}
+        userRole="interpreter"
+        editRowId={editingMember?.id || null}
+        editTier={editingMember?.tier || null}
+        editNotes={editingMember?.notes || null}
+        onSuccess={() => {
+          setToast({ message: 'Changes saved.', type: 'success' })
+          setEditingMember(null)
+          fetchTeam()
+        }}
+        onRemove={() => {
+          setToast({ message: 'Removed from your team.', type: 'success' })
+          setEditingMember(null)
+          fetchTeam()
+        }}
+      />
+
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   )
@@ -313,26 +437,28 @@ export default function TeamPage() {
 
 // ── Team Card ─────────────────────────────────────────────────────────────────
 
-function TeamCard({ member, onRemove }: { member: TeamMember; onRemove: () => void }) {
+function TeamCard({ member, onMoveTier, onRemove, onEdit, moveLabel }: {
+  member: TeamMember
+  onMoveTier: () => void
+  onRemove: () => void
+  onEdit: () => void
+  moveLabel: string
+}) {
   const [hover, setHover] = useState(false)
   const initials = `${(member.first_name[0] || '').toUpperCase()}${(member.last_name[0] || '').toUpperCase()}`
   const fullName = `${member.first_name} ${member.last_name}`
-
-  const isGoTo = member.tier === 'preferred'
-  const tierLabel = isGoTo ? '★ Go-to' : '✓ Available'
-  const tierBg = isGoTo ? 'rgba(0,229,255,0.08)' : 'rgba(157,135,255,0.08)'
-  const tierBorder = isGoTo ? 'rgba(0,229,255,0.25)' : 'rgba(157,135,255,0.25)'
-  const tierColor = isGoTo ? 'var(--accent)' : '#9d87ff'
 
   return (
     <div
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
+      onClick={onEdit}
       style={{
         background: 'var(--card-bg)',
         border: `1px solid ${hover ? 'rgba(0,229,255,0.3)' : 'var(--border)'}`,
         borderRadius: 'var(--radius)', padding: '18px 22px',
-        display: 'flex', alignItems: 'center', gap: 16, transition: 'border-color 0.2s',
+        display: 'flex', alignItems: 'flex-start', gap: 16, transition: 'border-color 0.2s',
+        cursor: 'pointer',
       }}
     >
       {member.photo_url ? (
@@ -345,52 +471,43 @@ function TeamCard({ member, onRemove }: { member: TeamMember; onRemove: () => vo
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>{fullName}</div>
-        {member.email && (
-          <div style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 2 }}>
-            {member.email}
-          </div>
-        )}
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 7 }}>
-          {member.tier && (
-            <span style={{
-              fontSize: '0.7rem', padding: '2px 9px', borderRadius: 20,
-              background: tierBg, border: `1px solid ${tierBorder}`, color: tierColor,
-            }}>
-              {tierLabel}
-            </span>
-          )}
-          <span style={{
-            fontSize: '0.7rem', padding: '2px 9px', borderRadius: 20,
-            background: member.status === 'accepted' ? 'rgba(52,211,153,0.12)' : 'rgba(0,229,255,0.08)',
-            border: `1px solid ${member.status === 'accepted' ? 'rgba(52,211,153,0.3)' : 'rgba(0,229,255,0.2)'}`,
-            color: member.status === 'accepted' ? '#34d399' : 'var(--accent)',
-          }}>
-            {member.status === 'accepted' ? 'Accepted' : member.status === 'declined' ? 'Declined' : 'Invited'}
-          </span>
-        </div>
         {member.notes && (
           <div style={{
-            fontSize: '0.78rem', color: 'var(--muted)', marginTop: 8,
+            fontSize: '0.78rem', color: 'var(--muted)', marginTop: 6,
             fontStyle: 'italic', lineHeight: 1.5,
           }}>
             &ldquo;{member.notes}&rdquo;
           </div>
         )}
       </div>
-      <button
-        onClick={onRemove}
-        style={{
-          background: 'none', border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
-          fontSize: '0.75rem', padding: '5px 12px', cursor: 'pointer',
-          whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'DM Sans', sans-serif",
-          alignSelf: 'flex-start',
-        }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,80,80,0.4)'; e.currentTarget.style.color = '#f87171' }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
-      >
-        Remove
-      </button>
+      <div style={{ display: 'flex', gap: 8, flexShrink: 0, alignSelf: 'center' }}>
+        <button
+          onClick={e => { e.stopPropagation(); onMoveTier() }}
+          style={{
+            background: 'none', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
+            fontSize: '0.73rem', padding: '5px 12px', cursor: 'pointer',
+            whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'DM Sans', sans-serif",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
+        >
+          {moveLabel}
+        </button>
+        <button
+          onClick={e => { e.stopPropagation(); onRemove() }}
+          style={{
+            background: 'none', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
+            fontSize: '0.73rem', padding: '5px 12px', cursor: 'pointer',
+            whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'DM Sans', sans-serif",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,80,80,0.4)'; e.currentTarget.style.color = '#f87171' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
+        >
+          Remove
+        </button>
+      </div>
     </div>
   )
 }
