@@ -499,10 +499,27 @@ function DetailModal({ booking, onClose }: { booking: Booking; onClose: () => vo
     } catch { return '' }
   })()
 
-  // TODO: Replace with real data from bookings table columns once added
-  // For beta, use requester_name as DHH client fallback, notes for context
-  const dhhClientName = booking.requester_name || 'Client'
-  const dhhClientPrefs: string | null = null // TODO: booking.dhh_client_preferences
+  // TODO: Add these columns to bookings table when ready:
+  // - dhh_client_name (text) — name of the deaf/HoH person
+  // - dhh_client_preferences (text) — communication preferences, signing style, positioning needs
+  // - onsite_contact_name (text)
+  // - onsite_contact_phone (text)
+  // - attachments (jsonb) — array of {name, size, url}
+  // TODO: Wire attachments to Supabase Storage for file uploads
+
+  // Parse D/HH client info from notes field (seed data format: "D/HH Client: Name. Communication prefs: ...")
+  const parsedDhh = (() => {
+    const notes = booking.notes || ''
+    const nameMatch = notes.match(/D\/HH Client:\s*([^.]+)/)
+    const prefsMatch = notes.match(/Communication prefs?:\s*(.+?)(?:\.|$)/i)
+    return {
+      name: nameMatch ? nameMatch[1].trim() : null,
+      prefs: prefsMatch ? prefsMatch[1].trim() : null,
+    }
+  })()
+
+  const dhhClientName = parsedDhh.name // null if not available — show "Not yet provided"
+  const dhhClientPrefs = parsedDhh.prefs // null if not available
   const onsiteContactName: string | null = null // TODO: booking.onsite_contact_name
   const onsiteContactPhone: string | null = null // TODO: booking.onsite_contact_phone
   const attachments: Attachment[] = [] // TODO: booking.attachments || []
@@ -632,7 +649,19 @@ function DetailModal({ booking, onClose }: { booking: Booking; onClose: () => vo
             </div>
           </div>
 
-          {/* 3. Deaf/Hard of Hearing Client */}
+          {/* 3. Requester — who booked the interpreter */}
+          <div style={sectionStyle}>
+            <div style={sectionLabelStyle}>Requester</div>
+            <div style={detailRowStyle}>
+              <svg style={iconStyle} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <rect x="1" y="2" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                <path d="M1 5l6 3.5L13 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <div><span style={{ fontWeight: 600 }}>{booking.requester_name || 'Requester'}</span></div>
+            </div>
+          </div>
+
+          {/* 4. Deaf/Hard of Hearing Client — NOT the requester */}
           <div style={sectionStyle}>
             <div style={sectionLabelStyle}>Deaf/Hard of Hearing Client</div>
             <div style={detailRowStyle}>
@@ -640,7 +669,12 @@ function DetailModal({ booking, onClose }: { booking: Booking; onClose: () => vo
                 <circle cx="7" cy="4.5" r="2.5" stroke="currentColor" strokeWidth="1.2"/>
                 <path d="M1.5 12.5c0-3 2.24-4.5 5.5-4.5s5.5 1.5 5.5 4.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
               </svg>
-              <div><span style={{ fontWeight: 600 }}>{dhhClientName}</span></div>
+              <div>
+                {dhhClientName
+                  ? <span style={{ fontWeight: 600 }}>{dhhClientName}</span>
+                  : <span style={{ color: 'var(--muted)', fontStyle: 'italic' }}>Not yet provided</span>
+                }
+              </div>
             </div>
             {dhhClientPrefs && (
               <div style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65, marginTop: 8, paddingLeft: 24 }}>
@@ -665,12 +699,17 @@ function DetailModal({ booking, onClose }: { booking: Booking; onClose: () => vo
             </div>
           </div>
 
-          {/* 5. Job Context */}
+          {/* 6. Job Context */}
           <div style={sectionStyle}>
             <div style={sectionLabelStyle}>Job Context</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65 }}>
-              {booking.description || booking.notes || `${booking.specialization || 'General'} booking`}
+              {booking.description || `${booking.specialization || 'General'} booking`}
             </div>
+            {booking.notes && booking.description && !booking.notes.startsWith('D/HH Client:') && (
+              <div style={{ fontSize: '0.83rem', color: 'var(--muted)', lineHeight: 1.6, marginTop: 10, paddingTop: 10, borderTop: '1px solid var(--border)' }}>
+                <span style={{ fontWeight: 600, fontSize: '0.78rem' }}>Notes:</span> {booking.notes}
+              </div>
+            )}
           </div>
 
           {/* 6. Attachments & Materials */}
