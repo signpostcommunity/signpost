@@ -7,10 +7,18 @@ export default function AboutPage() {
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '80px 40px' }}>
 
-      {/* Hero: photo left, text right */}
+      {/* Hero headline — full width */}
+      <h1 style={{
+        fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.6rem, 3vw, 2.2rem)',
+        fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.25, marginBottom: 32,
+      }}>
+        signpost grew out of a conversation between two best friends
+      </h1>
+
+      {/* Hero: photo left, story text right */}
       <div className="about-hero-grid" style={{
         display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: 48,
-        alignItems: 'center', marginBottom: 56,
+        alignItems: 'start', marginBottom: 56,
       }}>
         <div style={{ borderRadius: 'var(--radius)', overflow: 'hidden', maxHeight: 480 }}>
           <Image
@@ -23,12 +31,6 @@ export default function AboutPage() {
           />
         </div>
         <div>
-          <h1 style={{
-            fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.5rem, 2.8vw, 2rem)',
-            fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.25, marginBottom: 16,
-          }}>
-            signpost grew out of a conversation between two best friends.
-          </h1>
           <p style={{ color: 'var(--muted)', fontSize: '1rem', lineHeight: 1.75, marginBottom: 16 }}>
             ...a certified interpreter and a Deaf mental health professional, about something they&apos;d both been frustrated by for years.
           </p>
