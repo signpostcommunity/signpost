@@ -33,6 +33,7 @@ export default async function DirectoryPage() {
       color: r.avatar_color || 'linear-gradient(135deg,#7b61ff,#00e5ff)',
       regions: r.regions || [],
       bio: r.bio || '',
+      videoUrl: r.video_url || undefined,
       gender: null,
       isDeafInterpreter: r.interpreter_type === 'Deaf Interpreter',
       affinities: [],

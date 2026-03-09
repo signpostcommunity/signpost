@@ -5,9 +5,10 @@ interface Props {
   interpreter: Interpreter;
   onVideoPreview?: (interpreter: Interpreter) => void;
   onAddToList?: (interpreter: Interpreter) => void;
+  userRole?: string | null;
 }
 
-export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddToList }: Props) {
+export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddToList, userRole }: Props) {
   return (
     <Link
       href={`/directory/${i.id}`}
@@ -142,7 +143,7 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
               }}
               className="add-to-list-btn"
             >
-              + Add to my list
+              {userRole === 'interpreter' ? '+ Add to my team' : '+ Add to my list'}
             </button>
           </div>
 

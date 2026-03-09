@@ -130,7 +130,7 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
     personalDesc: '',
     noteLabel: 'Note (optional)',
     notePlaceholder: '"Great partner for conference work — excellent at relay and pacing."',
-    confirmLabel: 'Add to Preferred Team →',
+    confirmLabel: 'Add to my team →',
     requireApproval: false,
   },
   default: {

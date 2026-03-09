@@ -274,6 +274,7 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
             interpreters={filtered}
             onVideoPreview={openVideoPreview}
             onAddToList={openAddToList}
+            userRole={userRole}
           />
         </div>
       </div>
