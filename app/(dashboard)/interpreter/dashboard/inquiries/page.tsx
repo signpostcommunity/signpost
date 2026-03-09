@@ -2,12 +2,47 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState } from 'react'
-import { DEMO_INQUIRIES } from '@/lib/data/demo'
-import { BetaBanner, PageHeader, RequestCard, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+import { useState, useEffect, useCallback } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { BetaBanner, PageHeader, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 
-type Filter = 'all' | 'new' | 'pending' | 'responded' | 'sent'
-type InquiryState = Record<string, { status: 'new' | 'responded' | 'declined'; reason?: string }>
+/* ── Types ── */
+
+interface Booking {
+  id: string
+  title: string | null
+  requester_name: string | null
+  specialization: string | null
+  date: string
+  time_start: string
+  time_end: string
+  location: string | null
+  format: string | null
+  recurrence: string | null
+  notes: string | null
+  status: string
+  is_seed: boolean | null
+  created_at: string
+}
+
+/* ── Helpers ── */
+
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr + 'T00:00:00')
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function formatTime(start: string, end: string): string {
+  const fmt = (t: string) => {
+    const [h, m] = t.split(':').map(Number)
+    const ampm = h >= 12 ? 'PM' : 'AM'
+    const h12 = h % 12 || 12
+    return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
+  }
+  return `${fmt(start)} – ${fmt(end)}`
+}
+
+/* ── Styles ── */
 
 const overlayStyle: React.CSSProperties = {
   position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
@@ -42,9 +77,13 @@ function blurBorder(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement |
   e.target.style.borderColor = 'var(--border)'
 }
 
-// ── FIX 1: Accept & Send Rate modal ─────────────────────────────────────────
+/* ── Accept & Send Rate Modal ── */
 
-function AcceptModal({ inquiry, onClose }: { inquiry: typeof DEMO_INQUIRIES[0]; onClose: () => void }) {
+function AcceptModal({ booking, onClose, onAccepted }: {
+  booking: Booking
+  onClose: () => void
+  onAccepted: () => void
+}) {
   const [sent, setSent] = useState(false)
   const [rateProfile, setRateProfile] = useState('standard')
   const [customHourly, setCustomHourly] = useState('')
@@ -52,6 +91,24 @@ function AcceptModal({ inquiry, onClose }: { inquiry: typeof DEMO_INQUIRIES[0]; 
   const [customCancellation, setCustomCancellation] = useState('48 hours notice required')
   const [customTerms, setCustomTerms] = useState('')
   const [note, setNote] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  async function handleSend() {
+    setSaving(true)
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('bookings')
+      .update({ status: 'confirmed' })
+      .eq('id', booking.id)
+
+    if (error) {
+      console.error('[inquiries] accept failed:', error.message)
+      setSaving(false)
+      return
+    }
+    setSent(true)
+    setSaving(false)
+  }
 
   if (sent) return (
     <div style={overlayStyle}>
@@ -62,9 +119,12 @@ function AcceptModal({ inquiry, onClose }: { inquiry: typeof DEMO_INQUIRIES[0]; 
             Rate sent!
           </div>
           <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 20px' }}>
-            In the live product, {inquiry.from} would receive your rate and terms and can confirm the booking. This is a sample flow — no message was actually sent.
+            {booking.is_seed
+              ? `This is a sample flow — no message was actually sent. The booking has been moved to Confirmed.`
+              : `${booking.requester_name || 'The requester'} will receive your rate and can confirm the booking.`
+            }
           </p>
-          <button className="btn-primary" onClick={onClose} style={{ padding: '10px 28px' }}>Done</button>
+          <button className="btn-primary" onClick={() => { onClose(); onAccepted() }} style={{ padding: '10px 28px' }}>Done</button>
         </div>
       </div>
     </div>
@@ -80,19 +140,13 @@ function AcceptModal({ inquiry, onClose }: { inquiry: typeof DEMO_INQUIRIES[0]; 
     <div style={overlayStyle}>
       <div style={{ ...modalStyle, maxHeight: '90vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Send Rate — {inquiry.title}</div>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Send Rate — {booking.title || 'Booking'}</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
         </div>
 
-        {/* Rate profile selector */}
         <div style={{ marginBottom: 16 }}>
           <label style={fieldLabelStyle}>Rate Profile</label>
-          <select
-            value={rateProfile}
-            onChange={e => setRateProfile(e.target.value)}
-            style={fieldInputStyle}
-            onFocus={focusBorder} onBlur={blurBorder}
-          >
+          <select value={rateProfile} onChange={e => setRateProfile(e.target.value)} style={fieldInputStyle} onFocus={focusBorder} onBlur={blurBorder}>
             <option value="standard">Standard Rate</option>
             <option value="community">Community / Nonprofit Rate</option>
             <option value="multiday">Multi-Day Rate</option>
@@ -100,14 +154,12 @@ function AcceptModal({ inquiry, onClose }: { inquiry: typeof DEMO_INQUIRIES[0]; 
           </select>
         </div>
 
-        {/* Rate summary for preset profiles */}
         {rateProfile !== 'custom' && (
           <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '14px 16px', marginBottom: 18, fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
             <strong style={{ color: 'var(--text)' }}>Rate profile:</strong> {rateSummaries[rateProfile]}
           </div>
         )}
 
-        {/* Custom rate form */}
         {rateProfile === 'custom' && (
           <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '18px 20px', marginBottom: 18 }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
@@ -115,31 +167,17 @@ function AcceptModal({ inquiry, onClose }: { inquiry: typeof DEMO_INQUIRIES[0]; 
                 <label style={fieldLabelStyle}>Hourly Rate ($)</label>
                 <div style={{ position: 'relative' }}>
                   <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', fontSize: '0.9rem', pointerEvents: 'none' }}>$</span>
-                  <input
-                    type="text" placeholder="0.00" value={customHourly}
-                    onChange={e => setCustomHourly(e.target.value)}
-                    style={{ ...fieldInputStyle, paddingLeft: 28 }}
-                    onFocus={focusBorder} onBlur={blurBorder}
-                  />
+                  <input type="text" placeholder="0.00" value={customHourly} onChange={e => setCustomHourly(e.target.value)} style={{ ...fieldInputStyle, paddingLeft: 28 }} onFocus={focusBorder} onBlur={blurBorder} />
                 </div>
               </div>
               <div>
                 <label style={fieldLabelStyle}>Minimum Hours</label>
-                <input
-                  type="text" placeholder="e.g. 2" value={customMinHours}
-                  onChange={e => setCustomMinHours(e.target.value)}
-                  style={fieldInputStyle}
-                  onFocus={focusBorder} onBlur={blurBorder}
-                />
+                <input type="text" placeholder="e.g. 2" value={customMinHours} onChange={e => setCustomMinHours(e.target.value)} style={fieldInputStyle} onFocus={focusBorder} onBlur={blurBorder} />
               </div>
             </div>
             <div style={{ marginBottom: 14 }}>
               <label style={fieldLabelStyle}>Cancellation Policy</label>
-              <select
-                value={customCancellation} onChange={e => setCustomCancellation(e.target.value)}
-                style={fieldInputStyle}
-                onFocus={focusBorder} onBlur={blurBorder}
-              >
+              <select value={customCancellation} onChange={e => setCustomCancellation(e.target.value)} style={fieldInputStyle} onFocus={focusBorder} onBlur={blurBorder}>
                 <option>24 hours notice required</option>
                 <option>48 hours notice required</option>
                 <option>72 hours notice required</option>
@@ -148,21 +186,15 @@ function AcceptModal({ inquiry, onClose }: { inquiry: typeof DEMO_INQUIRIES[0]; 
             </div>
             <div>
               <label style={fieldLabelStyle}>Additional Terms (optional)</label>
-              <textarea
-                placeholder="Any special terms or conditions for this job..."
-                value={customTerms} onChange={e => setCustomTerms(e.target.value)}
-                style={{ ...fieldInputStyle, resize: 'vertical', minHeight: 70 }}
-                onFocus={focusBorder} onBlur={blurBorder}
-              />
+              <textarea placeholder="Any special terms or conditions for this job..." value={customTerms} onChange={e => setCustomTerms(e.target.value)} style={{ ...fieldInputStyle, resize: 'vertical', minHeight: 70 }} onFocus={focusBorder} onBlur={blurBorder} />
             </div>
           </div>
         )}
 
-        {/* Note to requester */}
         <div style={{ marginBottom: 14 }}>
-          <label style={fieldLabelStyle}>Message to {inquiry.from} (optional)</label>
+          <label style={fieldLabelStyle}>Message to {booking.requester_name || 'requester'} (optional)</label>
           <textarea
-            placeholder={`Hi ${inquiry.from}, I'd be happy to assist with this. Here are my rates and terms...`}
+            placeholder={`Hi ${booking.requester_name || 'there'}, I'd be happy to assist with this. Here are my rates and terms...`}
             value={note} onChange={e => setNote(e.target.value)}
             style={{ ...fieldInputStyle, resize: 'vertical', minHeight: 90 }}
             onFocus={focusBorder} onBlur={blurBorder}
@@ -171,8 +203,8 @@ function AcceptModal({ inquiry, onClose }: { inquiry: typeof DEMO_INQUIRIES[0]; 
 
         <div className="dash-card-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
           <GhostButton onClick={onClose}>Cancel</GhostButton>
-          <button className="btn-primary" onClick={() => setSent(true)} style={{ padding: '9px 22px' }}>
-            Send Rate &amp; Accept
+          <button className="btn-primary" onClick={handleSend} disabled={saving} style={{ padding: '9px 22px', opacity: saving ? 0.5 : 1 }}>
+            {saving ? 'Sending…' : 'Send Rate & Accept'}
           </button>
         </div>
       </div>
@@ -180,31 +212,24 @@ function AcceptModal({ inquiry, onClose }: { inquiry: typeof DEMO_INQUIRIES[0]; 
   )
 }
 
-// ── FIX 2: View Details modal ───────────────────────────────────────────────
+/* ── Detail Modal ── */
 
-function DetailModal({ inquiry, status, onClose }: {
-  inquiry: typeof DEMO_INQUIRIES[0]
-  status: string
+function DetailModal({ booking, onClose }: {
+  booking: Booking
   onClose: () => void
 }) {
-  const isPending = status === 'new' || status === 'pending'
-  const isRemote = inquiry.mode === 'Remote'
+  const isRemote = booking.format === 'remote'
 
   const sectionLabelStyle: React.CSSProperties = {
     fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.07em',
     textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10,
   }
-
   const detailRowStyle: React.CSSProperties = {
     display: 'flex', alignItems: 'flex-start', gap: 10,
     fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.55, marginBottom: 6,
   }
-
   const iconStyle: React.CSSProperties = { color: 'var(--muted)', flexShrink: 0, marginTop: 2 }
-
-  const sectionStyle: React.CSSProperties = {
-    padding: '16px 0', borderBottom: '1px solid var(--border)',
-  }
+  const sectionStyle: React.CSSProperties = { padding: '16px 0', borderBottom: '1px solid var(--border)' }
 
   return (
     <div style={overlayStyle} onClick={onClose}>
@@ -213,26 +238,22 @@ function DetailModal({ inquiry, status, onClose }: {
         borderRadius: 'var(--radius)', width: '90%', maxWidth: 560,
         overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '90vh',
       }} onClick={e => e.stopPropagation()}>
-        {/* Header */}
         <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>{inquiry.title}</h3>
+            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>{booking.title || 'Booking Request'}</h3>
             <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem', flexShrink: 0 }}>✕</button>
           </div>
           <span style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
             fontSize: '0.78rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20,
-            background: isPending ? 'rgba(250,204,21,0.1)' : 'rgba(0,229,255,0.1)',
-            color: isPending ? '#facc15' : 'var(--accent)',
-            border: isPending ? '1px solid rgba(250,204,21,0.25)' : '1px solid rgba(0,229,255,0.25)',
+            background: 'rgba(250,204,21,0.1)', color: '#facc15',
+            border: '1px solid rgba(250,204,21,0.25)',
           }}>
-            {isPending ? 'Awaiting Response' : status === 'responded' ? 'Responded' : status}
+            Awaiting Response
           </span>
         </div>
 
-        {/* Body */}
         <div style={{ padding: '0 28px 8px', overflowY: 'auto', maxHeight: '62vh' }}>
-          {/* Date & Time */}
           <div style={sectionStyle}>
             <div style={sectionLabelStyle}>Date &amp; Time</div>
             <div style={detailRowStyle}>
@@ -241,14 +262,15 @@ function DetailModal({ inquiry, status, onClose }: {
                 <path d="M1 5.5h12M4.5 1v2M9.5 1v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
               </svg>
               <div>
-                <div>{inquiry.date}</div>
-                <div style={{ fontWeight: 600 }}>{inquiry.time}</div>
-                {inquiry.recurrence && <div style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>{inquiry.recurrence}</div>}
+                <div>{formatDate(booking.date)}</div>
+                <div style={{ fontWeight: 600 }}>{formatTime(booking.time_start, booking.time_end)}</div>
+                {booking.recurrence && booking.recurrence !== 'one-time' && (
+                  <div style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>Recurring</div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Location */}
           <div style={sectionStyle}>
             <div style={sectionLabelStyle}>Location</div>
             <div style={detailRowStyle}>
@@ -263,74 +285,39 @@ function DetailModal({ inquiry, status, onClose }: {
                 </svg>
               )}
               <div>
-                {isRemote ? (
-                  <>
-                    <div>Remote — Zoom link will be provided upon confirmation</div>
-                  </>
-                ) : (
-                  <>
-                    <div>{inquiry.location}</div>
-                    {!inquiry.location.match(/\d+\s+\w+\s+(St|Ave|Blvd|Rd|Dr|Ln|Way|Ct|Pl|Pkwy|Hwy|Street|Avenue|Boulevard|Road|Drive|Lane|Court|Place)/) && (
-                      <div style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>(full address not provided)</div>
-                    )}
-                  </>
-                )}
+                {isRemote ? 'Remote — Zoom link will be provided upon confirmation' : (booking.location || 'Location TBD')}
               </div>
             </div>
           </div>
 
-          {/* Deaf/HH Client */}
           <div style={sectionStyle}>
-            <div style={sectionLabelStyle}>Deaf / Hard of Hearing Client</div>
+            <div style={sectionLabelStyle}>Requester</div>
             <div style={detailRowStyle}>
               <svg style={iconStyle} width="14" height="14" viewBox="0 0 14 14" fill="none">
                 <circle cx="7" cy="4.5" r="2.5" stroke="currentColor" strokeWidth="1.2"/>
                 <path d="M2 13c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
               </svg>
               <div>
-                {isPending ? (
-                  <>
-                    <div style={{ fontWeight: 600 }}>Name withheld</div>
-                    <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>Client identity revealed upon booking confirmation</div>
-                  </>
-                ) : (
-                  <div style={{ fontWeight: 600 }}>{inquiry.from}</div>
-                )}
+                <div style={{ fontWeight: 600 }}>{booking.requester_name || 'Name withheld'}</div>
               </div>
             </div>
           </div>
 
-          {/* On-site Contact */}
-          <div style={sectionStyle}>
-            <div style={sectionLabelStyle}>On-site Contact</div>
-            <div style={detailRowStyle}>
-              <svg style={iconStyle} width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M2.5 2h2.5l1.5 3.5L5 7c.8 1.5 2 2.7 3.5 3.5l1.5-1.5L13.5 10.5v2.5c0 .55-.45 1-1 1C6.15 14 1 8.85 1 3.5c0-.55.45-1 1-1h.5z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <div style={{ color: 'var(--muted)' }}>
-                {isRemote ? 'N/A — Remote booking' : 'Contact information provided upon confirmation'}
-              </div>
-            </div>
-          </div>
-
-          {/* Job Context */}
-          {(inquiry.note || inquiry.category) && (
+          {(booking.notes || booking.specialization) && (
             <div style={sectionStyle}>
               <div style={sectionLabelStyle}>Job Context</div>
               <div style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65 }}>
-                {inquiry.note || `${inquiry.category} appointment — no additional context provided.`}
+                {booking.notes || `${booking.specialization} appointment — no additional context provided.`}
               </div>
             </div>
           )}
 
-          {/* Attachments */}
-          <div style={{ ...sectionStyle, borderBottom: 'none' }}>
+          <div style={{ padding: '16px 0' }}>
             <div style={sectionLabelStyle}>Attachments &amp; Materials</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>None provided</div>
           </div>
         </div>
 
-        {/* Footer */}
         <div style={{ padding: '16px 28px', borderTop: '1px solid var(--border)', display: 'flex', gap: 10, alignItems: 'center' }}>
           <GhostButton onClick={onClose}>Close</GhostButton>
         </div>
@@ -339,23 +326,42 @@ function DetailModal({ inquiry, status, onClose }: {
   )
 }
 
-// ── FIX 3: Decline modal with reason ────────────────────────────────────────
+/* ── Decline Modal ── */
 
 const DECLINE_REASONS = ['Not Available', 'Not a Good Fit', 'Scheduling Conflict', 'Prefer Not To Say', 'Other'] as const
 
-function DeclineModal({ inquiry, onConfirm, onClose }: {
-  inquiry: typeof DEMO_INQUIRIES[0]
+function DeclineModal({ booking, onConfirm, onClose }: {
+  booking: Booking
   onConfirm: (reason: string) => void
   onClose: () => void
 }) {
   const [reason, setReason] = useState<string | null>(null)
   const [otherText, setOtherText] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  async function handleDecline() {
+    if (!reason) return
+    setSaving(true)
+    const supabase = createClient()
+    const finalReason = reason === 'Other' && otherText ? `Other: ${otherText}` : reason
+    const { error } = await supabase
+      .from('bookings')
+      .update({ status: 'declined' })
+      .eq('id', booking.id)
+
+    if (error) {
+      console.error('[inquiries] decline failed:', error.message)
+      setSaving(false)
+      return
+    }
+    onConfirm(finalReason)
+  }
 
   return (
     <div style={overlayStyle}>
       <div style={modalStyle}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Decline: {inquiry.title}</div>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Decline: {booking.title || 'Booking'}</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
         </div>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, marginBottom: 20 }}>
@@ -385,17 +391,9 @@ function DeclineModal({ inquiry, onConfirm, onClose }: {
           <div style={{ marginBottom: 24, marginTop: -16 }}>
             <textarea
               placeholder="Please describe your reason..."
-              value={otherText}
-              onChange={e => setOtherText(e.target.value)}
-              style={{
-                width: '100%', boxSizing: 'border-box',
-                background: 'var(--surface2)', border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-sm)', padding: '10px 14px',
-                color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem',
-                outline: 'none', resize: 'vertical', minHeight: 70,
-              }}
-              onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
-              onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
+              value={otherText} onChange={e => setOtherText(e.target.value)}
+              style={{ ...fieldInputStyle, resize: 'vertical', minHeight: 70 }}
+              onFocus={focusBorder} onBlur={blurBorder}
             />
           </div>
         )}
@@ -404,11 +402,11 @@ function DeclineModal({ inquiry, onConfirm, onClose }: {
           <GhostButton onClick={onClose}>Cancel</GhostButton>
           <button
             className="btn-primary"
-            onClick={() => reason && onConfirm(reason === 'Other' && otherText ? `Other: ${otherText}` : reason)}
-            disabled={!reason}
-            style={{ padding: '9px 22px', opacity: reason ? 1 : 0.4, pointerEvents: reason ? 'auto' : 'none' }}
+            onClick={handleDecline}
+            disabled={!reason || saving}
+            style={{ padding: '9px 22px', opacity: reason && !saving ? 1 : 0.4, pointerEvents: reason && !saving ? 'auto' : 'none' }}
           >
-            Confirm Decline
+            {saving ? 'Declining…' : 'Confirm Decline'}
           </button>
         </div>
       </div>
@@ -416,124 +414,147 @@ function DeclineModal({ inquiry, onConfirm, onClose }: {
   )
 }
 
-// ── Main page ───────────────────────────────────────────────────────────────
+/* ── Main Page ── */
 
 export default function InquiriesPage() {
-  const [filter, setFilter] = useState<Filter>('all')
-  const [states, setStates] = useState<InquiryState>({
-    'demo-inq-1': { status: 'new' },
-    'demo-inq-2': { status: 'new' },
-  })
+  const [bookings, setBookings] = useState<Booking[]>([])
+  const [loading, setLoading] = useState(true)
   const [accepting, setAccepting] = useState<string | null>(null)
   const [viewing, setViewing] = useState<string | null>(null)
   const [declining, setDeclining] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
 
-  function handleDecline(id: string, reason: string) {
-    setStates(s => ({ ...s, [id]: { status: 'declined', reason } }))
-    setDeclining(null)
-    setToast(`Declined — ${reason}`)
+  const fetchBookings = useCallback(async () => {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setLoading(false); return }
+
+    // Get interpreter profile id
+    const { data: profile, error: profileErr } = await supabase
+      .from('interpreter_profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .single()
+
+    if (profileErr || !profile) { setLoading(false); return }
+
+    const { data, error } = await supabase
+      .from('bookings')
+      .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed, created_at')
+      .eq('interpreter_id', profile.id)
+      .eq('status', 'pending')
+      .order('date', { ascending: true })
+
+    if (error) {
+      console.error('[inquiries] fetch failed:', error.message)
+    } else {
+      setBookings(data || [])
+    }
+    setLoading(false)
+  }, [])
+
+  useEffect(() => { fetchBookings() }, [fetchBookings])
+
+  function showToast(msg: string) {
+    setToast(msg)
     setTimeout(() => setToast(null), 3000)
   }
 
-  const filtered = DEMO_INQUIRIES.filter(inq => {
-    const s = states[inq.id]?.status
-    if (filter === 'all') return true
-    if (filter === 'new') return s === 'new'
-    if (filter === 'pending') return s === 'new'
-    if (filter === 'responded') return s === 'responded'
-    if (filter === 'sent') return s === 'responded'
-    return true
-  })
+  function handleDeclined(id: string, reason: string) {
+    setBookings(prev => prev.filter(b => b.id !== id))
+    setDeclining(null)
+    showToast(`Declined — ${reason}`)
+  }
+
+  function handleAccepted() {
+    // Refresh the list after accepting
+    setAccepting(null)
+    fetchBookings()
+  }
+
+  const hasSeedData = bookings.some(b => b.is_seed)
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 900 }}>
-      <BetaBanner />
+      {hasSeedData && <BetaBanner />}
       <PageHeader title="Inquiries" subtitle="Booking requests awaiting your response." />
 
-      {/* Filter pills */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
-        {(['all', 'new', 'pending', 'responded', 'sent'] as Filter[]).map(f => (
-          <button
-            key={f}
-            onClick={() => setFilter(f)}
-            style={{
-              padding: '7px 16px', borderRadius: 100, fontSize: '0.82rem',
-              cursor: 'pointer', transition: 'all 0.15s', fontFamily: "'DM Sans', sans-serif",
-              background: filter === f ? 'var(--accent)' : 'transparent',
-              color: filter === f ? '#000' : 'var(--muted)',
-              border: `1px solid ${filter === f ? 'var(--accent)' : 'var(--border)'}`,
-              fontWeight: filter === f ? 700 : 400,
-            }}
-          >
-            {f.charAt(0).toUpperCase() + f.slice(1)}
-          </button>
-        ))}
-      </div>
-
-      {filtered.length === 0 && (
+      {loading ? (
         <div style={{ padding: '40px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem' }}>
-          No inquiries in this filter.
+          Loading…
         </div>
+      ) : bookings.length === 0 ? (
+        <div style={{
+          background: 'var(--card-bg)', border: '1px solid var(--border)',
+          borderRadius: 'var(--radius)', padding: '32px 24px',
+          color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center',
+        }}>
+          No pending inquiries. They&apos;ll appear here when clients reach out.
+        </div>
+      ) : (
+        bookings.map(inq => (
+          <div key={inq.id} style={{
+            background: 'var(--card-bg)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 12,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif" }}>{inq.title || 'Booking Request'}</div>
+                <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>
+                  From: {inq.requester_name || 'Unknown'} · {inq.specialization || 'General'}
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                {inq.is_seed && <DemoBadge />}
+                <StatusBadge status="pending" />
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--muted)', padding: '10px 0', borderTop: '1px solid var(--border)' }}>
+              <span>📅 {formatDate(inq.date)}</span>
+              <span>🕐 {formatTime(inq.time_start, inq.time_end)}</span>
+              <span>📍 {inq.location || 'TBD'}</span>
+              <span>{inq.format === 'remote' ? 'Remote' : 'On-site'}</span>
+              {inq.recurrence && inq.recurrence !== 'one-time' && <span>🔁 Recurring</span>}
+            </div>
+            {inq.notes && (
+              <div style={{
+                fontSize: '0.83rem', color: 'var(--muted)', lineHeight: 1.6,
+                borderTop: '1px solid var(--border)', paddingTop: 10, marginTop: 4,
+                fontStyle: 'italic',
+              }}>
+                &quot;{inq.notes}&quot;
+              </div>
+            )}
+            <div className="dash-card-actions" style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
+              <button className="btn-primary" style={{ fontSize: '0.82rem', padding: '8px 18px' }} onClick={() => setAccepting(inq.id)}>
+                Accept &amp; Send Rate
+              </button>
+              <GhostButton onClick={() => setViewing(inq.id)}>View Details</GhostButton>
+              <GhostButton danger onClick={() => setDeclining(inq.id)}>Decline</GhostButton>
+            </div>
+          </div>
+        ))
       )}
 
-      {filtered.map(inq => {
-        const s = states[inq.id]
-        const displayStatus = s?.status === 'declined'
-          ? 'declined' as const
-          : s?.status === 'new' ? 'pending' as const : (s?.status || 'pending') as 'pending' | 'responded' | 'declined'
-
-        return (
-          <RequestCard
-            key={inq.id}
-            {...inq}
-            status={displayStatus}
-            actions={
-              s?.status === 'declined' ? (
-                <div style={{ fontSize: '0.82rem', color: 'var(--accent3)', fontStyle: 'italic' }}>
-                  Declined — {s.reason}
-                </div>
-              ) : s?.status === 'new' ? (
-                <>
-                  <button className="btn-primary" style={{ fontSize: '0.82rem', padding: '8px 18px' }} onClick={() => setAccepting(inq.id)}>
-                    Accept &amp; Send Rate
-                  </button>
-                  <GhostButton onClick={() => setViewing(inq.id)}>View Details</GhostButton>
-                  <GhostButton danger onClick={() => setDeclining(inq.id)}>Decline</GhostButton>
-                </>
-              ) : (
-                <GhostButton onClick={() => setViewing(inq.id)}>View Details</GhostButton>
-              )
-            }
-          />
-        )
-      })}
-
-      {accepting && (
+      {accepting && bookings.find(b => b.id === accepting) && (
         <AcceptModal
-          inquiry={DEMO_INQUIRIES.find(i => i.id === accepting)!}
-          onClose={() => {
-            const inq = DEMO_INQUIRIES.find(i => i.id === accepting)
-            setStates(s => ({ ...s, [accepting]: { status: 'responded' } }))
-            setAccepting(null)
-            setToast(`Rate sent to ${inq?.from || 'requester'}`)
-            setTimeout(() => setToast(null), 3000)
-          }}
+          booking={bookings.find(b => b.id === accepting)!}
+          onClose={() => setAccepting(null)}
+          onAccepted={handleAccepted}
         />
       )}
 
-      {viewing && (
+      {viewing && bookings.find(b => b.id === viewing) && (
         <DetailModal
-          inquiry={DEMO_INQUIRIES.find(i => i.id === viewing)!}
-          status={states[viewing]?.status || 'new'}
+          booking={bookings.find(b => b.id === viewing)!}
           onClose={() => setViewing(null)}
         />
       )}
 
-      {declining && (
+      {declining && bookings.find(b => b.id === declining) && (
         <DeclineModal
-          inquiry={DEMO_INQUIRIES.find(i => i.id === declining)!}
-          onConfirm={reason => handleDecline(declining, reason)}
+          booking={bookings.find(b => b.id === declining)!}
+          onConfirm={reason => handleDeclined(declining, reason)}
           onClose={() => setDeclining(null)}
         />
       )}

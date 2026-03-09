@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { seedInterpreterData } from '@/lib/seedInterpreterData';
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -49,11 +50,24 @@ export async function GET(request: NextRequest) {
     const { data: existing } = await supabase
       .from('interpreter_profiles').select('id').eq('user_id', user.id).maybeSingle();
     if (!existing) {
-      await supabase.from('interpreter_profiles').insert({
-        user_id: user.id,
-        name: displayName,
-        status: 'pending',
-      });
+      const { data: newProfile } = await supabase
+        .from('interpreter_profiles')
+        .insert({
+          user_id: user.id,
+          name: displayName,
+          status: 'pending',
+        })
+        .select('id')
+        .single();
+
+      // BETA: seed demo data for new interpreters
+      if (newProfile?.id) {
+        try {
+          await seedInterpreterData(newProfile.id);
+        } catch (e) {
+          console.error('[auth/callback] seed failed:', e);
+        }
+      }
     }
   } else if (assignedRole === 'deaf') {
     const { data: existing } = await supabase

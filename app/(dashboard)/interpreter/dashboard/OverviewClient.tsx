@@ -3,29 +3,50 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { DEMO_INQUIRIES, DEMO_CONFIRMED } from '@/lib/data/demo'
-import { BetaBanner, PageHeader, SectionLabel, StatusBadge, DemoBadge, GhostButton } from '@/components/dashboard/interpreter/shared'
+import { BetaBanner, PageHeader, SectionLabel, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+
+/* ── Types ── */
+
+interface Booking {
+  id: string
+  title: string | null
+  requester_name: string | null
+  specialization: string | null
+  date: string
+  time_start: string
+  time_end: string
+  location: string | null
+  format: string | null
+  recurrence: string | null
+  notes: string | null
+  status: string
+  is_seed: boolean | null
+}
+
+/* ── Date formatting helpers ── */
+
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr + 'T00:00:00')
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function formatTime(start: string, end: string): string {
+  const fmt = (t: string) => {
+    const [h, m] = t.split(':').map(Number)
+    const ampm = h >= 12 ? 'PM' : 'AM'
+    const h12 = h % 12 || 12
+    return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
+  }
+  return `${fmt(start)} – ${fmt(end)}`
+}
 
 /* ── Calendar helpers ── */
 
-function parseDateTime(dateStr: string, timeStr: string): { start: Date; end: Date } {
-  const months: Record<string, number> = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 }
-  const rangeMatch = dateStr.match(/^(\w+)\s+(\d+)[–\-](\d+),?\s+(\d+)$/)
-  if (rangeMatch) {
-    const [, mon, d1, d2, yr] = rangeMatch
-    return { start: new Date(+yr, months[mon] ?? 0, +d1, 9, 0), end: new Date(+yr, months[mon] ?? 0, +d2, 17, 0) }
-  }
-  const dateMatch = dateStr.match(/^(\w+)\s+(\d+),?\s+(\d+)$/)
-  let year = 2026, month = 2, day = 15
-  if (dateMatch) { month = months[dateMatch[1]] ?? 2; day = +dateMatch[2]; year = +dateMatch[3] }
-  let startH = 9, startM = 0, endH = 17, endM = 0
-  if (timeStr !== 'Full days') {
-    const times = timeStr.split(/\s*[–\-]\s*/)
-    const parseT = (t: string) => { const m = t.trim().match(/^(\d+):(\d+)\s*(AM|PM)$/i); if (!m) return { h: 9, m: 0 }; let h = +m[1]; const min = +m[2]; if (m[3].toUpperCase() === 'PM' && h < 12) h += 12; if (m[3].toUpperCase() === 'AM' && h === 12) h = 0; return { h, m: min } }
-    if (times[0]) { const t = parseT(times[0]); startH = t.h; startM = t.m }
-    if (times[1]) { const t = parseT(times[1]); endH = t.h; endM = t.m }
-  }
-  return { start: new Date(year, month, day, startH, startM), end: new Date(year, month, day, endH, endM) }
+function parseDateTimeFromBooking(dateStr: string, timeStart: string, timeEnd: string): { start: Date; end: Date } {
+  const [y, mo, d] = dateStr.split('-').map(Number)
+  const [sh, sm] = timeStart.split(':').map(Number)
+  const [eh, em] = timeEnd.split(':').map(Number)
+  return { start: new Date(y, mo - 1, d, sh, sm), end: new Date(y, mo - 1, d, eh, em) }
 }
 
 function toGoogleDateStr(d: Date): string {
@@ -40,8 +61,8 @@ function toISOLocal(d: Date): string {
 
 /* ── Calendar Dropdown ── */
 
-function CalendarDropdown({ title, date, time, location, onToast }: {
-  title: string; date: string; time: string; location: string; onToast: (m: string) => void
+function CalendarDropdown({ booking, onToast }: {
+  booking: Booking; onToast: (m: string) => void
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -53,13 +74,16 @@ function CalendarDropdown({ title, date, time, location, onToast }: {
     return () => document.removeEventListener('mousedown', handle)
   }, [open])
 
+  const title = booking.title || 'Booking'
+  const location = booking.location || ''
+
   function addToGcal() {
-    const { start, end } = parseDateTime(date, time)
+    const { start, end } = parseDateTimeFromBooking(booking.date, booking.time_start, booking.time_end)
     window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${toGoogleDateStr(start)}/${toGoogleDateStr(end)}&location=${encodeURIComponent(location)}`, '_blank')
     setOpen(false); onToast('Added to Google Calendar')
   }
   function addToIcal() {
-    const { start, end } = parseDateTime(date, time)
+    const { start, end } = parseDateTimeFromBooking(booking.date, booking.time_start, booking.time_end)
     const p = (n: number) => String(n).padStart(2, '0')
     const fmt = (d: Date) => `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}T${p(d.getHours())}${p(d.getMinutes())}00`
     const ics = ['BEGIN:VCALENDAR','VERSION:2.0','BEGIN:VEVENT',`DTSTART:${fmt(start)}`,`DTEND:${fmt(end)}`,`SUMMARY:${title}`,`LOCATION:${location}`,'END:VEVENT','END:VCALENDAR'].join('\r\n')
@@ -68,7 +92,7 @@ function CalendarDropdown({ title, date, time, location, onToast }: {
     setOpen(false); onToast('iCal file downloaded')
   }
   function addToOutlook() {
-    const { start, end } = parseDateTime(date, time)
+    const { start, end } = parseDateTimeFromBooking(booking.date, booking.time_start, booking.time_end)
     window.open(`https://outlook.live.com/calendar/0/action/compose?subject=${encodeURIComponent(title)}&startdt=${encodeURIComponent(toISOLocal(start))}&enddt=${encodeURIComponent(toISOLocal(end))}&location=${encodeURIComponent(location)}`, '_blank')
     setOpen(false); onToast('Added to Outlook Calendar')
   }
@@ -126,13 +150,13 @@ function StatCard({ num, label, href }: { num: number; label: string; href: stri
 /* ── Main Component ── */
 
 interface OverviewClientProps {
+  interpreterProfileId: string | null
   firstName: string | null
   lastName: string | null
   profileStatus: string | null
-  showSampleData: boolean
 }
 
-export default function OverviewClient({ firstName, lastName, profileStatus, showSampleData }: OverviewClientProps) {
+export default function OverviewClient({ interpreterProfileId, firstName, profileStatus }: OverviewClientProps) {
   const displayName = firstName || 'there'
   const hasPendingProfile = profileStatus === 'pending'
   const [toast, setToast] = useState<string | null>(null)
@@ -140,56 +164,85 @@ export default function OverviewClient({ firstName, lastName, profileStatus, sho
   const [confirmedThisMonth, setConfirmedThisMonth] = useState(0)
   const [teamCount, setTeamCount] = useState(0)
   const [daysAvailable, setDaysAvailable] = useState(0)
+  const [pendingBookings, setPendingBookings] = useState<Booking[]>([])
+  const [confirmedBookings, setConfirmedBookings] = useState<Booking[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function fetchCounts() {
+    if (!interpreterProfileId) { setLoading(false); return }
+
+    async function fetchData() {
       const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
 
-      // New Inquiries: pending inquiries for this interpreter
-      const { count: pendingCount } = await supabase
-        .from('inquiries')
-        .select('*', { count: 'exact', head: true })
-        .eq('interpreter_id', user.id)
-        .eq('status', 'pending')
-      setNewInquiries(pendingCount ?? 0)
-
-      // Confirmed This Month
-      const now = new Date()
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
-      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString()
-      const { count: confirmedCount } = await supabase
+      // Pending bookings count + data
+      const { data: pending, error: pendingErr } = await supabase
         .from('bookings')
-        .select('*', { count: 'exact', head: true })
-        .eq('interpreter_id', user.id)
+        .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed')
+        .eq('interpreter_id', interpreterProfileId!)
+        .eq('status', 'pending')
+        .order('date', { ascending: true })
+        .limit(2)
+
+      if (!pendingErr && pending) {
+        setPendingBookings(pending)
+        setNewInquiries(pending.length)
+      }
+
+      // Confirmed this month count
+      const now = new Date()
+      const startOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
+      const endOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()}`
+
+      const { count: confirmedCount, error: confirmedErr } = await supabase
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('interpreter_id', interpreterProfileId!)
         .eq('status', 'confirmed')
         .gte('date', startOfMonth)
         .lte('date', endOfMonth)
-      setConfirmedThisMonth(confirmedCount ?? 0)
 
-      // Preferred Team count
-      const { count: teamC } = await supabase
-        .from('preferred_team')
-        .select('*', { count: 'exact', head: true })
-        .eq('interpreter_id', user.id)
-      setTeamCount(teamC ?? 0)
+      if (!confirmedErr) setConfirmedThisMonth(confirmedCount ?? 0)
 
-      // Days Available This Week
+      // Upcoming confirmed bookings for display
+      const today = now.toISOString().slice(0, 10)
+      const { data: confirmed, error: confDataErr } = await supabase
+        .from('bookings')
+        .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed')
+        .eq('interpreter_id', interpreterProfileId!)
+        .eq('status', 'confirmed')
+        .gte('date', today)
+        .order('date', { ascending: true })
+        .limit(2)
+
+      if (!confDataErr && confirmed) setConfirmedBookings(confirmed)
+
+      // Preferred team count — table may not exist
+      const { count: teamC, error: teamErr } = await supabase
+        .from('interpreter_preferred_team')
+        .select('id', { count: 'exact', head: true })
+        .eq('interpreter_id', interpreterProfileId!)
+
+      if (!teamErr) setTeamCount(teamC ?? 0)
+
+      // Unread messages count for "New Inquiries" — add to pending count
       // TODO: wire to real availability table
       setDaysAvailable(0)
+
+      setLoading(false)
     }
-    fetchCounts()
-  }, [])
+    fetchData()
+  }, [interpreterProfileId])
 
   function showToast(msg: string) {
     setToast(msg)
     setTimeout(() => setToast(null), 3000)
   }
 
+  const hasSeedData = pendingBookings.some(b => b.is_seed) || confirmedBookings.some(b => b.is_seed)
+
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 900 }}>
-      {showSampleData && <BetaBanner />}
+      {hasSeedData && <BetaBanner />}
 
       <PageHeader
         title={`Welcome back, ${displayName}.`}
@@ -202,104 +255,104 @@ export default function OverviewClient({ firstName, lastName, profileStatus, sho
 
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16, marginBottom: 32, alignItems: 'stretch' }}>
-        <StatCard num={showSampleData ? 2 : newInquiries} label="New Inquiries" href="/interpreter/dashboard/inquiries" />
-        <StatCard num={showSampleData ? 3 : confirmedThisMonth} label="Confirmed This Month" href="/interpreter/dashboard/confirmed" />
-        <StatCard num={showSampleData ? 4 : teamCount} label="Interpreters in Your Preferred Team" href="/interpreter/dashboard/team" />
-        <StatCard num={showSampleData ? 4 : daysAvailable} label="Days Available This Week" href="/interpreter/dashboard/availability" />
+        <StatCard num={newInquiries} label="New Inquiries" href="/interpreter/dashboard/inquiries" />
+        <StatCard num={confirmedThisMonth} label="Confirmed This Month" href="/interpreter/dashboard/confirmed" />
+        <StatCard num={teamCount} label="Interpreters in Your Preferred Team" href="/interpreter/dashboard/team" />
+        <StatCard num={daysAvailable} label="Days Available This Week" href="/interpreter/dashboard/availability" />
       </div>
 
-      {showSampleData ? (
+      {!hasPendingProfile && !loading && (
         <>
           {/* Pending Inquiries */}
           <SectionLabel>Pending Inquiries</SectionLabel>
-          {DEMO_INQUIRIES.map(inq => (
-            <div key={inq.id} style={{
+          {pendingBookings.length === 0 ? (
+            <div style={{
               background: 'var(--card-bg)', border: '1px solid var(--border)',
-              borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 12,
+              borderRadius: 'var(--radius)', padding: '32px 24px',
+              color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center',
             }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif" }}>{inq.title}</div>
-                  <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>
-                    From: {inq.from} · {inq.category} · {inq.receivedDate}
+              No pending inquiries yet. They&apos;ll appear here when clients reach out.
+            </div>
+          ) : (
+            pendingBookings.map(inq => (
+              <div key={inq.id} style={{
+                background: 'var(--card-bg)', border: '1px solid var(--border)',
+                borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 12,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif" }}>{inq.title || 'Booking Request'}</div>
+                    <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>
+                      From: {inq.requester_name || 'Unknown'} · {inq.specialization || 'General'}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                    {inq.is_seed && <DemoBadge />}
+                    <StatusBadge status="pending" />
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-                  <DemoBadge />
-                  <StatusBadge status="pending" />
+                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--muted)', padding: '10px 0', borderTop: '1px solid var(--border)' }}>
+                  <span>📅 {formatDate(inq.date)}</span>
+                  <span>🕐 {formatTime(inq.time_start, inq.time_end)}</span>
+                  <span>📍 {inq.location || 'TBD'}</span>
+                  <span>{inq.format === 'remote' ? 'Remote' : 'On-site'}</span>
+                </div>
+                <div className="dash-card-actions" style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
+                  <Link href="/interpreter/dashboard/inquiries">
+                    <button className="btn-primary" style={{ fontSize: '0.82rem', padding: '8px 18px' }}>
+                      Accept &amp; Send Rate
+                    </button>
+                  </Link>
+                  <Link href="/interpreter/dashboard/inquiries" style={{ textDecoration: 'none' }}>
+                    <GhostButton>View Details</GhostButton>
+                  </Link>
+                  <Link href="/interpreter/dashboard/inquiries" style={{ textDecoration: 'none' }}>
+                    <GhostButton danger>Decline</GhostButton>
+                  </Link>
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--muted)', padding: '10px 0', borderTop: '1px solid var(--border)' }}>
-                <span>📅 {inq.date}</span>
-                <span>🕐 {inq.time}</span>
-                <span>📍 {inq.location}</span>
-                <span>{inq.mode}</span>
-              </div>
-              <div className="dash-card-actions" style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
-                <Link href="/interpreter/dashboard/inquiries">
-                  <button className="btn-primary" style={{ fontSize: '0.82rem', padding: '8px 18px' }}>
-                    Accept &amp; Send Rate
-                  </button>
-                </Link>
-                <Link href="/interpreter/dashboard/inquiries" style={{ textDecoration: 'none' }}>
-                  <GhostButton>View Details</GhostButton>
-                </Link>
-                <Link href="/interpreter/dashboard/inquiries" style={{ textDecoration: 'none' }}>
-                  <GhostButton danger>Decline</GhostButton>
-                </Link>
-              </div>
-            </div>
-          ))}
+            ))
+          )}
 
           {/* Upcoming Confirmed */}
           <SectionLabel>Upcoming Confirmed</SectionLabel>
-          {DEMO_CONFIRMED.filter(b => b.upcoming).map(booking => (
-            <div key={booking.id} style={{
+          {confirmedBookings.length === 0 ? (
+            <div style={{
               background: 'var(--card-bg)', border: '1px solid var(--border)',
-              borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 12,
+              borderRadius: 'var(--radius)', padding: '32px 24px',
+              color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center',
             }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif" }}>{booking.title}</div>
-                  <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>{booking.client} · {booking.category}</div>
-                </div>
-                <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-                  <DemoBadge />
-                  <StatusBadge status="confirmed" />
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--muted)', padding: '10px 0', borderTop: '1px solid var(--border)' }}>
-                <span>📅 {booking.date}</span>
-                <span>🕐 {booking.time}</span>
-                <span>📍 {booking.location}</span>
-              </div>
-              <div style={{ marginTop: 12 }}>
-                <CalendarDropdown title={booking.title} date={booking.date} time={booking.time} location={booking.location} onToast={showToast} />
-              </div>
+              No confirmed bookings yet.
             </div>
-          ))}
+          ) : (
+            confirmedBookings.map(booking => (
+              <div key={booking.id} style={{
+                background: 'var(--card-bg)', border: '1px solid var(--border)',
+                borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 12,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif" }}>{booking.title || 'Confirmed Booking'}</div>
+                    <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>{booking.requester_name || 'Client'} · {booking.specialization || 'General'}</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                    {booking.is_seed && <DemoBadge />}
+                    <StatusBadge status="confirmed" />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--muted)', padding: '10px 0', borderTop: '1px solid var(--border)' }}>
+                  <span>📅 {formatDate(booking.date)}</span>
+                  <span>🕐 {formatTime(booking.time_start, booking.time_end)}</span>
+                  <span>📍 {booking.location || 'TBD'}</span>
+                </div>
+                <div style={{ marginTop: 12 }}>
+                  <CalendarDropdown booking={booking} onToast={showToast} />
+                </div>
+              </div>
+            ))
+          )}
         </>
-      ) : !hasPendingProfile ? (
-        <>
-          <SectionLabel>Pending Inquiries</SectionLabel>
-          <div style={{
-            background: 'var(--card-bg)', border: '1px solid var(--border)',
-            borderRadius: 'var(--radius)', padding: '32px 24px',
-            color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center',
-          }}>
-            No pending inquiries yet. They&apos;ll appear here when clients reach out.
-          </div>
-
-          <SectionLabel>Upcoming Confirmed</SectionLabel>
-          <div style={{
-            background: 'var(--card-bg)', border: '1px solid var(--border)',
-            borderRadius: 'var(--radius)', padding: '32px 24px',
-            color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center',
-          }}>
-            No confirmed bookings yet.
-          </div>
-        </>
-      ) : null}
+      )}
 
       {/* Toast */}
       {toast && (
@@ -311,6 +364,8 @@ export default function OverviewClient({ firstName, lastName, profileStatus, sho
           fontSize: '0.85rem', color: '#34d399',
         }}>{toast}</div>
       )}
+
+      <DashMobileStyles />
     </div>
   )
 }
