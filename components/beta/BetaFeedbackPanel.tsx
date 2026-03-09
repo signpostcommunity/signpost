@@ -372,7 +372,14 @@ export default function BetaFeedbackPanel() {
         {/* ── All done state ── */}
         {allDone ? (
           <div style={{ textAlign: 'center', padding: '40px 10px' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>🎉</div>
+            <div style={{
+              width: 48, height: 48, borderRadius: '50%', background: 'rgba(0,229,255,0.2)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px',
+            }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
             <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '1.1rem', marginBottom: 8 }}>
               Thank you!
             </h3>
