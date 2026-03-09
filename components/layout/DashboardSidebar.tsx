@@ -200,30 +200,36 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
       if (!profile) return
 
       // Pending inquiries count
-      const { count: inquiriesCount } = await supabase
+      const { count: inquiriesCount, error: inqErr } = await supabase
         .from('bookings')
         .select('id', { count: 'exact', head: true })
         .eq('interpreter_id', profile.id)
         .eq('status', 'pending')
 
+      if (inqErr) console.error('[sidebar] inquiries count failed:', inqErr.message)
+
       // Confirmed bookings count
-      const { count: confirmedCount } = await supabase
+      const { count: confirmedCount, error: confErr } = await supabase
         .from('bookings')
         .select('id', { count: 'exact', head: true })
         .eq('interpreter_id', profile.id)
         .eq('status', 'confirmed')
 
+      if (confErr) console.error('[sidebar] confirmed count failed:', confErr.message)
+
       // Unread messages count
-      const { count: inboxCount } = await supabase
+      const { count: inboxCount, error: inboxErr } = await supabase
         .from('messages')
         .select('id', { count: 'exact', head: true })
         .eq('interpreter_id', profile.id)
         .eq('is_read', false)
 
+      if (inboxErr) console.error('[sidebar] inbox count failed:', inboxErr.message)
+
       setBadges({
-        inquiries: inquiriesCount ?? 0,
-        confirmed: confirmedCount ?? 0,
-        inbox: inboxCount ?? 0,
+        inquiries: !inqErr ? (inquiriesCount ?? 0) : 0,
+        confirmed: !confErr ? (confirmedCount ?? 0) : 0,
+        inbox: !inboxErr ? (inboxCount ?? 0) : 0,
       })
     }
     fetchBadges()

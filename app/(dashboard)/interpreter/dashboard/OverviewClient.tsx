@@ -175,13 +175,17 @@ export default function OverviewClient({ interpreterProfileId, firstName, profil
       const supabase = createClient()
 
       // Pending bookings count (exact)
-      const { count: pendingCount } = await supabase
+      const { count: pendingCount, error: pendingCountErr } = await supabase
         .from('bookings')
         .select('id', { count: 'exact', head: true })
         .eq('interpreter_id', interpreterProfileId!)
         .eq('status', 'pending')
 
-      setNewInquiries(pendingCount ?? 0)
+      if (pendingCountErr) {
+        console.error('[overview] pending count failed:', pendingCountErr.message)
+      } else {
+        setNewInquiries(pendingCount ?? 0)
+      }
 
       // Pending bookings data (for display, limit 2)
       const { data: pending, error: pendingErr } = await supabase
