@@ -114,7 +114,7 @@ export default function PoliciesPage() {
 
       <Section number={5} title="Privacy and Profile Information">
         <p style={body}>
-          Profile information that interpreters provide — including name, bio, languages, specializations, rates, and credentials — is displayed publicly in the Signpost directory to facilitate discovery by potential clients.
+          Profile information that interpreters provide — including name, bio, languages, specializations, and credentials — is displayed publicly in the Signpost directory to facilitate discovery by potential clients. Rates are never displayed publicly — they are shared privately when an interpreter responds to a booking inquiry.
         </p>
         <p style={body}>
           Contact information (email, phone number) is shared only with confirmed booking parties and is not displayed in the public directory. Signpost will never sell or share personal information with third parties for marketing purposes.
