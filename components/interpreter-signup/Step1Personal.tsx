@@ -3,7 +3,7 @@
 import { useForm } from './FormContext'
 import {
   StepWrapper, FormSection, SectionTitle, FormRow, FormField, FieldLabel,
-  TextInput, PasswordInput, SelectInput, TextareaInput, UrlInput,
+  TextInput, PasswordInput, SelectInput, TextareaInput,
   ToggleTile, FormNav,
 } from './FormFields'
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton'
@@ -194,25 +194,6 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
               <option>On-site only</option>
               <option>Both remote and on-site</option>
             </SelectInput>
-          </FormField>
-        </FormRow>
-
-        <FormRow>
-          <FormField>
-            <FieldLabel>Website</FieldLabel>
-            <UrlInput
-              placeholder="https://yoursite.com"
-              value={formData.website}
-              onChange={e => updateField('website', e.target.value)}
-            />
-          </FormField>
-          <FormField>
-            <FieldLabel>LinkedIn Profile</FieldLabel>
-            <UrlInput
-              placeholder="https://linkedin.com/in/…"
-              value={formData.linkedin}
-              onChange={e => updateField('linkedin', e.target.value)}
-            />
           </FormField>
         </FormRow>
 

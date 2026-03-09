@@ -64,8 +64,6 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         interpreter_type: formData.interpreterType,
         work_mode: formData.modeOfWork,
         years_experience: formData.yearsExperience,
-        website_url: formData.website,
-        linkedin_url: formData.linkedin,
         regions: formData.regions,
         event_coordination: formData.eventCoordination,
         event_coordination_desc: formData.coordinationBio,

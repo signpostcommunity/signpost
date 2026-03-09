@@ -15,7 +15,7 @@ export default async function ProfilePage({ params }: Props) {
 
   const { data, error } = await supabase
     .from('interpreter_profiles')
-    .select('id, name, first_name, last_name, city, state, country, interpreter_type, work_mode, years_experience, bio, website_url, linkedin_url, available, avatar_color, photo_url, video_url, video_desc, rating, review_count, sign_languages, spoken_languages, specializations, regions')
+    .select('id, name, first_name, last_name, city, state, country, interpreter_type, work_mode, years_experience, bio, available, avatar_color, photo_url, video_url, video_desc, rating, review_count, sign_languages, spoken_languages, specializations, regions')
     .eq('id', id)
     .in('status', ['approved', 'active'])
     .maybeSingle();
@@ -49,7 +49,6 @@ export default async function ProfilePage({ params }: Props) {
     regions: data.regions || [],
     bio: data.bio || '',
     videoUrl: data.video_url || undefined,
-    website: data.website_url || undefined,
     photoUrl: data.photo_url || undefined,
     gender: null,
     isDeafInterpreter: data.interpreter_type === 'Deaf Interpreter',

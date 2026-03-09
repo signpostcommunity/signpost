@@ -53,8 +53,6 @@ export type FormData = {
   interpreterType: string
   modeOfWork: string
   yearsExperience: string
-  website: string
-  linkedin: string
   regions: string[]
   eventCoordination: boolean
   coordinationBio: string
@@ -124,7 +122,7 @@ const defaultRateProfiles: RateProfile[] = [
 const initialFormData: FormData = {
   firstName: '', lastName: '', phone: '', email: '', password: '',
   country: '', city: '', state: '', bio: '', interpreterType: '', modeOfWork: '',
-  yearsExperience: '', website: '', linkedin: '', regions: [],
+  yearsExperience: '', regions: [],
   eventCoordination: false, coordinationBio: '',
   signLanguages: [], spokenLanguages: [], specializations: [], otherSpecializations: '',
   certifications: [{ id: 'cert-1', name: '', issuingBody: '', year: '', verificationLink: '' }],

@@ -17,7 +17,6 @@ export interface Interpreter {
   regions: string[];
   bio?: string;
   videoUrl?: string;
-  website?: string;
   photoUrl?: string;
   // New identity/affinity fields
   gender: 'male' | 'female' | 'nonbinary' | null;

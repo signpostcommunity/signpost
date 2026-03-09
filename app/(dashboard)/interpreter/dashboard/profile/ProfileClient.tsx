@@ -128,8 +128,6 @@ interface ProfileData {
   regions?: string[] | null
   video_url?: string | null
   video_desc?: string | null
-  website_url?: string | null
-  linkedin_url?: string | null
   event_coordination?: boolean | null
   event_coordination_desc?: string | null
   photo_url?: string | null
@@ -214,8 +212,6 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const [yearsExperience, setYearsExperience] = useState(p.years_experience || '')
   const [interpreterType, setInterpreterType] = useState(p.interpreter_type || '')
   const [modeOfWork, setModeOfWork] = useState(p.work_mode || '')
-  const [website, setWebsite] = useState(p.website_url || '')
-  const [linkedin, setLinkedin] = useState(p.linkedin_url || '')
   const [eventCoordination, setEventCoordination] = useState(p.event_coordination || false)
   const [coordinationBio, setCoordinationBio] = useState(p.event_coordination_desc || '')
 
@@ -261,7 +257,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       // Now try interpreter_profiles
       const { data, error, status, statusText } = await supabase
         .from('interpreter_profiles')
-        .select('name, first_name, last_name, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, sign_languages, spoken_languages, specializations, regions, video_url, video_desc, website_url, linkedin_url, event_coordination, event_coordination_desc, draft_data, status, photo_url')
+        .select('name, first_name, last_name, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, sign_languages, spoken_languages, specializations, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url')
         .eq('user_id', user.id)
         .maybeSingle()
       console.log('PROFILE CLIENT-SIDE LOAD:', JSON.stringify({ data, error, status, statusText, userId: user.id }, null, 2))
@@ -276,8 +272,6 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       if (d.years_experience != null) setYearsExperience(d.years_experience)
       if (d.interpreter_type != null) setInterpreterType(d.interpreter_type)
       if (d.work_mode != null) setModeOfWork(d.work_mode)
-      if (d.website_url != null) setWebsite(d.website_url)
-      if (d.linkedin_url != null) setLinkedin(d.linkedin_url)
       if (d.event_coordination != null) setEventCoordination(d.event_coordination)
       if (d.event_coordination_desc != null) setCoordinationBio(d.event_coordination_desc)
       if (d.sign_languages) setSignLangs(d.sign_languages)
@@ -616,17 +610,6 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
               </select>
             </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, marginBottom: 16 }}>
-            <div>
-              <label style={labelStyle}>Website</label>
-              <input type="url" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://yoursite.com" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
-            </div>
-            <div>
-              <label style={labelStyle}>LinkedIn Profile</label>
-              <input type="url" value={linkedin} onChange={e => setLinkedin(e.target.value)} placeholder="https://linkedin.com/in/..." style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
-            </div>
-          </div>
-
           {/* Event Coordination */}
           <div style={sectionTitleStyle}>Event Coordination</div>
           <div style={{
@@ -669,7 +652,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           <SaveButton saving={saving} onClick={() => saveFields({
             first_name: firstName, last_name: lastName, city, state: stateProvince, country, phone,
             years_experience: yearsExperience, interpreter_type: interpreterType,
-            work_mode: modeOfWork, website_url: website, linkedin_url: linkedin,
+            work_mode: modeOfWork,
             event_coordination: eventCoordination, event_coordination_desc: coordinationBio,
             regions,
           })} />
