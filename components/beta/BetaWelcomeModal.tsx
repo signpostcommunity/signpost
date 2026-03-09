@@ -38,9 +38,9 @@ export default function BetaWelcomeModal() {
           background: 'var(--surface)',
           border: '1px solid var(--border)',
           borderRadius: 'var(--radius)',
-          maxWidth: 640,
+          maxWidth: 680,
           width: '100%',
-          padding: '40px 40px 32px',
+          padding: '44px 48px 36px',
           maxHeight: '90vh',
           overflowY: 'auto',
           fontFamily: "'DM Sans', sans-serif",
@@ -59,29 +59,37 @@ export default function BetaWelcomeModal() {
           Welcome to the signpost interpreter beta!
         </h2>
 
-        <div style={{ fontSize: '0.88rem', lineHeight: 1.7, color: 'var(--muted)' }}>
-          <p style={{ margin: '0 0 24px' }}>
+        <div style={{ fontSize: '0.9rem', lineHeight: 1.75, color: 'var(--muted)' }}>
+          <p style={{ margin: '0 0 28px' }}>
             This beta will run from <strong style={{ color: 'var(--text)' }}>March 9&ndash;13</strong>.
           </p>
 
-          <p style={{ margin: '0 0 16px', fontWeight: 700, color: 'var(--text)' }}>
-            What to expect:
+          <p style={{ margin: '0 0 12px', fontWeight: 700, fontSize: '0.95rem', color: 'var(--text)' }}>
+            What to expect
           </p>
 
-          <p style={{ margin: '0 0 20px' }}>
-            During this beta test you will create an interpreter profile <strong style={{ color: 'var(--text)' }}>and explore your Interpreter Portal.</strong> It can be a real one, to leave on the site for when we go live, or it can be a fake profile for the beta only. If you are creating a fake profile, label it with <strong style={{ color: 'var(--text)' }}>(BETA)</strong> after the fake name, so we know to delete it afterwards. You can come back anytime to create a real profile, and we hope you will!
+          <p style={{ margin: '0 0 16px' }}>
+            You will create an interpreter profile, and explore your Interpreter Portal: responding to new requests, reviewing confirmed jobs, submitting invoices, etc.
           </p>
 
-          <p style={{ margin: '0 0 20px' }}>
-            As you are exploring the site there is a <strong style={{ color: 'var(--text)' }}>BETA</strong> panel on the right that will ask you questions about the page contents, and occasionally you&apos;ll see prompts labelled &ldquo;<strong style={{ color: 'var(--text)' }}>Try this! 👇</strong>&rdquo; to have you test out specific scenarios.
+          <p style={{ margin: '0 0 16px' }}>
+            Your profile can be real (it&apos;ll stay on the site when we go live) or fake (just for testing). If you create a fake profile, add <strong style={{ color: 'var(--text)' }}>(BETA)</strong> after the name so we know to delete it later. You can always come back to create a real one, and we hope you will!
           </p>
 
-          <p style={{ margin: '0 0 20px' }}>
-            <strong style={{ color: 'var(--text)' }}>To End:</strong> After you have explored all of the interpreter pages and are ready to be done, click the <strong style={{ color: 'var(--text)' }}>&ldquo;I&apos;m done exploring &mdash; take me to the final questions&rdquo;</strong> button. There will be one last page with a few multiple-choice questions and an opportunity to add any last thoughts. Click &ldquo;Submit&rdquo; and voil&agrave;! you are done.
+          <p style={{ margin: '0 0 28px' }}>
+            While you explore, you&apos;ll notice a <strong style={{ color: 'var(--text)' }}>BETA</strong> panel on the right side of each page. It will ask you questions about what you&apos;re seeing, and occasionally prompt you to try specific scenarios with a &ldquo;<strong style={{ color: 'var(--text)' }}>Try this! 👇</strong>&rdquo; label.
+          </p>
+
+          <p style={{ margin: '0 0 12px', fontWeight: 700, fontSize: '0.95rem', color: 'var(--text)' }}>
+            When you&apos;re done
+          </p>
+
+          <p style={{ margin: '0 0 28px' }}>
+            Once you&apos;ve explored the interpreter pages, click <strong style={{ color: 'var(--text)' }}>&ldquo;I&apos;m done exploring &mdash; take me to the final questions.&rdquo;</strong> You&apos;ll land on a short final page with a few multiple-choice questions and space for any last thoughts. Hit &ldquo;Submit&rdquo; and you&apos;re all set!
           </p>
 
           <p style={{ margin: '0 0 6px' }}>
-            Thank you so much for your willingness to be part of our new adventure!
+            Thank you for being part of our new adventure.
           </p>
 
           <p style={{ margin: '0 0 4px' }}>
