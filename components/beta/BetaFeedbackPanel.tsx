@@ -69,8 +69,7 @@ const ROUTE_CONFIG: Record<string, { prompt?: string; scenario?: string; questio
 function getConfig(pathname: string) {
   if (ROUTE_CONFIG[pathname]) return ROUTE_CONFIG[pathname];
   if (pathname.startsWith('/interpreter/signup')) return ROUTE_CONFIG['/interpreter/signup'];
-  const pageName = pathname.split('/').filter(Boolean).pop()?.replace(/-/g, ' ') ?? 'this page';
-  return { prompt: `You're on ${pageName}. Note anything that feels off, confusing, or missing.` };
+  return {};
 }
 
 // ── End-of-session question definitions ──────────────────────────────────────
