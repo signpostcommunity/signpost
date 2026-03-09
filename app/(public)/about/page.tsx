@@ -64,7 +64,7 @@ export default function AboutPage() {
               Co-founder
             </div>
             <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.7, margin: 0 }}>
-              A Deaf mental health professional with 20 years of experience. Regina brings the perspective
+              A Deaf mental health professional with 20 years of experience, and mama to two CODAs. Regina brings the perspective
               of someone who has spent decades navigating the interpreter booking process, and who has felt
               the impact of poor fit, limited transparency, and lack of choice. Her experience is at the center
               of how signpost is designed.
