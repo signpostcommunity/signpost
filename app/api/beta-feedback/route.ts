@@ -113,16 +113,57 @@ export async function POST(request: NextRequest) {
 
     const endOfSession = endOfSessionLines.join('\n')
 
-    // Build column values for Monday board
+    // ── Save to Supabase beta_feedback table ──
+    // Per-page feedback rows
+    for (const pf of (pageFeedback || [])) {
+      if (!pf.openNotes && !pf.specificAnswer) continue
+      const { error: pfErr } = await supabase.from('beta_feedback').insert({
+        tester_email: user?.email ?? null,
+        page: pf.page,
+        notes: pf.openNotes || null,
+        specific_answer: pf.specificAnswer || null,
+        feedback_type: 'page_note',
+      })
+      if (pfErr) console.error('beta_feedback page insert error:', pfErr)
+    }
+
+    // End-of-session survey row
+    if (endOfSessionLines.length > 0) {
+      const surveyAnswers: Record<string, unknown> = {}
+      if (professionalNeeds) surveyAnswers.professional_needs = professionalNeeds
+      if (whatsWorkingMissing) surveyAnswers.whats_working_missing = whatsWorkingMissing
+      if (likelihood) surveyAnswers.likelihood_to_use = likelihood
+      if (usedMobile) surveyAnswers.used_mobile = usedMobile
+      if (mobileFeedback) surveyAnswers.mobile_feedback = mobileFeedback
+      if (starRatingFeel) surveyAnswers.star_rating_feel = starRatingFeel
+      if (whoShouldRate?.length) surveyAnswers.who_should_rate = whoShouldRate
+      if (dhhRatingCategories) surveyAnswers.dhh_rating_categories = dhhRatingCategories
+      if (orgRatingCategories) surveyAnswers.org_rating_categories = orgRatingCategories
+      if (ratingDisplay) surveyAnswers.rating_display = ratingDisplay
+      if (triedInvoicing) surveyAnswers.tried_invoicing = triedInvoicing
+      if (invoicingCompare) surveyAnswers.invoicing_compare = invoicingCompare
+      if (premiumInterest) surveyAnswers.premium_interest = premiumInterest
+      if (premiumPrice) surveyAnswers.premium_price = premiumPrice
+      if (dreamPlatform) surveyAnswers.dream_platform = dreamPlatform
+
+      const { error: surveyErr } = await supabase.from('beta_feedback').insert({
+        tester_email: user?.email ?? null,
+        page: 'end_of_session',
+        notes: endOfSession,
+        feedback_type: 'end_of_session',
+        survey_answers: surveyAnswers,
+      })
+      if (surveyErr) console.error('beta_feedback survey insert error:', surveyErr)
+    }
+
+    // ── Also save to Monday board ──
+    // Build column values — do NOT set status columns (labels may not match board config)
     const columnValues: Record<string, unknown> = {
       short_textnbhnggeq: testerName,
       long_text24vbemv7: { text: allNotes },
       long_text8gfogdy7: { text: allSpecific },
       long_textwi8vrijw: { text: endOfSession },
     }
-
-    // Status columns
-    if (likelihood) columnValues.single_selectjdrm38a = { label: likelihood }
 
     const createResult = await mondayQuery(token,
       `mutation ($boardId: ID!, $groupId: String!, $itemName: String!, $columnValues: JSON!) {
