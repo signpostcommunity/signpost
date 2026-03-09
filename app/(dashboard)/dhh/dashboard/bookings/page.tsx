@@ -1,0 +1,725 @@
+'use client'
+
+export const dynamic = 'force-dynamic'
+
+// TODO: bookings table needs dhh_consumer_id column (nullable, FK -> deaf_profiles.id)
+// Query will be: bookings where dhh_consumer_id matches current deaf user's profile
+// Until that column exists, Section B ("Requests Made on Your Behalf") uses hardcoded mock data.
+//
+// TODO: deaf_roster needs a `dnb` boolean column (Do Not Book flag)
+// Query will be: deaf_roster where deaf_user_id = current user AND dnb = true
+// Until that column exists, the DNB check logic is built but uses an empty set.
+
+import { useState, useEffect, useCallback } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { BetaBanner, PageHeader, SectionLabel, DemoBadge, GhostButton, Avatar, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+
+/* ── Types ── */
+
+interface Booking {
+  id: string
+  title: string | null
+  requester_name: string | null
+  specialization: string | null
+  date: string
+  time_start: string
+  time_end: string
+  location: string | null
+  format: string | null
+  status: string
+  is_seed: boolean | null
+  cancellation_reason: string | null
+  sub_search_initiated: boolean | null
+}
+
+interface MockBooking extends Booking {
+  interpreter_name: string
+  interpreter_languages: string
+  interpreter_specialization: string
+  interpreter_initials: string
+  interpreter_gradient: string
+  requester_display: string
+  comm_prefs_summary: string
+  replacement_info?: {
+    message: string
+    interpreters: { name: string; languages: string; specs: string; status: 'awaiting' | 'available' }[]
+  }
+  is_cancelled_original_interpreter?: string
+}
+
+/* ── Helpers ── */
+
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr + 'T00:00:00')
+  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+function formatTime(start: string, end: string): string {
+  const fmt = (t: string) => {
+    const [h, m] = t.split(':').map(Number)
+    const ampm = h >= 12 ? 'PM' : 'AM'
+    const h12 = h % 12 || 12
+    return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
+  }
+  return `${fmt(start)} – ${fmt(end)}`
+}
+
+/* ── Styles ── */
+
+const overlayStyle: React.CSSProperties = {
+  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  zIndex: 1000, padding: 20,
+}
+
+/* ── Status Badges ── */
+
+function ConfirmedBadge() {
+  return (
+    <span style={{
+      fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px',
+      borderRadius: 100, whiteSpace: 'nowrap',
+      background: 'rgba(52,211,153,0.1)', color: '#34d399',
+      border: '1px solid rgba(52,211,153,0.3)',
+      fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
+    }}>
+      Confirmed
+    </span>
+  )
+}
+
+function CancelledBadge({ reason }: { reason: string | null }) {
+  return (
+    <span style={{
+      fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px',
+      borderRadius: 100, whiteSpace: 'nowrap',
+      background: 'rgba(255,107,133,0.1)', color: '#ff6b85',
+      border: '1px solid rgba(255,107,133,0.3)',
+      fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
+    }}>
+      Cancelled{reason ? ` — ${reason}` : ''}
+    </span>
+  )
+}
+
+function PendingBadge() {
+  return (
+    <span style={{
+      fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px',
+      borderRadius: 100, whiteSpace: 'nowrap',
+      background: 'rgba(250,204,21,0.1)', color: '#facc15',
+      border: '1px solid rgba(250,204,21,0.25)',
+      fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
+    }}>
+      Pending
+    </span>
+  )
+}
+
+/* ── Purple "Message Requester" button ── */
+
+function MessageRequesterButton({ requesterName, onToast, disabled, tooltip }: {
+  requesterName: string
+  onToast: (msg: string) => void
+  disabled?: boolean
+  tooltip?: string
+}) {
+  // TODO: Wire to messages table — create a message from D/HH user to requester
+  // This is critical for scenarios like the D/HH person seeing a DNB interpreter confirmed
+  const [hover, setHover] = useState(false)
+
+  return (
+    <div style={{ position: 'relative', display: 'inline-block' }}>
+      <button
+        onClick={() => {
+          if (!disabled) {
+            onToast(`Message sent to ${requesterName}. They'll see it in their signpost inbox.`)
+          }
+        }}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+        disabled={disabled}
+        style={{
+          background: disabled ? 'var(--surface2)' : (hover ? 'rgba(123,97,255,0.15)' : 'rgba(123,97,255,0.1)'),
+          border: `1px solid ${disabled ? 'var(--border)' : 'rgba(123,97,255,0.4)'}`,
+          borderRadius: 'var(--radius-sm)',
+          color: disabled ? 'var(--muted)' : '#9d87ff',
+          fontSize: '0.82rem', padding: '8px 16px',
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          transition: 'all 0.15s',
+          fontFamily: "'DM Sans', sans-serif",
+          fontWeight: 600,
+          opacity: disabled ? 0.5 : 1,
+        }}
+      >
+        Message Requester
+      </button>
+      {disabled && hover && tooltip && (
+        <div style={{
+          position: 'absolute', bottom: 'calc(100% + 6px)', left: '50%',
+          transform: 'translateX(-50%)', whiteSpace: 'nowrap',
+          background: 'var(--surface2)', border: '1px solid var(--border)',
+          borderRadius: 6, padding: '6px 12px',
+          fontSize: '0.75rem', color: 'var(--muted)',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+          zIndex: 10,
+        }}>
+          {tooltip}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ── DNB Warning Banner ── */
+
+function DnbWarningBanner({ requesterName, onToast }: { requesterName: string; onToast: (msg: string) => void }) {
+  return (
+    <div style={{
+      background: 'rgba(255,107,133,0.08)',
+      border: '1px solid rgba(255,107,133,0.35)',
+      borderRadius: 'var(--radius-sm)',
+      padding: '14px 18px',
+      marginBottom: 14,
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      gap: 12, flexWrap: 'wrap',
+    }}>
+      <div style={{ fontSize: '0.85rem', color: '#ff6b85', fontWeight: 600, lineHeight: 1.5 }}>
+        This interpreter is on your Do Not Book list.
+      </div>
+      <MessageRequesterButton requesterName={requesterName} onToast={onToast} />
+    </div>
+  )
+}
+
+/* ── Replacement Alert Banner ── */
+
+function ReplacementAlertBanner() {
+  return (
+    <div style={{
+      background: 'rgba(255,107,133,0.06)',
+      border: '1px solid rgba(255,107,133,0.25)',
+      borderRadius: 'var(--radius-sm)',
+      padding: '12px 16px',
+      marginBottom: 14,
+      fontSize: '0.84rem', color: '#ff6b85', lineHeight: 1.55,
+    }}>
+      A replacement is being found for this appointment. You&apos;ll be updated as it progresses.
+    </div>
+  )
+}
+
+/* ── Replacement Info Box ── */
+
+function ReplacementInfoBox({ info }: { info: NonNullable<MockBooking['replacement_info']> }) {
+  return (
+    <div style={{
+      background: 'rgba(0,229,255,0.04)',
+      border: '1px solid rgba(0,229,255,0.2)',
+      borderRadius: 'var(--radius-sm)',
+      padding: '14px 18px',
+      marginTop: 12,
+    }}>
+      <div style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6, marginBottom: 12 }}>
+        {info.message}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {info.interpreters.map((interp, i) => (
+          <div key={i} style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            gap: 12, padding: '8px 12px',
+            background: 'var(--surface2)', borderRadius: 'var(--radius-sm)',
+            border: '1px solid var(--border)',
+          }}>
+            <div style={{ fontSize: '0.84rem' }}>
+              <span style={{ fontWeight: 600, color: 'var(--text)' }}>{interp.name}</span>
+              <span style={{ color: 'var(--muted)' }}> · {interp.languages} · {interp.specs}</span>
+            </div>
+            {interp.status === 'awaiting' ? (
+              <span style={{ fontSize: '0.78rem', color: 'var(--muted)', fontStyle: 'italic', whiteSpace: 'nowrap' }}>
+                Awaiting response
+              </span>
+            ) : (
+              <span style={{ fontSize: '0.78rem', color: '#00e5ff', fontWeight: 700, whiteSpace: 'nowrap' }}>
+                Available
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ── Detail Modal (read-only) ── */
+
+function DetailModal({ booking, onClose, onToast }: {
+  booking: MockBooking
+  onClose: () => void
+  onToast: (msg: string) => void
+}) {
+  const isRemote = booking.format === 'remote'
+  const isCancelled = booking.status === 'cancelled'
+  const isSelfRequest = !booking.requester_display
+
+  const sectionLabelStyle: React.CSSProperties = {
+    fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.07em',
+    textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10,
+  }
+  const detailRowStyle: React.CSSProperties = {
+    display: 'flex', alignItems: 'flex-start', gap: 10,
+    fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.55, marginBottom: 6,
+  }
+  const iconStyle: React.CSSProperties = { color: 'var(--muted)', flexShrink: 0, marginTop: 2 }
+  const sectionStyle: React.CSSProperties = { padding: '16px 0', borderBottom: '1px solid var(--border)' }
+
+  return (
+    <div style={overlayStyle} onClick={onClose}>
+      <div style={{
+        background: 'var(--card-bg)', border: '1px solid var(--border)',
+        borderRadius: 'var(--radius)', width: '90%', maxWidth: 560,
+        overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '90vh',
+      }} onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>
+              {booking.title || 'Booking'}
+            </h3>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem', flexShrink: 0 }}>✕</button>
+          </div>
+          {isCancelled
+            ? <CancelledBadge reason={booking.cancellation_reason} />
+            : booking.status === 'confirmed'
+              ? <ConfirmedBadge />
+              : <PendingBadge />
+          }
+        </div>
+
+        {/* Body */}
+        <div style={{ padding: '0 28px 8px', overflowY: 'auto', maxHeight: '62vh' }}>
+          {/* Date & Time */}
+          <div style={sectionStyle}>
+            <div style={sectionLabelStyle}>Date &amp; Time</div>
+            <div style={detailRowStyle}>
+              <svg style={iconStyle} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <rect x="1" y="2" width="12" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                <path d="M1 5.5h12M4.5 1v2M9.5 1v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+              </svg>
+              <div>
+                <div>{formatDate(booking.date)}</div>
+                <div style={{ fontWeight: 600 }}>{formatTime(booking.time_start, booking.time_end)}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Location */}
+          <div style={sectionStyle}>
+            <div style={sectionLabelStyle}>Location</div>
+            <div style={detailRowStyle}>
+              {isRemote ? (
+                <svg style={iconStyle} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <rect x="1" y="1" width="12" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                  <path d="M4 12h6M7 10v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                </svg>
+              ) : (
+                <svg style={iconStyle} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M7 1C4.79 1 3 2.79 3 5C3 8.5 7 13 7 13C7 13 11 8.5 11 5C11 2.79 9.21 1 7 1ZM7 7C5.9 7 5 6.1 5 5C5 3.9 5.9 3 7 3C8.1 3 9 3.9 9 5C9 6.1 8.1 7 7 7Z" fill="currentColor"/>
+                </svg>
+              )}
+              <div>{isRemote ? 'Remote' : (booking.location || 'TBD')}</div>
+            </div>
+          </div>
+
+          {/* Interpreter Assigned */}
+          {booking.interpreter_name && (
+            <div style={sectionStyle}>
+              <div style={sectionLabelStyle}>Interpreter Assigned</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <Avatar initials={booking.interpreter_initials} gradient={booking.interpreter_gradient} size={36} />
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>
+                    {booking.interpreter_name}
+                    {booking.is_cancelled_original_interpreter && (
+                      <span style={{ color: 'var(--muted)', fontWeight: 400, fontStyle: 'italic' }}> (cancelled)</span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
+                    {booking.interpreter_languages} · {booking.interpreter_specialization}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Communication Preferences */}
+          {booking.comm_prefs_summary && (
+            <div style={sectionStyle}>
+              <div style={sectionLabelStyle}>Your Communication Preferences Shared</div>
+              <div style={{
+                fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65,
+                fontStyle: 'italic',
+              }}>
+                {booking.comm_prefs_summary}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: '16px 28px', borderTop: '1px solid var(--border)', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+          <GhostButton onClick={onClose}>Close</GhostButton>
+          {!isSelfRequest && (
+            <MessageRequesterButton
+              requesterName={booking.requester_name || 'Requester'}
+              onToast={onToast}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ── Booking Card (D/HH read-only) ── */
+
+function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast }: {
+  booking: MockBooking
+  dnbInterpreterIds: Set<string>
+  onViewDetails: () => void
+  onToast: (msg: string) => void
+}) {
+  const isCancelled = booking.status === 'cancelled'
+  const isSelfRequest = !booking.requester_display
+  // DNB check: compare interpreter name against DNB set
+  // TODO: When real data exists, compare interpreter_id instead of name
+  const isDnb = dnbInterpreterIds.has(booking.interpreter_name)
+
+  return (
+    <div style={{
+      background: 'var(--card-bg)', border: '1px solid var(--border)',
+      borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 12,
+      opacity: isCancelled && !booking.sub_search_initiated ? 0.75 : 1,
+    }}>
+      {/* DNB warning */}
+      {isDnb && !isCancelled && (
+        <DnbWarningBanner requesterName={booking.requester_name || 'Requester'} onToast={onToast} />
+      )}
+
+      {/* Replacement alert for cancelled bookings with active sub search */}
+      {isCancelled && booking.sub_search_initiated && (
+        <ReplacementAlertBanner />
+      )}
+
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif" }}>
+            {booking.title || 'Booking'}
+          </div>
+          <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>
+            {booking.requester_display || 'You requested this directly'} · {booking.specialization || 'General'}
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+          <DemoBadge />
+          {isCancelled
+            ? <CancelledBadge reason={booking.cancellation_reason} />
+            : booking.status === 'confirmed'
+              ? <ConfirmedBadge />
+              : <PendingBadge />
+          }
+        </div>
+      </div>
+
+      {/* Meta row */}
+      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--muted)', padding: '10px 0', borderTop: '1px solid var(--border)' }}>
+        <span>{formatDate(booking.date)}</span>
+        <span>{formatTime(booking.time_start, booking.time_end)}</span>
+        <span>{booking.format === 'remote' ? 'Remote' : booking.location || 'TBD'}</span>
+        <span>{booking.format === 'remote' ? 'Remote' : 'On-site'}</span>
+      </div>
+
+      {/* Interpreter row (if assigned) */}
+      {booking.interpreter_name && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 12,
+          padding: '10px 0', borderTop: '1px solid var(--border)',
+        }}>
+          <Avatar initials={booking.interpreter_initials} gradient={booking.interpreter_gradient} size={32} />
+          <div style={{ fontSize: '0.84rem' }}>
+            <span style={{ fontWeight: 600, color: booking.is_cancelled_original_interpreter ? 'var(--muted)' : 'var(--text)' }}>
+              {booking.interpreter_name}
+              {booking.is_cancelled_original_interpreter && (
+                <span style={{ fontWeight: 400, fontStyle: 'italic' }}> (cancelled)</span>
+              )}
+            </span>
+            <span style={{ color: 'var(--muted)' }}> · {booking.interpreter_languages} · {booking.interpreter_specialization}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Replacement info for cancelled with sub search */}
+      {isCancelled && booking.sub_search_initiated && booking.replacement_info && (
+        <ReplacementInfoBox info={booking.replacement_info} />
+      )}
+
+      {/* Actions */}
+      <div className="dash-card-actions" style={{ display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
+        <GhostButton onClick={onViewDetails}>View Details</GhostButton>
+        {!isSelfRequest && (
+          <MessageRequesterButton
+            requesterName={booking.requester_name || 'Requester'}
+            onToast={onToast}
+          />
+        )}
+        {isSelfRequest && (
+          <MessageRequesterButton
+            requesterName=""
+            onToast={onToast}
+            disabled
+            tooltip="You made this request directly"
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ── Empty State ── */
+
+function EmptyState() {
+  return (
+    <div style={{
+      border: '2px dashed var(--border)',
+      borderRadius: 'var(--radius)',
+      padding: '32px 24px',
+      textAlign: 'center',
+      color: 'var(--muted)',
+      fontSize: '0.88rem',
+      lineHeight: 1.6,
+    }}>
+      No bookings yet. When a request is made, it will appear here with real-time updates.
+    </div>
+  )
+}
+
+/* ── Mock Data ── */
+
+const MOCK_SELF_BOOKING: MockBooking = {
+  id: 'mock-self-1',
+  title: 'Weekly ASL Practice Session',
+  requester_name: null,
+  requester_display: '',
+  specialization: 'Education',
+  date: '2026-03-12',
+  time_start: '10:00',
+  time_end: '11:30',
+  location: 'Seattle Community Center, Room 204',
+  format: 'in_person',
+  status: 'confirmed',
+  is_seed: true,
+  cancellation_reason: null,
+  sub_search_initiated: null,
+  interpreter_name: 'Marcus Kim',
+  interpreter_languages: 'ASL',
+  interpreter_specialization: 'Education',
+  interpreter_initials: 'MK',
+  interpreter_gradient: 'linear-gradient(135deg,#00e5ff,#7b61ff)',
+  comm_prefs_summary: 'Black ASL preferred. Prefers interpreter positioned directly across.',
+}
+
+const MOCK_ON_BEHALF_CONFIRMED: MockBooking = {
+  id: 'mock-behalf-1',
+  title: 'Cardiology Appointment',
+  requester_name: 'Alex Rivera',
+  requester_display: 'Alex Rivera (Seattle Medical Center)',
+  specialization: 'Medical',
+  date: '2026-03-04',
+  time_start: '14:00',
+  time_end: '16:00',
+  location: 'Seattle Medical Center, Floor 3',
+  format: 'in_person',
+  status: 'confirmed',
+  is_seed: true,
+  cancellation_reason: null,
+  sub_search_initiated: null,
+  interpreter_name: 'Sofia Reyes',
+  interpreter_languages: 'ASL',
+  interpreter_specialization: 'Medical',
+  interpreter_initials: 'SR',
+  interpreter_gradient: 'linear-gradient(135deg,#ff6b85,#ff9a56)',
+  comm_prefs_summary: 'Black ASL preferred. Prefers interpreter positioned directly across.',
+}
+
+const MOCK_ON_BEHALF_CANCELLED: MockBooking = {
+  id: 'mock-behalf-2',
+  title: 'Legal Consultation — Family Law',
+  requester_name: 'Alex Rivera',
+  requester_display: 'Alex Rivera',
+  specialization: 'Legal',
+  date: '2026-02-22',
+  time_start: '10:30',
+  time_end: '12:00',
+  location: 'Remote (Zoom)',
+  format: 'remote',
+  status: 'cancelled',
+  is_seed: true,
+  cancellation_reason: 'Illness',
+  sub_search_initiated: true,
+  interpreter_name: 'Sofia Reyes',
+  interpreter_languages: 'ASL',
+  interpreter_specialization: 'Medical, Legal',
+  interpreter_initials: 'SR',
+  interpreter_gradient: 'linear-gradient(135deg,#ff6b85,#ff9a56)',
+  is_cancelled_original_interpreter: 'Sofia Reyes',
+  comm_prefs_summary: 'Black ASL preferred. Prefers interpreter positioned directly across.',
+  replacement_info: {
+    message: 'Your requester is looking for a replacement interpreter. The request has been forwarded to 2 interpreters.',
+    interpreters: [
+      { name: 'Marcus Kim', languages: 'ASL', specs: 'Medical, Legal', status: 'awaiting' },
+      { name: 'Priya Nair', languages: 'ASL', specs: 'Medical', status: 'available' },
+    ],
+  },
+}
+
+/* ── Main Page ── */
+
+export default function DhhBookingsPage() {
+  const [selfBookings, setSelfBookings] = useState<MockBooking[]>([])
+  const [onBehalfBookings] = useState<MockBooking[]>([MOCK_ON_BEHALF_CONFIRMED, MOCK_ON_BEHALF_CANCELLED])
+  const [dnbInterpreterIds, setDnbInterpreterIds] = useState<Set<string>>(new Set())
+  const [loading, setLoading] = useState(true)
+  const [viewing, setViewing] = useState<string | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
+
+  function showToast(msg: string) {
+    setToast(msg)
+    setTimeout(() => setToast(null), 3500)
+  }
+
+  const fetchData = useCallback(async () => {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setLoading(false); return }
+
+    // Section A: bookings where requester_id = current user (self-requested)
+    const { data: selfData, error: selfErr } = await supabase
+      .from('bookings')
+      .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, status, is_seed, cancellation_reason, sub_search_initiated')
+      .eq('requester_id', user.id)
+      .order('date', { ascending: false })
+
+    if (selfErr) {
+      console.error('[dhh-bookings] self-bookings fetch failed:', selfErr.message)
+    }
+
+    const realSelfBookings: MockBooking[] = (selfData || []).map(b => ({
+      ...b,
+      interpreter_name: '',
+      interpreter_languages: '',
+      interpreter_specialization: '',
+      interpreter_initials: '',
+      interpreter_gradient: 'linear-gradient(135deg,#7b61ff,#00e5ff)',
+      requester_display: '',
+      comm_prefs_summary: '',
+    }))
+
+    // If no self bookings, show mock
+    if (realSelfBookings.length === 0) {
+      setSelfBookings([MOCK_SELF_BOOKING])
+    } else {
+      setSelfBookings(realSelfBookings)
+    }
+
+    // DNB list: query deaf_roster for interpreters flagged as DNB
+    // TODO: deaf_roster needs `dnb` boolean column. Until then, this returns empty.
+    // When the column exists, uncomment and use:
+    // const { data: dnbData } = await supabase
+    //   .from('deaf_roster')
+    //   .select('interpreter_id')
+    //   .eq('deaf_user_id', user.id)
+    //   .eq('dnb', true)
+    // const dnbIds = new Set((dnbData || []).map(d => d.interpreter_id))
+    const dnbIds = new Set<string>()
+    setDnbInterpreterIds(dnbIds)
+
+    setLoading(false)
+  }, [])
+
+  useEffect(() => { fetchData() }, [fetchData])
+
+  const allBookings = [...selfBookings, ...onBehalfBookings]
+  const viewingBooking = allBookings.find(b => b.id === viewing)
+
+  return (
+    <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 900 }}>
+      <BetaBanner />
+      <PageHeader title="My Bookings" subtitle="Appointments scheduled for you — requested by you or on your behalf." />
+
+      {loading ? (
+        <div style={{ padding: '40px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem' }}>
+          Loading...
+        </div>
+      ) : (
+        <>
+          {/* Section A: Requests Made by You */}
+          <SectionLabel>Requests Made by You</SectionLabel>
+          {selfBookings.length === 0 ? (
+            <EmptyState />
+          ) : (
+            selfBookings.map(b => (
+              <DhhBookingCard
+                key={b.id}
+                booking={b}
+                dnbInterpreterIds={dnbInterpreterIds}
+                onViewDetails={() => setViewing(b.id)}
+                onToast={showToast}
+              />
+            ))
+          )}
+
+          {/* Section B: Requests Made on Your Behalf */}
+          <SectionLabel>Requests Made on Your Behalf</SectionLabel>
+          {onBehalfBookings.length === 0 ? (
+            <EmptyState />
+          ) : (
+            onBehalfBookings.map(b => (
+              <DhhBookingCard
+                key={b.id}
+                booking={b}
+                dnbInterpreterIds={dnbInterpreterIds}
+                onViewDetails={() => setViewing(b.id)}
+                onToast={showToast}
+              />
+            ))
+          )}
+        </>
+      )}
+
+      {/* Detail Modal */}
+      {viewing && viewingBooking && (
+        <DetailModal
+          booking={viewingBooking}
+          onClose={() => setViewing(null)}
+          onToast={showToast}
+        />
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
+          background: 'var(--card-bg)', border: '1px solid rgba(52,211,153,0.3)',
+          borderRadius: 'var(--radius)', padding: '14px 24px',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.5)', zIndex: 9999,
+          fontSize: '0.85rem', color: '#34d399',
+        }}>
+          {toast}
+        </div>
+      )}
+
+      <DashMobileStyles />
+    </div>
+  )
+}
