@@ -232,9 +232,16 @@ export default function OverviewClient({ interpreterProfileId, firstName, profil
 
       if (!teamErr) setTeamCount(teamC ?? 0)
 
-      // Unread messages count for "New Inquiries" — add to pending count
-      // TODO: wire to real availability table
-      setDaysAvailable(0)
+      // Days available this week — count distinct days from interpreter_availability
+      const { data: availRows, error: availErr } = await supabase
+        .from('interpreter_availability')
+        .select('day_of_week')
+        .eq('interpreter_id', interpreterProfileId!)
+
+      if (!availErr && availRows) {
+        const uniqueDays = new Set(availRows.map(r => r.day_of_week))
+        setDaysAvailable(uniqueDays.size)
+      }
 
       setLoading(false)
     }
