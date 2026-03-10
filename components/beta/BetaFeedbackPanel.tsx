@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 
 // ── Route-specific prompts ────────────────────────────────────────────────────
 
@@ -275,8 +276,8 @@ export default function BetaFeedbackPanel() {
     setPageSaved(false);
   }, [pathname]);
 
-  // Save per-page feedback to local state only
-  function handlePageSave() {
+  // Save per-page feedback to local state AND Supabase immediately
+  async function handlePageSave() {
     if (!notes.trim() && !specificAnswer.trim()) return;
     const existing = feedbackRef.current;
     const idx = existing.findIndex(f => f.page === pathname);
@@ -288,6 +289,22 @@ export default function BetaFeedbackPanel() {
     }
     setPageSaved(true);
     setTimeout(() => setPageSaved(false), 3000);
+
+    // Write to Supabase immediately
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error: insertErr } = await supabase.from('beta_feedback').insert({
+        tester_email: user?.email ?? null,
+        page: pathname,
+        notes: notes.trim() || null,
+        specific_answer: specificAnswer.trim() || null,
+        feedback_type: 'page_note',
+      });
+      if (insertErr) console.error('beta_feedback page save error:', insertErr);
+    } catch (e) {
+      console.error('beta_feedback page save failed:', e);
+    }
   }
 
   // Submit everything
@@ -792,25 +809,30 @@ export default function BetaFeedbackPanel() {
 
             {/* End-of-session CTA */}
             {showEndOfSession && (
-              <button
-                onClick={() => setShowFinal(true)}
-                style={{
-                  display: 'block',
-                  width: '100%',
-                  textAlign: 'center',
-                  background: 'transparent',
-                  color: '#00e5ff',
-                  border: '1px solid #00e5ff',
-                  borderRadius: 8,
-                  padding: '10px 16px',
-                  fontSize: '0.77rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontFamily: "'DM Sans', sans-serif",
-                }}
-              >
-                I&apos;m done exploring &mdash; take me to the final questions &rarr;
-              </button>
+              <div>
+                <p style={{ fontSize: '0.74rem', color: '#888', margin: '0 0 8px', textAlign: 'center' }}>
+                  Your answers shape the future of signpost.
+                </p>
+                <button
+                  onClick={() => setShowFinal(true)}
+                  style={{
+                    display: 'block',
+                    width: '100%',
+                    textAlign: 'center',
+                    background: '#ff6b2b',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 8,
+                    padding: '12px 16px',
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    fontFamily: "'DM Sans', sans-serif",
+                  }}
+                >
+                  Complete beta feedback &rarr;
+                </button>
+              </div>
             )}
           </>
         )}

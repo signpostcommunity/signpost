@@ -30,18 +30,16 @@ export default function InterpreterPage() {
         </Link>
       </div>
 
-      {/* For Interpreters pill */}
+      {/* For Interpreters label */}
       <div style={{ marginBottom: '20px' }}>
         <span
           style={{
-            display: 'inline-block',
-            background: 'rgba(157,135,255,0.15)',
-            border: '1px solid rgba(157,135,255,0.3)',
-            borderRadius: '100px',
-            padding: '5px 14px',
-            fontSize: '0.8rem',
+            fontFamily: 'var(--font-syne)',
+            fontSize: '0.72rem',
+            fontWeight: 700,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
             color: 'var(--accent2)',
-            fontWeight: 500,
           }}
         >
           For Interpreters

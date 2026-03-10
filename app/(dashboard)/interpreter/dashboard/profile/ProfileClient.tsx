@@ -244,7 +244,11 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const hasProfile = !!rawProfile
   const router = useRouter()
 
-  const [activeTab, setActiveTab] = useState<Tab>('Personal')
+  const [activeTab, setActiveTabRaw] = useState<Tab>('Personal')
+  function setActiveTab(tab: Tab) {
+    setActiveTabRaw(tab)
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  }
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
