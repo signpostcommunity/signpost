@@ -127,12 +127,13 @@ function LangPicker({
                 }}
               >
                 {lang}
-                <span
+                <button
                   onClick={() => onRemoveRegional(lang)}
-                  style={{ cursor: 'pointer', opacity: 0.6, fontSize: '0.85rem' }}
+                  aria-label={`Remove ${lang}`}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6, fontSize: '0.85rem', color: 'inherit', padding: 0 }}
                 >
-                  ✕
-                </span>
+                  <span aria-hidden="true">✕</span>
+                </button>
               </span>
             ))}
           </div>
@@ -245,7 +246,7 @@ export default function Step2Languages({ onBack, onContinue }: {
                 fontFamily: "'DM Sans', sans-serif",
               }}>
                 {spec}
-                <span onClick={() => toggleSpec(spec)} style={{ cursor: 'pointer', opacity: 0.6, fontSize: '0.85rem' }}>✕</span>
+                <button onClick={() => toggleSpec(spec)} aria-label={`Remove ${spec}`} style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6, fontSize: '0.85rem', color: 'inherit', padding: 0 }}><span aria-hidden="true">✕</span></button>
               </span>
             ))}
           </div>

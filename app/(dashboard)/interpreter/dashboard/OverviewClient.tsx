@@ -105,7 +105,7 @@ function CalendarDropdown({ booking, onToast }: {
 
   return (
     <div ref={ref} style={{ position: 'relative', display: 'inline-block' }}>
-      <GhostButton onClick={() => setOpen(!open)}>Add to Calendar</GhostButton>
+      <GhostButton onClick={() => setOpen(!open)} aria-expanded={open}>Add to Calendar</GhostButton>
       {open && (
         <div style={{
           position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 100,
@@ -127,7 +127,7 @@ function CalendarDropdown({ booking, onToast }: {
 function StatCard({ num, label, href }: { num: number; label: string; href: string }) {
   const [hover, setHover] = useState(false)
   return (
-    <Link href={href} style={{ textDecoration: 'none', display: 'flex' }}>
+    <Link href={href} style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column' }}>
       <div
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}

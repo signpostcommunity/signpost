@@ -2,6 +2,7 @@
 
 import { useEffect, useCallback } from 'react';
 import { getVideoEmbedUrl, isValidVideoUrl } from '@/lib/videoUtils';
+import { useFocusTrap } from '@/lib/hooks/useFocusTrap';
 
 interface VideoPreviewModalProps {
   isOpen: boolean;
@@ -18,6 +19,8 @@ export default function VideoPreviewModal({
   videoUrl,
   interpreterId,
 }: VideoPreviewModalProps) {
+  const focusTrapRef = useFocusTrap(isOpen);
+
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -59,6 +62,7 @@ export default function VideoPreviewModal({
       }}
     >
       <div
+        ref={focusTrapRef}
         role="dialog"
         aria-modal="true"
         aria-label={`${interpreterName} video preview`}

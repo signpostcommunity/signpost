@@ -53,6 +53,7 @@ export default function Toast({ message, type = 'success', onClose, duration = 3
       <span style={{ color: c.color, fontSize: '0.9rem' }}>{message}</span>
       <button
         onClick={onClose}
+        aria-label="Close notification"
         style={{
           background: 'none',
           border: 'none',
@@ -63,7 +64,7 @@ export default function Toast({ message, type = 'success', onClose, duration = 3
           marginLeft: '4px',
         }}
       >
-        ✕
+        <span aria-hidden="true">✕</span>
       </button>
     </div>
   );

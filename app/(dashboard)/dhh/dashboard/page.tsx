@@ -40,7 +40,7 @@ function ShareModal({ onClose, onToast }: { onClose: () => void; onToast: (m: st
   ];
 
   return (
-    <div style={overlayStyle} onClick={onClose}>
+    <div role="presentation" style={overlayStyle} onClick={onClose}>
       <div style={modalStyle} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Share Your Interpreter Roster</div>

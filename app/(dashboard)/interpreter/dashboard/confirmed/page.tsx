@@ -200,7 +200,7 @@ function CancelModal({ booking, onClose, onCancelled }: {
   })
 
   return (
-    <div style={overlayStyle} onClick={onClose}>
+    <div role="presentation" style={overlayStyle} onClick={onClose}>
       <div style={modalStyle} onClick={e => e.stopPropagation()}>
 
         {/* Step 1: Reason */}
@@ -292,11 +292,11 @@ function CancelModal({ booking, onClose, onCancelled }: {
               Optional, but it could make all the difference.
             </p>
             <p style={{ color: 'var(--muted)', fontSize: '0.82rem', lineHeight: 1.6, margin: '0 0 22px' }}>
-              Cancelling a booking can cause incredible disruption for the D/HH consumer and the organization. Offering to help the requester find a replacement is optional, but highly recommended. A little help goes a long way.
+              Cancelling a booking can cause incredible disruption for the D/DB/HH consumer and the organization. Offering to help the requester find a replacement is optional, but highly recommended. A little help goes a long way.
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
-              <div onClick={() => setSubOption('help')} style={cardStyle(subOption === 'help')}>
+              <div role="button" tabIndex={0} onClick={() => setSubOption('help')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSubOption('help'); } }} style={cardStyle(subOption === 'help')}>
                 <div style={{ fontWeight: 600, fontSize: '0.88rem', color: subOption === 'help' ? 'var(--accent)' : 'var(--text)', marginBottom: 6 }}>
                   Offer to check with my Preferred Team Interpreters
                 </div>
@@ -305,7 +305,7 @@ function CancelModal({ booking, onClose, onCancelled }: {
                 </div>
               </div>
 
-              <div onClick={() => setSubOption('skip')} style={cardStyle(subOption === 'skip')}>
+              <div role="button" tabIndex={0} onClick={() => setSubOption('skip')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSubOption('skip'); } }} style={cardStyle(subOption === 'skip')}>
                 <div style={{ fontWeight: 600, fontSize: '0.88rem', color: subOption === 'skip' ? 'var(--accent)' : 'var(--text)', marginBottom: 6 }}>
                   Skip &mdash; just cancel
                 </div>
@@ -403,7 +403,7 @@ function ForwardToTeamModal({ booking, interpreterId, onClose, onForwarded }: {
   }
 
   return (
-    <div style={overlayStyle} onClick={onClose}>
+    <div role="presentation" style={overlayStyle} onClick={onClose}>
       <div style={modalStyle} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.05rem' }}>Forward to Team</div>
@@ -590,7 +590,7 @@ function DetailModal({ booking, onClose }: { booking: Booking; onClose: () => vo
   const meetingId = meetingIdMatch ? meetingIdMatch[0] : null
 
   return (
-    <div style={overlayStyle} onClick={onClose}>
+    <div role="presentation" style={overlayStyle} onClick={onClose}>
       <div style={{
         background: 'var(--card-bg)', border: '1px solid var(--border)',
         borderRadius: 'var(--radius)', width: '90%', maxWidth: 560,
@@ -1079,7 +1079,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
 
   if (loading) {
     return (
-      <div style={overlayStyle} onClick={onClose}>
+      <div role="presentation" style={overlayStyle} onClick={onClose}>
         <div style={{ ...modalStyle, maxWidth: 620 }} onClick={e => e.stopPropagation()}>
           <div style={{ padding: 40, textAlign: 'center', color: 'var(--muted)' }}>Loading invoice...</div>
         </div>
@@ -1088,7 +1088,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
   }
 
   return (
-    <div style={overlayStyle} onClick={onClose}>
+    <div role="presentation" style={overlayStyle} onClick={onClose}>
       <div style={{
         background: 'var(--card-bg)', border: '1px solid var(--border)',
         borderRadius: 'var(--radius)', width: '92%', maxWidth: 620,

@@ -74,6 +74,18 @@ body {
   outline-offset: 2px;
 }
 
+/* Focus not obscured — WCAG 2.2 SC 2.4.11 */
+*:focus-visible {
+  scroll-margin-top: 80px;
+  scroll-margin-bottom: 60px;
+}
+
+/* Minimum target size — WCAG 2.2 SC 2.5.8 (24×24 CSS px) */
+button, a, [role="button"], input[type="checkbox"], input[type="radio"] {
+  min-height: 24px;
+  min-width: 24px;
+}
+
 /* Noise overlay */
 body::before {
   content: '';

@@ -773,7 +773,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                   fontFamily: "'DM Sans', sans-serif",
                 }}>
                   {lang}
-                  <span onClick={() => { setSignRegional(prev => prev.filter(l => l !== lang)); setSignLangs(prev => prev.filter(l => l !== lang)) }} style={{ cursor: 'pointer', opacity: 0.6, fontSize: '0.85rem' }}>✕</span>
+                  <button onClick={() => { setSignRegional(prev => prev.filter(l => l !== lang)); setSignLangs(prev => prev.filter(l => l !== lang)) }} aria-label={`Remove ${lang}`} style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6, fontSize: '0.85rem', color: 'inherit', padding: 0 }}><span aria-hidden="true">✕</span></button>
                 </span>
               ))}
             </div>
@@ -817,7 +817,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                   fontFamily: "'DM Sans', sans-serif",
                 }}>
                   {lang}
-                  <span onClick={() => { setSpokenRegional(prev => prev.filter(l => l !== lang)); setSpokenLangs(prev => prev.filter(l => l !== lang)) }} style={{ cursor: 'pointer', opacity: 0.6, fontSize: '0.85rem' }}>✕</span>
+                  <button onClick={() => { setSpokenRegional(prev => prev.filter(l => l !== lang)); setSpokenLangs(prev => prev.filter(l => l !== lang)) }} aria-label={`Remove ${lang}`} style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6, fontSize: '0.85rem', color: 'inherit', padding: 0 }}><span aria-hidden="true">✕</span></button>
                 </span>
               ))}
             </div>
@@ -1272,7 +1272,7 @@ function SkillsTab({ specs, setSpecs, specializedSkills, setSpecializedSkills, s
               fontFamily: "'DM Sans', sans-serif",
             }}>
               {spec}
-              <span onClick={() => toggleSpec(spec)} style={{ cursor: 'pointer', opacity: 0.6, fontSize: '0.85rem' }}>✕</span>
+              <button onClick={() => toggleSpec(spec)} aria-label={`Remove ${spec}`} style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6, fontSize: '0.85rem', color: 'inherit', padding: 0 }}><span aria-hidden="true">✕</span></button>
             </span>
           ))}
         </div>

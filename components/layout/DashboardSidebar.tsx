@@ -276,14 +276,14 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
   return (
     <>
       {/* Desktop sidebar */}
-      <div className="dash-sidebar-desktop" style={{
+      <aside className="dash-sidebar-desktop" aria-label="Dashboard navigation" style={{
         width: 240, flexShrink: 0, background: 'var(--surface)',
         borderRight: '1px solid var(--border)',
         display: 'flex', flexDirection: 'column',
         height: '100vh', position: 'sticky', top: 0, overflowY: 'auto',
       }}>
         <SidebarContent userName={userName} userInitials={userInitials} photoUrl={photoUrl} badges={badges} />
-      </div>
+      </aside>
 
       {/* Mobile top bar */}
       <div className="dash-sidebar-mobile-bar" style={{
@@ -358,7 +358,7 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
                 ✕
               </button>
             </div>
-            <div onClick={() => setMobileOpen(false)}>
+            <div role="presentation" onClick={() => setMobileOpen(false)}>
               <SidebarContent userName={userName} userInitials={userInitials} photoUrl={photoUrl} badges={badges} />
             </div>
           </aside>

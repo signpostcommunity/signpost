@@ -62,10 +62,12 @@ function Divider() {
 }
 
 function AuthInput({ label, type = 'text', value, onChange, placeholder }: { label: string; type?: string; value: string; onChange: (v: string) => void; placeholder: string }) {
+  const id = label.toLowerCase().replace(/\s+/g, '-');
   return (
     <div>
-      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 500, color: 'var(--muted)', marginBottom: '6px' }}>{label}</label>
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
+      <label htmlFor={id} style={{ display: 'block', fontSize: '0.82rem', fontWeight: 500, color: 'var(--muted)', marginBottom: '6px' }}>{label}</label>
+      <input id={id} type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
+        aria-required="true"
         style={{ width: '100%', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px 14px', color: 'var(--text)', fontSize: '0.95rem', outline: 'none' }}
         onFocus={(e) => (e.target.style.borderColor = 'rgba(0,229,255,0.5)')} onBlur={(e) => (e.target.style.borderColor = 'var(--border)')} />
     </div>

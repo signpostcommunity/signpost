@@ -5,7 +5,7 @@ import ComingSoonOverlay from '@/components/beta/ComingSoonOverlay';
 
 export default function DeafPortalPage() {
   return (
-    <ComingSoonOverlay message="The Deaf/HH portal is coming soon. We're building out our interpreter roster first. Stay tuned!">
+    <ComingSoonOverlay message="The Deaf/DB/HH portal is coming soon. We're building out our interpreter roster first. Stay tuned!">
       <DeafPortalContent />
     </ComingSoonOverlay>
   );
@@ -39,7 +39,7 @@ function DeafPortalContent() {
               fontWeight: 500,
             }}
           >
-            D/HH Portal
+            D/DB/HH Portal
           </div>
           <h1
             style={{

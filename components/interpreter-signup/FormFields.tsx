@@ -52,9 +52,9 @@ export function FormField({ children, style }: { children: ReactNode; style?: CS
   )
 }
 
-export function FieldLabel({ children }: { children: ReactNode }) {
+export function FieldLabel({ children, htmlFor }: { children: ReactNode; htmlFor?: string }) {
   return (
-    <label style={{ fontSize: '0.82rem', color: 'var(--muted)', fontWeight: 500 }}>
+    <label htmlFor={htmlFor} style={{ fontSize: '0.82rem', color: 'var(--muted)', fontWeight: 500 }}>
       {children}
     </label>
   )
@@ -322,7 +322,8 @@ export function Chip({ label, selected, onToggle }: {
   label: string; selected: boolean; onToggle: () => void
 }) {
   return (
-    <span
+    <button
+      type="button"
       onClick={onToggle}
       style={{
         display: 'flex', alignItems: 'center',
@@ -338,6 +339,6 @@ export function Chip({ label, selected, onToggle }: {
       }}
     >
       {label}
-    </span>
+    </button>
   )
 }

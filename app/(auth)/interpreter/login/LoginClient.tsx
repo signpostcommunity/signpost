@@ -137,9 +137,11 @@ function AuthInput({
   onChange: (v: string) => void;
   placeholder: string;
 }) {
+  const id = label.toLowerCase().replace(/\s+/g, '-');
   return (
     <div>
       <label
+        htmlFor={id}
         style={{
           display: 'block',
           fontSize: '0.82rem',
@@ -151,10 +153,12 @@ function AuthInput({
         {label}
       </label>
       <input
+        id={id}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
+        aria-required="true"
         style={{
           width: '100%',
           background: 'var(--surface)',

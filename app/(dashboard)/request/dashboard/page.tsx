@@ -62,7 +62,7 @@ function DetailModal({ request, onClose, onCancel }: {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   return (
-    <div style={backdropStyle} onClick={onClose}>
+    <div role="presentation" style={backdropStyle} onClick={onClose}>
       <div style={modalBoxStyle} onClick={e => e.stopPropagation()}>
         <button onClick={onClose} style={{ position: 'absolute', top: 14, right: 14, background: 'none', border: 'none', color: 'var(--muted)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
 
@@ -162,7 +162,7 @@ function NewRequestModal({ onClose, onSubmit }: { onClose: () => void; onSubmit:
   };
 
   return (
-    <div style={backdropStyle} onClick={onClose}>
+    <div role="presentation" style={backdropStyle} onClick={onClose}>
       <div style={{ ...modalBoxStyle, maxWidth: 560 }} onClick={e => e.stopPropagation()}>
         <button onClick={onClose} style={{ position: 'absolute', top: 14, right: 14, background: 'none', border: 'none', color: 'var(--muted)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
 

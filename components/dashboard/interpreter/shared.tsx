@@ -189,17 +189,19 @@ export function RequestCard({
 
 // ── Ghost Button ──────────────────────────────────────────────────────────────
 
-export function GhostButton({ children, onClick, danger, disabled }: {
+export function GhostButton({ children, onClick, danger, disabled, 'aria-expanded': ariaExpanded }: {
   children: React.ReactNode
   onClick?: () => void
   danger?: boolean
   disabled?: boolean
+  'aria-expanded'?: boolean
 }) {
   const [hover, setHover] = useState(false)
   return (
     <button
       onClick={onClick}
       disabled={disabled}
+      aria-expanded={ariaExpanded}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{

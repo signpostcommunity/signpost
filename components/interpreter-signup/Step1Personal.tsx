@@ -215,7 +215,7 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
                 marginTop: 6,
                 lineHeight: 1.5,
               }}>
-                After completing signup, you'll have the option to add a D/HH personal or requester profile to your account.
+                After completing signup, you'll have the option to add a D/DB/HH personal or requester profile to your account.
               </p>
             )}
           </FormField>

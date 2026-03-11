@@ -274,7 +274,7 @@ function DetailModal({ booking, onClose, onToast }: {
   const sectionStyle: React.CSSProperties = { padding: '16px 0', borderBottom: '1px solid var(--border)' }
 
   return (
-    <div style={overlayStyle} onClick={onClose}>
+    <div role="presentation" style={overlayStyle} onClick={onClose}>
       <div style={{
         background: 'var(--card-bg)', border: '1px solid var(--border)',
         borderRadius: 'var(--radius)', width: '90%', maxWidth: 560,

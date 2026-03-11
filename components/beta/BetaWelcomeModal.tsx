@@ -1,15 +1,26 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useFocusTrap } from '@/lib/hooks/useFocusTrap';
 
 export default function BetaWelcomeModal() {
   const [show, setShow] = useState(false);
+  const focusTrapRef = useFocusTrap(show);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && !sessionStorage.getItem('signpost_beta_welcomed')) {
       setShow(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (!show) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') dismiss();
+    }
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [show]);
 
   function dismiss() {
     sessionStorage.setItem('signpost_beta_welcomed', 'true');
@@ -34,6 +45,7 @@ export default function BetaWelcomeModal() {
       }}
     >
       <div
+        ref={focusTrapRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="beta-welcome-title"

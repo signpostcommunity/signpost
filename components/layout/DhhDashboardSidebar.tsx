@@ -117,7 +117,7 @@ function SidebarContent({ userName, userInitials, photoUrl }: {
           )}
           <div>
             <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.92rem' }}>{userName}</div>
-            <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 2 }}>D/HH Consumer</div>
+            <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 2 }}>D/DB/HH Consumer</div>
           </div>
         </div>
       </div>
@@ -151,7 +151,7 @@ function SidebarContent({ userName, userInitials, photoUrl }: {
                     borderLeft: active ? '2px solid var(--accent2)' : '2px solid transparent',
                   }}
                 >
-                  <span style={{ width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span aria-hidden="true" style={{ width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     {item.icon}
                   </span>
                   <span style={{ flex: 1 }}>{item.label}</span>
@@ -189,14 +189,14 @@ export default function DhhDashboardSidebar({ userName = 'User', userInitials = 
   return (
     <>
       {/* Desktop sidebar */}
-      <div className="dash-sidebar-desktop" style={{
+      <aside className="dash-sidebar-desktop" aria-label="Dashboard navigation" style={{
         width: 240, flexShrink: 0, background: 'var(--surface)',
         borderRight: '1px solid var(--border)',
         display: 'flex', flexDirection: 'column',
         height: '100vh', position: 'sticky', top: 0, overflowY: 'auto',
       }}>
         <SidebarContent userName={userName} userInitials={userInitials} photoUrl={photoUrl} />
-      </div>
+      </aside>
 
       {/* Mobile top bar */}
       <div className="dash-sidebar-mobile-bar" style={{
@@ -228,27 +228,32 @@ export default function DhhDashboardSidebar({ userName = 'User', userInitials = 
         <button
           onClick={() => setMobileOpen(true)}
           aria-label="Open menu"
+          aria-expanded={mobileOpen}
           style={{
             background: 'none', border: 'none', cursor: 'pointer', padding: 4,
             display: 'flex', flexDirection: 'column', gap: 5,
           }}
         >
-          <span style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
-          <span style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
-          <span style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
+          <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
+          <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
+          <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
         </button>
       </div>
 
       {/* Mobile drawer */}
       {mobileOpen && (
         <div
+          aria-hidden="true"
           style={{
             position: 'fixed', inset: 0, zIndex: 200,
             background: 'rgba(0,0,0,0.7)',
           }}
           onClick={() => setMobileOpen(false)}
         >
-          <div
+          <aside
+            role="dialog"
+            aria-modal="true"
+            aria-label="Dashboard navigation"
             style={{
               position: 'absolute', top: 0, left: 0, bottom: 0,
               width: 280, background: 'var(--surface)',
@@ -266,10 +271,10 @@ export default function DhhDashboardSidebar({ userName = 'User', userInitials = 
                 ✕
               </button>
             </div>
-            <div onClick={() => setMobileOpen(false)}>
+            <div role="presentation" onClick={() => setMobileOpen(false)}>
               <SidebarContent userName={userName} userInitials={userInitials} photoUrl={photoUrl} />
             </div>
-          </div>
+          </aside>
         </div>
       )}
 

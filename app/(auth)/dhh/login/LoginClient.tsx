@@ -28,7 +28,7 @@ export default function DeafLoginPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 73px)', padding: '40px 24px' }}>
       <div style={{ maxWidth: 420, width: '100%' }}>
-        <h1 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.8rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '8px' }}>D/HH Sign In</h1>
+        <h1 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.8rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '8px' }}>D/DB/HH Sign In</h1>
         <p style={{ color: 'var(--muted)', marginBottom: '32px', fontSize: '0.9rem' }}>
           Welcome back.{' '}
           <Link href="/dhh/signup" style={{ color: 'var(--accent2)', textDecoration: 'none' }}>Create an account</Link>
@@ -44,7 +44,7 @@ export default function DeafLoginPage() {
           </button>
         </form>
         <p style={{ marginTop: '20px', textAlign: 'center', fontSize: '0.82rem' }}>
-          <Link href="/dhh" style={{ color: 'var(--muted)', textDecoration: 'none' }}>← Back to D/HH portal</Link>
+          <Link href="/dhh" style={{ color: 'var(--muted)', textDecoration: 'none' }}>← Back to D/DB/HH portal</Link>
         </p>
       </div>
     </div>
@@ -62,10 +62,12 @@ function Divider() {
 }
 
 function Input({ label, type = 'text', value, onChange, placeholder }: { label: string; type?: string; value: string; onChange: (v: string) => void; placeholder: string }) {
+  const id = label.toLowerCase().replace(/\s+/g, '-');
   return (
     <div>
-      <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 500, color: 'var(--muted)', marginBottom: '6px' }}>{label}</label>
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
+      <label htmlFor={id} style={{ display: 'block', fontSize: '0.82rem', fontWeight: 500, color: 'var(--muted)', marginBottom: '6px' }}>{label}</label>
+      <input id={id} type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
+        aria-required="true"
         style={{ width: '100%', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px', padding: '12px 14px', color: 'var(--text)', fontSize: '0.95rem', outline: 'none' }}
         onFocus={(e) => (e.target.style.borderColor = 'rgba(157,135,255,0.5)')} onBlur={(e) => (e.target.style.borderColor = 'var(--border)')} />
     </div>

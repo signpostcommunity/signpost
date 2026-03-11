@@ -133,7 +133,7 @@ export default function Nav({ initialSession = null }: NavProps) {
                 className="nav-btn"
                 style={{ color: 'var(--accent2)', textDecoration: 'none' }}
               >
-                D/HH Portal
+                D/DB/HH Portal
               </Link>
               <Link
                 href="/interpreter/login"
@@ -162,8 +162,10 @@ export default function Nav({ initialSession = null }: NavProps) {
               onClick={() => setLangOpen(!langOpen)}
               className="lang-toggle"
               aria-label="Select language"
+              aria-expanded={langOpen}
             >
               <svg
+                aria-hidden="true"
                 width="16"
                 height="16"
                 viewBox="0 0 24 24"
@@ -180,6 +182,7 @@ export default function Nav({ initialSession = null }: NavProps) {
               </svg>
               <span style={{ fontWeight: 600 }}>{selectedLang.toUpperCase()}</span>
               <svg
+                aria-hidden="true"
                 width="12"
                 height="12"
                 viewBox="0 0 24 24"
@@ -277,6 +280,7 @@ export default function Nav({ initialSession = null }: NavProps) {
           >
             <button
               onClick={() => setMobileOpen(false)}
+              aria-label="Close menu"
               style={{
                 alignSelf: 'flex-end',
                 background: 'none',
@@ -287,7 +291,7 @@ export default function Nav({ initialSession = null }: NavProps) {
                 marginBottom: '16px',
               }}
             >
-              ✕
+              <span aria-hidden="true">✕</span>
             </button>
 
             <Link
@@ -324,7 +328,7 @@ export default function Nav({ initialSession = null }: NavProps) {
                   onClick={() => setMobileOpen(false)}
                   style={{ color: 'var(--accent2)', textDecoration: 'none' }}
                 >
-                  D/HH Portal
+                  D/DB/HH Portal
                 </Link>
                 <Link
                   href="/interpreter/login"

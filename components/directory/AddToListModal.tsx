@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { useFocusTrap } from '@/lib/hooks/useFocusTrap';
 
 // ─── Types ───────────────────────────────────────────────────────
 interface Interpreter {
@@ -193,6 +194,7 @@ export default function AddToListModal({
   const [confirmingRemove, setConfirmingRemove] = useState(false);
   const [removing, setRemoving] = useState(false);
 
+  const focusTrapRef = useFocusTrap(isOpen);
   const supabase = createClient();
   const cfg = ROLE_CONFIGS[userRole || 'default'];
 
@@ -405,6 +407,7 @@ export default function AddToListModal({
       }}
     >
       <div
+        ref={focusTrapRef}
         role="dialog"
         aria-modal="true"
         aria-label={isEditMode ? `Edit ${interpreter.name}` : `Add ${interpreter.name} to list`}

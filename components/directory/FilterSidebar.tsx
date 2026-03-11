@@ -459,6 +459,7 @@ function CollapsibleSection({ label, children }: { label: string; children: Reac
     <div style={{ marginBottom: '4px' }}>
       <button
         onClick={() => setOpen(!open)}
+        aria-expanded={open}
         style={{
           display: 'flex',
           alignItems: 'center',

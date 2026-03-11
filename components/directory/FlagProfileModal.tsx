@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
 
 const FLAG_REASONS = [
   'Not a real person / fake profile',
@@ -23,6 +24,19 @@ export default function FlagProfileModal({ isOpen, onClose, interpreterProfileId
   const [details, setDetails] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const focusTrapRef = useFocusTrap(isOpen)
+
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    },
+    [onClose]
+  )
+
+  useEffect(() => {
+    if (isOpen) document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, handleKeyDown])
 
   if (!isOpen) return null
 
@@ -85,6 +99,7 @@ export default function FlagProfileModal({ isOpen, onClose, interpreterProfileId
       aria-hidden="true"
     >
       <div
+        ref={focusTrapRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="flag-modal-title"

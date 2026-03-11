@@ -584,7 +584,7 @@ export default function BetaFeedbackPanel() {
               ))}
             </div>
             <div>
-              <label style={labelStyle}>If D/HH consumers could rate interpreters, what categories would matter most?</label>
+              <label style={labelStyle}>If D/DB/HH consumers could rate interpreters, what categories would matter most?</label>
               <textarea value={dhhRatingCategories} onChange={e => setDhhRatingCategories(e.target.value)}
                 placeholder="e.g. clarity, professionalism, signing style..." rows={2} style={textareaStyle} />
             </div>
