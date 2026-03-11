@@ -39,24 +39,28 @@ export default function Nav({ initialSession = null }: NavProps) {
     return '/interpreter/dashboard';
   }
 
+  // Fetch role from user_profiles table (reliable source of truth)
+  function fetchRole(userId: string) {
+    supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', userId)
+      .single()
+      .then(({ data }) => {
+        if (data?.role) setRole(data.role);
+      });
+  }
+
   // Check initial session and subscribe to auth state changes
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s);
-      if (s) {
-        supabase.auth.getUser().then(({ data: { user } }) => {
-          setRole(user?.user_metadata?.role || 'interpreter');
-        });
-      }
+      if (s?.user) fetchRole(s.user.id);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, s) => {
         setSession(s);
-        if (s) {
-          supabase.auth.getUser().then(({ data: { user } }) => {
-            setRole(user?.user_metadata?.role || 'interpreter');
-          });
-        }
+        if (s?.user) fetchRole(s.user.id);
       }
     );
     return () => subscription.unsubscribe();
