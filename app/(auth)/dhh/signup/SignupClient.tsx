@@ -15,8 +15,13 @@ export default function DeafSignupPage() {
   const [country, setCountry] = useState('');
   const [state, setState] = useState('');
   const [city, setCity] = useState('');
+  const [pendingRoles, setPendingRoles] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  function togglePendingRole(role: string) {
+    setPendingRoles(prev => prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role]);
+  }
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
@@ -36,7 +41,7 @@ export default function DeafSignupPage() {
     }
 
     const userId = authData.user.id;
-    await supabase.from('user_profiles').insert({ id: userId, role: 'deaf' });
+    await supabase.from('user_profiles').insert({ id: userId, role: 'deaf', pending_roles: pendingRoles.length > 0 ? pendingRoles : [] });
     await supabase.from('deaf_profiles').insert({
       id: userId,
       user_id: userId,
@@ -125,6 +130,33 @@ export default function DeafSignupPage() {
               accentColor="var(--accent2)"
             />
           </div>
+          {/* Multi-role checkboxes */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.5 }}>
+              <input
+                type="checkbox"
+                checked={pendingRoles.includes('interpreter')}
+                onChange={() => togglePendingRole('interpreter')}
+                style={{ marginTop: 3, accentColor: 'var(--accent2)', flexShrink: 0, width: 'auto' }}
+              />
+              <span>I am also a sign language interpreter and would like to create an interpreter profile.</span>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.5 }}>
+              <input
+                type="checkbox"
+                checked={pendingRoles.includes('requester')}
+                onChange={() => togglePendingRole('requester')}
+                style={{ marginTop: 3, accentColor: 'var(--accent2)', flexShrink: 0, width: 'auto' }}
+              />
+              <span>I also coordinate interpreters for an organization and would like to have access to the full requester portal.</span>
+            </label>
+            {pendingRoles.length > 0 && (
+              <p style={{ color: 'var(--muted)', fontSize: '0.75rem', marginLeft: 26, lineHeight: 1.5 }}>
+                ↳ You&apos;ll find a setup prompt in your portal after you finish here — just look for the 🔴 on your role switcher.
+              </p>
+            )}
+          </div>
+
           <button type="submit" disabled={loading} className="btn-primary btn-large" style={{ marginTop: '8px', opacity: loading ? 0.7 : 1, background: 'var(--accent2)', color: '#000' }}>
             {loading ? 'Creating account…' : 'Create Account →'}
           </button>

@@ -122,7 +122,8 @@ components/
 │   ├── Footer.tsx
 │   ├── DashboardSidebar.tsx           # Interpreter sidebar with badge counts
 │   ├── DhhDashboardSidebar.tsx        # Deaf portal sidebar (purple accent, roster/requesters badges)
-│   └── AdminSidebar.tsx              # Admin dashboard sidebar (orange accent #ff6b2b)
+│   ├── AdminSidebar.tsx              # Admin dashboard sidebar (orange accent #ff6b2b)
+│   └── PendingRolesSection.tsx      # Red-dot pending role indicator for sidebar role switcher
 ├── directory/
 │   ├── FilterSidebar.tsx              # 9 filter groups
 │   ├── InterpreterGrid.tsx
@@ -188,7 +189,7 @@ components/
 Full schema in `supabase/migrations/001_initial_schema.sql`
 
 **Tables:**
-- `user_profiles` — extends `auth.users`, stores `role` (interpreter/deaf/requester/org), `is_admin` (boolean, default false)
+- `user_profiles` — extends `auth.users`, stores `role` (interpreter/deaf/requester/org), `is_admin` (boolean, default false), `pending_roles` (text[], default '{}') for multi-role signup
 - `interpreter_profiles` — main interpreter data, status: pending/approved/rejected
 - `interpreter_sign_languages`, `interpreter_spoken_languages`, `interpreter_specializations`, `interpreter_regions`
 - `interpreter_certifications`, `interpreter_education`

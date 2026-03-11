@@ -60,11 +60,22 @@ const REGIONS = [
 export default function Step1Personal({ onContinue }: { onContinue: () => void }) {
   const { formData, updateField } = useForm()
 
+  const worldwideSelected = formData.regions.includes('🌍 Worldwide')
+
   function toggleRegion(label: string) {
     const current = formData.regions
+    if (label !== '🌍 Worldwide' && worldwideSelected) return
     updateField('regions', current.includes(label)
       ? current.filter(r => r !== label)
       : [...current, label]
+    )
+  }
+
+  function togglePendingRole(role: string) {
+    const current = formData.pendingRoles
+    updateField('pendingRoles', current.includes(role)
+      ? current.filter(r => r !== role)
+      : [...current, role]
     )
   }
 
@@ -180,14 +191,49 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
               <option>Deaf Interpreter</option>
             </SelectInput>
             {formData.interpreterType === 'Deaf Interpreter' && (
-              <p style={{
-                color: 'var(--muted)',
-                fontSize: '0.78rem',
-                marginTop: 6,
-                lineHeight: 1.5,
-              }}>
-                After completing signup, you'll have the option to add a D/DB/HH personal or requester profile to your account.
-              </p>
+              <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.5 }}>
+                  <input
+                    type="checkbox"
+                    checked={formData.pendingRoles.includes('deaf')}
+                    onChange={() => togglePendingRole('deaf')}
+                    style={{ marginTop: 3, accentColor: 'var(--accent)', flexShrink: 0, width: 'auto' }}
+                  />
+                  <span>I would also like to create a personal signpost account. In my personal account I can build my preferred interpreter list, make personal interpreter requests, etc.</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.5 }}>
+                  <input
+                    type="checkbox"
+                    checked={formData.pendingRoles.includes('requester')}
+                    onChange={() => togglePendingRole('requester')}
+                    style={{ marginTop: 3, accentColor: 'var(--accent)', flexShrink: 0, width: 'auto' }}
+                  />
+                  <span>I would also like to create a requester account. I also coordinate interpreters for an organization and would like to have access to the full requester portal.</span>
+                </label>
+                {formData.pendingRoles.length > 0 && (
+                  <p style={{ color: 'var(--muted)', fontSize: '0.75rem', marginLeft: 26, lineHeight: 1.5 }}>
+                    ↳ You&apos;ll find a setup prompt in your portal after you finish here — just look for the 🔴 on your role switcher.
+                  </p>
+                )}
+              </div>
+            )}
+            {formData.interpreterType === 'Hearing Interpreter' && (
+              <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.5 }}>
+                  <input
+                    type="checkbox"
+                    checked={formData.pendingRoles.includes('requester')}
+                    onChange={() => togglePendingRole('requester')}
+                    style={{ marginTop: 3, accentColor: 'var(--accent)', flexShrink: 0, width: 'auto' }}
+                  />
+                  <span>I would also like to create a requester account. I also coordinate interpreters for an organization and would like to have access to the full requester portal.</span>
+                </label>
+                {formData.pendingRoles.length > 0 && (
+                  <p style={{ color: 'var(--muted)', fontSize: '0.75rem', marginLeft: 26, lineHeight: 1.5 }}>
+                    ↳ You&apos;ll find a setup prompt in your portal after you finish here — just look for the 🔴 on your role switcher.
+                  </p>
+                )}
+              </div>
             )}
           </FormField>
           <FormField>
@@ -223,15 +269,20 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
           Select all regions where you are willing and able to work on-site. Remote work is available globally regardless of selection.
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
-          {REGIONS.map(r => (
-            <ToggleTile
-              key={r.label}
-              label={r.label}
-              dotColor={r.color}
-              selected={formData.regions.includes(r.label)}
-              onToggle={() => toggleRegion(r.label)}
-            />
-          ))}
+          {REGIONS.map(r => {
+            const isOther = r.label !== '🌍 Worldwide'
+            const disabled = isOther && worldwideSelected
+            return (
+              <div key={r.label} style={{ opacity: disabled ? 0.4 : 1, pointerEvents: disabled ? 'none' : 'auto', transition: 'opacity 0.2s' }}>
+                <ToggleTile
+                  label={r.label}
+                  dotColor={r.color}
+                  selected={formData.regions.includes(r.label)}
+                  onToggle={() => toggleRegion(r.label)}
+                />
+              </div>
+            )
+          })}
         </div>
       </FormSection>
 

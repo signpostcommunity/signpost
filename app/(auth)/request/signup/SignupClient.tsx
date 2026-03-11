@@ -26,6 +26,8 @@ const defaultForm: FormData = {
   orgName: '', orgType: '', requestDesc: '', commPrefs: [],
 };
 
+type PendingRole = 'interpreter' | 'deaf';
+
 const roleOptions = [
   { value: 'individual', label: 'Individual', desc: 'A person who needs an interpreter for personal or professional use.' },
   { value: 'organization', label: 'Organization', desc: 'A company, non-profit, or association that regularly requests interpreting services.' },
@@ -38,6 +40,11 @@ export default function RequestSignupClient() {
   const [form, setForm] = useState<FormData>(defaultForm);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [pendingRoles, setPendingRoles] = useState<PendingRole[]>([]);
+
+  function togglePendingRole(role: PendingRole) {
+    setPendingRoles(prev => prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role]);
+  }
 
   function update(field: keyof FormData, value: unknown) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -57,7 +64,7 @@ export default function RequestSignupClient() {
     if (authError || !authData.user) { setError(authError?.message || 'Failed to create account'); setLoading(false); return; }
     const userId = authData.user.id;
     const userRole = form.role === 'individual' ? 'requester' : 'org';
-    await supabase.from('user_profiles').insert({ id: userId, role: userRole });
+    await supabase.from('user_profiles').insert({ id: userId, role: userRole, pending_roles: pendingRoles.length > 0 ? pendingRoles : [] });
     await supabase.from('requester_profiles').insert({
       id: userId, name: form.name, phone: form.phone, country: form.country,
       org_name: form.orgName, org_type: form.orgType,
@@ -115,6 +122,33 @@ export default function RequestSignupClient() {
             <InputField label="Full Name" value={form.name} onChange={(v) => update('name', v)} placeholder="Your name" />
             <InputField label="Email" type="email" value={form.email} onChange={(v) => update('email', v)} placeholder="you@example.com" />
             <InputField label="Password" type="password" value={form.password} onChange={(v) => update('password', v)} placeholder="Minimum 8 characters" />
+
+            {/* Multi-role checkboxes */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.5 }}>
+                <input
+                  type="checkbox"
+                  checked={pendingRoles.includes('interpreter')}
+                  onChange={() => togglePendingRole('interpreter')}
+                  style={{ marginTop: 3, accentColor: 'var(--accent)', flexShrink: 0, width: 'auto' }}
+                />
+                <span>I am also a sign language interpreter and would like to create an interpreter profile.</span>
+              </label>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.5 }}>
+                <input
+                  type="checkbox"
+                  checked={pendingRoles.includes('deaf')}
+                  onChange={() => togglePendingRole('deaf')}
+                  style={{ marginTop: 3, accentColor: 'var(--accent)', flexShrink: 0, width: 'auto' }}
+                />
+                <span>I am Deaf/DB/HH and would like to create a personal signpost account to build my preferred interpreter list and make personal requests.</span>
+              </label>
+              {pendingRoles.length > 0 && (
+                <p style={{ color: 'var(--muted)', fontSize: '0.75rem', marginLeft: 26, lineHeight: 1.5 }}>
+                  ↳ You&apos;ll find a setup prompt in your portal after you finish here — just look for the 🔴 on your role switcher.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -705,13 +705,20 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           {/* Regions */}
           <div style={sectionTitleStyle}>Regions Available For Work Travel</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10, marginBottom: 16 }}>
-            {REGIONS.map(r => (
-              <ToggleTile
-                key={r.label} label={r.label} dotColor={r.color}
-                selected={regions.includes(r.label)}
-                onToggle={() => toggleInList(regions, r.label, setRegions)}
-              />
-            ))}
+            {REGIONS.map(r => {
+              const isOther = r.label !== '🌍 Worldwide'
+              const worldwideOn = regions.includes('🌍 Worldwide')
+              const disabled = isOther && worldwideOn
+              return (
+                <div key={r.label} style={{ opacity: disabled ? 0.4 : 1, pointerEvents: disabled ? 'none' : 'auto', transition: 'opacity 0.2s' }}>
+                  <ToggleTile
+                    label={r.label} dotColor={r.color}
+                    selected={regions.includes(r.label)}
+                    onToggle={() => { if (!disabled) toggleInList(regions, r.label, setRegions) }}
+                  />
+                </div>
+              )
+            })}
           </div>
 
           <SaveButton saving={saving} onClick={() => saveFields({

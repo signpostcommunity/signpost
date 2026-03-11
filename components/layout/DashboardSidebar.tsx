@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import PendingRolesSection from './PendingRolesSection'
 
 interface NavItem {
   label: string
@@ -190,6 +191,9 @@ function SidebarContent({ userName, userInitials, photoUrl, badges }: {
           </div>
         ))}
       </nav>
+
+      {/* Pending roles */}
+      <PendingRolesSection />
 
       {/* Log out */}
       <div style={{ borderTop: '1px solid var(--border)', padding: '8px 0' }}>

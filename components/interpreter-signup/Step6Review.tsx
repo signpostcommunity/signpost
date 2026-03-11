@@ -40,7 +40,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
 
         // Insert user_profiles row (must happen before interpreter_profiles due to FK)
         await supabase.from('user_profiles').upsert(
-          { id: userId, role: 'interpreter' },
+          { id: userId, role: 'interpreter', pending_roles: formData.pendingRoles.length > 0 ? formData.pendingRoles : [] },
           { onConflict: 'id' }
         )
       }

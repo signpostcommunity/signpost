@@ -79,6 +79,8 @@ export type FormData = {
   avatarUrl: string
   videoUrl: string
   videoDescription: string
+  // Multi-role
+  pendingRoles: string[]
   // Step 6 - Review
   agreeTerms: boolean
   agreeBooking: boolean
@@ -140,6 +142,7 @@ const initialFormData: FormData = {
   education: [{ id: 'edu-1', degree: '', institution: '', year: '' }],
   rateProfiles: defaultRateProfiles,
   avatarUrl: '', videoUrl: '', videoDescription: '',
+  pendingRoles: [],
   agreeTerms: false, agreeBooking: false, agreeCredentials: false,
 }
 
