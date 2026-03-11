@@ -15,7 +15,7 @@ export default async function DirectoryPage() {
   const interpreters: Interpreter[] = (rows || []).map((r) => {
     const fullName = r.name || [r.first_name, r.last_name].filter(Boolean).join(' ') || 'Interpreter';
     const initials = fullName.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
-    const location = [r.city, r.state].filter(Boolean).join(', ') || [r.city, r.country].filter(Boolean).join(', ');
+    const location = [r.city, r.state, r.country].filter(Boolean).join(', ');
 
     // Extract certifications from draft_data if present
     const draftData = (r.draft_data || {}) as Record<string, unknown>;
