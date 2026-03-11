@@ -5,7 +5,7 @@
 **signpost-app** is the production Next.js + Supabase migration of the original `signpost` single-file HTML prototype.
 The original prototype lives at `/Users/csano/Projects/signpost/index.html` (694KB, vanilla JS, no backend).
 
-**signpost** is a sign language interpreter marketplace/directory. It connects Deaf/Hard-of-Hearing individuals,
+**signpost** is a sign language interpreter marketplace/directory. It connects Deaf, DeafBlind, and Hard-of-Hearing individuals,
 organizations, and requesters with certified sign language interpreters worldwide.
 
 ---
@@ -264,7 +264,8 @@ npm run seed       # Seed 10 demo interpreters into Supabase
 - **Tailwind v4**: No `tailwind.config.ts` exists. Do not create one — add new tokens to the `@theme inline {}` block in `globals.css`.
 - **Seed script excluded from build**: `lib/data/seed-script.ts` is in `tsconfig.json` `exclude` because it imports `dotenv` which isn't in Next.js deps.
 - **Route groups**: The `(public)`, `(auth)`, `(dashboard)` directories are Next.js route groups — they don't appear in the URL path.
-- **D/HH routes**: All Deaf/Hard-of-Hearing routes use `/dhh` — not `/deaf`. `user_profiles.role` still stores `'deaf'` as the role value.
+- **D/DB/HH terminology**: All user-facing text uses "Deaf/DB/HH" (Deaf, DeafBlind, Hard of Hearing) or "D/DB/HH". Standalone "Deaf" is fine as shorthand. Routes still use `/dhh`, and `user_profiles.role` still stores `'deaf'` as the role value.
+- **WCAG focus trap hook**: `lib/hooks/useFocusTrap.ts` — reusable hook for modal focus trapping. Import and call `useFocusTrap(isOpen)`, assign returned ref to the dialog container div.
 
 ---
 
@@ -292,7 +293,7 @@ npm run seed       # Seed 10 demo interpreters into Supabase
 1. **Prototype-first:** Before touching any component or page, read the corresponding section of the original HTML prototype at /home/mollysano/signpost/index.html. If the Next.js implementation does not match the prototype exactly, do a full rewrite based on the prototype. Do not patch.
 
 2. **Intentional additions are sacred:** Some features were deliberately added to the Next.js app that do NOT exist in the prototype. These must never be removed when aligning to the prototype. Current intentional additions include:
-   - Log in button in the logged-out nav (between D/HH Portal and Request Interpreters)
+   - Log in button in the logged-out nav (between D/DB/HH Portal and Request Interpreters)
    - Beta feedback panel on all pages
    - force-dynamic exports on server pages
    - onAuthStateChange session management in Nav
@@ -304,18 +305,27 @@ npm run seed       # Seed 10 demo interpreters into Supabase
 
 ## Session Handoff
 
-### Session 4 — March 3, 2026
+### Session 5 — March 10, 2026
 
 **Completed:**
-- ✅ Claude Code installed and configured on Chromebook Linux environment
-- ✅ GitHub auth configured with personal access token on remote URL
-- ✅ `app/(auth)/interpreter/page.tsx` — full redesign matching prototype: left-aligned layout, correct headline "Your interpreter profile, working for you." with purple→cyan gradient, two-column cards with icon squares, full-width CTA buttons
-- ✅ `app/(auth)/interpreter/signup/page.tsx` — restored correct 6-step form (was accidentally overwritten with landing page content), then rewrote Step 1 to match prototype: 3-column field grids, Professional Bio, Interpreter Type/Mode/Work/Years dropdowns, Website/LinkedIn fields, Regions travel grid with colored dot tiles, Event Coordination checkbox with conditional reveal
-- ✅ `app/(auth)/layout.tsx` — replaced minimal wordmark header with full Nav component and Footer
+- ✅ Global "Deaf/HH" → "Deaf/DB/HH" across all user-facing text (8 files: Nav, portal pages, login, signup, sidebar, beta panel, confirmed page). Routes/variables/DB unchanged.
+- ✅ D/HH + Requester coming-soon overlay copy updated (no longer centers interpreters over Deaf visitors)
+- ✅ Privacy policy rates language verified correct (already says "shared privately when an interpreter responds to a booking inquiry")
+- ✅ Stat card top-alignment fix (flexDirection: column on Link wrapper)
+- ✅ WCAG 2.2 Level AA remediation (29 files, 1 new): skip nav, aria-live, keyboard a11y for non-buttons, form label associations, aria-expanded on collapsibles, aria-hidden on decoratives, semantic landmarks (<aside> on sidebars), form validation ARIA, modal focus trapping (new useFocusTrap hook at lib/hooks/useFocusTrap.ts), focus-not-obscured CSS, min target size CSS, heading hierarchy fix, focus-visible indicator
+- ✅ Monday board updated: 3 tasks marked Done
 
 **In progress / pick up here next session:**
 - Interpreter signup Steps 2–6 audit vs prototype
 - Deaf/HoH signup flow audit
 - Requester signup flow audit
-- Footer component — confirm it exists and is wired up correctly
-- Platform Policies doc expansions (due Mar 6–7): HIPAA-adjacent medical booking language, interpreter sub-finding responsibility, data privacy and retention policy
+- Platform Policies doc expansions: HIPAA-adjacent medical booking language, interpreter sub-finding responsibility, data privacy and retention policy
+
+### Session 4 — March 3, 2026
+
+**Completed:**
+- ✅ Claude Code installed and configured on Chromebook Linux environment
+- ✅ GitHub auth configured with personal access token on remote URL
+- ✅ `app/(auth)/interpreter/page.tsx` — full redesign matching prototype
+- ✅ `app/(auth)/interpreter/signup/page.tsx` — restored correct 6-step form, rewrote Step 1 to match prototype
+- ✅ `app/(auth)/layout.tsx` — replaced minimal wordmark header with full Nav component and Footer
