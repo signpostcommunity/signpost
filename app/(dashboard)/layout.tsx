@@ -7,7 +7,17 @@ import { createClient } from '@/lib/supabase/server';
 export default async function DashboardRootLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  const role = user?.user_metadata?.role || 'interpreter';
+
+  // Query user_profiles for reliable role (user_metadata may not be set)
+  let role = user?.user_metadata?.role || 'interpreter';
+  if (user) {
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    if (profile?.role) role = profile.role;
+  }
   const portalPath = role === 'deaf' ? '/dhh/dashboard' : role === 'requester' || role === 'org' ? '/request/dashboard' : '/interpreter/dashboard';
 
   return (

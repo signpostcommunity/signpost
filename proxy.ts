@@ -37,5 +37,6 @@ export const config = {
     '/interpreter/dashboard/:path*',
     '/dhh/dashboard/:path*',
     '/request/dashboard/:path*',
+    '/admin/:path*',
   ],
 }

@@ -89,7 +89,24 @@ app/
     ├── dhh/dashboard/
     │   ├── layout.tsx                 # DhhDashboardSidebar (purple accent)
     │   └── page.tsx                   # My Preferred Interpreters — 3-tier roster (preferred/approved/dnb)
-    └── request/dashboard/page.tsx    # Requests + bookings
+    ├── request/dashboard/page.tsx    # Requests + bookings
+    └── admin/
+        ├── layout.tsx                     # Admin layout + auth check (is_admin gate)
+        └── dashboard/
+            ├── page.tsx                   # Admin overview stats
+            ├── AdminOverviewClient.tsx
+            ├── users/
+            │   ├── page.tsx               # All users management
+            │   └── UsersClient.tsx
+            ├── flags/
+            │   ├── page.tsx               # Profile flag review
+            │   └── FlagsClient.tsx
+            ├── feedback/
+            │   ├── page.tsx               # Beta feedback viewer
+            │   └── FeedbackClient.tsx
+            └── interpreters/
+                ├── page.tsx               # Interpreter management
+                └── InterpretersClient.tsx
 ```
 
 **Important:** The D/HH portal and dashboard use `/dhh` (not `/deaf`). All route references use `/dhh`.
@@ -104,7 +121,8 @@ components/
 │   ├── Nav.tsx                        # Responsive nav (desktop links + mobile drawer)
 │   ├── Footer.tsx
 │   ├── DashboardSidebar.tsx           # Interpreter sidebar with badge counts
-│   └── DhhDashboardSidebar.tsx        # Deaf portal sidebar (purple accent, roster/requesters badges)
+│   ├── DhhDashboardSidebar.tsx        # Deaf portal sidebar (purple accent, roster/requesters badges)
+│   └── AdminSidebar.tsx              # Admin dashboard sidebar (orange accent #ff6b2b)
 ├── directory/
 │   ├── FilterSidebar.tsx              # 9 filter groups
 │   ├── InterpreterGrid.tsx
@@ -170,7 +188,7 @@ components/
 Full schema in `supabase/migrations/001_initial_schema.sql`
 
 **Tables:**
-- `user_profiles` — extends `auth.users`, stores `role` (interpreter/deaf/requester/org)
+- `user_profiles` — extends `auth.users`, stores `role` (interpreter/deaf/requester/org), `is_admin` (boolean, default false)
 - `interpreter_profiles` — main interpreter data, status: pending/approved/rejected
 - `interpreter_sign_languages`, `interpreter_spoken_languages`, `interpreter_specializations`, `interpreter_regions`
 - `interpreter_certifications`, `interpreter_education`
@@ -261,6 +279,9 @@ npm run seed       # Seed 10 demo interpreters into Supabase
 | `deaf` | `/dhh` | `/dhh/dashboard` |
 | `requester` | `/request` | `/request/dashboard` |
 | `org` | `/request` | `/request/dashboard` |
+| admin (any role) | — | `/admin/dashboard` |
+
+**Admin access:** Controlled by `user_profiles.is_admin` boolean column. Admin routes at `/admin/*` check this column in the layout and redirect non-admins to `/`. Admin dashboard uses orange accent (`#ff6b2b`).
 
 ---
 

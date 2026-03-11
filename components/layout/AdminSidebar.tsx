@@ -1,0 +1,283 @@
+'use client'
+
+import { useState } from 'react'
+import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
+
+interface NavItem {
+  label: string
+  href: string
+  icon: React.ReactNode
+}
+
+interface NavGroup {
+  section: string
+  items: NavItem[]
+}
+
+const ORANGE = '#ff6b2b'
+
+const NAV: NavGroup[] = [
+  {
+    section: 'Overview',
+    items: [
+      {
+        label: 'Dashboard',
+        href: '/admin/dashboard',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 6.5L8 2L14 6.5V14H10V10H6V14H2V6.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/></svg>,
+      },
+    ],
+  },
+  {
+    section: 'Management',
+    items: [
+      {
+        label: 'Users',
+        href: '/admin/dashboard/users',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5.5" r="2.5" stroke="currentColor" strokeWidth="1.3"/><path d="M2.5 14c0-3.04 2.46-5.5 5.5-5.5s5.5 2.46 5.5 5.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
+      },
+      {
+        label: 'Interpreters',
+        href: '/admin/dashboard/interpreters',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.2" stroke="currentColor" strokeWidth="1.3"/><path d="M1.5 13.5c0-2.5 2-4.5 4.5-4.5s4.5 2 4.5 4.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><path d="M10.5 7.5h4M12.5 5.5v4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
+      },
+      {
+        label: 'Profile Flags',
+        href: '/admin/dashboard/flags',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 2v12M3 2l8 3.5L3 9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+      },
+    ],
+  },
+  {
+    section: 'Insights',
+    items: [
+      {
+        label: 'Beta Feedback',
+        href: '/admin/dashboard/feedback',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M5 7h6M5 10h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
+      },
+    ],
+  },
+]
+
+function LogoutButton() {
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+
+  async function handleLogout() {
+    setLoading(true)
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.refresh()
+    router.push('/')
+  }
+
+  return (
+    <button
+      onClick={handleLogout}
+      disabled={loading}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 10,
+        padding: '9px 20px', width: '100%',
+        background: 'none', border: 'none', cursor: 'pointer',
+        fontSize: '0.88rem', color: 'var(--accent3)',
+        fontFamily: "'DM Sans', sans-serif", textAlign: 'left',
+        borderLeft: '2px solid transparent',
+        transition: 'all 0.15s',
+        opacity: loading ? 0.5 : 1,
+      }}
+    >
+      <span style={{ width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M6 2H3.5A1.5 1.5 0 002 3.5v9A1.5 1.5 0 003.5 14H6M10.5 11.5L14 8l-3.5-3.5M14 8H6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </span>
+      <span>{loading ? 'Logging out...' : 'Log out'}</span>
+    </button>
+  )
+}
+
+function SidebarContent({ userName, userInitials }: { userName: string; userInitials: string }) {
+  const pathname = usePathname()
+
+  return (
+    <>
+      {/* Header */}
+      <div style={{ padding: '24px 20px 20px', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{
+            width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+            background: `linear-gradient(135deg, ${ORANGE}, #ff9a44)`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.85rem', color: '#fff',
+          }}>
+            {userInitials}
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.92rem' }}>{userName}</div>
+            <div style={{ color: ORANGE, fontSize: '0.75rem', marginTop: 2, fontWeight: 600 }}>Admin</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Nav */}
+      <nav aria-label="Admin navigation" style={{ flex: 1, padding: '12px 0' }}>
+        {NAV.map(group => (
+          <div key={group.section}>
+            <div style={{
+              padding: '14px 20px 6px',
+              fontFamily: "'Syne', sans-serif", fontWeight: 700,
+              fontSize: '0.62rem', letterSpacing: '0.12em',
+              textTransform: 'uppercase', color: 'var(--muted)',
+            }}>
+              {group.section}
+            </div>
+            {group.items.map(item => {
+              const active = item.href === '/admin/dashboard'
+                ? pathname === item.href
+                : pathname.startsWith(item.href)
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '9px 20px', textDecoration: 'none',
+                    fontSize: '0.88rem', transition: 'all 0.15s',
+                    color: active ? ORANGE : 'var(--muted)',
+                    background: active ? 'rgba(255,107,43,0.06)' : 'transparent',
+                    borderLeft: active ? `2px solid ${ORANGE}` : '2px solid transparent',
+                  }}
+                >
+                  <span aria-hidden="true" style={{ width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {item.icon}
+                  </span>
+                  <span style={{ flex: 1 }}>{item.label}</span>
+                </Link>
+              )
+            })}
+          </div>
+        ))}
+      </nav>
+
+      {/* Bottom */}
+      <div style={{ borderTop: '1px solid var(--border)', padding: '8px 0' }}>
+        <Link
+          href="/"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '9px 20px', textDecoration: 'none',
+            fontSize: '0.88rem', color: 'var(--muted)',
+            borderLeft: '2px solid transparent',
+            transition: 'all 0.15s',
+          }}
+        >
+          <span style={{ width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+          </span>
+          <span>Back to signpost</span>
+        </Link>
+        <LogoutButton />
+      </div>
+    </>
+  )
+}
+
+export default function AdminSidebar({ userName = 'Admin', userInitials = 'AD' }: { userName?: string; userInitials?: string }) {
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside className="admin-sidebar-desktop" aria-label="Admin navigation" style={{
+        width: 240, flexShrink: 0, background: 'var(--surface)',
+        borderRight: '1px solid var(--border)',
+        display: 'flex', flexDirection: 'column',
+        height: '100vh', position: 'sticky', top: 0, overflowY: 'auto',
+      }}>
+        <SidebarContent userName={userName} userInitials={userInitials} />
+      </aside>
+
+      {/* Mobile top bar */}
+      <div className="admin-sidebar-mobile-bar" style={{
+        display: 'none', position: 'sticky', top: 0, zIndex: 50,
+        height: 56, alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 20px',
+        background: 'var(--surface)', borderBottom: '1px solid var(--border)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: '50%',
+            background: `linear-gradient(135deg, ${ORANGE}, #ff9a44)`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.7rem', color: '#fff',
+          }}>
+            {userInitials}
+          </div>
+          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.88rem' }}>
+            Admin Dashboard
+          </span>
+        </div>
+        <button
+          onClick={() => setMobileOpen(true)}
+          aria-label="Open menu"
+          aria-expanded={mobileOpen}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+            display: 'flex', flexDirection: 'column', gap: 5,
+          }}
+        >
+          <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
+          <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
+          <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
+        </button>
+      </div>
+
+      {/* Mobile drawer */}
+      {mobileOpen && (
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'fixed', inset: 0, zIndex: 200,
+            background: 'rgba(0,0,0,0.7)',
+          }}
+          onClick={() => setMobileOpen(false)}
+        >
+          <aside
+            role="dialog"
+            aria-modal="true"
+            aria-label="Admin navigation"
+            style={{
+              position: 'absolute', top: 0, left: 0, bottom: 0,
+              width: 280, background: 'var(--surface)',
+              borderRight: '1px solid var(--border)',
+              display: 'flex', flexDirection: 'column',
+              overflowY: 'auto',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '16px 16px 0' }}>
+              <button
+                onClick={() => setMobileOpen(false)}
+                style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '1.2rem', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            </div>
+            <div role="presentation" onClick={() => setMobileOpen(false)}>
+              <SidebarContent userName={userName} userInitials={userInitials} />
+            </div>
+          </aside>
+        </div>
+      )}
+
+      <style>{`
+        @media (max-width: 768px) {
+          .admin-sidebar-desktop { display: none !important; }
+          .admin-sidebar-mobile-bar { display: flex !important; }
+        }
+      `}</style>
+    </>
+  )
+}
