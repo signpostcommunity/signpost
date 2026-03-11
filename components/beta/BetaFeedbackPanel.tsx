@@ -687,7 +687,7 @@ export default function BetaFeedbackPanel() {
             </button>
 
             {error && (
-              <p style={{ fontSize: '0.78rem', color: '#d32f2f', margin: 0, lineHeight: 1.4 }}>
+              <p role="alert" aria-live="assertive" style={{ fontSize: '0.78rem', color: '#d32f2f', margin: 0, lineHeight: 1.4 }}>
                 Error: {error}
               </p>
             )}

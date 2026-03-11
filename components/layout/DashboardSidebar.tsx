@@ -138,7 +138,7 @@ function SidebarContent({ userName, userInitials, photoUrl, badges }: {
       </div>
 
       {/* Nav */}
-      <nav style={{ flex: 1, padding: '12px 0' }}>
+      <nav aria-label="Dashboard navigation" style={{ flex: 1, padding: '12px 0' }}>
         {NAV.map(group => (
           <div key={group.section}>
             <div style={{
@@ -169,7 +169,7 @@ function SidebarContent({ userName, userInitials, photoUrl, badges }: {
                     borderLeft: active ? '2px solid var(--accent)' : '2px solid transparent',
                   }}
                 >
-                  <span style={{ width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span aria-hidden="true" style={{ width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     {item.icon}
                   </span>
                   <span style={{ flex: 1 }}>{item.label}</span>
@@ -315,27 +315,32 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
         <button
           onClick={() => setMobileOpen(true)}
           aria-label="Open menu"
+          aria-expanded={mobileOpen}
           style={{
             background: 'none', border: 'none', cursor: 'pointer', padding: 4,
             display: 'flex', flexDirection: 'column', gap: 5,
           }}
         >
-          <span style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
-          <span style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
-          <span style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
+          <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
+          <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
+          <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
         </button>
       </div>
 
       {/* Mobile drawer */}
       {mobileOpen && (
         <div
+          aria-hidden="true"
           style={{
             position: 'fixed', inset: 0, zIndex: 200,
             background: 'rgba(0,0,0,0.7)',
           }}
           onClick={() => setMobileOpen(false)}
         >
-          <div
+          <aside
+            role="dialog"
+            aria-modal="true"
+            aria-label="Dashboard navigation"
             style={{
               position: 'absolute', top: 0, left: 0, bottom: 0,
               width: 280, background: 'var(--surface)',
@@ -356,7 +361,7 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
             <div onClick={() => setMobileOpen(false)}>
               <SidebarContent userName={userName} userInitials={userInitials} photoUrl={photoUrl} badges={badges} />
             </div>
-          </div>
+          </aside>
         </div>
       )}
 

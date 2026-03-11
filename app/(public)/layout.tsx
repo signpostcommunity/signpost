@@ -11,7 +11,7 @@ export default async function PublicLayout({ children }: { children: React.React
     <>
       <div id="site-content" className="site-content">
         <Nav initialSession={session} />
-        <main style={{ paddingTop: '73px' }}>{children}</main>
+        <main id="main-content" style={{ paddingTop: '73px' }}>{children}</main>
         <Footer />
       </div>
       {process.env.NEXT_PUBLIC_BETA_MODE === 'true' && <BetaFeedbackPanel />}

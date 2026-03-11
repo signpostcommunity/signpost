@@ -5,7 +5,7 @@ import ComingSoonOverlay from '@/components/beta/ComingSoonOverlay';
 
 export default function RequestPortalPage() {
   return (
-    <ComingSoonOverlay message="The Requester portal is opening soon. Want to be notified? Email hello@signpost.community">
+    <ComingSoonOverlay message="The Requester portal is coming soon. We're building out our interpreter roster first. Stay tuned!">
       <RequestPortalContent />
     </ComingSoonOverlay>
   );

@@ -390,6 +390,7 @@ export default function AddToListModal({
   return (
     <div
       onClick={onClose}
+      aria-hidden="true"
       style={{
         position: 'fixed',
         inset: 0,
@@ -404,6 +405,9 @@ export default function AddToListModal({
       }}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={isEditMode ? `Edit ${interpreter.name}` : `Add ${interpreter.name} to list`}
         onClick={(e) => e.stopPropagation()}
         style={{
           background: 'var(--surface, #0f1118)',
@@ -502,7 +506,10 @@ export default function AddToListModal({
               {cfg.tiers.map((tier) => (
                 <div
                   key={tier.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => setSelectedTier(tier.id)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedTier(tier.id); } }}
                   style={{
                     display: 'flex',
                     alignItems: 'flex-start',

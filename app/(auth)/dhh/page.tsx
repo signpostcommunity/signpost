@@ -5,7 +5,7 @@ import ComingSoonOverlay from '@/components/beta/ComingSoonOverlay';
 
 export default function DeafPortalPage() {
   return (
-    <ComingSoonOverlay message="The Deaf/HH portal is coming soon. We're starting with our interpreter community first — stay tuned!">
+    <ComingSoonOverlay message="The Deaf/HH portal is coming soon. We're building out our interpreter roster first. Stay tuned!">
       <DeafPortalContent />
     </ComingSoonOverlay>
   );

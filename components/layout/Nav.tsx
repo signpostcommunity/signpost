@@ -77,6 +77,7 @@ export default function Nav({ initialSession = null }: NavProps) {
   return (
     <>
       <nav
+        aria-label="Main navigation"
         style={{
           position: 'fixed',
           top: 0,
@@ -225,6 +226,7 @@ export default function Nav({ initialSession = null }: NavProps) {
         <button
           className="hamburger"
           aria-label="Open menu"
+          aria-expanded={mobileOpen}
           onClick={() => setMobileOpen(true)}
           style={{
             display: 'none',
@@ -236,15 +238,16 @@ export default function Nav({ initialSession = null }: NavProps) {
             padding: '4px',
           }}
         >
-          <span style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
-          <span style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
-          <span style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
+          <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
+          <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
+          <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
         </button>
       </nav>
 
       {/* Mobile drawer */}
       {mobileOpen && (
         <div
+          aria-hidden="true"
           style={{
             position: 'fixed',
             inset: 0,
@@ -253,7 +256,10 @@ export default function Nav({ initialSession = null }: NavProps) {
           }}
           onClick={() => setMobileOpen(false)}
         >
-          <div
+          <nav
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mobile navigation"
             style={{
               position: 'absolute',
               top: 0,
@@ -371,7 +377,7 @@ export default function Nav({ initialSession = null }: NavProps) {
                 ))}
               </div>
             </div>
-          </div>
+          </nav>
         </div>
       )}
 

@@ -34,6 +34,9 @@ export default function BetaWelcomeModal() {
       }}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="beta-welcome-title"
         style={{
           background: 'var(--surface)',
           border: '1px solid var(--border)',
@@ -50,6 +53,7 @@ export default function BetaWelcomeModal() {
         {/* Scrollable content */}
         <div style={{ overflowY: 'auto', padding: '24px 32px 16px', flex: 1, minHeight: 0 }}>
           <h2
+            id="beta-welcome-title"
             style={{
               fontFamily: "'Syne', sans-serif",
               fontWeight: 800,

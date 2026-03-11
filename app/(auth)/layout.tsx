@@ -11,7 +11,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
     <>
       <div id="site-content" className="site-content" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
         <Nav initialSession={session} />
-        {children}
+        <main id="main-content">{children}</main>
         <Footer />
       </div>
       {process.env.NEXT_PUBLIC_BETA_MODE === 'true' && <BetaFeedbackPanel />}

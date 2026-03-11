@@ -35,7 +35,7 @@ export default async function DashboardRootLayout({ children }: { children: Reac
           </Link>
           <DashboardHeaderNav portalPath={portalPath} />
         </header>
-        {children}
+        <main id="main-content">{children}</main>
         <Footer />
       </div>
       {process.env.NEXT_PUBLIC_BETA_MODE === 'true' && <BetaFeedbackPanel />}

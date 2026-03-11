@@ -137,7 +137,7 @@ function StatCard({ num, label, href }: { num: number; label: string; href: stri
           borderRadius: 'var(--radius)', padding: '20px',
           transition: 'border-color 0.18s, transform 0.18s', cursor: 'pointer',
           transform: hover ? 'translateY(-2px)' : 'none',
-          display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+          display: 'flex', flexDirection: 'column', justifyContent: 'flex-start',
           flex: 1,
         }}
       >

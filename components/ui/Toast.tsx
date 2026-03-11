@@ -29,6 +29,8 @@ export default function Toast({ message, type = 'success', onClose, duration = 3
 
   return (
     <div
+      role="status"
+      aria-live="polite"
       style={{
         position: 'fixed',
         bottom: 24,

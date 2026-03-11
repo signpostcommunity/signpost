@@ -32,6 +32,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${syne.variable} ${dmSans.variable}`}>
       <body>
+        <a
+          href="#main-content"
+          className="skip-to-main"
+        >
+          Skip to main content
+        </a>
         {process.env.NEXT_PUBLIC_BETA_MODE === 'true' && <BetaWelcomeModal />}
         {children}
       </body>

@@ -82,8 +82,12 @@ export default function FlagProfileModal({ isOpen, onClose, interpreterProfileId
         background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)',
       }}
       onClick={handleClose}
+      aria-hidden="true"
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="flag-modal-title"
         style={{
           background: 'var(--surface)', border: '1px solid var(--border)',
           borderRadius: 'var(--radius)', padding: '32px',
@@ -103,7 +107,7 @@ export default function FlagProfileModal({ isOpen, onClose, interpreterProfileId
               <path d="M3 2v12M3 2l8 3.5L3 9" stroke="#ff6b85" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
-          <h2 style={{
+          <h2 id="flag-modal-title" style={{
             fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '1.1rem',
             margin: 0,
           }}>

@@ -59,6 +59,9 @@ export default function VideoPreviewModal({
       }}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${interpreterName} video preview`}
         onClick={(e) => e.stopPropagation()}
         style={{
           background: 'var(--surface, #0f1118)',
