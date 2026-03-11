@@ -177,7 +177,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
       <FormSection>
         <SectionTitle>Community &amp; Identity</SectionTitle>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 20, marginTop: -12, lineHeight: 1.6 }}>
-          These fields are entirely optional and self-selected. They help Deaf clients and requesters find interpreters who are the right match for culturally specific work.
+          These fields are entirely optional and self-selected. Help requesters find interpreters who are exactly the right fit for their needs.
         </p>
 
         {/* LGBTQ+ */}
