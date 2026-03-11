@@ -65,7 +65,8 @@ app/
 │   │   ├── login/page.tsx
 │   │   └── signup/page.tsx            # 6-step form (client component)
 │   ├── dhh/
-│   │   ├── page.tsx                   # D/HH portal landing
+│   │   ├── page.tsx                   # D/HH portal landing (imports DeafPortalClient)
+│   │   ├── DeafPortalClient.tsx       # Inline signup/login forms matching prototype
 │   │   ├── login/page.tsx
 │   │   └── signup/page.tsx
 │   └── request/
@@ -85,7 +86,9 @@ app/
     │   ├── availability/page.tsx
     │   ├── team/page.tsx
     │   └── client-lists/page.tsx
-    ├── dhh/dashboard/page.tsx         # Roster management + approvals
+    ├── dhh/dashboard/
+    │   ├── layout.tsx                 # DhhDashboardSidebar (purple accent)
+    │   └── page.tsx                   # My Preferred Interpreters — 3-tier roster (preferred/approved/dnb)
     └── request/dashboard/page.tsx    # Requests + bookings
 ```
 
@@ -100,7 +103,8 @@ components/
 ├── layout/
 │   ├── Nav.tsx                        # Responsive nav (desktop links + mobile drawer)
 │   ├── Footer.tsx
-│   └── DashboardSidebar.tsx           # Sidebar with badge counts, role-aware styling
+│   ├── DashboardSidebar.tsx           # Interpreter sidebar with badge counts
+│   └── DhhDashboardSidebar.tsx        # Deaf portal sidebar (purple accent, roster/requesters badges)
 ├── directory/
 │   ├── FilterSidebar.tsx              # 9 filter groups
 │   ├── InterpreterGrid.tsx
@@ -121,7 +125,7 @@ components/
 │   ├── Step1Role.tsx through Step5Done.tsx
 ├── dashboard/
 │   ├── interpreter/ (OverviewPanel, InquiriesPanel, ConfirmedPanel, InboxPanel)
-│   ├── deaf/ (RosterPanel, ShareModal)
+│   ├── deaf/ (RosterPanel — 3-tier preferred/approved/dnb with approval toggles)
 │   └── requester/ (RequestsPanel)
 └── ui/
     ├── GoogleSignInButton.tsx         # Google OAuth sign-in/up button
@@ -170,8 +174,8 @@ Full schema in `supabase/migrations/001_initial_schema.sql`
 - `interpreter_certifications`, `interpreter_education`
 - `interpreter_rate_profiles` — multiple rate cards per interpreter
 - `interpreter_availability` — weekly schedule
-- `deaf_profiles` — D/HH user data
-- `deaf_roster` — interpreter shortlist (top/preferred/backup tiers)
+- `deaf_profiles` — D/HH user data (id, user_id, name, first_name, last_name, email, pronouns, bio, photo_url, location, state, country, country_name, city, phone, comm_prefs, created_at, updated_at)
+- `deaf_roster` — interpreter shortlist (preferred/approved/dnb tiers), with approve_work + approve_personal toggles
 - `requester_profiles` — requester/org data
 - `bookings` — job requests linking requester + interpreter
 - `reviews` — post-booking ratings
@@ -304,6 +308,26 @@ npm run seed       # Seed 10 demo interpreters into Supabase
 ---
 
 ## Session Handoff
+
+### Session 6 — March 10, 2026
+
+**Completed:**
+- ✅ DB migration `006_deaf_profiles_columns_and_rls.sql`: Added pronouns, bio, photo_url, email, user_id, first_name, last_name, location, state, country_name, created_at, updated_at to deaf_profiles
+- ✅ Updated deaf_roster tiers from top/preferred/backup → preferred/approved/dnb to match prototype
+- ✅ RLS policies updated for deaf_profiles (id OR user_id matching) + deaf_roster (scoped via deaf_profiles lookup)
+- ✅ Deaf portal landing page: full rewrite matching prototype — purple pill badge, hero with gradient, two-card grid (signup/login), inline form area
+- ✅ Deaf signup flow: inline form with first_name + last_name + email + password → signUp + user_profiles + deaf_profiles insert
+- ✅ Deaf login flow: inline form with email + password → signInWithPassword → redirect to dashboard
+- ✅ Auth callback updated to write first_name, last_name, email, user_id to deaf_profiles for OAuth users
+- ✅ DhhDashboardSidebar rewritten: purple accent (#9d87ff), user info header with gradient avatar + "Deaf Individual" label, full prototype nav (My Preferred Interpreters, Personal Interpreter Request, Preferences & Profile, My Requesters, Share My List, Back to signpost), badge counts from deaf_roster
+- ✅ Dashboard layout updated to fetch first_name/last_name from deaf_profiles
+- ✅ My Preferred Interpreters tab: full rewrite with 3-tier sections (preferred/approved/dnb), interpreter cards with tier badges, approval toggles (work/personal), tier move controls, note editing, remove — all wired to Supabase deaf_roster
+
+**In progress / pick up here next session:**
+- Interpreter signup Steps 2–6 audit vs prototype
+- Requester signup flow audit
+- Platform Policies doc expansions: HIPAA-adjacent medical booking language, interpreter sub-finding responsibility, data privacy and retention policy
+- Remaining deaf dashboard tabs: Personal Interpreter Request, Preferences & Profile, My Requesters, Share My List
 
 ### Session 5 — March 10, 2026
 

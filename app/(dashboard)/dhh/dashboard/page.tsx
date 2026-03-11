@@ -2,159 +2,36 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { interpreters } from '@/lib/data/seed';
-import RatingStars from '@/components/ui/RatingStars';
+import { createClient } from '@/lib/supabase/client';
 
-const INITIAL_ROSTER = [
-  { ...interpreters[0], tier: 'top' as const, approveWork: true, approvePersonal: true, notes: '' },
-  { ...interpreters[1], tier: 'preferred' as const, approveWork: true, approvePersonal: false, notes: 'Available Tues/Thurs only' },
-  { ...interpreters[4], tier: 'preferred' as const, approveWork: true, approvePersonal: false, notes: '' },
-  { ...interpreters[7], tier: 'backup' as const, approveWork: true, approvePersonal: false, notes: '' },
-];
+type Tier = 'preferred' | 'approved' | 'dnb';
 
-type Tier = 'top' | 'preferred' | 'backup';
-const TIER_LIST: Tier[] = ['top', 'preferred', 'backup'];
-
-const overlayStyle: React.CSSProperties = {
-  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
-  display: 'flex', alignItems: 'center', justifyContent: 'center',
-  zIndex: 1000, padding: 20,
-};
-const modalStyle: React.CSSProperties = {
-  background: 'var(--surface)', border: '1px solid var(--border)',
-  borderRadius: 'var(--radius)', padding: '28px 32px',
-  width: '100%', maxWidth: 520,
-};
-
-/* ── Share Modal ── */
-function ShareModal({ onClose, onToast }: { onClose: () => void; onToast: (m: string) => void }) {
-  const [email, setEmail] = useState('');
-  const [scope, setScope] = useState<'work' | 'personal' | 'full'>('full');
-
-  const scopes = [
-    { value: 'work' as const, label: 'Work settings only' },
-    { value: 'personal' as const, label: 'Personal only' },
-    { value: 'full' as const, label: 'Full roster' },
-  ];
-
-  return (
-    <div role="presentation" style={overlayStyle} onClick={onClose}>
-      <div style={modalStyle} onClick={e => e.stopPropagation()}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Share Your Interpreter Roster</div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
-        </div>
-
-        <div style={{ marginBottom: 16 }}>
-          <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', marginBottom: 6, fontWeight: 600 }}>Share scope</label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {scopes.map(s => (
-              <button key={s.value} onClick={() => setScope(s.value)} style={{
-                background: scope === s.value ? 'rgba(157,135,255,0.1)' : 'var(--surface2)',
-                border: `1px solid ${scope === s.value ? 'rgba(157,135,255,0.4)' : 'var(--border)'}`,
-                borderRadius: 'var(--radius-sm)', padding: '10px 14px',
-                color: scope === s.value ? 'var(--accent2)' : 'var(--text)',
-                fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left',
-                fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
-              }}>{s.label}</button>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ marginBottom: 16 }}>
-          <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', marginBottom: 6, fontWeight: 600 }}>Invite by email</label>
-          <input
-            type="email" value={email} onChange={e => setEmail(e.target.value)}
-            placeholder="requester@example.com"
-            style={{
-              width: '100%', boxSizing: 'border-box',
-              background: 'var(--surface2)', border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-sm)', padding: '10px 14px',
-              color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem', outline: 'none',
-            }}
-            onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
-            onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
-          />
-        </div>
-
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between', flexWrap: 'wrap' }}>
-          <button onClick={() => { onToast('Link copied to clipboard'); onClose(); }} style={{
-            background: 'var(--surface2)', border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-sm)', padding: '9px 18px',
-            color: 'var(--text)', fontSize: '0.82rem', cursor: 'pointer',
-            fontFamily: "'DM Sans', sans-serif",
-          }}>Copy Link</button>
-          <button className="btn-primary" onClick={() => { onToast('Share invitation sent'); onClose(); }} style={{ padding: '9px 22px' }}>
-            Send
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+interface RosterInterpreter {
+  roster_id: string;
+  interpreter_id: string;
+  tier: Tier;
+  approve_work: boolean;
+  approve_personal: boolean;
+  notes: string | null;
+  name: string;
+  initials: string;
+  color: string;
+  certs: string;
+  domains: string;
 }
 
-/* ── Menu Dropdown ── */
-function MenuDropdown({ item, onMoveTier, onRemove, onEditNote, onClose }: {
-  item: { tier: string };
-  onMoveTier: (tier: Tier) => void;
-  onRemove: () => void;
-  onEditNote: () => void;
-  onClose: () => void;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
+const TIER_BADGE: Record<Tier, { label: string; bg: string; border: string; color: string }> = {
+  preferred: { label: '\u2605 Preferred', bg: 'rgba(0,229,255,0.12)', border: 'rgba(0,229,255,0.3)', color: 'var(--accent)' },
+  approved: { label: '\u2713 Secondary Tier', bg: 'rgba(123,97,255,0.12)', border: 'rgba(123,97,255,0.3)', color: '#a78bfa' },
+  dnb: { label: '\u2715 Do Not Book', bg: 'rgba(255,77,109,0.1)', border: 'rgba(255,77,109,0.3)', color: '#ff8099' },
+};
 
-  useEffect(() => {
-    function handle(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
-    }
-    document.addEventListener('mousedown', handle);
-    return () => document.removeEventListener('mousedown', handle);
-  }, [onClose]);
-
-  const otherTiers = TIER_LIST.filter(t => t !== item.tier);
-
-  const optStyle: React.CSSProperties = {
-    display: 'block', width: '100%', textAlign: 'left',
-    background: 'none', border: 'none', padding: '8px 14px',
-    color: 'var(--text)', fontSize: '0.8rem', cursor: 'pointer',
-    fontFamily: "'DM Sans', sans-serif", borderRadius: 6,
-    transition: 'background 0.12s',
-  };
-
-  return (
-    <div ref={ref} style={{
-      position: 'absolute', top: 'calc(100% + 4px)', right: 0, zIndex: 100,
-      background: 'var(--surface2)', border: '1px solid var(--border)',
-      borderRadius: 'var(--radius-sm)', padding: 4, minWidth: 170,
-      boxShadow: '0 8px 32px rgba(0,0,0,0.45)',
-    }}>
-      <button onClick={onEditNote} style={optStyle}
-        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.08)' }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'none' }}
-      >Edit Note</button>
-      {otherTiers.map(t => (
-        <button key={t} onClick={() => onMoveTier(t)} style={optStyle}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.08)' }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'none' }}
-        >Move to {t}</button>
-      ))}
-      <button onClick={onRemove} style={{ ...optStyle, color: 'var(--accent3)' }}
-        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,107,133,0.08)' }}
-        onMouseLeave={e => { e.currentTarget.style.background = 'none' }}
-      >Remove</button>
-    </div>
-  );
-}
-
-/* ── Main Page ── */
 export default function DeafDashboardPage() {
-  const [roster, setRoster] = useState(INITIAL_ROSTER);
-  const [filterTier, setFilterTier] = useState<'all' | Tier>('all');
-  const [shareOpen, setShareOpen] = useState(false);
-  const [openMenuId, setOpenMenuId] = useState<string | number | null>(null);
-  const [editingNoteId, setEditingNoteId] = useState<string | number | null>(null);
+  const [roster, setRoster] = useState<RosterInterpreter[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editNoteText, setEditNoteText] = useState('');
   const [toast, setToast] = useState<string | null>(null);
 
@@ -163,185 +40,435 @@ export default function DeafDashboardPage() {
     setTimeout(() => setToast(null), 3000);
   }
 
-  function toggleApproval(id: string | number, field: 'approveWork' | 'approvePersonal') {
-    setRoster(prev => prev.map(r => r.id === id ? { ...r, [field]: !r[field] } : r));
+  const fetchRoster = useCallback(async () => {
+    const supabase = createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('deaf_roster')
+      .select(`
+        id,
+        interpreter_id,
+        tier,
+        approve_work,
+        approve_personal,
+        notes,
+        interpreter_profiles (
+          id,
+          name,
+          first_name,
+          last_name,
+          color,
+          sign_languages:interpreter_sign_languages(language),
+          specializations:interpreter_specializations(specialization),
+          certifications:interpreter_certifications(name)
+        )
+      `)
+      .eq('deaf_user_id', user.id);
+
+    if (error) {
+      console.error('[deaf-dashboard] roster fetch error:', error.message);
+      setLoading(false);
+      return;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mapped: RosterInterpreter[] = (data || []).map((row: any) => {
+      const ip = row.interpreter_profiles;
+      const fullName = ip?.first_name
+        ? `${ip.first_name} ${ip.last_name || ''}`.trim()
+        : ip?.name || 'Unknown';
+      const parts = fullName.split(' ');
+      const initials = parts.map((p: string) => p[0]).join('').slice(0, 2).toUpperCase();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const certs = (ip?.certifications || []).map((c: any) => c.name).join(', ') || 'Certified Interpreter';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const domains = (ip?.specializations || []).map((s: any) => s.specialization).join(', ') || 'General';
+
+      return {
+        roster_id: row.id,
+        interpreter_id: row.interpreter_id,
+        tier: row.tier as Tier,
+        approve_work: row.approve_work,
+        approve_personal: row.approve_personal,
+        notes: row.notes,
+        name: fullName,
+        initials,
+        color: ip?.color || 'linear-gradient(135deg, #7b61ff, #00e5ff)',
+        certs,
+        domains,
+      };
+    });
+
+    setRoster(mapped);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { fetchRoster(); }, [fetchRoster]);
+
+  async function updateRosterField(rosterId: string, field: string, value: unknown) {
+    const supabase = createClient();
+    await supabase.from('deaf_roster').update({ [field]: value }).eq('id', rosterId);
   }
 
-  function moveTier(id: string | number, tier: Tier) {
-    setRoster(prev => prev.map(r => r.id === id ? { ...r, tier } : r));
-    setOpenMenuId(null);
-    showToast(`Moved to ${tier} tier`);
+  async function toggleApproval(rosterId: string, field: 'approve_work' | 'approve_personal') {
+    const item = roster.find(r => r.roster_id === rosterId);
+    if (!item) return;
+    const newVal = !item[field];
+    setRoster(prev => prev.map(r => r.roster_id === rosterId ? { ...r, [field]: newVal } : r));
+    await updateRosterField(rosterId, field, newVal);
   }
 
-  function removeInterp(id: string | number) {
-    const name = roster.find(r => r.id === id)?.name;
-    setRoster(prev => prev.filter(r => r.id !== id));
-    setOpenMenuId(null);
+  async function setTier(rosterId: string, tier: Tier) {
+    setRoster(prev => prev.map(r => r.roster_id === rosterId ? { ...r, tier } : r));
+    await updateRosterField(rosterId, 'tier', tier);
+    showToast(`Moved to ${tier === 'preferred' ? 'Preferred' : tier === 'approved' ? 'Secondary Tier' : 'Do Not Book'}`);
+  }
+
+  async function removeInterp(rosterId: string) {
+    const name = roster.find(r => r.roster_id === rosterId)?.name;
+    setRoster(prev => prev.filter(r => r.roster_id !== rosterId));
+    const supabase = createClient();
+    await supabase.from('deaf_roster').delete().eq('id', rosterId);
     showToast(`Removed ${name} from roster`);
   }
 
-  function startEditNote(id: string | number) {
-    const item = roster.find(r => r.id === id);
+  function startEditNote(rosterId: string) {
+    const item = roster.find(r => r.roster_id === rosterId);
     setEditNoteText(item?.notes || '');
-    setEditingNoteId(String(id));
-    setOpenMenuId(null);
+    setEditingNoteId(rosterId);
   }
 
-  function saveNote(id: string | number) {
-    setRoster(prev => prev.map(r => r.id === id ? { ...r, notes: editNoteText } : r));
+  async function saveNote(rosterId: string) {
+    setRoster(prev => prev.map(r => r.roster_id === rosterId ? { ...r, notes: editNoteText } : r));
     setEditingNoteId(null);
+    await updateRosterField(rosterId, 'notes', editNoteText);
     showToast('Note saved');
   }
 
-  const filtered = filterTier === 'all' ? roster : roster.filter(r => r.tier === filterTier);
+  const preferred = roster.filter(r => r.tier === 'preferred');
+  const approved = roster.filter(r => r.tier === 'approved');
+  const dnb = roster.filter(r => r.tier === 'dnb');
 
-  const tierColors: Record<Tier, { bg: string; border: string; color: string }> = {
-    top:       { bg: 'rgba(251,191,36,0.1)', border: 'rgba(251,191,36,0.3)', color: '#fbbf24' },
-    preferred: { bg: 'rgba(0,229,255,0.1)', border: 'rgba(0,229,255,0.3)', color: 'var(--accent)' },
-    backup:    { bg: 'rgba(157,135,255,0.1)', border: 'rgba(157,135,255,0.3)', color: 'var(--accent2)' },
-  };
+  if (loading) {
+    return (
+      <div style={{ padding: '60px 32px', color: 'var(--muted)', textAlign: 'center' }}>
+        Loading your interpreter roster...
+      </div>
+    );
+  }
+
+  // Empty state — no interpreters at all
+  if (roster.length === 0) {
+    return (
+      <div style={{ maxWidth: 960, margin: '0 auto', padding: '60px 32px 64px' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 4 }}>
+          My Preferred Interpreter List
+        </h1>
+        <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: 40 }}>
+          Your preferred, secondary tier, and do-not-book interpreters.
+        </p>
+        <div style={{
+          textAlign: 'center', padding: '60px 24px',
+          background: 'var(--surface)', border: '1px dashed var(--border)',
+          borderRadius: 'var(--radius)',
+        }}>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem', marginBottom: 10 }}>
+            You haven&apos;t added any interpreters yet.
+          </div>
+          <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: 20, maxWidth: 400, margin: '0 auto 20px' }}>
+            Browse the directory to find interpreters and add them to your list.
+          </p>
+          <Link href="/directory" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-block', padding: '11px 24px' }}>
+            Browse Directory &#8594;
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  function renderCard(item: RosterInterpreter) {
+    const badge = TIER_BADGE[item.tier];
+
+    return (
+      <div
+        key={item.roster_id}
+        style={{
+          background: 'var(--surface2)', border: '1px solid var(--border)',
+          borderRadius: 12, padding: '18px 20px',
+          display: 'flex', gap: 16, alignItems: 'flex-start',
+          cursor: 'pointer', transition: 'border-color 0.15s',
+        }}
+        onMouseOver={e => (e.currentTarget.style.borderColor = 'rgba(0,229,255,0.3)')}
+        onMouseOut={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+      >
+        {/* Avatar */}
+        <div style={{
+          width: 44, height: 44, borderRadius: '50%',
+          background: item.color,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontWeight: 700, fontSize: '0.9rem', flexShrink: 0, color: '#fff',
+        }}>
+          {item.initials}
+        </div>
+
+        {/* Content */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {/* Name + tier badge */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 4 }}>
+            <Link
+              href={`/directory/${item.interpreter_id}`}
+              style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text)', textDecoration: 'none' }}
+              onClick={e => e.stopPropagation()}
+            >
+              {item.name}
+            </Link>
+            <span style={{
+              background: badge.bg, border: `1px solid ${badge.border}`,
+              color: badge.color, borderRadius: 20, padding: '2px 10px',
+              fontSize: '0.72rem', fontWeight: 600,
+            }}>
+              {badge.label}
+            </span>
+          </div>
+
+          {/* Certs + domains */}
+          <div style={{ color: 'var(--muted)', fontSize: '0.8rem', marginBottom: 6 }}>
+            {item.certs} &middot; {item.domains}
+          </div>
+
+          {/* Personal note */}
+          {item.notes && editingNoteId !== item.roster_id && (
+            <div style={{
+              fontSize: '0.82rem', color: 'var(--muted)', fontStyle: 'italic',
+              background: 'rgba(255,255,255,0.03)', borderRadius: 8,
+              padding: '8px 12px', marginBottom: 8,
+            }}>
+              &ldquo;{item.notes}&rdquo;
+            </div>
+          )}
+
+          {/* Inline note editor */}
+          {editingNoteId === item.roster_id && (
+            <div style={{ marginBottom: 8 }} onClick={e => e.stopPropagation()}>
+              <textarea
+                value={editNoteText}
+                onChange={e => setEditNoteText(e.target.value)}
+                placeholder="Add a note about this interpreter..."
+                style={{
+                  width: '100%', boxSizing: 'border-box',
+                  background: 'var(--surface)', border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-sm)', padding: '10px 14px',
+                  color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.85rem',
+                  outline: 'none', resize: 'vertical', minHeight: 60, marginBottom: 8,
+                }}
+                onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
+                onBlur={e => (e.target.style.borderColor = 'var(--border)')}
+              />
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <button onClick={() => setEditingNoteId(null)} style={{
+                  background: 'var(--surface)', border: '1px solid var(--border)',
+                  borderRadius: 6, padding: '4px 12px', color: 'var(--muted)',
+                  fontSize: '0.75rem', cursor: 'pointer',
+                }}>Cancel</button>
+                <button onClick={() => saveNote(item.roster_id)} className="btn-primary" style={{ padding: '4px 12px', fontSize: '0.75rem' }}>
+                  Save
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Approval toggles */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }} onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => toggleApproval(item.roster_id, 'approve_work')}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '4px 12px', borderRadius: 20, cursor: 'pointer',
+                fontSize: '0.75rem', fontWeight: 600, border: 'none',
+                background: item.approve_work ? 'rgba(0,229,255,0.1)' : 'rgba(255,255,255,0.04)',
+                color: item.approve_work ? 'var(--accent)' : 'var(--muted)',
+                transition: 'all 0.15s',
+              }}
+            >
+              <em style={{ fontStyle: 'normal' }}>{item.approve_work ? '\u2713' : '\u2715'}</em> Work settings
+            </button>
+            <button
+              onClick={() => toggleApproval(item.roster_id, 'approve_personal')}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '4px 12px', borderRadius: 20, cursor: 'pointer',
+                fontSize: '0.75rem', fontWeight: 600, border: 'none',
+                background: item.approve_personal ? 'rgba(157,135,255,0.1)' : 'rgba(255,255,255,0.04)',
+                color: item.approve_personal ? '#a78bfa' : 'var(--muted)',
+                transition: 'all 0.15s',
+              }}
+            >
+              <em style={{ fontStyle: 'normal' }}>{item.approve_personal ? '\u2713' : '\u2715'}</em> Personal / medical
+            </button>
+          </div>
+
+          {/* Tier move controls */}
+          <div style={{
+            display: 'flex', gap: 8, flexWrap: 'wrap',
+            paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)',
+          }} onClick={e => e.stopPropagation()}>
+            {item.tier !== 'preferred' && (
+              <button onClick={() => setTier(item.roster_id, 'preferred')} style={{
+                background: 'rgba(0,229,255,0.07)', border: '1px dashed rgba(0,229,255,0.35)',
+                color: 'var(--accent)', borderRadius: 8, padding: '4px 12px',
+                fontSize: '0.75rem', cursor: 'pointer',
+              }}>
+                &#9733; Move to Preferred Tier
+              </button>
+            )}
+            {item.tier !== 'approved' && (
+              <button onClick={() => setTier(item.roster_id, 'approved')} style={{
+                background: 'rgba(123,97,255,0.07)', border: '1px dashed rgba(123,97,255,0.35)',
+                color: '#a78bfa', borderRadius: 8, padding: '4px 12px',
+                fontSize: '0.75rem', cursor: 'pointer',
+              }}>
+                &#8595; Move to Secondary Tier
+              </button>
+            )}
+            {item.tier !== 'dnb' && (
+              <button onClick={() => setTier(item.roster_id, 'dnb')} style={{
+                background: 'transparent', border: '1px dashed rgba(255,77,109,0.35)',
+                color: '#ff8099', borderRadius: 8, padding: '4px 12px',
+                fontSize: '0.75rem', cursor: 'pointer',
+              }}>
+                Move to Do Not Book
+              </button>
+            )}
+            <button onClick={() => startEditNote(item.roster_id)} style={{
+              background: 'var(--surface)', border: '1px solid var(--border)',
+              color: 'var(--muted)', borderRadius: 8, padding: '4px 12px',
+              fontSize: '0.75rem', cursor: 'pointer',
+            }}>
+              Edit note
+            </button>
+            <button onClick={() => removeInterp(item.roster_id)} style={{
+              background: 'none', border: 'none', color: 'var(--muted)',
+              fontSize: '0.75rem', cursor: 'pointer', opacity: 0.6, padding: '4px 8px',
+            }}>
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '32px 32px 64px' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 4 }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 4 }}>My Interpreter Roster</h1>
-          <p style={{ color: 'var(--muted)', fontSize: '0.88rem' }}>{roster.length} interpreter{roster.length !== 1 ? 's' : ''} on your list</p>
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 0 }}>
+            My Preferred Interpreter List
+          </h1>
+          <p style={{ color: 'var(--muted)', fontSize: '0.88rem' }}>
+            Your preferred, secondary tier, and do-not-book interpreters. Share your list with requesters so they always know who to contact.
+          </p>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <Link href="/directory" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'none', border: '1px solid var(--border)', borderRadius: 8, padding: '9px 16px', color: 'var(--muted)', fontSize: '0.85rem', textDecoration: 'none' }}>
-            Browse Directory
-          </Link>
-          <button onClick={() => setShareOpen(true)} style={{ background: 'var(--accent2)', color: '#000', border: 'none', borderRadius: 8, padding: '9px 16px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
-            Share Roster
-          </button>
-        </div>
+        <button
+          onClick={() => showToast('Share link copied!')}
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 7,
+            flexShrink: 0, marginTop: 6,
+            background: 'transparent', border: '1.5px solid rgba(0,229,255,0.3)',
+            borderRadius: 8, color: 'var(--accent)',
+            fontFamily: "'DM Sans', sans-serif", fontSize: '0.82rem',
+            fontWeight: 700, padding: '7px 14px', cursor: 'pointer',
+            transition: 'all 0.15s',
+          }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+            <circle cx="18" cy="5" r="3" stroke="currentColor" strokeWidth="1.7"/>
+            <circle cx="6" cy="12" r="3" stroke="currentColor" strokeWidth="1.7"/>
+            <circle cx="18" cy="19" r="3" stroke="currentColor" strokeWidth="1.7"/>
+            <path d="M8.7 10.7l6.6-3.4M8.7 13.3l6.6 3.4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/>
+          </svg>
+          Share my list
+        </button>
       </div>
 
-      {/* Tier filter */}
-      <div style={{ display: 'flex', gap: 6, marginBottom: 20 }}>
-        {(['all', 'top', 'preferred', 'backup'] as const).map(t => (
-          <button key={t} onClick={() => setFilterTier(t)} style={{
-            padding: '7px 16px', borderRadius: 100,
-            background: filterTier === t ? 'rgba(157,135,255,0.12)' : 'none',
-            border: filterTier === t ? '1px solid rgba(157,135,255,0.4)' : '1px solid var(--border)',
-            color: filterTier === t ? 'var(--accent2)' : 'var(--muted)',
-            fontSize: '0.82rem', cursor: 'pointer', fontWeight: filterTier === t ? 600 : 400,
-            textTransform: 'capitalize',
-          }}>
-            {t === 'all' ? 'All' : t}
-            <span style={{ marginLeft: 6, opacity: 0.7 }}>({t === 'all' ? roster.length : roster.filter(r => r.tier === t).length})</span>
-          </button>
-        ))}
+      {/* Add from directory CTA */}
+      <div style={{
+        background: 'rgba(0,229,255,0.04)', border: '1px dashed rgba(0,229,255,0.2)',
+        borderRadius: 12, padding: '20px 24px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        gap: 16, flexWrap: 'wrap', marginBottom: 32,
+      }}>
+        <div>
+          <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 4 }}>Add an interpreter to your preferred list</div>
+          <div style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>Browse the directory and add interpreters directly from their profile.</div>
+        </div>
+        <Link href="/directory" className="btn-primary" style={{ textDecoration: 'none', padding: '9px 20px', fontSize: '0.85rem' }}>
+          Browse Directory &#8594;
+        </Link>
       </div>
 
-      {/* Roster list */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {filtered.map(item => {
-          const tc = tierColors[item.tier];
-          return (
-            <div key={item.id} style={{
-              background: 'var(--surface)', border: '1px solid var(--border)',
-              borderRadius: 'var(--radius)', padding: '16px 20px',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-                {/* Avatar */}
-                <div style={{
-                  width: 44, height: 44, borderRadius: '50%', background: item.color,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '0.9rem', fontFamily: 'var(--font-syne)', fontWeight: 800, color: '#fff', flexShrink: 0,
-                }}>{item.initials}</div>
-
-                {/* Info */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 3 }}>
-                    <span style={{ fontFamily: 'var(--font-syne)', fontWeight: 700 }}>{item.name}</span>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', background: tc.bg, border: `1px solid ${tc.border}`, borderRadius: 100, padding: '2px 8px', fontSize: '0.68rem', color: tc.color, fontWeight: 700, textTransform: 'capitalize' as const }}>{item.tier}</span>
-                    {item.available && (
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: '0.7rem', color: '#34d399' }}>
-                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399', display: 'inline-block' }} />
-                        Available
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>{item.location} · {item.signLangs.join(', ')}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 3 }}>
-                    <RatingStars rating={item.rating} size={11} />
-                    <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{item.rating}</span>
-                  </div>
-                  {item.notes && editingNoteId !== item.id && (
-                    <div style={{ fontSize: '0.75rem', color: 'var(--muted)', fontStyle: 'italic', marginTop: 4 }}>Note: {item.notes}</div>
-                  )}
-                </div>
-
-                {/* Approval toggles */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: '0.75rem' }}>
-                  <button onClick={() => toggleApproval(item.id, 'approveWork')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: item.approveWork ? '#34d399' : 'var(--border)', display: 'inline-block', transition: 'background 0.15s' }} />
-                    <span style={{ color: item.approveWork ? 'var(--text)' : 'var(--muted)', fontSize: '0.75rem' }}>Work</span>
-                  </button>
-                  <button onClick={() => toggleApproval(item.id, 'approvePersonal')} style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: item.approvePersonal ? '#34d399' : 'var(--border)', display: 'inline-block', transition: 'background 0.15s' }} />
-                    <span style={{ color: item.approvePersonal ? 'var(--text)' : 'var(--muted)', fontSize: '0.75rem' }}>Personal</span>
-                  </button>
-                </div>
-
-                {/* Actions */}
-                <div style={{ display: 'flex', gap: 6, position: 'relative' }}>
-                  <button onClick={() => showToast(`Request sent to ${item.name}`)} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 6, padding: '6px 12px', color: 'var(--muted)', fontSize: '0.75rem', cursor: 'pointer' }}>Request</button>
-                  <div style={{ position: 'relative' }}>
-                    <button onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 6, padding: '6px 12px', color: 'var(--muted)', fontSize: '0.75rem', cursor: 'pointer' }}>⋮</button>
-                    {openMenuId === item.id && (
-                      <MenuDropdown
-                        item={item}
-                        onMoveTier={tier => moveTier(item.id, tier)}
-                        onRemove={() => removeInterp(item.id)}
-                        onEditNote={() => startEditNote(item.id)}
-                        onClose={() => setOpenMenuId(null)}
-                      />
-                    )}
-                  </div>
-                </div>
+      {/* Preferred section */}
+      <div style={{ marginBottom: 36 }}>
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem', marginBottom: 2 }}>
+            &#9733; Preferred Interpreters
+          </div>
+          <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
+            Contact these first. Strong fit based on my communication style and history.
+          </div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {preferred.length > 0
+            ? preferred.map(renderCard)
+            : <div style={{ color: 'var(--muted)', fontSize: '0.88rem', padding: 16, background: 'var(--surface)', borderRadius: 10, border: '1px dashed var(--border)' }}>
+                No preferred interpreters yet. Add from directory or move up from Secondary Tier.
               </div>
-
-              {/* Inline note editor */}
-              {editingNoteId === item.id && (
-                <div style={{ marginTop: 12, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
-                  <textarea
-                    value={editNoteText} onChange={e => setEditNoteText(e.target.value)}
-                    placeholder="Add a note about this interpreter..."
-                    style={{
-                      width: '100%', boxSizing: 'border-box',
-                      background: 'var(--surface2)', border: '1px solid var(--border)',
-                      borderRadius: 'var(--radius-sm)', padding: '10px 14px',
-                      color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.85rem',
-                      outline: 'none', resize: 'vertical', minHeight: 60, marginBottom: 8,
-                    }}
-                    onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
-                    onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
-                  />
-                  <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                    <button onClick={() => setEditingNoteId(null)} style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 6, padding: '6px 14px', color: 'var(--muted)', fontSize: '0.78rem', cursor: 'pointer' }}>Cancel</button>
-                    <button onClick={() => saveNote(item.id)} className="btn-primary" style={{ padding: '6px 14px', fontSize: '0.78rem' }}>Save</button>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+          }
+        </div>
       </div>
 
-      {filtered.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--muted)' }}>
-          <div style={{ fontSize: '1.8rem', marginBottom: 12 }}>📋</div>
-          <div style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, marginBottom: 8 }}>No interpreters in this tier</div>
-          <Link href="/directory" style={{ color: 'var(--accent2)', textDecoration: 'none', fontSize: '0.9rem' }}>Browse the directory →</Link>
+      {/* Secondary Tier section */}
+      <div style={{ marginBottom: 36 }}>
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem', marginBottom: 2 }}>
+            &#10003; Secondary Tier Interpreters
+          </div>
+          <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
+            Good alternatives. Use when preferred interpreters are unavailable.
+          </div>
         </div>
-      )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {approved.length > 0
+            ? approved.map(renderCard)
+            : <div style={{ color: 'var(--muted)', fontSize: '0.88rem', padding: 16, background: 'var(--surface)', borderRadius: 10, border: '1px dashed var(--border)' }}>
+                No secondary tier interpreters yet.
+              </div>
+          }
+        </div>
+      </div>
 
-      {/* Share Modal */}
-      {shareOpen && <ShareModal onClose={() => setShareOpen(false)} onToast={showToast} />}
+      {/* DNB section */}
+      <div style={{ marginBottom: 36 }}>
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem', marginBottom: 2, color: '#ff8099' }}>
+            &#10005; Do Not Book
+          </div>
+          <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
+            Visible to your requesters. Reason notes help them understand without requiring explanation.
+          </div>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {dnb.length > 0
+            ? dnb.map(renderCard)
+            : <div style={{ color: 'var(--muted)', fontSize: '0.88rem', padding: 16, background: 'var(--surface)', borderRadius: 10, border: '1px dashed var(--border)' }}>
+                No do-not-book entries.
+              </div>
+          }
+        </div>
+      </div>
 
       {/* Toast */}
       {toast && (
@@ -351,7 +478,9 @@ export default function DeafDashboardPage() {
           borderRadius: 'var(--radius)', padding: '14px 24px',
           boxShadow: '0 8px 40px rgba(0,0,0,0.5)', zIndex: 9999,
           fontSize: '0.85rem', color: '#34d399',
-        }}>{toast}</div>
+        }}>
+          {toast}
+        </div>
       )}
     </div>
   );

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -9,8 +9,7 @@ interface NavItem {
   label: string
   href: string
   icon: React.ReactNode
-  badge?: number
-  badgePurple?: boolean
+  badgeKey?: string
 }
 
 interface NavGroup {
@@ -23,21 +22,15 @@ const NAV: NavGroup[] = [
     section: 'Overview',
     items: [
       {
-        label: 'My Roster',
+        label: 'My Preferred Interpreters',
         href: '/dhh/dashboard',
-        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 6.5L8 2L14 6.5V14H10V10H6V14H2V6.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/></svg>,
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="2" rx="1" fill="currentColor" opacity=".7"/><rect x="2" y="7" width="12" height="2" rx="1" fill="currentColor" opacity=".7"/><rect x="2" y="11" width="8" height="2" rx="1" fill="currentColor" opacity=".7"/></svg>,
+        badgeKey: 'roster',
       },
-    ],
-  },
-  {
-    section: 'Bookings',
-    items: [
       {
-        label: 'My Bookings',
-        href: '/dhh/dashboard/bookings',
-        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M5 8l2 2 4-4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
-        badge: 3,
-        badgePurple: true,
+        label: 'Personal Interpreter Request',
+        href: '/dhh/dashboard/request',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L13 6L5 14H2V11L10 3Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/><path d="M8.5 4.5L11.5 7.5" stroke="currentColor" strokeWidth="1.3"/></svg>,
       },
     ],
   },
@@ -45,9 +38,20 @@ const NAV: NavGroup[] = [
     section: 'Account',
     items: [
       {
-        label: 'Back to front page',
-        href: '/',
-        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+        label: 'Preferences & Profile',
+        href: '/dhh/dashboard/preferences',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5.5" r="2.5" stroke="currentColor" strokeWidth="1.3"/><path d="M2.5 14c0-3.04 2.46-5.5 5.5-5.5s5.5 2.46 5.5 5.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
+      },
+      {
+        label: 'My Requesters',
+        href: '/dhh/dashboard/requesters',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="5.5" cy="5" r="2" stroke="currentColor" strokeWidth="1.3"/><circle cx="10.5" cy="5" r="2" stroke="currentColor" strokeWidth="1.3"/><path d="M1 14c0-2.76 2.02-5 4.5-5M8.5 14c0-2.76 2.02-5 4.5-5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
+        badgeKey: 'requesters',
+      },
+      {
+        label: 'Share My List',
+        href: '/dhh/dashboard/share',
+        icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke="currentColor" strokeWidth="1.6"/><circle cx="6" cy="12" r="3" stroke="currentColor" strokeWidth="1.6"/><circle cx="18" cy="19" r="3" stroke="currentColor" strokeWidth="1.6"/><path d="M8.7 10.7l6.6-3.4M8.7 13.3l6.6 3.4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
       },
     ],
   },
@@ -90,8 +94,9 @@ function LogoutButton() {
   )
 }
 
-function SidebarContent({ userName, userInitials, photoUrl }: {
-  userName: string; userInitials: string; photoUrl?: string
+function SidebarContent({ userName, userInitials, badges }: {
+  userName: string; userInitials: string
+  badges: Record<string, number>
 }) {
   const pathname = usePathname()
 
@@ -100,30 +105,23 @@ function SidebarContent({ userName, userInitials, photoUrl }: {
       {/* Header */}
       <div style={{ padding: '24px 20px 20px', borderBottom: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {photoUrl ? (
-            <img src={photoUrl} alt={userName} style={{
-              width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-              objectFit: 'cover', border: '2px solid var(--accent2)',
-            }} />
-          ) : (
-            <div style={{
-              width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-              background: 'linear-gradient(135deg,#9d87ff,#7b61ff)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.85rem', color: '#fff',
-            }}>
-              {userInitials}
-            </div>
-          )}
-          <div>
+          <div style={{
+            width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+            background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.85rem', color: '#fff',
+          }}>
+            {userInitials}
+          </div>
+          <div style={{ flex: 1 }}>
             <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.92rem' }}>{userName}</div>
-            <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 2 }}>D/DB/HH Consumer</div>
+            <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 2 }}>Deaf Individual</div>
           </div>
         </div>
       </div>
 
       {/* Nav */}
-      <nav style={{ flex: 1, padding: '12px 0' }}>
+      <nav aria-label="Dashboard navigation" style={{ flex: 1, padding: '12px 0' }}>
         {NAV.map(group => (
           <div key={group.section}>
             <div style={{
@@ -138,6 +136,7 @@ function SidebarContent({ userName, userInitials, photoUrl }: {
               const active = item.href === '/dhh/dashboard'
                 ? pathname === item.href
                 : pathname.startsWith(item.href)
+              const badgeCount = item.badgeKey ? (badges[item.badgeKey] ?? 0) : 0
               return (
                 <Link
                   key={item.href}
@@ -146,24 +145,24 @@ function SidebarContent({ userName, userInitials, photoUrl }: {
                     display: 'flex', alignItems: 'center', gap: 10,
                     padding: '9px 20px', textDecoration: 'none',
                     fontSize: '0.88rem', transition: 'all 0.15s',
-                    color: active ? 'var(--accent2)' : 'var(--muted)',
-                    background: active ? 'rgba(123,97,255,0.06)' : 'transparent',
-                    borderLeft: active ? '2px solid var(--accent2)' : '2px solid transparent',
+                    color: active ? '#9d87ff' : 'var(--muted)',
+                    background: active ? 'rgba(157,135,255,0.06)' : 'transparent',
+                    borderLeft: active ? '2px solid #9d87ff' : '2px solid transparent',
                   }}
                 >
                   <span aria-hidden="true" style={{ width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     {item.icon}
                   </span>
                   <span style={{ flex: 1 }}>{item.label}</span>
-                  {item.badge && item.badge > 0 && (
+                  {badgeCount > 0 && (
                     <span style={{
                       fontSize: '0.7rem', fontWeight: 700, minWidth: 18, height: 18,
                       borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center',
                       padding: '0 5px',
-                      background: item.badgePurple ? 'rgba(123,97,255,0.15)' : 'rgba(255,107,133,0.2)',
-                      color: item.badgePurple ? 'var(--accent2)' : 'var(--accent3)',
+                      background: 'rgba(0,229,255,0.15)',
+                      color: 'var(--accent)',
                     }}>
-                      {item.badge}
+                      {badgeCount}
                     </span>
                   )}
                 </Link>
@@ -173,18 +172,56 @@ function SidebarContent({ userName, userInitials, photoUrl }: {
         ))}
       </nav>
 
-      {/* Log out */}
+      {/* Bottom nav */}
       <div style={{ borderTop: '1px solid var(--border)', padding: '8px 0' }}>
+        <Link
+          href="/"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '9px 20px', textDecoration: 'none',
+            fontSize: '0.88rem', color: 'var(--muted)',
+            borderLeft: '2px solid transparent',
+            transition: 'all 0.15s',
+          }}
+        >
+          <span style={{ width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </span>
+          <span>Back to signpost</span>
+        </Link>
         <LogoutButton />
       </div>
     </>
   )
 }
 
-export default function DhhDashboardSidebar({ userName = 'User', userInitials = 'U', photoUrl }: {
-  userName?: string; userInitials?: string; photoUrl?: string
+export default function DhhDashboardSidebar({ userName = 'User', userInitials = 'U' }: {
+  userName?: string; userInitials?: string
 }) {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [badges, setBadges] = useState<Record<string, number>>({})
+
+  useEffect(() => {
+    async function fetchBadges() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { count: rosterCount } = await supabase
+        .from('deaf_roster')
+        .select('id', { count: 'exact', head: true })
+        .eq('deaf_user_id', user.id)
+        .in('tier', ['preferred', 'approved'])
+
+      setBadges({
+        roster: rosterCount ?? 0,
+        requesters: 0,
+      })
+    }
+    fetchBadges()
+  }, [])
 
   return (
     <>
@@ -195,7 +232,7 @@ export default function DhhDashboardSidebar({ userName = 'User', userInitials = 
         display: 'flex', flexDirection: 'column',
         height: '100vh', position: 'sticky', top: 0, overflowY: 'auto',
       }}>
-        <SidebarContent userName={userName} userInitials={userInitials} photoUrl={photoUrl} />
+        <SidebarContent userName={userName} userInitials={userInitials} badges={badges} />
       </aside>
 
       {/* Mobile top bar */}
@@ -206,21 +243,14 @@ export default function DhhDashboardSidebar({ userName = 'User', userInitials = 
         background: 'var(--surface)', borderBottom: '1px solid var(--border)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          {photoUrl ? (
-            <img src={photoUrl} alt={userName} style={{
-              width: 32, height: 32, borderRadius: '50%', objectFit: 'cover',
-              border: '2px solid var(--accent2)',
-            }} />
-          ) : (
-            <div style={{
-              width: 32, height: 32, borderRadius: '50%',
-              background: 'linear-gradient(135deg,#9d87ff,#7b61ff)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.7rem', color: '#fff',
-            }}>
-              {userInitials}
-            </div>
-          )}
+          <div style={{
+            width: 32, height: 32, borderRadius: '50%',
+            background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.7rem', color: '#fff',
+          }}>
+            {userInitials}
+          </div>
           <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.88rem' }}>
             Dashboard
           </span>
@@ -268,11 +298,11 @@ export default function DhhDashboardSidebar({ userName = 'User', userInitials = 
                 onClick={() => setMobileOpen(false)}
                 style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '1.2rem', cursor: 'pointer' }}
               >
-                ✕
+                &#10005;
               </button>
             </div>
             <div role="presentation" onClick={() => setMobileOpen(false)}>
-              <SidebarContent userName={userName} userInitials={userInitials} photoUrl={photoUrl} />
+              <SidebarContent userName={userName} userInitials={userInitials} badges={badges} />
             </div>
           </aside>
         </div>

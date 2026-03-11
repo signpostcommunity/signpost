@@ -82,9 +82,16 @@ export async function GET(request: NextRequest) {
     const { data: existing } = await supabase
       .from('deaf_profiles').select('id').eq('id', user.id).maybeSingle();
     if (!existing) {
+      const nameParts = displayName.split(' ');
+      const deafFirstName = nameParts[0] || '';
+      const deafLastName = nameParts.slice(1).join(' ') || '';
       await supabase.from('deaf_profiles').insert({
         id: user.id,
+        user_id: user.id,
         name: displayName,
+        first_name: deafFirstName,
+        last_name: deafLastName,
+        email: user.email || '',
       });
     }
   } else {

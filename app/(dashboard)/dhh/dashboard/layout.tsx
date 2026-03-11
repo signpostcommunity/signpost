@@ -9,18 +9,18 @@ export default async function DhhDashboardLayout({ children }: { children: React
   let userInitials = 'U'
 
   if (user) {
-    // deaf_profiles has `name` (single field), keyed by id = auth.uid()
     const { data } = await supabase
       .from('deaf_profiles')
-      .select('name')
-      .eq('id', user.id)
-      .single()
-    if (data?.name) {
+      .select('first_name, last_name, name')
+      .or(`user_id.eq.${user.id},id.eq.${user.id}`)
+      .maybeSingle()
+    if (data?.first_name) {
+      userName = `${data.first_name} ${data.last_name || ''}`.trim()
+      userInitials = `${data.first_name[0] || ''}${data.last_name?.[0] || ''}`.toUpperCase()
+    } else if (data?.name) {
       userName = data.name
       const parts = data.name.split(' ')
-      userInitials = parts.length >= 2
-        ? `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
-        : (parts[0]?.[0] || 'U').toUpperCase()
+      userInitials = parts.map((p: string) => p[0]).join('').slice(0, 2).toUpperCase()
     }
   }
 

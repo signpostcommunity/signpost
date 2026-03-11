@@ -34,7 +34,15 @@ export default function DeafSignupPage() {
 
     const userId = authData.user.id;
     await supabase.from('user_profiles').insert({ id: userId, role: 'deaf' });
-    await supabase.from('deaf_profiles').insert({ id: userId, name, country });
+    await supabase.from('deaf_profiles').insert({
+      id: userId,
+      user_id: userId,
+      name,
+      first_name: name.split(' ')[0] || '',
+      last_name: name.split(' ').slice(1).join(' ') || '',
+      email,
+      country_name: country,
+    });
 
     router.push('/dhh/dashboard');
   }
