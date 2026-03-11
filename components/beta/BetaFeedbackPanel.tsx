@@ -811,7 +811,7 @@ export default function BetaFeedbackPanel() {
             {showEndOfSession && (
               <div>
                 <p style={{ fontSize: '0.74rem', color: '#888', margin: '0 0 8px', textAlign: 'center' }}>
-                  Your answers shape the future of signpost.
+                  Once you&apos;ve had a chance to explore, we have just a few more questions that are most critical in shaping what signpost will be. Your insight here means everything to us.
                 </p>
                 <button
                   onClick={() => setShowFinal(true)}
@@ -830,7 +830,7 @@ export default function BetaFeedbackPanel() {
                     fontFamily: "'DM Sans', sans-serif",
                   }}
                 >
-                  Complete beta feedback &rarr;
+                  I&apos;m done exploring. Take me to the final questions &rarr;
                 </button>
               </div>
             )}
