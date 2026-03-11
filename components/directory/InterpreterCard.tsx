@@ -96,44 +96,24 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
         {/* Card body */}
         <div style={{ padding: '18px', flex: 1, display: 'flex', flexDirection: 'column' }}>
           {/* Name + Add to my list */}
+          {/* Name + Add to my list */}
           <div
             style={{
               display: 'flex',
               alignItems: 'flex-start',
               justifyContent: 'space-between',
               gap: '8px',
-              marginBottom: '4px',
             }}
           >
-            <div>
-              <div
-                style={{
-                  fontFamily: 'var(--font-syne)',
-                  fontWeight: 700,
-                  fontSize: '1rem',
-                  lineHeight: 1.2,
-                  marginBottom: '3px',
-                }}
-              >
-                {i.name}
-              </div>
-              <div
-                style={{
-                  color: 'var(--muted)',
-                  fontSize: '0.8rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
-              >
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                  <path
-                    d="M5 1C3.34 1 2 2.34 2 4C2 6.5 5 9 5 9C5 9 8 6.5 8 4C8 2.34 6.66 1 5 1ZM5 5.5C4.17 5.5 3.5 4.83 3.5 4C3.5 3.17 4.17 2.5 5 2.5C5.83 2.5 6.5 3.17 6.5 4C6.5 4.83 5.83 5.5 5 5.5Z"
-                    fill="var(--muted)"
-                  />
-                </svg>
-                {i.location}
-              </div>
+            <div
+              style={{
+                fontFamily: 'var(--font-syne)',
+                fontWeight: 700,
+                fontSize: '1rem',
+                lineHeight: 1.2,
+              }}
+            >
+              {i.name}
             </div>
             <button
               onClick={(e) => {
@@ -145,6 +125,26 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
             >
               {userRole === 'interpreter' ? '+ Add to my team' : '+ Add to my list'}
             </button>
+          </div>
+          {/* Location — full width below name */}
+          <div
+            style={{
+              color: 'var(--muted)',
+              fontSize: '0.8rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              marginTop: '3px',
+              marginBottom: '4px',
+            }}
+          >
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ flexShrink: 0 }}>
+              <path
+                d="M5 1C3.34 1 2 2.34 2 4C2 6.5 5 9 5 9C5 9 8 6.5 8 4C8 2.34 6.66 1 5 1ZM5 5.5C4.17 5.5 3.5 4.83 3.5 4C3.5 3.17 4.17 2.5 5 2.5C5.83 2.5 6.5 3.17 6.5 4C6.5 4.83 5.83 5.5 5 5.5Z"
+                fill="var(--muted)"
+              />
+            </svg>
+            {i.location}
           </div>
 
           {/* Sign languages + Spoken languages */}
