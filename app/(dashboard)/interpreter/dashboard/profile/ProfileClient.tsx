@@ -12,6 +12,7 @@ import {
 import { SPECIALIZATION_CATEGORIES, SPECIALIZED_SKILLS } from '@/lib/constants/specializations'
 import { getVideoEmbedUrl, isValidVideoUrl } from '@/lib/videoUtils'
 import { sendNotification } from '@/lib/notifications'
+import LocationPicker from '@/components/shared/LocationPicker'
 
 // ── Shared styles ────────────────────────────────────────────────────────────
 
@@ -632,26 +633,17 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
               <input value={lastName} onChange={e => setLastName(e.target.value)} style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
             </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, marginBottom: 16 }}>
-            <div>
-              <label style={labelStyle}>Country</label>
-              <select value={country} onChange={e => setCountry(e.target.value)} style={inputStyle} onFocus={handleFocus} onBlur={handleBlur}>
-                <option value="">Select country...</option>
-                <option>United States</option><option>United Kingdom</option><option>Spain</option>
-                <option>Australia</option><option>Germany</option><option>France</option>
-                <option>Japan</option><option>Brazil</option><option>Canada</option><option>Other</option>
-              </select>
-            </div>
-            <div>
-              <label style={labelStyle}>City</label>
-              <input value={city} onChange={e => setCity(e.target.value)} style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
-            </div>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, marginBottom: 16 }}>
-            <div>
-              <label style={labelStyle}>State / Province / Region</label>
-              <input value={stateProvince} onChange={e => setStateProvince(e.target.value)} placeholder="e.g. California, Ontario..." style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
-            </div>
+          <div style={{ marginBottom: 16 }}>
+            <LocationPicker
+              country={country}
+              state={stateProvince}
+              city={city}
+              onChange={({ country: c, state: s, city: ci }) => {
+                setCountry(c)
+                setStateProvince(s)
+                setCity(ci)
+              }}
+            />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, marginBottom: 16 }}>
             <div>

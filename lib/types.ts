@@ -6,6 +6,7 @@ export interface Interpreter {
   name: string;
   location: string;
   state: string;
+  country: string;
   signLangs: string[];
   spokenLangs: string[];
   specs: string[];

@@ -18,9 +18,10 @@ interface Props {
 
 const RADIUS_OPTIONS = [
   { label: 'Any distance', value: 'any' },
-  { label: 'Within 25 mi', value: '25' },
-  { label: 'Within 50 mi', value: '50' },
-  { label: 'Within 100 mi', value: '100' },
+  { label: 'Within 100 mi (same state)', value: '100' },
+  { label: 'Within 250 mi (same state)', value: '250' },
+  { label: 'Anywhere in country', value: 'country' },
+  { label: 'International', value: 'international' },
 ];
 
 const GENDER_OPTIONS = [
@@ -148,19 +149,30 @@ export default function FilterSidebar({ filters, onChange }: Props) {
 
       {/* 2. Distance */}
       <CollapsibleSection label="Distance">
-        <select
-          value={filters.country || 'any'}
-          onChange={(e) => {
-            onChange({ ...filters, country: e.target.value === 'any' ? '' : e.target.value });
-          }}
-          style={selectStyle}
-        >
-          {RADIUS_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
+        {filters.search ? (
+          <select
+            value={filters.country || 'any'}
+            onChange={(e) => {
+              onChange({ ...filters, country: e.target.value === 'any' ? '' : e.target.value });
+            }}
+            style={selectStyle}
+          >
+            {RADIUS_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <>
+            <select disabled style={{ ...selectStyle, opacity: 0.5, cursor: 'not-allowed' }}>
+              <option>Any distance</option>
+            </select>
+            <p style={{ fontSize: '0.72rem', color: 'var(--muted)', opacity: 0.7, marginTop: 6, lineHeight: 1.4 }}>
+              Enter a location in Search to filter by distance.
+            </p>
+          </>
+        )}
       </CollapsibleSection>
 
       <Divider />

@@ -133,6 +133,7 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
           i.name,
           i.location,
           i.state,
+          i.country,
           ...i.signLangs,
           ...i.spokenLangs,
           ...i.specs,
@@ -141,6 +142,24 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
           .join(' ')
           .toLowerCase();
         if (!searchable.includes(q)) return false;
+      }
+
+      // Distance filter — crude state/country matching
+      if (filters.search && filters.country && filters.country !== 'any') {
+        const searchLower = filters.search.toLowerCase();
+        if (filters.country === '100' || filters.country === '250') {
+          // Same state: match interpreter's state or city against search term
+          const stateMatch = i.state && i.state.toLowerCase().includes(searchLower);
+          const cityMatch = i.location.toLowerCase().includes(searchLower);
+          if (!stateMatch && !cityMatch) return false;
+        } else if (filters.country === 'country') {
+          // Same country: match interpreter's country against search term
+          const countryMatch = i.country && i.country.toLowerCase().includes(searchLower);
+          const stateMatch = i.state && i.state.toLowerCase().includes(searchLower);
+          const cityMatch = i.location.toLowerCase().includes(searchLower);
+          if (!countryMatch && !stateMatch && !cityMatch) return false;
+        }
+        // 'international' — no location filter
       }
 
       // Sign languages

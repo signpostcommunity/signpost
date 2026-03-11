@@ -120,6 +120,8 @@ components/
 ├── interpreter-signup/
 │   ├── SignupStepper.tsx
 │   ├── Step1Personal.tsx through Step6Review.tsx
+├── shared/
+│   └── LocationPicker.tsx              # Reusable Country→State→City picker (uses country-state-city npm package)
 ├── requester-signup/
 │   ├── SignupStepper.tsx
 │   ├── Step1Role.tsx through Step5Done.tsx
@@ -308,6 +310,27 @@ npm run seed       # Seed 10 demo interpreters into Supabase
 ---
 
 ## Session Handoff
+
+### Session 7 — March 10, 2026
+
+**Completed:**
+- ✅ LocationPicker component (`components/shared/LocationPicker.tsx`): reusable Country→State→City picker using `country-state-city` npm package. Searchable country dropdown, dynamic state/province dropdown, free-text city. Adapts subdivision label per country (State/Province/Prefecture/Region).
+- ✅ Interpreter signup Step 1: replaced free-text country/state/city with LocationPicker
+- ✅ Interpreter profile editor (Personal tab): replaced free-text location fields with LocationPicker
+- ✅ Deaf signup (`SignupClient.tsx`): replaced free-text country with LocationPicker (country + state + city), wired to deaf_profiles insert
+- ✅ `Interpreter` type: added `country` field for distance filtering
+- ✅ Directory page + profile detail page: now maps `country` field to Interpreter type
+- ✅ Seed data: added `country` to all 10 seed interpreters
+- ✅ Distance filter on directory: crude state/country matching (100mi/250mi = same state, country = same country, international = no filter). Disabled with hint when search is empty.
+- ✅ DB migration `007_normalize_location_data.sql`: normalizes all US state abbreviations → full names in interpreter_profiles
+- ✅ CLAUDE.md updated with LocationPicker component path
+
+**In progress / pick up here next session:**
+- Interpreter signup Steps 2–6 audit vs prototype
+- Requester signup flow audit
+- Platform Policies doc expansions: HIPAA-adjacent medical booking language, interpreter sub-finding responsibility, data privacy and retention policy
+- Remaining deaf dashboard tabs: Personal Interpreter Request, Preferences & Profile, My Requesters, Share My List
+- True geocoding with lat/lng for distance filter (requires external API)
 
 ### Session 6 — March 10, 2026
 

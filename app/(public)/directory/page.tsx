@@ -37,6 +37,7 @@ export default async function DirectoryPage() {
       name: fullName,
       location: location || '',
       state: r.state || '',
+      country: r.country || '',
       signLangs: r.sign_languages || [],
       spokenLangs: r.spoken_languages || [],
       specs: r.specializations || [],

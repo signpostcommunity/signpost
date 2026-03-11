@@ -38,6 +38,7 @@ export default async function ProfilePage({ params }: Props) {
     name: fullName,
     location: location || '',
     state: data.state || '',
+    country: data.country || '',
     signLangs: data.sign_languages || [],
     spokenLangs: data.spoken_languages || [],
     specs: data.specializations || [],

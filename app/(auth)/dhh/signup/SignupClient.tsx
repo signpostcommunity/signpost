@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton';
+import LocationPicker from '@/components/shared/LocationPicker';
 
 export default function DeafSignupPage() {
   const router = useRouter();
@@ -12,6 +13,8 @@ export default function DeafSignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [country, setCountry] = useState('');
+  const [state, setState] = useState('');
+  const [city, setCity] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -42,6 +45,8 @@ export default function DeafSignupPage() {
       last_name: name.split(' ').slice(1).join(' ') || '',
       email,
       country_name: country,
+      state,
+      city,
     });
 
     router.push('/dhh/dashboard');
@@ -107,7 +112,19 @@ export default function DeafSignupPage() {
           <AuthInput label="Full Name" value={name} onChange={setName} placeholder="Your name" required />
           <AuthInput label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" required />
           <AuthInput label="Password" type="password" value={password} onChange={setPassword} placeholder="Minimum 8 characters" required />
-          <AuthInput label="Country (optional)" value={country} onChange={setCountry} placeholder="United States" />
+          <div style={{ marginTop: 4 }}>
+            <LocationPicker
+              country={country}
+              state={state}
+              city={city}
+              onChange={({ country: c, state: s, city: ci }) => {
+                setCountry(c)
+                setState(s)
+                setCity(ci)
+              }}
+              accentColor="var(--accent2)"
+            />
+          </div>
           <button type="submit" disabled={loading} className="btn-primary btn-large" style={{ marginTop: '8px', opacity: loading ? 0.7 : 1, background: 'var(--accent2)', color: '#000' }}>
             {loading ? 'Creating account…' : 'Create Account →'}
           </button>

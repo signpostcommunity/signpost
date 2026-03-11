@@ -43,6 +43,7 @@ function CommunityToggle({ label, description, checked, onChange }: {
   )
 }
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton'
+import LocationPicker from '@/components/shared/LocationPicker'
 
 const REGIONS = [
   { label: '🌍 Worldwide', color: '#00e5ff' },
@@ -128,46 +129,16 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
           </FormField>
         </FormRow>
 
-        <FormRow>
-          <FormField>
-            <FieldLabel>Country *</FieldLabel>
-            <SelectInput
-              value={formData.country}
-              onChange={e => updateField('country', e.target.value)}
-            >
-              <option value="">Select country…</option>
-              <option>United States</option>
-              <option>United Kingdom</option>
-              <option>Spain</option>
-              <option>Australia</option>
-              <option>Germany</option>
-              <option>France</option>
-              <option>Japan</option>
-              <option>Brazil</option>
-              <option>Canada</option>
-              <option>Other</option>
-            </SelectInput>
-          </FormField>
-          <FormField>
-            <FieldLabel>City *</FieldLabel>
-            <TextInput
-              placeholder="Madrid"
-              value={formData.city}
-              onChange={e => updateField('city', e.target.value)}
-            />
-          </FormField>
-        </FormRow>
-
-        <FormRow>
-          <FormField>
-            <FieldLabel>State / Province / Region</FieldLabel>
-            <TextInput
-              placeholder="e.g. California, Ontario..."
-              value={formData.state}
-              onChange={e => updateField('state', e.target.value)}
-            />
-          </FormField>
-        </FormRow>
+        <LocationPicker
+          country={formData.country}
+          state={formData.state}
+          city={formData.city}
+          onChange={({ country, state, city }) => {
+            updateField('country', country)
+            updateField('state', state)
+            updateField('city', city)
+          }}
+        />
 
         <FormRow>
           <FormField>
