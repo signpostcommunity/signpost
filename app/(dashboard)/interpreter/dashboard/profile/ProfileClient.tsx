@@ -123,6 +123,8 @@ interface ProfileData {
   interpreter_type?: string | null
   work_mode?: string | null
   bio?: string | null
+  bio_specializations?: string | null
+  bio_extra?: string | null
   sign_languages?: string[] | null
   spoken_languages?: string[] | null
   specializations?: string[] | null
@@ -279,6 +281,8 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
 
   // ── Bio & Video state ──────────────────────────────────────────────────
   const [bio, setBio] = useState(p.bio || '')
+  const [bioSpecializations, setBioSpecializations] = useState(p.bio_specializations || '')
+  const [bioExtra, setBioExtra] = useState(p.bio_extra || '')
   const [videoUrl, setVideoUrl] = useState(p.video_url || '')
   const [videoUrlError, setVideoUrlError] = useState<string | null>(null)
   const [videoDescription, setVideoDescription] = useState(p.video_desc || '')
@@ -326,7 +330,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       // Now try interpreter_profiles
       const { data, error, status, statusText } = await supabase
         .from('interpreter_profiles')
-        .select('name, first_name, last_name, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, sign_languages, spoken_languages, specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms, notification_preferences, notification_phone')
+        .select('name, first_name, last_name, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, bio_specializations, bio_extra, sign_languages, spoken_languages, specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms, notification_preferences, notification_phone')
         .eq('user_id', user.id)
         .maybeSingle()
       console.log('PROFILE CLIENT-SIDE LOAD:', JSON.stringify({ data, error, status, statusText, userId: user.id }, null, 2))
@@ -349,6 +353,8 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       if (d.specialized_skills) setSpecializedSkills(d.specialized_skills)
       if (d.regions) setRegions(d.regions)
       if (d.bio != null) setBio(d.bio)
+      if (d.bio_specializations != null) setBioSpecializations(d.bio_specializations)
+      if (d.bio_extra != null) setBioExtra(d.bio_extra)
       if (d.video_url != null) setVideoUrl(d.video_url)
       if (d.video_desc != null) setVideoDescription(d.video_desc)
       if (d.photo_url != null) setPhotoUrl(d.photo_url)
@@ -828,15 +834,52 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       {/* ── Tab 4: Bio & Video ──────────────────────────────────────────── */}
       {activeTab === 'Bio & Video' && (
         <>
-          <div style={sectionTitleStyle}>Professional Bio</div>
-          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
-            Tell the signpost community about yourself: your background, professional experience, specializations, etc.
+          <div style={sectionTitleStyle}>About You</div>
+          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 20, marginTop: -12, lineHeight: 1.6 }}>
+            These prompts help you write a compelling profile. Your responses appear as a single About section on your public profile.
           </p>
-          <textarea
-            value={bio} onChange={e => setBio(e.target.value)}
-            rows={6} style={{ ...inputStyle, resize: 'vertical', minHeight: 120, marginBottom: 24 }}
-            onFocus={handleFocus} onBlur={handleBlur}
-          />
+
+          {/* Bio field 1: Background */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={labelStyle}>Describe your interpreting and community background <span style={{ color: 'var(--accent3)' }}>*</span></label>
+            <textarea
+              value={bio} onChange={e => { if (e.target.value.length <= 500) setBio(e.target.value) }}
+              placeholder="Share your background, how you came to interpreting, and your connection to the Deaf community."
+              rows={4} style={{ ...inputStyle, resize: 'vertical', minHeight: 100 }}
+              onFocus={handleFocus} onBlur={handleBlur}
+            />
+            <div style={{ fontSize: '0.75rem', textAlign: 'right', marginTop: 4, color: bio.length > 450 ? '#ff6b2b' : 'var(--muted)' }}>
+              {bio.length} / 500
+            </div>
+          </div>
+
+          {/* Bio field 2: Specializations */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={labelStyle}>What settings or populations do you specialize in serving, and what draws you to that work? <span style={{ color: 'var(--accent3)' }}>*</span></label>
+            <textarea
+              value={bioSpecializations} onChange={e => { if (e.target.value.length <= 500) setBioSpecializations(e.target.value) }}
+              placeholder="Tell us about the settings you work in and why they matter to you."
+              rows={4} style={{ ...inputStyle, resize: 'vertical', minHeight: 100 }}
+              onFocus={handleFocus} onBlur={handleBlur}
+            />
+            <div style={{ fontSize: '0.75rem', textAlign: 'right', marginTop: 4, color: bioSpecializations.length > 450 ? '#ff6b2b' : 'var(--muted)' }}>
+              {bioSpecializations.length} / 500
+            </div>
+          </div>
+
+          {/* Bio field 3: Extra */}
+          <div style={{ marginBottom: 24 }}>
+            <label style={labelStyle}>Something about my background or approach that doesn&apos;t fit neatly into a checkbox:</label>
+            <textarea
+              value={bioExtra} onChange={e => { if (e.target.value.length <= 300) setBioExtra(e.target.value) }}
+              placeholder="Optional — share anything that makes your work yours."
+              rows={3} style={{ ...inputStyle, resize: 'vertical', minHeight: 80 }}
+              onFocus={handleFocus} onBlur={handleBlur}
+            />
+            <div style={{ fontSize: '0.75rem', textAlign: 'right', marginTop: 4, color: bioExtra.length > 250 ? '#ff6b2b' : 'var(--muted)' }}>
+              {bioExtra.length} / 300
+            </div>
+          </div>
 
           <div style={sectionTitleStyle}>Introduction Video</div>
           <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
@@ -907,7 +950,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
               setVideoUrlError('Please enter a YouTube or Vimeo link. Direct file upload coming soon.')
               return
             }
-            saveFields({ bio, video_url: videoUrl, video_desc: videoDescription })
+            saveFields({ bio, bio_specializations: bioSpecializations, bio_extra: bioExtra, video_url: videoUrl, video_desc: videoDescription })
           }} />
         </>
       )}

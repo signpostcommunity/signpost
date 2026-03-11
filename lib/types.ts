@@ -17,6 +17,8 @@ export interface Interpreter {
   color: string;
   regions: string[];
   bio?: string;
+  bioSpecializations?: string;
+  bioExtra?: string;
   videoUrl?: string;
   photoUrl?: string;
   // New identity/affinity fields

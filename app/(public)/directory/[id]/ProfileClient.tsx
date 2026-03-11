@@ -524,11 +524,19 @@ function OverviewTab({ interpreter: i }: { interpreter: Interpreter }) {
         );
       })()}
 
-      <Section title="About">
-        <p style={{ color: 'var(--muted)', lineHeight: 1.7, fontSize: '0.95rem' }}>
-          {i.bio || `${i.name} is a certified sign language interpreter based in ${i.location}, specializing in ${i.specs.join(', ')}.`}
-        </p>
-      </Section>
+      {(() => {
+        const bioParts = [i.bio, i.bioSpecializations, i.bioExtra].filter(p => p && p.trim())
+        if (bioParts.length === 0) return null
+        return (
+          <Section title="About">
+            <div style={{ color: 'var(--muted)', lineHeight: 1.7, fontSize: '0.95rem', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {bioParts.map((part, idx) => (
+                <p key={idx} style={{ margin: 0 }}>{part}</p>
+              ))}
+            </div>
+          </Section>
+        )
+      })()}
 
       {i.affinities.length > 0 && (
         <Section title="Community & Identity">
