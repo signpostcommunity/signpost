@@ -44,47 +44,52 @@ export type FormData = {
   // Step 1 - Personal Info
   firstName: string
   lastName: string
+  pronouns: string
   phone: string
   email: string
   password: string
   country: string
   city: string
   state: string
-  bio: string
   interpreterType: string
   modeOfWork: string
   yearsExperience: string
   regions: string[]
   eventCoordination: boolean
   coordinationBio: string
-  // Community & Identity
+  avatarUrl: string
+  // Step 2 - Languages
+  signLanguages: string[]
+  spokenLanguages: string[]
+  // Step 3 - Credentials
+  certifications: Certification[]
+  education: Education[]
+  // Step 4 - Bio & Video
+  bio: string
+  bioSpecializations: string
+  bioExtra: string
+  videoUrl: string
+  videoDescription: string
+  // Step 5 - Skills
+  specializations: string[]
+  specializedSkills: string[]
+  // Step 6 - Community & Identity
   lgbtq: boolean
   deafParented: boolean
   bipoc: boolean
   bipocDetails: string[]
   religiousAffiliation: boolean
   religiousDetails: string[]
-  genderIdentity: string
-  // Step 2 - Languages
-  signLanguages: string[]
-  spokenLanguages: string[]
-  specializations: string[]
-  otherSpecializations: string
-  // Step 3 - Credentials
-  certifications: Certification[]
-  education: Education[]
-  // Step 4 - Rates
-  rateProfiles: RateProfile[]
-  // Step 5 - Photo & Video
-  avatarUrl: string
-  videoUrl: string
-  videoDescription: string
   // Multi-role
   pendingRoles: string[]
-  // Step 6 - Review
+  // Agreement
   agreeTerms: boolean
   agreeBooking: boolean
   agreeCredentials: boolean
+  // Legacy (kept for compatibility)
+  rateProfiles: RateProfile[]
+  otherSpecializations: string
+  genderIdentity: string
 }
 
 const defaultRateProfiles: RateProfile[] = [
@@ -131,19 +136,22 @@ const defaultRateProfiles: RateProfile[] = [
 ]
 
 const initialFormData: FormData = {
-  firstName: '', lastName: '', phone: '', email: '', password: '',
-  country: '', city: '', state: '', bio: '', interpreterType: '', modeOfWork: '',
+  firstName: '', lastName: '', pronouns: '', phone: '', email: '', password: '',
+  country: '', city: '', state: '', interpreterType: '', modeOfWork: '',
   yearsExperience: '', regions: [],
   eventCoordination: false, coordinationBio: '',
-  lgbtq: false, deafParented: false, bipoc: false, bipocDetails: [],
-  religiousAffiliation: false, religiousDetails: [], genderIdentity: '',
-  signLanguages: [], spokenLanguages: [], specializations: [], otherSpecializations: '',
+  avatarUrl: '',
+  signLanguages: [], spokenLanguages: [],
   certifications: [{ id: 'cert-1', name: '', issuingBody: '', year: '', verificationLink: '' }],
   education: [{ id: 'edu-1', degree: '', institution: '', year: '' }],
-  rateProfiles: defaultRateProfiles,
-  avatarUrl: '', videoUrl: '', videoDescription: '',
+  bio: '', bioSpecializations: '', bioExtra: '',
+  videoUrl: '', videoDescription: '',
+  specializations: [], specializedSkills: [],
+  lgbtq: false, deafParented: false, bipoc: false, bipocDetails: [],
+  religiousAffiliation: false, religiousDetails: [],
   pendingRoles: [],
   agreeTerms: false, agreeBooking: false, agreeCredentials: false,
+  rateProfiles: defaultRateProfiles, otherSpecializations: '', genderIdentity: '',
 }
 
 type FormContextType = {

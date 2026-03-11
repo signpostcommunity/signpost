@@ -4,7 +4,45 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { useForm } from './FormContext'
-import { StepWrapper, FormNav } from './FormFields'
+import { StepWrapper, FormSection, SectionTitle, FormNav } from './FormFields'
+
+function CommunityToggle({ label, helper, checked, onChange }: {
+  label: string
+  helper?: string
+  checked: boolean
+  onChange: () => void
+}) {
+  return (
+    <button type="button" onClick={onChange} style={{
+      display: 'flex', alignItems: 'center', gap: 12, width: '100%',
+      padding: '10px 0', marginBottom: 8, background: 'none', border: 'none',
+      cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", textAlign: 'left',
+    }}>
+      <div style={{
+        width: 40, height: 20, borderRadius: 100, flexShrink: 0,
+        background: checked ? 'var(--accent)' : 'var(--surface2)',
+        border: checked ? 'none' : '1px solid var(--border)',
+        position: 'relative', transition: 'background 0.2s',
+      }}>
+        <div style={{
+          width: 16, height: 16, borderRadius: '50%',
+          background: checked ? '#000' : 'var(--muted)',
+          position: 'absolute', top: 2,
+          left: checked ? 22 : 2, transition: 'left 0.2s',
+        }} />
+      </div>
+      <div>
+        <span style={{
+          fontSize: '0.9rem',
+          color: checked ? 'var(--accent)' : 'var(--muted)',
+          fontWeight: checked ? 600 : 400,
+          display: 'block',
+        }}>{label}</span>
+        {helper && <span style={{ fontSize: '0.78rem', color: 'var(--muted)', opacity: 0.7, lineHeight: 1.4 }}>{helper}</span>}
+      </div>
+    </button>
+  )
+}
 
 export default function Step6Review({ onBack }: { onBack: () => void }) {
   const { formData, updateField, draftUserId } = useForm()
@@ -24,7 +62,6 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
     setIsSubmitting(true)
     setError(null)
 
-    // Attempt profile insert — catch and ignore errors in beta
     try {
       let userId = draftUserId
 
@@ -54,12 +91,15 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         draft_data: formData,
         first_name: formData.firstName,
         last_name: formData.lastName,
+        pronouns: formData.pronouns || null,
         email: formData.email,
         phone: formData.phone,
         country: formData.country,
         city: formData.city,
         state: formData.state,
         bio: formData.bio,
+        bio_specializations: formData.bioSpecializations,
+        bio_extra: formData.bioExtra,
         interpreter_type: formData.interpreterType,
         work_mode: formData.modeOfWork,
         years_experience: formData.yearsExperience,
@@ -69,16 +109,13 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         sign_languages: formData.signLanguages,
         spoken_languages: formData.spokenLanguages,
         specializations: formData.specializations,
-        specialized_skills: formData.otherSpecializations
-          ? formData.otherSpecializations.split(',').map(s => s.trim()).filter(Boolean)
-          : [],
+        specialized_skills: formData.specializedSkills,
         lgbtq: formData.lgbtq,
         deaf_parented: formData.deafParented,
         bipoc: formData.bipoc,
         bipoc_details: formData.bipocDetails,
         religious_affiliation: formData.religiousAffiliation,
         religious_details: formData.religiousDetails,
-        gender_identity: formData.genderIdentity || null,
         video_url: formData.videoUrl,
         video_desc: formData.videoDescription,
         photo_url: formData.avatarUrl,
@@ -103,8 +140,16 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
     }
 
     // BETA: unconditional auto sign-in and redirect
-    // Remove this entire block for production
     try {
+      // For OAuth users, they're already signed in — just redirect
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        router.refresh()
+        router.push('/interpreter/dashboard')
+        return
+      }
+
+      // For email/password users, sign in
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
@@ -128,6 +173,107 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
 
   return (
     <StepWrapper>
+      {/* Community & Identity */}
+      <FormSection>
+        <SectionTitle>Community &amp; Identity</SectionTitle>
+        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 20, marginTop: -12, lineHeight: 1.6 }}>
+          These fields are entirely optional and self-selected. They help Deaf clients and requesters find interpreters who are the right match for culturally specific work.
+        </p>
+
+        {/* LGBTQ+ */}
+        <CommunityToggle
+          label="LGBTQ+"
+          helper="Select if you are available for and affirming of LGBTQ+ clients and settings"
+          checked={formData.lgbtq}
+          onChange={() => updateField('lgbtq', !formData.lgbtq)}
+        />
+
+        {/* Deaf-parented / CODA */}
+        <CommunityToggle
+          label="Deaf-parented / CODA"
+          helper="Select if you grew up with Deaf parents or are a Child of Deaf Adults"
+          checked={formData.deafParented}
+          onChange={() => updateField('deafParented', !formData.deafParented)}
+        />
+
+        {/* BIPOC */}
+        <CommunityToggle
+          label="BIPOC"
+          checked={formData.bipoc}
+          onChange={() => {
+            if (formData.bipoc) {
+              updateField('bipoc', false)
+              updateField('bipocDetails', [])
+            } else {
+              updateField('bipoc', true)
+            }
+          }}
+        />
+        {formData.bipoc && (
+          <div style={{ marginLeft: 16, marginBottom: 16, paddingLeft: 16, borderLeft: '2px solid var(--border)', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {['Black/African American', 'Asian/Pacific Islander', 'Hispanic/Latino(a)', 'Indigenous/Native American', 'Middle Eastern/North African', 'Multiracial'].map(opt => {
+              const selected = formData.bipocDetails.includes(opt)
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => updateField('bipocDetails', selected
+                    ? formData.bipocDetails.filter(x => x !== opt)
+                    : [...formData.bipocDetails, opt]
+                  )}
+                  style={{
+                    padding: '5px 14px', borderRadius: 20, fontSize: '0.8rem', cursor: 'pointer',
+                    border: selected ? '1px solid rgba(0,229,255,0.5)' : '1px solid var(--border)',
+                    background: selected ? 'rgba(0,229,255,0.1)' : 'var(--surface2)',
+                    color: selected ? 'var(--accent)' : 'var(--muted)',
+                    fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
+                  }}
+                >{opt}</button>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Religious affiliation */}
+        <CommunityToggle
+          label="Religious affiliation"
+          checked={formData.religiousAffiliation}
+          onChange={() => {
+            if (formData.religiousAffiliation) {
+              updateField('religiousAffiliation', false)
+              updateField('religiousDetails', [])
+            } else {
+              updateField('religiousAffiliation', true)
+            }
+          }}
+        />
+        {formData.religiousAffiliation && (
+          <div style={{ marginLeft: 16, marginBottom: 16, paddingLeft: 16, borderLeft: '2px solid var(--border)', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {['Buddhist', 'Christian', 'Hindu', 'Jewish', 'Muslim', 'Sikh', 'Other'].map(opt => {
+              const selected = formData.religiousDetails.includes(opt)
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => updateField('religiousDetails', selected
+                    ? formData.religiousDetails.filter(x => x !== opt)
+                    : [...formData.religiousDetails, opt]
+                  )}
+                  style={{
+                    padding: '5px 14px', borderRadius: 20, fontSize: '0.8rem', cursor: 'pointer',
+                    border: selected ? '1px solid rgba(0,229,255,0.5)' : '1px solid var(--border)',
+                    background: selected ? 'rgba(0,229,255,0.1)' : 'var(--surface2)',
+                    color: selected ? 'var(--accent)' : 'var(--muted)',
+                    fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
+                  }}
+                >{opt}</button>
+              )
+            })}
+          </div>
+        )}
+      </FormSection>
+
+      {/* Platform Agreement & Submit */}
       <div style={{
         background: 'var(--card-bg)', border: '1px solid var(--border)',
         borderRadius: 'var(--radius)', padding: 32, textAlign: 'center',

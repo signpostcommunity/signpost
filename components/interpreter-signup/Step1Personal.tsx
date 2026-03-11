@@ -1,49 +1,15 @@
 'use client'
 
+import { useState, useRef } from 'react'
 import { useForm } from './FormContext'
 import {
   StepWrapper, FormSection, SectionTitle, FormRow, FormField, FieldLabel,
-  TextInput, PasswordInput, SelectInput, TextareaInput,
+  TextInput, PasswordInput, SelectInput,
   ToggleTile, FormNav,
 } from './FormFields'
-
-function CommunityToggle({ label, description, checked, onChange }: {
-  label: string
-  description: string
-  checked: boolean
-  onChange: (v: boolean) => void
-}) {
-  return (
-    <div style={{
-      background: 'var(--surface2)', border: `1px solid ${checked ? 'rgba(0,229,255,0.25)' : 'var(--border)'}`,
-      borderRadius: 'var(--radius-sm)', padding: '14px 18px',
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-      transition: 'border-color 0.2s',
-    }}>
-      <div>
-        <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text)', marginBottom: 2 }}>{label}</div>
-        <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>{description}</div>
-      </div>
-      <button
-        type="button"
-        onClick={() => onChange(!checked)}
-        style={{
-          width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer',
-          background: checked ? 'var(--accent)' : 'var(--border)',
-          position: 'relative', transition: 'background 0.2s', flexShrink: 0,
-        }}
-      >
-        <span style={{
-          position: 'absolute', top: 2, left: checked ? 22 : 2,
-          width: 20, height: 20, borderRadius: '50%', background: '#fff',
-          transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-        }} />
-      </button>
-    </div>
-  )
-}
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton'
 import LocationPicker from '@/components/shared/LocationPicker'
+import { createClient } from '@/lib/supabase/client'
 
 const REGIONS = [
   { label: '🌍 Worldwide', color: '#00e5ff' },
@@ -59,6 +25,12 @@ const REGIONS = [
 
 export default function Step1Personal({ onContinue }: { onContinue: () => void }) {
   const { formData, updateField } = useForm()
+  const supabase = createClient()
+
+  // Photo upload state
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadMsg, setUploadMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
 
   const worldwideSelected = formData.regions.includes('🌍 Worldwide')
 
@@ -78,6 +50,46 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
       : [...current, role]
     )
   }
+
+  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 2 * 1024 * 1024) {
+      setUploadMsg({ text: 'File must be under 2 MB.', type: 'error' })
+      return
+    }
+
+    setUploading(true)
+    setUploadMsg(null)
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      setUploading(false)
+      setUploadMsg({ text: 'You must be signed in to upload. Complete account creation first.', type: 'error' })
+      return
+    }
+
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+    const path = `${user.id}/${Date.now()}.${ext}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('avatars')
+      .upload(path, file, { upsert: true })
+
+    if (uploadError) {
+      setUploading(false)
+      setUploadMsg({ text: `Upload failed: ${uploadError.message}`, type: 'error' })
+      return
+    }
+
+    const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path)
+    updateField('avatarUrl', urlData.publicUrl)
+    setUploading(false)
+    setUploadMsg({ text: 'Photo uploaded.', type: 'success' })
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const initials = `${(formData.firstName || '')[0] || ''}${(formData.lastName || '')[0] || ''}`.toUpperCase() || '?'
 
   return (
     <StepWrapper>
@@ -118,6 +130,61 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
       {/* Divider */}
       <div style={{ borderTop: '1px solid var(--border)', marginBottom: 36 }} />
 
+      {/* Profile Photo */}
+      <FormSection>
+        <SectionTitle>Profile Photo</SectionTitle>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 20, marginBottom: 8,
+          background: 'var(--surface2)', border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-sm)', padding: '20px 24px',
+        }}>
+          {formData.avatarUrl ? (
+            <img src={formData.avatarUrl} alt="Profile" style={{
+              width: 72, height: 72, borderRadius: '50%', objectFit: 'cover',
+              border: '2px solid var(--accent)', flexShrink: 0,
+            }} />
+          ) : (
+            <div style={{
+              width: 72, height: 72, borderRadius: '50%', flexShrink: 0,
+              background: 'linear-gradient(135deg,#7b61ff,#00e5ff)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.4rem', color: '#fff',
+            }}>{initials}</div>
+          )}
+          <div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoUpload}
+              style={{ display: 'none' }}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              style={{
+                background: 'none', border: '1px solid rgba(0,229,255,0.4)',
+                color: 'var(--accent)', borderRadius: 8, padding: '8px 16px',
+                fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
+                fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
+                opacity: uploading ? 0.6 : 1,
+              }}
+            >
+              {uploading ? 'Uploading...' : formData.avatarUrl ? 'Change photo' : 'Upload photo'}
+            </button>
+            <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: 6 }}>
+              JPG, PNG, or WebP. Max 2 MB.
+            </div>
+            {uploadMsg && (
+              <div style={{
+                fontSize: '0.78rem', marginTop: 6,
+                color: uploadMsg.type === 'success' ? '#34d399' : 'var(--accent3)',
+              }}>{uploadMsg.text}</div>
+            )}
+          </div>
+        </div>
+      </FormSection>
+
       {/* Personal Information */}
       <FormSection>
         <SectionTitle>Personal Information</SectionTitle>
@@ -140,6 +207,24 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
           </FormField>
         </FormRow>
 
+        <FormRow>
+          <FormField>
+            <FieldLabel>Pronouns</FieldLabel>
+            <SelectInput
+              value={formData.pronouns}
+              onChange={e => updateField('pronouns', e.target.value)}
+            >
+              <option value="">Select…</option>
+              <option>she/her</option>
+              <option>he/him</option>
+              <option>they/them</option>
+              <option>she/they</option>
+              <option>he/they</option>
+              <option>Other</option>
+            </SelectInput>
+          </FormField>
+        </FormRow>
+
         <LocationPicker
           country={formData.country}
           state={formData.state}
@@ -153,7 +238,7 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
 
         <FormRow>
           <FormField>
-            <FieldLabel>Phone / WhatsApp</FieldLabel>
+            <FieldLabel>Phone / VP</FieldLabel>
             <TextInput
               type="tel"
               placeholder="+1 555 000 0000"
@@ -249,41 +334,6 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
             </SelectInput>
           </FormField>
         </FormRow>
-
-        <FormRow full>
-          <FormField>
-            <FieldLabel>Professional Bio *</FieldLabel>
-            <TextareaInput
-              placeholder="Tell the signpost community about yourself: your background, professional experience, specializations, etc."
-              value={formData.bio}
-              onChange={e => updateField('bio', e.target.value)}
-            />
-          </FormField>
-        </FormRow>
-      </FormSection>
-
-      {/* Regions */}
-      <FormSection style={{ marginTop: 32 }}>
-        <SectionTitle>Regions Available For Work Travel</SectionTitle>
-        <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginBottom: 12, marginTop: -12 }}>
-          Select all regions where you are willing and able to work on-site. Remote work is available globally regardless of selection.
-        </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
-          {REGIONS.map(r => {
-            const isOther = r.label !== '🌍 Worldwide'
-            const disabled = isOther && worldwideSelected
-            return (
-              <div key={r.label} style={{ opacity: disabled ? 0.4 : 1, pointerEvents: disabled ? 'none' : 'auto', transition: 'opacity 0.2s' }}>
-                <ToggleTile
-                  label={r.label}
-                  dotColor={r.color}
-                  selected={formData.regions.includes(r.label)}
-                  onToggle={() => toggleRegion(r.label)}
-                />
-              </div>
-            )
-          })}
-        </div>
       </FormSection>
 
       {/* Event Coordination */}
@@ -315,11 +365,17 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
               </div>
               <FormField>
                 <FieldLabel>Brief description of your coordination experience</FieldLabel>
-                <TextareaInput
+                <textarea
                   placeholder="e.g. I have coordinated interpreter teams for UN General Assembly side events and international academic conferences, managing scheduling, relay logistics, and on-site briefings…"
                   value={formData.coordinationBio}
                   onChange={e => updateField('coordinationBio', e.target.value)}
-                  style={{ minHeight: 80 }}
+                  style={{
+                    background: 'var(--surface2)', border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-sm)', padding: '11px 14px',
+                    color: 'var(--text)', fontFamily: "'DM Sans', sans-serif",
+                    fontSize: '0.9rem', outline: 'none', width: '100%',
+                    boxSizing: 'border-box', resize: 'vertical', minHeight: 80,
+                  }}
                 />
               </FormField>
             </div>
@@ -327,106 +383,27 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
         </div>
       </FormSection>
 
-      {/* Community & Identity */}
+      {/* Regions */}
       <FormSection style={{ marginTop: 32 }}>
-        <SectionTitle>Community &amp; Identity (Optional)</SectionTitle>
-        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
-          Help requesters find interpreters who share their lived experience. All fields are optional and visible on your public profile.
+        <SectionTitle>Regions Available For Work Travel</SectionTitle>
+        <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginBottom: 12, marginTop: -12 }}>
+          Select all regions where you are willing and able to work on-site. Remote work is available globally regardless of selection.
         </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <CommunityToggle
-            label="LGBTQ+"
-            description="I identify as a member of the LGBTQ+ community"
-            checked={formData.lgbtq}
-            onChange={v => updateField('lgbtq', v)}
-          />
-          <CommunityToggle
-            label="Deaf-parented"
-            description="I was raised by Deaf parent(s) (CODA)"
-            checked={formData.deafParented}
-            onChange={v => updateField('deafParented', v)}
-          />
-          <CommunityToggle
-            label="BIPOC"
-            description="I identify as Black, Indigenous, or a Person of Color"
-            checked={formData.bipoc}
-            onChange={v => updateField('bipoc', v)}
-          />
-          {formData.bipoc && (
-            <div style={{ paddingLeft: 20, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {['Black/African American', 'Indigenous/Native American', 'Hispanic/Latine', 'Asian/Pacific Islander', 'Middle Eastern/North African', 'Multiracial'].map(opt => {
-                const selected = formData.bipocDetails.includes(opt)
-                return (
-                  <button
-                    key={opt}
-                    type="button"
-                    onClick={() => updateField('bipocDetails', selected
-                      ? formData.bipocDetails.filter(x => x !== opt)
-                      : [...formData.bipocDetails, opt]
-                    )}
-                    style={{
-                      padding: '5px 12px', borderRadius: 100, fontSize: '0.78rem', fontWeight: 500,
-                      border: `1px solid ${selected ? 'rgba(0,229,255,0.5)' : 'var(--border)'}`,
-                      background: selected ? 'rgba(0,229,255,0.1)' : 'var(--surface2)',
-                      color: selected ? 'var(--accent)' : 'var(--muted)',
-                      cursor: 'pointer', transition: 'all 0.15s',
-                      fontFamily: "'DM Sans', sans-serif",
-                    }}
-                  >
-                    {opt}
-                  </button>
-                )
-              })}
-            </div>
-          )}
-          <CommunityToggle
-            label="Religious Affiliation"
-            description="I'd like to share my religious or spiritual background"
-            checked={formData.religiousAffiliation}
-            onChange={v => updateField('religiousAffiliation', v)}
-          />
-          {formData.religiousAffiliation && (
-            <div style={{ paddingLeft: 20, display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {['Christian', 'Jewish', 'Muslim', 'Buddhist', 'Hindu', 'Sikh', 'Other'].map(opt => {
-                const selected = formData.religiousDetails.includes(opt)
-                return (
-                  <button
-                    key={opt}
-                    type="button"
-                    onClick={() => updateField('religiousDetails', selected
-                      ? formData.religiousDetails.filter(x => x !== opt)
-                      : [...formData.religiousDetails, opt]
-                    )}
-                    style={{
-                      padding: '5px 12px', borderRadius: 100, fontSize: '0.78rem', fontWeight: 500,
-                      border: `1px solid ${selected ? 'rgba(0,229,255,0.5)' : 'var(--border)'}`,
-                      background: selected ? 'rgba(0,229,255,0.1)' : 'var(--surface2)',
-                      color: selected ? 'var(--accent)' : 'var(--muted)',
-                      cursor: 'pointer', transition: 'all 0.15s',
-                      fontFamily: "'DM Sans', sans-serif",
-                    }}
-                  >
-                    {opt}
-                  </button>
-                )
-              })}
-            </div>
-          )}
-          <div style={{
-            background: 'var(--surface2)', border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-sm)', padding: '14px 18px',
-          }}>
-            <FieldLabel>Gender Identity (optional)</FieldLabel>
-            <SelectInput
-              value={formData.genderIdentity}
-              onChange={e => updateField('genderIdentity', e.target.value)}
-            >
-              <option value="">Prefer not to say</option>
-              <option value="female">Female</option>
-              <option value="male">Male</option>
-              <option value="nonbinary">Non-binary</option>
-            </SelectInput>
-          </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10 }}>
+          {REGIONS.map(r => {
+            const isOther = r.label !== '🌍 Worldwide'
+            const disabled = isOther && worldwideSelected
+            return (
+              <div key={r.label} style={{ opacity: disabled ? 0.4 : 1, pointerEvents: disabled ? 'none' : 'auto', transition: 'opacity 0.2s' }}>
+                <ToggleTile
+                  label={r.label}
+                  dotColor={r.color}
+                  selected={formData.regions.includes(r.label)}
+                  onToggle={() => toggleRegion(r.label)}
+                />
+              </div>
+            )
+          })}
         </div>
       </FormSection>
 

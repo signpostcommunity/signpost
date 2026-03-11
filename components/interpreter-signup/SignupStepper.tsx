@@ -8,9 +8,9 @@ const STEPS = [
   '1. Personal Info',
   '2. Languages',
   '3. Credentials',
-  '4. Rates & Terms',
-  '5. Intro Video',
-  '6. Review',
+  '4. Bio & Video',
+  '5. Skills',
+  '6. Community',
 ]
 
 export default function SignupStepper() {

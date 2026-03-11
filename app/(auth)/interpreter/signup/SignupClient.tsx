@@ -1,21 +1,21 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
 import { FormProvider, useForm } from '@/components/interpreter-signup/FormContext'
 import SignupStepper from '@/components/interpreter-signup/SignupStepper'
 import Step1Personal from '@/components/interpreter-signup/Step1Personal'
 import Step2Languages from '@/components/interpreter-signup/Step2Languages'
 import Step3Credentials from '@/components/interpreter-signup/Step3Credentials'
-import Step4Rates from '@/components/interpreter-signup/Step4Rates'
-import Step5Video from '@/components/interpreter-signup/Step5Video'
+import Step4BioVideo from '@/components/interpreter-signup/Step4BioVideo'
+import Step5Skills from '@/components/interpreter-signup/Step5Skills'
 import Step6Review from '@/components/interpreter-signup/Step6Review'
 
 // TODO: Wire draft resume — load draft_data and draft_step from interpreter_profiles,
 // pre-fill the signup form, and jump to the saved step when ?resume=true is in the URL
 
 function SignupForm() {
-  const { currentStep, setCurrentStep, formData, updateFormData, setDraftUserId, saveDraft } = useForm()
+  const { currentStep, setCurrentStep, formData, updateFormData, setDraftUserId, saveDraft, draftUserId } = useForm()
   const [step1Error, setStep1Error] = useState<string | null>(null)
   const [isCreatingAccount, setIsCreatingAccount] = useState(false)
 
@@ -24,7 +24,37 @@ function SignupForm() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
+  // Check if user is already authenticated (e.g. via Google OAuth redirect)
+  useEffect(() => {
+    if (draftUserId) return // Already set
+    ;(async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        setDraftUserId(user.id)
+        // Pre-fill name from Google metadata if available
+        const fullName = user.user_metadata?.full_name
+        if (fullName && !formData.firstName) {
+          const parts = fullName.split(' ')
+          updateFormData({
+            firstName: parts[0] || '',
+            lastName: parts.slice(1).join(' ') || '',
+            email: user.email || '',
+          })
+        } else if (user.email && !formData.email) {
+          updateFormData({ email: user.email })
+        }
+      }
+    })()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   async function handleStep1Continue() {
+    // If user is already authenticated (OAuth), skip account creation
+    if (draftUserId) {
+      setCurrentStep(2)
+      return
+    }
+
     if (!formData.email || !formData.password) {
       setStep1Error('Email and password are required.')
       return
@@ -106,10 +136,10 @@ function SignupForm() {
           <Step3Credentials onBack={() => setCurrentStep(2)} onContinue={() => goToStep(4)} />
         )}
         {currentStep === 4 && (
-          <Step4Rates onBack={() => setCurrentStep(3)} onContinue={() => goToStep(5)} />
+          <Step4BioVideo onBack={() => setCurrentStep(3)} onContinue={() => goToStep(5)} />
         )}
         {currentStep === 5 && (
-          <Step5Video onBack={() => setCurrentStep(4)} onContinue={() => goToStep(6)} />
+          <Step5Skills onBack={() => setCurrentStep(4)} onContinue={() => goToStep(6)} />
         )}
         {currentStep === 6 && (
           <Step6Review onBack={() => setCurrentStep(5)} />
