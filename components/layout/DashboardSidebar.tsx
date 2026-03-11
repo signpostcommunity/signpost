@@ -47,6 +47,7 @@ const NAV: NavGroup[] = [
   {
     section: 'Account',
     items: [
+      { label: 'Account Settings', href: '/interpreter/dashboard/profile?tab=account-settings', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 10a2 2 0 100-4 2 2 0 000 4z" stroke="currentColor" strokeWidth="1.3"/><path d="M13.5 8a5.5 5.5 0 01-.28 1.74l1.18.68-.75 1.3-1.18-.68A5.5 5.5 0 018 13.5a5.5 5.5 0 01-4.47-2.46l-1.18.68-.75-1.3 1.18-.68A5.5 5.5 0 012.5 8c0-.6.1-1.18.28-1.74L1.6 5.58l.75-1.3 1.18.68A5.5 5.5 0 018 2.5a5.5 5.5 0 014.47 2.46l1.18-.68.75 1.3-1.18.68c.18.56.28 1.14.28 1.74z" stroke="currentColor" strokeWidth="1.3"/></svg> },
       { label: 'Back to front page', href: '/', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg> },
     ],
   },
@@ -149,9 +150,11 @@ function SidebarContent({ userName, userInitials, photoUrl, badges }: {
               {group.section}
             </div>
             {group.items.map(item => {
-              const active = item.href === '/interpreter/dashboard'
-                ? pathname === item.href
-                : pathname.startsWith(item.href)
+              const hrefPath = item.href.split('?')[0]
+              const hasQuery = item.href.includes('?')
+              const active = hrefPath === '/interpreter/dashboard'
+                ? pathname === hrefPath
+                : hasQuery ? false : pathname.startsWith(hrefPath)
               const badgeCount = item.badgeKey ? (badges[item.badgeKey] ?? 0) : 0
               return (
                 <Link

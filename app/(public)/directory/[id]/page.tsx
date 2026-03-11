@@ -15,7 +15,7 @@ export default async function ProfilePage({ params }: Props) {
 
   const { data, error } = await supabase
     .from('interpreter_profiles')
-    .select('id, name, first_name, last_name, city, state, country, interpreter_type, work_mode, years_experience, bio, bio_specializations, bio_extra, available, avatar_color, photo_url, video_url, video_desc, rating, review_count, sign_languages, spoken_languages, specializations, specialized_skills, regions')
+    .select('id, name, first_name, last_name, city, state, country, interpreter_type, work_mode, years_experience, bio, bio_specializations, bio_extra, available, avatar_color, photo_url, video_url, video_desc, rating, review_count, sign_languages, spoken_languages, specializations, specialized_skills, regions, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, draft_data')
     .eq('id', id)
     .in('status', ['approved', 'active'])
     .maybeSingle();
@@ -30,7 +30,7 @@ export default async function ProfilePage({ params }: Props) {
 
   const fullName = data.name || [data.first_name, data.last_name].filter(Boolean).join(' ') || 'Interpreter';
   const initials = fullName.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
-  const location = [data.city, data.state].filter(Boolean).join(', ') || [data.city, data.country].filter(Boolean).join(', ');
+  const location = [data.city, data.state, data.country].filter(Boolean).join(' · ');
 
   const interpreter: Interpreter = {
     id: data.id,
@@ -42,7 +42,9 @@ export default async function ProfilePage({ params }: Props) {
     spokenLangs: data.spoken_languages || [],
     specs: data.specializations || [],
     specializedSkills: data.specialized_skills || [],
-    certs: [],
+    certs: ((data.draft_data as Record<string, unknown> | null)?.certifications as Array<{ name: string }> | undefined)
+      ?.filter((c: { name: string }) => c.name?.trim())
+      .map((c: { name: string }) => c.name.trim()) || [],
     rating: Number(data.rating) || 0,
     reviews: data.review_count || 0,
     available: data.available ?? true,
@@ -55,9 +57,19 @@ export default async function ProfilePage({ params }: Props) {
     photoUrl: data.photo_url || undefined,
     gender: null,
     isDeafInterpreter: data.interpreter_type === 'Deaf Interpreter',
-    affinities: [],
-    racialIdentity: [],
-    religiousAffiliation: [],
+    affinities: [
+      ...(data.lgbtq ? ['LGBTQ+'] : []),
+      ...(data.deaf_parented ? ['Deaf-parented / CODA'] : []),
+      ...(data.bipoc && !(data.bipoc_details as string[] | null)?.length ? ['BIPOC'] : []),
+    ],
+    racialIdentity: data.bipoc && (data.bipoc_details as string[] | null)?.length
+      ? ['BIPOC', ...(data.bipoc_details as string[])]
+      : [],
+    religiousAffiliation: data.religious_affiliation
+      ? (data.religious_details as string[] | null)?.length
+        ? ['Religious Affiliation', ...(data.religious_details as string[])]
+        : ['Religious Affiliation']
+      : [],
   };
 
   return <ProfileClient interpreter={interpreter} />;

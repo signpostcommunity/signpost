@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { PageHeader } from '@/components/dashboard/interpreter/shared'
 import Toast from '@/components/ui/Toast'
@@ -190,7 +190,7 @@ interface ProfileClientProps {
 
 // ── Tabs ─────────────────────────────────────────────────────────────────────
 
-const TABS = ['Personal', 'Languages', 'Credentials', 'Bio & Video', 'Skills', 'Community & Identity', 'Settings'] as const
+const TABS = ['Personal', 'Languages', 'Credentials', 'Bio & Video', 'Skills', 'Community & Identity', 'Account Settings'] as const
 type Tab = typeof TABS[number]
 
 function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
@@ -245,8 +245,17 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const p = (rawProfile || {}) as ProfileData
   const hasProfile = !!rawProfile
   const router = useRouter()
+  const searchParams = useSearchParams()
 
-  const [activeTab, setActiveTabRaw] = useState<Tab>('Personal')
+  const initialTab = (() => {
+    const tabParam = searchParams.get('tab')
+    if (tabParam) {
+      const match = TABS.find(t => t.toLowerCase().replace(/\s+/g, '-') === tabParam)
+      if (match) return match
+    }
+    return 'Personal' as Tab
+  })()
+  const [activeTab, setActiveTabRaw] = useState<Tab>(initialTab)
   function setActiveTab(tab: Tab) {
     setActiveTabRaw(tab)
     window.scrollTo({ top: 0, behavior: 'instant' })
@@ -972,14 +981,14 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
         <>
           <div style={sectionTitleStyle}>Community &amp; Identity</div>
           <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 20, marginTop: -12, lineHeight: 1.6 }}>
-            Optionally share identity information. This helps clients find interpreters who share their background or community.
+            These fields are entirely optional and self-selected. They help Deaf clients and requesters find interpreters who are the right match for culturally specific work.
           </p>
 
           {/* LGBTQ+ */}
-          <CommunityToggle label="LGBTQ+" checked={lgbtq} onChange={() => setLgbtq(!lgbtq)} />
+          <CommunityToggle label="LGBTQ+" helper="Select if you are available for and affirming of LGBTQ+ clients and settings" checked={lgbtq} onChange={() => setLgbtq(!lgbtq)} />
 
-          {/* Deaf-parented */}
-          <CommunityToggle label="Deaf-parented (CODA)" checked={deafParented} onChange={() => setDeafParented(!deafParented)} />
+          {/* Deaf-parented / CODA */}
+          <CommunityToggle label="Deaf-parented / CODA" helper="Select if you grew up with Deaf parents or are a Child of Deaf Adults" checked={deafParented} onChange={() => setDeafParented(!deafParented)} />
 
           {/* BIPOC */}
           <CommunityToggle label="BIPOC" checked={bipoc} onChange={() => { if (bipoc) { setBipoc(false); setBipocDetails([]) } else { setBipoc(true) } }} />
@@ -1024,8 +1033,8 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
         </>
       )}
 
-      {/* ── Tab 7: Settings ──────────────────────────────────────────── */}
-      {activeTab === 'Settings' && (
+      {/* ── Tab 7: Account Settings ──────────────────────────────────── */}
+      {activeTab === 'Account Settings' && (
         <SettingsTab
           invoicingPref={invoicingPref}
           setInvoicingPref={setInvoicingPref}
@@ -1361,12 +1370,12 @@ function SkillsTab({ specs, setSpecs, specializedSkills, setSpecializedSkills, s
 
 // ── Community toggle ──────────────────────────────────────────────────────────
 
-function CommunityToggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: () => void }) {
+function CommunityToggle({ label, helper, checked, onChange }: { label: string; helper?: string; checked: boolean; onChange: () => void }) {
   return (
     <button onClick={onChange} style={{
       display: 'flex', alignItems: 'center', gap: 12, width: '100%',
       padding: '10px 0', marginBottom: 8, background: 'none', border: 'none',
-      cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+      cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", textAlign: 'left',
     }}>
       <div style={{
         width: 40, height: 20, borderRadius: 100, flexShrink: 0,
@@ -1381,11 +1390,15 @@ function CommunityToggle({ label, checked, onChange }: { label: string; checked:
           left: checked ? 22 : 2, transition: 'left 0.2s',
         }} />
       </div>
-      <span style={{
-        fontSize: '0.9rem',
-        color: checked ? 'var(--accent)' : 'var(--muted)',
-        fontWeight: checked ? 600 : 400,
-      }}>{label}</span>
+      <div>
+        <span style={{
+          fontSize: '0.9rem',
+          color: checked ? 'var(--accent)' : 'var(--muted)',
+          fontWeight: checked ? 600 : 400,
+          display: 'block',
+        }}>{label}</span>
+        {helper && <span style={{ fontSize: '0.78rem', color: 'var(--muted)', opacity: 0.7, lineHeight: 1.4 }}>{helper}</span>}
+      </div>
     </button>
   )
 }

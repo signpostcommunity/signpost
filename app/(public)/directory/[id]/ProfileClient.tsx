@@ -199,29 +199,29 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
                         borderRadius: '100px',
                         padding: '4px 10px',
                         fontSize: '0.75rem',
-                        border: '1px solid var(--border)',
-                        background: 'rgba(255,255,255,0.05)',
-                        color: 'var(--muted)',
+                        border: '1px solid rgba(123,97,255,0.35)',
+                        background: 'rgba(123,97,255,0.1)',
+                        color: '#7b61ff',
                       }}
                     >
                       {lang}
                     </span>
                   ))}
-                  {i.specs.map((spec) => (
+                  {i.certs.slice(0, 3).map((cert) => (
                     <span
-                      key={spec}
+                      key={cert}
                       style={{
                         display: 'inline-flex',
                         alignItems: 'center',
                         borderRadius: '100px',
                         padding: '4px 10px',
-                        fontSize: '0.75rem',
-                        border: '1px solid var(--border)',
-                        background: 'var(--surface2)',
+                        fontSize: '0.72rem',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        background: 'rgba(255,255,255,0.05)',
                         color: 'var(--text)',
                       }}
                     >
-                      {spec}
+                      {cert}
                     </span>
                   ))}
                 </div>
@@ -538,32 +538,32 @@ function OverviewTab({ interpreter: i }: { interpreter: Interpreter }) {
         )
       })()}
 
-      {i.affinities.length > 0 && (
+      {(i.affinities.length > 0 || i.racialIdentity.length > 0 || i.religiousAffiliation.length > 0) && (
         <Section title="Community & Identity">
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
             {i.affinities.map(a => (
               <span key={a} style={{
-                padding: '5px 14px', borderRadius: 100, fontSize: '0.82rem', fontWeight: 600,
-                border: '1px solid rgba(0,229,255,0.3)', background: 'rgba(0,229,255,0.08)',
-                color: 'var(--accent)',
+                padding: '6px 14px', borderRadius: 100, fontSize: '0.82rem', fontWeight: 600,
+                border: '1px solid rgba(123,97,255,0.35)', background: 'rgba(123,97,255,0.1)',
+                color: '#7b61ff',
               }}>
                 {a}
               </span>
             ))}
             {i.racialIdentity.map(r => (
               <span key={r} style={{
-                padding: '5px 14px', borderRadius: 100, fontSize: '0.82rem',
-                border: '1px solid var(--border)', background: 'var(--surface2)',
-                color: 'var(--text)',
+                padding: '6px 14px', borderRadius: 100, fontSize: '0.82rem',
+                border: '1px solid rgba(123,97,255,0.35)', background: 'rgba(123,97,255,0.1)',
+                color: '#7b61ff',
               }}>
                 {r}
               </span>
             ))}
             {i.religiousAffiliation.map(r => (
               <span key={r} style={{
-                padding: '5px 14px', borderRadius: 100, fontSize: '0.82rem',
-                border: '1px solid var(--border)', background: 'var(--surface2)',
-                color: 'var(--text)',
+                padding: '6px 14px', borderRadius: 100, fontSize: '0.82rem',
+                border: '1px solid rgba(123,97,255,0.35)', background: 'rgba(123,97,255,0.1)',
+                color: '#7b61ff',
               }}>
                 {r}
               </span>
@@ -580,15 +580,15 @@ function OverviewTab({ interpreter: i }: { interpreter: Interpreter }) {
             return <p style={{ color: 'var(--muted)', fontSize: '0.88rem' }}>No specializations listed.</p>;
           }
           return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
               {categories.map(([cat, subs]) => (
                 <div key={cat}>
-                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px', fontFamily: 'var(--font-syne)' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#c8c4bc', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontFamily: 'var(--font-syne)' }}>
                     {cat}
                   </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {subs.map(s => (
-                      <span key={s} style={{ padding: '5px 12px', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '0.82rem', color: 'var(--text)' }}>
+                      <span key={s} style={{ padding: '6px 14px', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '0.82rem', color: 'var(--text)' }}>
                         {s}
                       </span>
                     ))}
@@ -597,12 +597,12 @@ function OverviewTab({ interpreter: i }: { interpreter: Interpreter }) {
               ))}
               {i.specializedSkills && i.specializedSkills.length > 0 && (
                 <div>
-                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#a891ff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px', fontFamily: 'var(--font-syne)' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#a891ff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontFamily: 'var(--font-syne)' }}>
                     Specialized Skills
                   </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {i.specializedSkills.map(s => (
-                      <span key={s} style={{ padding: '5px 12px', background: 'rgba(123,97,255,0.08)', border: '1px solid rgba(123,97,255,0.3)', borderRadius: '8px', fontSize: '0.82rem', color: '#a891ff', fontWeight: 600 }}>
+                      <span key={s} style={{ padding: '6px 14px', background: 'rgba(123,97,255,0.08)', border: '1px solid rgba(123,97,255,0.3)', borderRadius: '8px', fontSize: '0.82rem', color: '#a891ff', fontWeight: 600 }}>
                         {s}
                       </span>
                     ))}
