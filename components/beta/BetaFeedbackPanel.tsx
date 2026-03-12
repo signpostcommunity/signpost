@@ -191,6 +191,9 @@ type PageFeedback = {
 
 export default function BetaFeedbackPanel() {
   const pathname = usePathname();
+
+  const isAdmin = pathname.startsWith('/admin');
+
   const [isOpen, setIsOpen] = useState(true);
 
   // Per-page fields (current page)
@@ -355,6 +358,9 @@ export default function BetaFeedbackPanel() {
   function toggleCheckbox(value: string, arr: string[], setter: (v: string[]) => void) {
     setter(arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value]);
   }
+
+  // Admins don't need the feedback panel — they have the Beta Feedback viewer page
+  if (isAdmin) return null;
 
   // ── Collapsed tab ───────────────────────────────────────────────────────────
   if (!isOpen) {

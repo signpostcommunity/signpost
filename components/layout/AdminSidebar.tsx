@@ -60,6 +60,16 @@ const NAV: NavGroup[] = [
       },
     ],
   },
+  {
+    section: 'North Star',
+    items: [
+      {
+        label: 'Product Vision',
+        href: '/admin/dashboard/vision',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L9.4 5.8H13.9L10.25 8.4L11.65 12.7L8 10.1L4.35 12.7L5.75 8.4L2.1 5.8H6.6L8 1.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/></svg>,
+      },
+    ],
+  },
 ]
 
 function LogoutButton() {
