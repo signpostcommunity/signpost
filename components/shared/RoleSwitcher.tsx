@@ -116,7 +116,7 @@ export default function RoleSwitcher({ currentRole }: { currentRole: string }) {
         textTransform: 'uppercase', color: 'var(--muted)',
         marginBottom: 6,
       }}>
-        Switch Role
+        Change Hats
       </div>
 
       {/* Dropdown trigger */}
