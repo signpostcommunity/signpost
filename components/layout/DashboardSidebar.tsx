@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import PendingRolesSection from './PendingRolesSection'
+import RoleSwitcher from '@/components/shared/RoleSwitcher'
 
 interface NavItem {
   label: string
@@ -122,21 +122,39 @@ function SidebarContent({ userName, userInitials, photoUrl, badges }: {
             <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 2 }}>Interpreter</div>
           </div>
           {/* Notification bell */}
-          <Link href="/interpreter/dashboard/profile" style={{ position: 'relative', color: 'var(--muted)', textDecoration: 'none', padding: 4 }}>
+          <Link
+            href="/interpreter/dashboard/inbox"
+            title="Inbox"
+            style={{
+              position: 'relative', color: 'var(--muted)', textDecoration: 'none',
+              padding: 6, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', transition: 'color 0.15s, background 0.15s',
+              background: 'transparent',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)'; e.currentTarget.style.background = 'rgba(0,229,255,0.08)' }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.background = 'transparent' }}
+          >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M13.5 6.75a4.5 4.5 0 1 0-9 0c0 4.5-2.25 5.625-2.25 5.625h13.5s-2.25-1.125-2.25-5.625M10.3 14.625a1.5 1.5 0 0 1-2.6 0" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
             {(badges.notifications ?? 0) > 0 && (
               <span style={{
-                position: 'absolute', top: 0, right: 0,
-                width: 8, height: 8, borderRadius: '50%',
-                background: 'var(--accent)',
-                border: '2px solid var(--surface)',
-              }} />
+                position: 'absolute', top: 2, right: 2,
+                minWidth: 14, height: 14, borderRadius: 7,
+                background: '#df2f4a', border: '2px solid var(--surface)',
+                fontSize: '0.55rem', fontWeight: 700, color: '#fff',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                padding: '0 3px',
+              }}>
+                {badges.notifications > 9 ? '9+' : badges.notifications}
+              </span>
             )}
           </Link>
         </div>
       </div>
+
+      {/* Role switcher */}
+      <RoleSwitcher currentRole="interpreter" />
 
       {/* Nav */}
       <nav aria-label="Dashboard navigation" style={{ flex: 1, padding: '12px 0' }}>
@@ -191,9 +209,6 @@ function SidebarContent({ userName, userInitials, photoUrl, badges }: {
           </div>
         ))}
       </nav>
-
-      {/* Pending roles */}
-      <PendingRolesSection />
 
       {/* Log out */}
       <div style={{ borderTop: '1px solid var(--border)', padding: '8px 0' }}>

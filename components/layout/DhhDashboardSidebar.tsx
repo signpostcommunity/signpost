@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import PendingRolesSection from './PendingRolesSection'
+import RoleSwitcher from '@/components/shared/RoleSwitcher'
 
 interface NavItem {
   label: string
@@ -118,8 +118,28 @@ function SidebarContent({ userName, userInitials, badges }: {
             <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.92rem' }}>{userName}</div>
             <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 2 }}>Deaf Individual</div>
           </div>
+          {/* Notification bell */}
+          <Link
+            href="/dhh/dashboard"
+            title="Notifications"
+            style={{
+              position: 'relative', color: 'var(--muted)', textDecoration: 'none',
+              padding: 6, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', transition: 'color 0.15s, background 0.15s',
+              background: 'transparent',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#9d87ff'; e.currentTarget.style.background = 'rgba(157,135,255,0.08)' }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.background = 'transparent' }}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M13.5 6.75a4.5 4.5 0 1 0-9 0c0 4.5-2.25 5.625-2.25 5.625h13.5s-2.25-1.125-2.25-5.625M10.3 14.625a1.5 1.5 0 0 1-2.6 0" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </Link>
         </div>
       </div>
+
+      {/* Role switcher */}
+      <RoleSwitcher currentRole="deaf" />
 
       {/* Nav */}
       <nav aria-label="Dashboard navigation" style={{ flex: 1, padding: '12px 0' }}>
@@ -172,9 +192,6 @@ function SidebarContent({ userName, userInitials, badges }: {
           </div>
         ))}
       </nav>
-
-      {/* Pending roles */}
-      <PendingRolesSection />
 
       {/* Bottom nav */}
       <div style={{ borderTop: '1px solid var(--border)', padding: '8px 0' }}>

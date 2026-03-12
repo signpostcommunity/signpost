@@ -4,6 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import RoleSwitcher from '@/components/shared/RoleSwitcher'
 
 interface NavItem {
   label: string
@@ -120,6 +121,9 @@ function SidebarContent({ userName, userInitials }: { userName: string; userInit
           </div>
         </div>
       </div>
+
+      {/* Role switcher */}
+      <RoleSwitcher currentRole="admin" />
 
       {/* Nav */}
       <nav aria-label="Admin navigation" style={{ flex: 1, padding: '12px 0' }}>
