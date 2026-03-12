@@ -135,12 +135,12 @@ export function RequestCard({
   actions?: React.ReactNode
 }) {
   return (
-    <div style={{
+    <div className="request-card" style={{
       background: 'var(--card-bg)', border: '1px solid var(--border)',
       borderRadius: 'var(--radius)', padding: '20px 24px',
       marginBottom: 12,
     }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+      <div className="request-card-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
           <Avatar initials={avatar} gradient={avatarGradient} size={36} />
           <div style={{ minWidth: 0 }}>
@@ -150,13 +150,13 @@ export function RequestCard({
             </div>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+        <div className="request-card-badges" style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
           <DemoBadge />
           <StatusBadge status={status} />
         </div>
       </div>
 
-      <div style={{
+      <div className="request-card-details" style={{
         display: 'flex', gap: 16, flexWrap: 'wrap',
         fontSize: '0.8rem', color: 'var(--muted)',
         padding: '10px 0', borderTop: '1px solid var(--border)',
@@ -227,6 +227,22 @@ export function DashMobileStyles() {
     <style>{`
       @media (max-width: 768px) {
         .dash-page-content { padding: 24px 20px !important; }
+        .request-card { padding: 16px 16px !important; }
+        .request-card-header {
+          flex-direction: column !important;
+          align-items: flex-start !important;
+          gap: 10px !important;
+        }
+        .request-card-badges {
+          margin-left: 48px;
+        }
+        .request-card-details {
+          padding: 12px 0 !important;
+        }
+        .request-card-details span {
+          white-space: normal !important;
+          word-break: break-word;
+        }
       }
       @media (max-width: 640px) {
         .dash-card-actions { flex-direction: column !important; }

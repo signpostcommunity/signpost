@@ -11,6 +11,7 @@ interface NavItem {
   href: string
   icon: React.ReactNode
   badgeKey?: string
+  redDot?: boolean
 }
 
 interface NavGroup {
@@ -33,6 +34,13 @@ const NAV: NavGroup[] = [
         href: '/dhh/dashboard/request',
         icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L13 6L5 14H2V11L10 3Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/><path d="M8.5 4.5L11.5 7.5" stroke="currentColor" strokeWidth="1.3"/></svg>,
       },
+      {
+        label: 'Messages & Notifications',
+        href: '/dhh/dashboard/inbox',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M2 5l6 4.5L14 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+        badgeKey: 'inbox',
+        redDot: true,
+      },
     ],
   },
   {
@@ -53,6 +61,11 @@ const NAV: NavGroup[] = [
         label: 'Share My List',
         href: '/dhh/dashboard/share',
         icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke="currentColor" strokeWidth="1.6"/><circle cx="6" cy="12" r="3" stroke="currentColor" strokeWidth="1.6"/><circle cx="18" cy="19" r="3" stroke="currentColor" strokeWidth="1.6"/><path d="M8.7 10.7l6.6-3.4M8.7 13.3l6.6 3.4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
+      },
+      {
+        label: 'Browse Interpreter Directory',
+        href: '/directory',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.3"/><path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
       },
     ],
   },
@@ -118,23 +131,6 @@ function SidebarContent({ userName, userInitials, badges }: {
             <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.92rem' }}>{userName}</div>
             <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 2 }}>Deaf Individual</div>
           </div>
-          {/* Notification bell */}
-          <Link
-            href="/dhh/dashboard"
-            title="Notifications"
-            style={{
-              position: 'relative', color: 'var(--muted)', textDecoration: 'none',
-              padding: 6, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', transition: 'color 0.15s, background 0.15s',
-              background: 'transparent',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.color = '#9d87ff'; e.currentTarget.style.background = 'rgba(157,135,255,0.08)' }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.background = 'transparent' }}
-          >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M13.5 6.75a4.5 4.5 0 1 0-9 0c0 4.5-2.25 5.625-2.25 5.625h13.5s-2.25-1.125-2.25-5.625M10.3 14.625a1.5 1.5 0 0 1-2.6 0" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </Link>
         </div>
       </div>
 
@@ -158,6 +154,7 @@ function SidebarContent({ userName, userInitials, badges }: {
                 ? pathname === item.href
                 : pathname.startsWith(item.href)
               const badgeCount = item.badgeKey ? (badges[item.badgeKey] ?? 0) : 0
+              const showRedDot = item.redDot && ((badges.notifications ?? 0) + (badges.inbox ?? 0)) > 0
               return (
                 <Link
                   key={item.href}
@@ -179,7 +176,14 @@ function SidebarContent({ userName, userInitials, badges }: {
                     {item.icon}
                   </span>
                   <span style={{ flex: 1 }}>{item.label}</span>
-                  {badgeCount > 0 && (
+                  {item.redDot ? (
+                    showRedDot && (
+                      <span aria-label="Unread items" style={{
+                        width: 8, height: 8, borderRadius: '50%',
+                        background: '#ef4444', flexShrink: 0,
+                      }} />
+                    )
+                  ) : badgeCount > 0 && (
                     <span style={{
                       fontSize: '0.7rem', fontWeight: 700, minWidth: 18, height: 18,
                       borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -240,9 +244,24 @@ export default function DhhDashboardSidebar({ userName = 'User', userInitials = 
         .eq('deaf_user_id', user.id)
         .in('tier', ['preferred', 'approved'])
 
+      // Unread notifications count
+      const { count: notifCount } = await supabase
+        .from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('recipient_user_id', user.id)
+        .neq('status', 'read')
+
+      // Unread messages count
+      const { count: inboxCount } = await supabase
+        .from('messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('is_read', false)
+
       setBadges({
         roster: rosterCount ?? 0,
         requesters: 0,
+        notifications: notifCount ?? 0,
+        inbox: inboxCount ?? 0,
       })
     }
     fetchBadges()
@@ -287,20 +306,13 @@ export default function DhhDashboardSidebar({ userName = 'User', userInitials = 
           <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.88rem' }}>{userName}</span>
           <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>Deaf Individual</span>
         </div>
-        {/* Right: notification bell */}
-        <Link
-          href="/dhh/dashboard"
-          title="Notifications"
-          style={{
-            position: 'relative', color: 'var(--muted)', textDecoration: 'none',
-            padding: 8, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            minWidth: 44, minHeight: 44,
-          }}
-        >
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M13.5 6.75a4.5 4.5 0 1 0-9 0c0 4.5-2.25 5.625-2.25 5.625h13.5s-2.25-1.125-2.25-5.625M10.3 14.625a1.5 1.5 0 0 1-2.6 0" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </Link>
+        {/* Red dot indicator for unread items */}
+        {((badges.notifications ?? 0) + (badges.inbox ?? 0)) > 0 && (
+          <span aria-label="Unread items" style={{
+            width: 8, height: 8, borderRadius: '50%',
+            background: '#ef4444', flexShrink: 0,
+          }} />
+        )}
       </div>
 
       {/* Mobile drawer */}

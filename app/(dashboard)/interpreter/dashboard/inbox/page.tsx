@@ -16,6 +16,7 @@ interface Message {
   body: string | null
   is_read: boolean | null
   is_seed: boolean | null
+  archived: boolean | null
   created_at: string
 }
 
@@ -143,6 +144,7 @@ export default function InboxPage() {
   const [sentReplies, setSentReplies] = useState<Record<string, Array<{ body: string; time: string }>>>({})
   const [notifCollapsed, setNotifCollapsed] = useState(false)
   const [msgCollapsed, setMsgCollapsed] = useState(false)
+  const [showArchived, setShowArchived] = useState(false)
 
   const fetchMessages = useCallback(async () => {
     const supabase = createClient()
@@ -159,7 +161,7 @@ export default function InboxPage() {
 
     const { data, error } = await supabase
       .from('messages')
-      .select('id, sender_name, subject, preview, body, is_read, is_seed, created_at')
+      .select('id, sender_name, subject, preview, body, is_read, is_seed, archived, created_at')
       .eq('interpreter_id', profile.id)
       .order('created_at', { ascending: false })
 
@@ -196,26 +198,49 @@ export default function InboxPage() {
   }, [fetchMessages, fetchNotifications])
 
   async function markMessageAsRead(msgId: string) {
-    const supabase = createClient()
-    const { error } = await supabase
-      .from('messages')
-      .update({ is_read: true })
-      .eq('id', msgId)
-
-    if (!error) {
+    const res = await fetch(`/api/messages/${msgId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_read: true }),
+    })
+    if (res.ok) {
       setMessages(prev => prev.map(m => m.id === msgId ? { ...m, is_read: true } : m))
     }
   }
 
-  async function markNotificationAsRead(notifId: string) {
-    const supabase = createClient()
-    const { error } = await supabase
-      .from('notifications')
-      .update({ status: 'read' })
-      .eq('id', notifId)
+  async function archiveMessage(msgId: string) {
+    const res = await fetch(`/api/messages/${msgId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ archived: true }),
+    })
+    if (res.ok) {
+      setMessages(prev => prev.map(m => m.id === msgId ? { ...m, archived: true } : m))
+    }
+  }
 
-    if (!error) {
+  async function markNotificationAsRead(notifId: string) {
+    const res = await fetch(`/api/notifications/${notifId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'read' }),
+    })
+    if (res.ok) {
       setNotifications(prev => prev.map(n => n.id === notifId ? { ...n, status: 'read' } : n))
+    }
+  }
+
+  async function markAllNotificationsAsRead() {
+    const res = await fetch('/api/notifications/mark-all-read', { method: 'PATCH' })
+    if (res.ok) {
+      setNotifications(prev => prev.map(n => ({ ...n, status: 'read' })))
+    }
+  }
+
+  async function deleteNotification(notifId: string) {
+    const res = await fetch(`/api/notifications/${notifId}`, { method: 'DELETE' })
+    if (res.ok) {
+      setNotifications(prev => prev.filter(n => n.id !== notifId))
     }
   }
 
@@ -239,7 +264,8 @@ export default function InboxPage() {
   const active = messages.find(m => m.id === activeThread)
   const hasSeedData = messages.some(m => m.is_seed)
   const unreadNotifCount = notifications.filter(n => n.status !== 'read').length
-  const unreadMsgCount = messages.filter(m => !m.is_read).length
+  const visibleMessages = showArchived ? messages.filter(m => m.archived) : messages.filter(m => !m.archived)
+  const unreadMsgCount = messages.filter(m => !m.is_read && !m.archived).length
 
   /* ── Thread detail view ── */
 
@@ -337,7 +363,7 @@ export default function InboxPage() {
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 80px)' }}>
       {hasSeedData && <BetaBanner />}
-      <PageHeader title="Inbox" subtitle="Notifications and messages." />
+      <PageHeader title="Messages & Notifications" subtitle="Notifications and messages." />
 
       {loading ? (
         <div style={{ padding: '40px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem', flex: 1 }}>
@@ -348,31 +374,46 @@ export default function InboxPage() {
 
           {/* ── Top pane: Notifications (~1/3) ── */}
           <div className="inbox-pane-notif" style={{ flex: notifCollapsed ? 'none' : '0 0 33%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-            <button
+            <div
               className="inbox-pane-header"
-              onClick={() => setNotifCollapsed(!notifCollapsed)}
-              aria-expanded={!notifCollapsed}
               style={{
                 background: 'var(--surface)', borderRadius: notifCollapsed ? 'var(--radius)' : 'var(--radius) var(--radius) 0 0',
                 padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10,
                 borderBottom: notifCollapsed ? 'none' : '1px solid var(--border)',
-                border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left',
               }}
             >
-              <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
-                Notifications
-              </h2>
-              {unreadNotifCount > 0 && (
-                <span style={{
-                  background: 'var(--accent)', color: '#000', fontFamily: "'DM Sans', sans-serif",
-                  fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20,
-                  lineHeight: '1.4',
-                }}>
-                  {unreadNotifCount}
-                </span>
+              <button
+                onClick={() => setNotifCollapsed(!notifCollapsed)}
+                aria-expanded={!notifCollapsed}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, flex: 1, padding: 0, textAlign: 'left' }}
+              >
+                <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
+                  Notifications
+                </h2>
+                {unreadNotifCount > 0 && (
+                  <span style={{
+                    background: 'var(--accent)', color: '#000', fontFamily: "'DM Sans', sans-serif",
+                    fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20,
+                    lineHeight: '1.4',
+                  }}>
+                    {unreadNotifCount}
+                  </span>
+                )}
+                <svg className="inbox-collapse-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'transform 0.2s', transform: notifCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)', flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
+              </button>
+              {unreadNotifCount > 0 && !notifCollapsed && (
+                <button
+                  onClick={markAllNotificationsAsRead}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: 'var(--accent)', fontSize: '0.76rem', fontFamily: "'DM Sans', sans-serif",
+                    fontWeight: 600, whiteSpace: 'nowrap', padding: '2px 4px',
+                  }}
+                >
+                  Mark all read
+                </button>
               )}
-              <svg className="inbox-collapse-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'transform 0.2s', transform: notifCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)', flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
-            </button>
+            </div>
             {!notifCollapsed && (
               <div style={{
                 flex: 1, overflowY: 'auto', background: 'var(--card-bg)',
@@ -392,6 +433,7 @@ export default function InboxPage() {
                         onClick={() => {
                           if (notif.status !== 'read') markNotificationAsRead(notif.id)
                         }}
+                        onDelete={() => deleteNotification(notif.id)}
                       />
                     ))}
                   </div>
@@ -402,45 +444,66 @@ export default function InboxPage() {
 
           {/* ── Bottom pane: Messages (~2/3) ── */}
           <div style={{ flex: msgCollapsed ? 'none' : '1 1 67%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-            <button
+            <div
               className="inbox-pane-header"
-              onClick={() => setMsgCollapsed(!msgCollapsed)}
-              aria-expanded={!msgCollapsed}
               style={{
                 background: 'var(--surface)', borderRadius: msgCollapsed ? 'var(--radius)' : 'var(--radius) var(--radius) 0 0',
                 padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10,
                 borderBottom: msgCollapsed ? 'none' : '1px solid var(--border)',
-                border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left',
               }}
             >
-              <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
-                Messages
-              </h2>
-              {unreadMsgCount > 0 && (
-                <span style={{
-                  background: 'var(--accent)', color: '#000', fontFamily: "'DM Sans', sans-serif",
-                  fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20,
-                  lineHeight: '1.4',
-                }}>
-                  {unreadMsgCount}
-                </span>
+              <button
+                onClick={() => setMsgCollapsed(!msgCollapsed)}
+                aria-expanded={!msgCollapsed}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, flex: 1, padding: 0, textAlign: 'left' }}
+              >
+                <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
+                  Messages
+                </h2>
+                {unreadMsgCount > 0 && (
+                  <span style={{
+                    background: 'var(--accent)', color: '#000', fontFamily: "'DM Sans', sans-serif",
+                    fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20,
+                    lineHeight: '1.4',
+                  }}>
+                    {unreadMsgCount}
+                  </span>
+                )}
+                <svg className="inbox-collapse-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'transform 0.2s', transform: msgCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)', flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
+              </button>
+              {!msgCollapsed && (
+                <button
+                  onClick={() => setShowArchived(!showArchived)}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: showArchived ? 'var(--accent)' : 'var(--muted)', fontSize: '0.76rem',
+                    fontFamily: "'DM Sans', sans-serif", fontWeight: 600, whiteSpace: 'nowrap',
+                    padding: '2px 4px',
+                  }}
+                >
+                  {showArchived ? 'Show active' : 'Archived'}
+                </button>
               )}
-              <svg className="inbox-collapse-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'transform 0.2s', transform: msgCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)', flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
-            </button>
+            </div>
             {!msgCollapsed && (
               <div style={{
                 flex: 1, overflowY: 'auto', background: 'var(--card-bg)',
                 border: '1px solid var(--border)', borderTop: 'none',
                 borderRadius: '0 0 var(--radius) var(--radius)',
               }}>
-                {messages.length === 0 ? (
+                {visibleMessages.length === 0 ? (
                   <div style={{ padding: '28px 20px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem', fontFamily: "'DM Sans', sans-serif" }}>
-                    No messages yet.
+                    {showArchived ? 'No archived messages.' : 'No messages yet.'}
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    {messages.map(msg => (
-                      <MessageRow key={msg.id} msg={msg} onClick={() => handleOpenThread(msg.id)} />
+                    {visibleMessages.map(msg => (
+                      <MessageRow
+                        key={msg.id}
+                        msg={msg}
+                        onClick={() => handleOpenThread(msg.id)}
+                        onArchive={() => archiveMessage(msg.id)}
+                      />
                     ))}
                   </div>
                 )}
@@ -454,12 +517,12 @@ export default function InboxPage() {
       <DashMobileStyles />
       <style>{`
         .inbox-collapse-icon { display: none; }
-        .inbox-pane-header { cursor: default !important; }
         @media (max-width: 768px) {
           .inbox-panes { flex-direction: column !important; height: auto !important; }
           .inbox-pane-notif { flex: none !important; max-height: none !important; }
           .inbox-collapse-icon { display: block !important; }
-          .inbox-pane-header { cursor: pointer !important; }
+          .notif-delete-btn { display: flex !important; }
+          .msg-archive-btn { display: flex !important; }
         }
       `}</style>
     </div>
@@ -468,7 +531,7 @@ export default function InboxPage() {
 
 /* ── Notification Row ── */
 
-function NotificationRow({ notif, onClick }: { notif: Notification; onClick: () => void }) {
+function NotificationRow({ notif, onClick, onDelete }: { notif: Notification; onClick: () => void; onDelete: () => void }) {
   const [hover, setHover] = useState(false)
   const isUnread = notif.status !== 'read'
 
@@ -480,12 +543,13 @@ function NotificationRow({ notif, onClick }: { notif: Notification; onClick: () 
       style={{
         padding: '14px 20px',
         cursor: 'pointer',
-        transition: 'background 0.15s',
+        transition: 'background 0.15s, opacity 0.15s',
         background: isUnread
           ? (hover ? 'rgba(0,229,255,0.07)' : 'rgba(0,229,255,0.04)')
           : (hover ? 'rgba(255,255,255,0.02)' : 'transparent'),
         borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'flex-start', gap: 12,
+        opacity: isUnread ? 1 : 0.6,
       }}
     >
       <div style={{ flexShrink: 0, marginTop: 2 }}>
@@ -514,13 +578,30 @@ function NotificationRow({ notif, onClick }: { notif: Notification; onClick: () 
           </p>
         )}
       </div>
+      <button
+        className="notif-delete-btn"
+        onClick={(e) => { e.stopPropagation(); onDelete() }}
+        title="Delete notification"
+        style={{
+          background: 'none', border: 'none', cursor: 'pointer',
+          color: 'var(--muted)', padding: 4, flexShrink: 0,
+          display: hover ? 'flex' : 'none', alignItems: 'center', justifyContent: 'center',
+          borderRadius: 4, transition: 'color 0.15s',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent3)' }}
+        onMouseLeave={e => { e.currentTarget.style.color = 'var(--muted)' }}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 6L6 18M6 6l12 12" />
+        </svg>
+      </button>
     </div>
   )
 }
 
 /* ── Message Row ── */
 
-function MessageRow({ msg, onClick }: { msg: Message; onClick: () => void }) {
+function MessageRow({ msg, onClick, onArchive }: { msg: Message; onClick: () => void; onArchive: () => void }) {
   const [hover, setHover] = useState(false)
   return (
     <div
@@ -530,10 +611,11 @@ function MessageRow({ msg, onClick }: { msg: Message; onClick: () => void }) {
       style={{
         padding: '16px 20px',
         cursor: 'pointer',
-        transition: 'background 0.15s',
+        transition: 'background 0.15s, opacity 0.15s',
         background: hover ? 'rgba(255,255,255,0.02)' : 'transparent',
         borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'flex-start', gap: 12,
+        opacity: msg.is_read ? 0.6 : 1,
       }}
     >
       <Avatar name={msg.sender_name} size={36} />
@@ -571,6 +653,27 @@ function MessageRow({ msg, onClick }: { msg: Message; onClick: () => void }) {
           {msg.preview || '(no preview)'}
         </p>
       </div>
+      {!msg.archived && (
+        <button
+          className="msg-archive-btn"
+          onClick={(e) => { e.stopPropagation(); onArchive() }}
+          title="Archive message"
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: 'var(--muted)', padding: 4, flexShrink: 0,
+            display: hover ? 'flex' : 'none', alignItems: 'center', justifyContent: 'center',
+            borderRadius: 4, transition: 'color 0.15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)' }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'var(--muted)' }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="21 8 21 21 3 21 3 8" />
+            <rect x="1" y="3" width="22" height="5" />
+            <line x1="10" y1="12" x2="14" y2="12" />
+          </svg>
+        </button>
+      )}
     </div>
   )
 }
