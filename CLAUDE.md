@@ -122,7 +122,7 @@ components/
 │   ├── Footer.tsx
 │   ├── DashboardSidebar.tsx           # Interpreter sidebar with badge counts
 │   ├── DhhDashboardSidebar.tsx        # Deaf portal sidebar (purple accent, roster/requesters badges)
-│   ├── AdminSidebar.tsx              # Admin dashboard sidebar (orange accent #ff6b2b)
+│   ├── AdminSidebar.tsx              # Admin dashboard sidebar (orange accent #ff7e45)
 │   └── PendingRolesSection.tsx      # Red-dot pending role indicator for sidebar role switcher
 ├── directory/
 │   ├── FilterSidebar.tsx              # 9 filter groups
@@ -209,10 +209,13 @@ Full schema in `supabase/migrations/001_initial_schema.sql`
 ## Design System
 
 **Brand rules:**
-- **"signpost" is ALWAYS lowercase** in all user-facing text. Never "Signpost" or "SIGNPOST".
+- **"signpost" is ALWAYS lowercase** in all user-facing text. Never "Signpost" or "SIGNPOST". This is a locked design rule.
 - **No emoji in UI components.** Use SVG line icons or text only.
-- **WCAG 2.2 Level AA minimum** for all color contrast ratios.
+- **WCAG 2.2 Level AA minimum** for all color contrast ratios (4.5:1 normal text, 3:1 large text/UI).
 - **Admin accent orange: `#ff7e45`** (WCAG AA compliant on dark backgrounds).
+- **"CODA" in labels** should always appear as "Deaf-Parented Interpreter / CODA" so hearing users understand the term.
+- **Tab bar design** (all tabbed pages): dark grey header (#1a1a24), black active tabs, cyan underline, proper ARIA roles (tablist/tab/tabpanel).
+- **Accessibility commitment** is published on the About page → Accessibility tab. All ARIA, semantic HTML, and keyboard navigation patterns from Session 5 must be maintained.
 
 CSS variables defined in `app/globals.css` and mapped to Tailwind tokens via `@theme inline {}`:
 
@@ -288,7 +291,7 @@ npm run seed       # Seed 10 demo interpreters into Supabase
 | `org` | `/request` | `/request/dashboard` |
 | admin (any role) | — | `/admin/dashboard` |
 
-**Admin access:** Controlled by `user_profiles.is_admin` boolean column. Admin routes at `/admin/*` check this column in the layout and redirect non-admins to `/`. Admin dashboard uses orange accent (`#ff6b2b`).
+**Admin access:** Controlled by `user_profiles.is_admin` boolean column. Admin routes at `/admin/*` check this column in the layout and redirect non-admins to `/`. Admin dashboard uses orange accent (`#ff7e45`).
 
 ---
 

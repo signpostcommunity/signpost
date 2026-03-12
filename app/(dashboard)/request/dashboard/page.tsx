@@ -24,7 +24,7 @@ const INITIAL_REQUESTS: Request[] = [
 ];
 
 const STATUS_STYLES: Record<string, { bg: string; border: string; color: string }> = {
-  pending:   { bg: 'rgba(251,191,36,0.1)', border: 'rgba(251,191,36,0.3)', color: '#fbbf24' },
+  pending:   { bg: 'rgba(255,165,0,0.12)', border: 'rgba(249,115,22,0.3)', color: '#f97316' },
   confirmed: { bg: 'rgba(52,211,153,0.1)', border: 'rgba(52,211,153,0.3)', color: '#34d399' },
   completed: { bg: 'rgba(157,135,255,0.1)', border: 'rgba(157,135,255,0.3)', color: 'var(--accent2)' },
   declined:  { bg: 'rgba(255,107,133,0.1)', border: 'rgba(255,107,133,0.3)', color: 'var(--accent3)' },

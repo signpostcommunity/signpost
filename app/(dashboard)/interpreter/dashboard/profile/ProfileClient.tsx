@@ -194,27 +194,43 @@ type Tab = typeof TABS[number]
 function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
   return (
     <div style={{
-      display: 'flex', gap: 0, borderBottom: '1px solid var(--border)',
+      background: '#1a1a24', borderRadius: 'var(--radius) var(--radius) 0 0',
+      padding: '12px 8px 0',
       marginBottom: 32,
     }}>
-      {TABS.map(tab => (
-        <button
-          key={tab}
-          onClick={() => onChange(tab)}
-          style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            padding: '12px 20px',
-            fontSize: '0.88rem', fontWeight: active === tab ? 700 : 400,
-            fontFamily: "'DM Sans', sans-serif",
-            color: active === tab ? 'var(--accent)' : 'var(--muted)',
-            borderBottom: active === tab ? '2px solid var(--accent)' : '2px solid transparent',
-            transition: 'all 0.15s',
-            marginBottom: -1,
-          }}
-        >
-          {tab}
-        </button>
-      ))}
+      <div role="tablist" aria-label="Profile sections" style={{
+        display: 'flex', gap: 0, overflowX: 'auto',
+      }}>
+        {TABS.map(tab => {
+          const isActive = active === tab
+          const tabId = `tab-${tab.toLowerCase().replace(/\s+/g, '-')}`
+          const panelId = `panel-${tab.toLowerCase().replace(/\s+/g, '-')}`
+          return (
+            <button
+              key={tab}
+              role="tab"
+              id={tabId}
+              aria-selected={isActive}
+              aria-controls={panelId}
+              onClick={() => onChange(tab)}
+              style={{
+                background: isActive ? 'var(--bg)' : 'transparent',
+                border: 'none', cursor: 'pointer',
+                padding: '10px 18px',
+                fontSize: '0.85rem', fontWeight: isActive ? 700 : 400,
+                fontFamily: "'DM Sans', sans-serif",
+                color: isActive ? 'var(--accent)' : 'var(--muted)',
+                borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
+                borderRadius: isActive ? '8px 8px 0 0' : '8px 8px 0 0',
+                transition: 'all 0.15s',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {tab}
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }

@@ -100,31 +100,42 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
           <div
             style={{
               display: 'flex',
-              alignItems: 'flex-start',
-              justifyContent: 'space-between',
-              gap: '8px',
+              flexDirection: 'column',
+              gap: '6px',
             }}
           >
             <div
               style={{
-                fontFamily: 'var(--font-syne)',
-                fontWeight: 700,
-                fontSize: '1rem',
-                lineHeight: 1.2,
+                display: 'flex',
+                alignItems: 'flex-start',
+                justifyContent: 'space-between',
+                gap: '8px',
               }}
             >
-              {i.name}
+              <div
+                style={{
+                  fontFamily: 'var(--font-syne)',
+                  fontWeight: 700,
+                  fontSize: '1rem',
+                  lineHeight: 1.2,
+                  minWidth: 0,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                }}
+              >
+                {i.name}
+              </div>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onAddToList?.(i);
+                }}
+                className="add-to-list-btn"
+              >
+                {userRole === 'interpreter' ? '+ Add to my team' : '+ Add to my list'}
+              </button>
             </div>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onAddToList?.(i);
-              }}
-              className="add-to-list-btn"
-            >
-              {userRole === 'interpreter' ? '+ Add to my team' : '+ Add to my list'}
-            </button>
           </div>
           {/* Location — full width below name */}
           <div

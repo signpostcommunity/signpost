@@ -112,12 +112,16 @@ export default function HomePage() {
                 Deaf or Hard of Hearing?<br />Build your preferred interpreter list →
               </Link>
 
-              <div style={{ width: '100%', textAlign: 'center' }}>
-                <div style={{
-                  fontFamily: 'var(--font-syne)', fontSize: '0.68rem', fontWeight: 700,
-                  letterSpacing: '0.12em', textTransform: 'uppercase',
-                  color: 'var(--muted)', marginBottom: 6,
-                }}>
+              <div style={{ width: '100%', textAlign: 'center', marginTop: 8 }}>
+                <div
+                  aria-hidden="true"
+                  style={{
+                    fontFamily: 'var(--font-syne)', fontSize: '0.68rem', fontWeight: 700,
+                    letterSpacing: '0.12em', textTransform: 'uppercase',
+                    color: 'var(--muted)', marginBottom: 6,
+                    pointerEvents: 'none', cursor: 'default', userSelect: 'none',
+                  }}
+                >
                   For Interpreters
                 </div>
                 <Link
