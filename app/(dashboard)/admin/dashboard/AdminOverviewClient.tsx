@@ -80,7 +80,7 @@ export default function AdminOverviewClient({
   ]
 
   return (
-    <div style={{ padding: '32px 40px', maxWidth: 1200 }}>
+    <div className="admin-overview-content" style={{ padding: '32px 40px', maxWidth: 1200 }}>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 700, marginBottom: 8 }}>
         Admin Dashboard
       </h1>
@@ -112,7 +112,7 @@ export default function AdminOverviewClient({
       </div>
 
       {/* Recent activity */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+      <div className="admin-recent-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
         {/* Recent signups */}
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: 24 }}>
           <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1rem', fontWeight: 700, marginBottom: 16 }}>
@@ -190,8 +190,8 @@ export default function AdminOverviewClient({
 
       <style>{`
         @media (max-width: 768px) {
-          .admin-main > div { padding: 24px 20px !important; }
-          .admin-main > div > div:last-child { grid-template-columns: 1fr !important; }
+          .admin-overview-content { padding: 24px 16px !important; }
+          .admin-recent-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </div>

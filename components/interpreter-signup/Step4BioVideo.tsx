@@ -34,7 +34,7 @@ export default function Step4BioVideo({ onBack, onContinue }: {
   onBack: () => void
   onContinue: () => void
 }) {
-  const { formData, updateField } = useForm()
+  const { formData, updateField, saveDraft } = useForm()
   const [videoUrlError, setVideoUrlError] = useState<string | null>(null)
 
   return (
@@ -176,7 +176,7 @@ export default function Step4BioVideo({ onBack, onContinue }: {
         </FormField>
       </FormSection>
 
-      <FormNav step={4} totalSteps={6} onBack={onBack} onContinue={onContinue} />
+      <FormNav step={4} totalSteps={6} onBack={onBack} onContinue={onContinue} onSaveDraft={saveDraft} />
     </StepWrapper>
   )
 }

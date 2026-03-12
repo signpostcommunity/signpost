@@ -121,8 +121,7 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
                   fontSize: '1rem',
                   lineHeight: 1.2,
                   minWidth: 0,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
+                  wordBreak: 'break-word',
                 }}
               >
                 {i.name}
@@ -259,7 +258,7 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
             background: rgba(0,229,255,0.1);
             border-color: var(--accent);
           }
-          @media (max-width: 640px) {
+          @media (max-width: 768px) {
             .card-name-row {
               flex-direction: column !important;
               align-items: stretch !important;
@@ -274,6 +273,7 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
               overflow: visible !important;
               text-overflow: clip !important;
               white-space: normal !important;
+              word-break: break-word !important;
             }
           }
         `}</style>

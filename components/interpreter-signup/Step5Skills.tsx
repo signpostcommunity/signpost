@@ -11,7 +11,7 @@ export default function Step5Skills({ onBack, onContinue }: {
   onBack: () => void
   onContinue: () => void
 }) {
-  const { formData, updateField } = useForm()
+  const { formData, updateField, saveDraft } = useForm()
 
   // Default all categories collapsed except the first
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
@@ -162,7 +162,7 @@ export default function Step5Skills({ onBack, onContinue }: {
         </div>
       </FormSection>
 
-      <FormNav step={5} totalSteps={6} onBack={onBack} onContinue={onContinue} />
+      <FormNav step={5} totalSteps={6} onBack={onBack} onContinue={onContinue} onSaveDraft={saveDraft} />
     </StepWrapper>
   )
 }

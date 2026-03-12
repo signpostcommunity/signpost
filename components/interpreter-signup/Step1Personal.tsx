@@ -24,7 +24,7 @@ const REGIONS = [
 ]
 
 export default function Step1Personal({ onContinue }: { onContinue: () => void }) {
-  const { formData, updateField } = useForm()
+  const { formData, updateField, saveDraft } = useForm()
   const supabase = createClient()
 
   // Photo upload state
@@ -407,7 +407,7 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
         </div>
       </FormSection>
 
-      <FormNav step={1} totalSteps={6} onBack={() => {}} onContinue={onContinue} />
+      <FormNav step={1} totalSteps={6} onBack={() => {}} onContinue={onContinue} onSaveDraft={saveDraft} />
     </StepWrapper>
   )
 }

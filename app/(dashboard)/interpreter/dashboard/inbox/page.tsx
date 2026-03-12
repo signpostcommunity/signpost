@@ -141,6 +141,8 @@ export default function InboxPage() {
   const [activeThread, setActiveThread] = useState<string | null>(null)
   const [reply, setReply] = useState('')
   const [sentReplies, setSentReplies] = useState<Record<string, Array<{ body: string; time: string }>>>({})
+  const [notifCollapsed, setNotifCollapsed] = useState(false)
+  const [msgCollapsed, setMsgCollapsed] = useState(false)
 
   const fetchMessages = useCallback(async () => {
     const supabase = createClient()
@@ -345,13 +347,19 @@ export default function InboxPage() {
         <div className="inbox-panes" style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: 16, minHeight: 0 }}>
 
           {/* ── Top pane: Notifications (~1/3) ── */}
-          <div className="inbox-pane-notif" style={{ flex: '0 0 33%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-            <div style={{
-              background: 'var(--surface)', borderRadius: 'var(--radius) var(--radius) 0 0',
-              padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10,
-              borderBottom: '1px solid var(--border)',
-            }}>
-              <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)' }}>
+          <div className="inbox-pane-notif" style={{ flex: notifCollapsed ? 'none' : '0 0 33%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <button
+              className="inbox-pane-header"
+              onClick={() => setNotifCollapsed(!notifCollapsed)}
+              aria-expanded={!notifCollapsed}
+              style={{
+                background: 'var(--surface)', borderRadius: notifCollapsed ? 'var(--radius)' : 'var(--radius) var(--radius) 0 0',
+                padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10,
+                borderBottom: notifCollapsed ? 'none' : '1px solid var(--border)',
+                border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left',
+              }}
+            >
+              <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
                 Notifications
               </h2>
               {unreadNotifCount > 0 && (
@@ -363,40 +371,49 @@ export default function InboxPage() {
                   {unreadNotifCount}
                 </span>
               )}
-            </div>
-            <div style={{
-              flex: 1, overflowY: 'auto', background: 'var(--card-bg)',
-              border: '1px solid var(--border)', borderTop: 'none',
-              borderRadius: '0 0 var(--radius) var(--radius)',
-            }}>
-              {notifications.length === 0 ? (
-                <div style={{ padding: '28px 20px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem', fontFamily: "'DM Sans', sans-serif" }}>
-                  No notifications yet.
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  {notifications.map(notif => (
-                    <NotificationRow
-                      key={notif.id}
-                      notif={notif}
-                      onClick={() => {
-                        if (notif.status !== 'read') markNotificationAsRead(notif.id)
-                      }}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
+              <svg className="inbox-collapse-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'transform 0.2s', transform: notifCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)', flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            {!notifCollapsed && (
+              <div style={{
+                flex: 1, overflowY: 'auto', background: 'var(--card-bg)',
+                border: '1px solid var(--border)', borderTop: 'none',
+                borderRadius: '0 0 var(--radius) var(--radius)',
+              }}>
+                {notifications.length === 0 ? (
+                  <div style={{ padding: '28px 20px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem', fontFamily: "'DM Sans', sans-serif" }}>
+                    No notifications yet.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    {notifications.map(notif => (
+                      <NotificationRow
+                        key={notif.id}
+                        notif={notif}
+                        onClick={() => {
+                          if (notif.status !== 'read') markNotificationAsRead(notif.id)
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* ── Bottom pane: Messages (~2/3) ── */}
-          <div style={{ flex: '1 1 67%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-            <div style={{
-              background: 'var(--surface)', borderRadius: 'var(--radius) var(--radius) 0 0',
-              padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10,
-              borderBottom: '1px solid var(--border)',
-            }}>
-              <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)' }}>
+          <div style={{ flex: msgCollapsed ? 'none' : '1 1 67%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+            <button
+              className="inbox-pane-header"
+              onClick={() => setMsgCollapsed(!msgCollapsed)}
+              aria-expanded={!msgCollapsed}
+              style={{
+                background: 'var(--surface)', borderRadius: msgCollapsed ? 'var(--radius)' : 'var(--radius) var(--radius) 0 0',
+                padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10,
+                borderBottom: msgCollapsed ? 'none' : '1px solid var(--border)',
+                border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left',
+              }}
+            >
+              <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
                 Messages
               </h2>
               {unreadMsgCount > 0 && (
@@ -408,24 +425,27 @@ export default function InboxPage() {
                   {unreadMsgCount}
                 </span>
               )}
-            </div>
-            <div style={{
-              flex: 1, overflowY: 'auto', background: 'var(--card-bg)',
-              border: '1px solid var(--border)', borderTop: 'none',
-              borderRadius: '0 0 var(--radius) var(--radius)',
-            }}>
-              {messages.length === 0 ? (
-                <div style={{ padding: '28px 20px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem', fontFamily: "'DM Sans', sans-serif" }}>
-                  No messages yet.
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  {messages.map(msg => (
-                    <MessageRow key={msg.id} msg={msg} onClick={() => handleOpenThread(msg.id)} />
-                  ))}
-                </div>
-              )}
-            </div>
+              <svg className="inbox-collapse-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'transform 0.2s', transform: msgCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)', flexShrink: 0 }}><path d="M6 9l6 6 6-6" /></svg>
+            </button>
+            {!msgCollapsed && (
+              <div style={{
+                flex: 1, overflowY: 'auto', background: 'var(--card-bg)',
+                border: '1px solid var(--border)', borderTop: 'none',
+                borderRadius: '0 0 var(--radius) var(--radius)',
+              }}>
+                {messages.length === 0 ? (
+                  <div style={{ padding: '28px 20px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem', fontFamily: "'DM Sans', sans-serif" }}>
+                    No messages yet.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    {messages.map(msg => (
+                      <MessageRow key={msg.id} msg={msg} onClick={() => handleOpenThread(msg.id)} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
         </div>
@@ -433,9 +453,13 @@ export default function InboxPage() {
 
       <DashMobileStyles />
       <style>{`
+        .inbox-collapse-icon { display: none; }
+        .inbox-pane-header { cursor: default !important; }
         @media (max-width: 768px) {
           .inbox-panes { flex-direction: column !important; height: auto !important; }
-          .inbox-pane-notif { flex: none !important; max-height: 300px !important; }
+          .inbox-pane-notif { flex: none !important; max-height: none !important; }
+          .inbox-collapse-icon { display: block !important; }
+          .inbox-pane-header { cursor: pointer !important; }
         }
       `}</style>
     </div>

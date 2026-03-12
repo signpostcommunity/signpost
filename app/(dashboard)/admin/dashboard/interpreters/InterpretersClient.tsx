@@ -182,7 +182,7 @@ export default function InterpretersClient({ interpreters }: { interpreters: Int
   const filteredRest = filterList(rest)
 
   return (
-    <div style={{ padding: '32px 40px', maxWidth: 1200 }}>
+    <div className="admin-interp-content" style={{ padding: '32px 40px', maxWidth: 1200 }}>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 700, marginBottom: 8 }}>
         Interpreters
       </h1>
@@ -238,6 +238,12 @@ export default function InterpretersClient({ interpreters }: { interpreters: Int
         All Interpreters
       </h2>
       {renderTable(filteredRest, false)}
+
+      <style>{`
+        @media (max-width: 768px) {
+          .admin-interp-content { padding: 24px 16px !important; }
+        }
+      `}</style>
     </div>
   )
 }

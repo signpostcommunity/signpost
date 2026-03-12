@@ -21,7 +21,7 @@ export default function Step5Video({ onBack, onContinue }: {
   onBack: () => void
   onContinue: () => void
 }) {
-  const { formData, updateField } = useForm()
+  const { formData, updateField, saveDraft } = useForm()
   const supabase = createClient()
 
   // Photo state
@@ -298,7 +298,7 @@ export default function Step5Video({ onBack, onContinue }: {
         </FormField>
       </FormSection>
 
-      <FormNav step={5} totalSteps={6} onBack={onBack} onContinue={onContinue} />
+      <FormNav step={5} totalSteps={6} onBack={onBack} onContinue={onContinue} onSaveDraft={saveDraft} />
     </StepWrapper>
   )
 }

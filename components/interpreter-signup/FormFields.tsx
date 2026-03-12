@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, CSSProperties } from 'react'
+import { ReactNode, CSSProperties, useState } from 'react'
 
 // ── Wrappers ──────────────────────────────────────────────────────────────────
 
@@ -217,78 +217,105 @@ export function RemoveButton({ onClick }: { onClick: () => void }) {
 // ── Form Nav ──────────────────────────────────────────────────────────────────
 
 export function FormNav({
-  step, totalSteps, onBack, onContinue, continueLabel, continueDisabled,
+  step, totalSteps, onBack, onContinue, onSaveDraft, continueLabel, continueDisabled,
 }: {
   step: number
   totalSteps: number
   onBack: () => void
   onContinue: () => void
+  onSaveDraft?: () => Promise<void> | void
   continueLabel?: string
   continueDisabled?: boolean
 }) {
+  const [draftSaved, setDraftSaved] = useState(false)
+
+  async function handleSaveDraft() {
+    if (onSaveDraft) {
+      await onSaveDraft()
+    }
+    setDraftSaved(true)
+    setTimeout(() => setDraftSaved(false), 2000)
+  }
+
   return (
     <>
       <div className="signup-form-nav" style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         paddingTop: 32, borderTop: '1px solid var(--border)', marginTop: 40,
-        flexWrap: 'wrap', gap: 12,
+        display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'stretch',
       }}>
-        <button
-          className="signup-nav-back"
-          onClick={onBack}
-          style={{
-            visibility: step === 1 ? 'hidden' : 'visible',
-            background: 'none', border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
-            padding: '10px 20px', cursor: 'pointer',
-            fontFamily: "'DM Sans', sans-serif", fontSize: '0.9rem',
-            transition: 'all 0.2s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'var(--border)' }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'none' }}
-        >
-          ← Back
-        </button>
+        {/* Desktop layout: row with back / step / continue */}
+        <div className="signup-nav-row" style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          flexWrap: 'wrap', gap: 12,
+        }}>
+          <button
+            className="signup-nav-back"
+            onClick={onBack}
+            style={{
+              visibility: step === 1 ? 'hidden' : 'visible',
+              background: 'none', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
+              padding: '10px 20px', cursor: 'pointer',
+              fontFamily: "'DM Sans', sans-serif", fontSize: '0.9rem',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--border)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'none' }}
+          >
+            ← Back
+          </button>
 
-        <div style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>
-          Step {step} of {totalSteps}
+          <div className="signup-nav-step-label" style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>
+            Step {step} of {totalSteps}
+          </div>
+
+          <button
+            className="btn-primary signup-nav-continue"
+            onClick={onContinue}
+            disabled={continueDisabled}
+            style={{ opacity: continueDisabled ? 0.4 : 1, pointerEvents: continueDisabled ? 'none' : 'auto' }}
+          >
+            {continueLabel || 'Save & Continue \u2192'}
+          </button>
         </div>
 
-        <button
-          className="btn-primary signup-nav-continue"
-          onClick={onContinue}
-          disabled={continueDisabled}
-          style={{ opacity: continueDisabled ? 0.4 : 1, pointerEvents: continueDisabled ? 'none' : 'auto' }}
-        >
-          {continueLabel || 'Save & Continue \u2192'}
-        </button>
-      </div>
-      <div style={{ textAlign: 'center', marginTop: 12 }}>
-        <button
-          type="button"
-          onClick={onContinue}
-          style={{
-            background: 'none', border: 'none', color: 'var(--muted)',
-            fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline',
-            fontFamily: "'DM Sans', sans-serif", padding: '4px 8px',
-          }}
-        >
-          Save Draft
-        </button>
+        {/* Save Draft — muted text link below */}
+        <div style={{ textAlign: 'center' }}>
+          <button
+            type="button"
+            onClick={handleSaveDraft}
+            style={{
+              background: 'none', border: 'none', color: 'var(--muted)',
+              fontSize: '0.8rem', cursor: 'pointer',
+              fontFamily: "'DM Sans', sans-serif", padding: '4px 8px',
+              opacity: 0.7,
+            }}
+          >
+            {draftSaved ? 'Draft saved \u2713' : 'Save Draft'}
+          </button>
+        </div>
       </div>
       <style>{`
-        @media (max-width: 640px) {
-          .signup-form-nav {
-            flex-direction: column-reverse !important;
+        @media (max-width: 768px) {
+          .signup-nav-row {
+            flex-direction: column !important;
           }
-          .signup-nav-back,
           .signup-nav-continue {
             width: 100% !important;
             text-align: center !important;
             justify-content: center !important;
+            order: -1 !important;
           }
           .signup-nav-back {
+            width: 100% !important;
+            text-align: center !important;
+            justify-content: center !important;
             display: ${step === 1 ? 'none' : 'block'} !important;
+            visibility: visible !important;
+          }
+          .signup-nav-step-label {
+            order: -2 !important;
+            text-align: center !important;
           }
         }
       `}</style>

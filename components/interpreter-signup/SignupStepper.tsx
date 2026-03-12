@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useForm } from './FormContext'
 
 const STEPS = [
@@ -15,15 +14,12 @@ const STEPS = [
 
 export default function SignupStepper() {
   const { currentStep, setCurrentStep, saveDraft, isSaving, draftUserId } = useForm()
-  const router = useRouter()
   const [draftToast, setDraftToast] = useState(false)
 
   async function handleSaveExit() {
     await saveDraft()
     setDraftToast(true)
-    setTimeout(() => {
-      router.push(draftUserId ? '/interpreter/dashboard' : '/interpreter')
-    }, 1500)
+    setTimeout(() => setDraftToast(false), 2000)
   }
 
   return (
@@ -153,12 +149,12 @@ export default function SignupStepper() {
           borderRadius: 10, fontWeight: 600, fontSize: '0.9rem', zIndex: 500,
           boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
         }}>
-          Draft saved. You can pick up where you left off from your dashboard.
+          Draft saved
         </div>
       )}
 
       <style>{`
-        @media (max-width: 640px) {
+        @media (max-width: 768px) {
           .signup-step-pills { display: none !important; }
           .signup-step-mobile { display: block !important; }
         }

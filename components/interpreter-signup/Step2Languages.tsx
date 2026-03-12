@@ -142,7 +142,7 @@ export default function Step2Languages({ onBack, onContinue }: {
   onBack: () => void
   onContinue: () => void
 }) {
-  const { formData, updateField } = useForm()
+  const { formData, updateField, saveDraft } = useForm()
   const [signRegional, setSignRegional] = useState<string[]>([])
   const [spokenRegional, setSpokenRegional] = useState<string[]>([])
 
@@ -217,7 +217,7 @@ export default function Step2Languages({ onBack, onContinue }: {
         />
       </FormSection>
 
-      <FormNav step={2} totalSteps={6} onBack={onBack} onContinue={onContinue} />
+      <FormNav step={2} totalSteps={6} onBack={onBack} onContinue={onContinue} onSaveDraft={saveDraft} />
     </StepWrapper>
   )
 }

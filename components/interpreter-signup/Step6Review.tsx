@@ -45,7 +45,7 @@ function CommunityToggle({ label, helper, checked, onChange }: {
 }
 
 export default function Step6Review({ onBack }: { onBack: () => void }) {
-  const { formData, updateField, draftUserId } = useForm()
+  const { formData, updateField, draftUserId, saveDraft } = useForm()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
@@ -384,6 +384,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         totalSteps={6}
         onBack={onBack}
         onContinue={handleSubmit}
+        onSaveDraft={saveDraft}
         continueLabel={isSubmitting ? 'Submitting…' : 'Submit Profile'}
         continueDisabled={!allAgreed || isSubmitting}
       />

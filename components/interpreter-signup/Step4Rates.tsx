@@ -331,7 +331,7 @@ export default function Step4Rates({ onBack, onContinue }: {
   onBack: () => void
   onContinue: () => void
 }) {
-  const { formData, updateField } = useForm()
+  const { formData, updateField, saveDraft } = useForm()
   const [openProfiles, setOpenProfiles] = useState<string[]>(['profile-1'])
 
   function toggleProfile(id: string) {
@@ -421,7 +421,7 @@ export default function Step4Rates({ onBack, onContinue }: {
         </p>
       </div>
 
-      <FormNav step={4} totalSteps={6} onBack={onBack} onContinue={onContinue} />
+      <FormNav step={4} totalSteps={6} onBack={onBack} onContinue={onContinue} onSaveDraft={saveDraft} />
     </StepWrapper>
   )
 }

@@ -151,7 +151,7 @@ export default function UsersClient({ users, currentUserId }: { users: User[]; c
   }
 
   return (
-    <div style={{ padding: '32px 40px', maxWidth: 1200 }}>
+    <div className="admin-users-content" style={{ padding: '32px 40px', maxWidth: 1200 }}>
       <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 700, marginBottom: 8 }}>
         Users
       </h1>
@@ -338,6 +338,12 @@ export default function UsersClient({ users, currentUserId }: { users: User[]; c
           {toast}
         </div>
       )}
+
+      <style>{`
+        @media (max-width: 768px) {
+          .admin-users-content { padding: 24px 16px !important; }
+        }
+      `}</style>
     </div>
   )
 }

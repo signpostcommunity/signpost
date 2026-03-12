@@ -394,6 +394,7 @@ export default function AboutPage() {
                       width: '100%', textAlign: 'left', padding: '20px 0',
                       background: 'none', border: 'none', cursor: 'pointer',
                       display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16,
+                      minHeight: 44,
                     }}
                   >
                     <span style={{

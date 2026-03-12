@@ -245,7 +245,7 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
           {/* Mobile filter toggle */}
           <div className="filter-mobile-toggle" style={{ marginBottom: '16px' }}>
             <button
-              onClick={() => setFilterOpen(!filterOpen)}
+              onClick={() => setFilterOpen(true)}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -259,7 +259,8 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
                 cursor: 'pointer',
               }}
             >
-              ⚙ Filters
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/></svg>
+              Filters
               {activeFilterCount > 0 && (
                 <span
                   style={{
@@ -277,19 +278,80 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
             </button>
           </div>
 
-          {/* Mobile filter drawer */}
+          {/* Mobile filter panel — full screen overlay */}
           {filterOpen && (
             <div
-              className="filter-mobile-drawer"
+              className="filter-mobile-panel"
               style={{
-                marginBottom: '20px',
-                background: 'var(--surface)',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius)',
-                padding: '20px',
+                position: 'fixed',
+                inset: 0,
+                zIndex: 200,
+                background: 'var(--bg)',
+                overflowY: 'auto',
+                WebkitOverflowScrolling: 'touch',
+                display: 'flex',
+                flexDirection: 'column',
               }}
             >
-              <FilterSidebar filters={filters} onChange={setFilters} />
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '16px 20px',
+                borderBottom: '1px solid var(--border)',
+                position: 'sticky',
+                top: 0,
+                background: 'var(--bg)',
+                zIndex: 1,
+              }}>
+                <span style={{
+                  fontFamily: 'var(--font-syne)',
+                  fontSize: '1rem',
+                  fontWeight: 700,
+                  color: 'var(--text)',
+                }}>
+                  Filters
+                </span>
+                <button
+                  onClick={() => setFilterOpen(false)}
+                  aria-label="Close filters"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--muted)',
+                    cursor: 'pointer',
+                    padding: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+              </div>
+              <div style={{ padding: '20px', flex: 1 }}>
+                <FilterSidebar filters={filters} onChange={setFilters} />
+              </div>
+              <div style={{
+                padding: '16px 20px',
+                borderTop: '1px solid var(--border)',
+                position: 'sticky',
+                bottom: 0,
+                background: 'var(--bg)',
+              }}>
+                <button
+                  onClick={() => setFilterOpen(false)}
+                  className="btn-primary"
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  Show {filtered.length} result{filtered.length !== 1 ? 's' : ''}
+                </button>
+              </div>
             </div>
           )}
 
@@ -432,11 +494,12 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
       <style>{`
         .filter-sidebar-desktop { display: block; }
         .filter-mobile-toggle { display: none; }
-        .filter-mobile-drawer { display: none; }
+        .filter-mobile-panel { display: none; }
         @media (max-width: 768px) {
           .filter-sidebar-desktop { display: none !important; }
           .filter-mobile-toggle { display: block !important; }
-          .filter-mobile-drawer { display: block !important; }
+          .filter-mobile-panel { display: flex !important; }
+          .filter-mobile-panel .filter-sidebar { width: 100% !important; position: static !important; max-height: none !important; }
           .directory-body { padding: 80px 16px 24px !important; flex-direction: column !important; gap: 16px !important; }
         }
         @media (max-width: 480px) {

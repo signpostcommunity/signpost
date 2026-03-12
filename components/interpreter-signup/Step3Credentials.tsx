@@ -31,7 +31,7 @@ export default function Step3Credentials({ onBack, onContinue }: {
   onBack: () => void
   onContinue: () => void
 }) {
-  const { formData, updateField } = useForm()
+  const { formData, updateField, saveDraft } = useForm()
 
   function updateCert(id: string, field: keyof Certification, value: string) {
     updateField('certifications', formData.certifications.map(c =>
@@ -178,7 +178,7 @@ export default function Step3Credentials({ onBack, onContinue }: {
         </AddButton>
       </FormSection>
 
-      <FormNav step={3} totalSteps={6} onBack={onBack} onContinue={onContinue} />
+      <FormNav step={3} totalSteps={6} onBack={onBack} onContinue={onContinue} onSaveDraft={saveDraft} />
     </StepWrapper>
   )
 }
