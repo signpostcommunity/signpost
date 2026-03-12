@@ -23,6 +23,29 @@ interface CreateNotificationParams {
 }
 
 /**
+ * Update notification status safely — separates status from error column
+ * to avoid silent failures if the error column doesn't exist.
+ */
+async function updateNotificationStatus(
+  admin: ReturnType<typeof getSupabaseAdmin>,
+  id: string,
+  status: string,
+  extra?: { sent_at?: string; error?: string }
+) {
+  // Always update status first (this column definitely exists)
+  const { error: statusErr } = await admin
+    .from('notifications')
+    .update({ status, ...extra })
+    .eq('id', id)
+
+  if (statusErr) {
+    // If the combined update fails (e.g. error column missing), retry with just status
+    console.warn(`[notifications] combined status update failed (${statusErr.message}), retrying status-only`)
+    await admin.from('notifications').update({ status }).eq('id', id)
+  }
+}
+
+/**
  * Server-side notification service.
  * Inserts into the notifications table, checks user prefs, and sends email via Resend.
  * Must be called from API routes or server actions (uses admin client).
@@ -78,18 +101,41 @@ export async function createNotification(params: CreateNotificationParams) {
       return inAppNotif
     }
 
-    // Look up user email from auth.users
-    const { data: authUser, error: authErr } = await admin.auth.admin.getUserById(params.recipientUserId)
+    const emailNotifId = emailNotif?.id
 
-    if (authErr || !authUser?.user?.email) {
+    // Look up recipient email — try auth.users first, then interpreter_profiles as fallback
+    let recipientEmail: string | null = null
+
+    try {
+      const { data: authUser, error: authErr } = await admin.auth.admin.getUserById(params.recipientUserId)
+      if (!authErr && authUser?.user?.email) {
+        recipientEmail = authUser.user.email
+      }
+    } catch (e) {
+      console.warn('[notifications] getUserById threw:', e instanceof Error ? e.message : e)
+    }
+
+    // Fallback: check interpreter_profiles.email
+    if (!recipientEmail) {
+      const { data: interpProfile } = await admin
+        .from('interpreter_profiles')
+        .select('email')
+        .eq('user_id', params.recipientUserId)
+        .maybeSingle()
+      if (interpProfile?.email) {
+        recipientEmail = interpProfile.email
+      }
+    }
+
+    if (!recipientEmail) {
       console.error('[notifications] could not resolve email for user:', params.recipientUserId)
-      if (emailNotif?.id) {
-        await admin.from('notifications').update({ status: 'failed', error: 'Could not resolve recipient email' }).eq('id', emailNotif.id)
+      if (emailNotifId) {
+        await updateNotificationStatus(admin, emailNotifId, 'failed', {
+          error: 'Could not resolve recipient email',
+        })
       }
       return inAppNotif
     }
-
-    const recipientEmail = authUser.user.email
 
     // Check notification preferences
     let emailEnabled = true
@@ -111,14 +157,13 @@ export async function createNotification(params: CreateNotificationParams) {
     }
 
     if (!emailEnabled) {
-      // User opted out — mark as skipped, not failed
-      if (emailNotif?.id) {
-        await admin.from('notifications').update({ status: 'skipped' }).eq('id', emailNotif.id)
+      if (emailNotifId) {
+        await updateNotificationStatus(admin, emailNotifId, 'skipped')
       }
       return inAppNotif
     }
 
-    // Build and send email
+    // Build and send email via Resend
     const html = emailTemplate({
       heading: params.subject,
       body: `<p>${params.body}</p>`,
@@ -127,22 +172,30 @@ export async function createNotification(params: CreateNotificationParams) {
     })
 
     try {
+      console.log(`[notifications] sending email to ${recipientEmail} — subject: "${params.subject}"`)
+
       await sendEmail({
         to: recipientEmail,
         subject: params.subject,
         html,
       })
 
+      console.log(`[notifications] email sent successfully to ${recipientEmail}`)
+
       // Success: update status to 'sent'
-      if (emailNotif?.id) {
-        await admin.from('notifications').update({ status: 'sent', sent_at: new Date().toISOString() }).eq('id', emailNotif.id)
+      if (emailNotifId) {
+        await updateNotificationStatus(admin, emailNotifId, 'sent', {
+          sent_at: new Date().toISOString(),
+        })
       }
     } catch (err) {
       // Failure: update status to 'failed' with error message
       const errorMsg = err instanceof Error ? err.message : String(err)
       console.error('[notifications] email send failed:', errorMsg)
-      if (emailNotif?.id) {
-        await admin.from('notifications').update({ status: 'failed', error: errorMsg }).eq('id', emailNotif.id)
+      if (emailNotifId) {
+        await updateNotificationStatus(admin, emailNotifId, 'failed', {
+          error: errorMsg,
+        })
       }
     }
   }

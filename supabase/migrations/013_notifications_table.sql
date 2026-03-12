@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS public.notifications (
   body            text,
   metadata        jsonb DEFAULT '{}',
   status          text NOT NULL DEFAULT 'sent',
+  error           text,
   sent_at         timestamptz DEFAULT now(),
   created_at      timestamptz DEFAULT now()
 );
