@@ -10,7 +10,8 @@ export const SPECIALIZATION_CATEGORIES: Record<string, string[]> = {
     "Court hearing / Deposition",
     "Police / Law enforcement",
     "Government / DMV / Benefits",
-    "Notary / Document signing"
+    "Notary / Document signing",
+    "Interpreting for D/HH Attorneys / Legal Professionals"
   ],
   "Medical & Wellness": [
     "Doctor / Specialist appointment",
@@ -34,6 +35,7 @@ export const SPECIALIZATION_CATEGORIES: Record<string, string[]> = {
     "Training / Onboarding",
     "Conference / Summit",
     "Interpreting for D/HH Business Leaders",
+    "Interpreting for D/HH Professionals in Technical / Scientific Fields",
     "Tech / IT",
     "Science / Research"
   ],
