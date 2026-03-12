@@ -30,6 +30,7 @@ function DeleteModal({ user, onConfirm, onCancel, deleting }: {
       alignItems: 'center', justifyContent: 'center', padding: 24,
     }} onClick={onCancel}>
       <div
+        className="modal-dialog"
         onClick={e => e.stopPropagation()}
         style={{
           background: 'var(--surface)', border: '1px solid var(--border)',
@@ -190,8 +191,9 @@ export default function UsersClient({ users, currentUserId }: { users: User[]; c
       </div>
 
       {/* Table */}
+      <div className="table-scroll-hint">Scroll right for more &rarr;</div>
       <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
-        <div style={{ overflowX: 'auto' }}>
+        <div className="table-scroll-wrapper" style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border)' }}>

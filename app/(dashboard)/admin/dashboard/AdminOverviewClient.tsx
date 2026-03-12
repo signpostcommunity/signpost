@@ -89,7 +89,7 @@ export default function AdminOverviewClient({
       </p>
 
       {/* Stat cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 40 }}>
+      <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 40 }}>
         {statCards.map(card => (
           <Link key={card.label} href={card.href} style={{
             background: 'var(--surface)', border: '1px solid var(--border)',

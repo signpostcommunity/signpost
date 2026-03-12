@@ -77,6 +77,7 @@ export default function FilterSidebar({ filters, onChange }: Props) {
 
   return (
     <aside
+      className="filter-sidebar"
       style={{
         width: 240,
         flexShrink: 0,

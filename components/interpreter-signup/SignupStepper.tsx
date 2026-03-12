@@ -106,12 +106,43 @@ export default function SignupStepper() {
         })}
       </div>
 
-      {/* Step label — mobile only */}
+      {/* Step circles — mobile only */}
       <div className="signup-step-mobile" style={{
-        display: 'none', textAlign: 'center', marginBottom: 48,
-        color: 'var(--muted)', fontSize: '0.82rem',
+        display: 'none', marginBottom: 32,
       }}>
-        Step {currentStep} of {STEPS.length}
+        <div style={{
+          display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 10,
+        }}>
+          {STEPS.map((_, i) => {
+            const stepNum = i + 1
+            const isActive = stepNum === currentStep
+            const isDone = stepNum < currentStep
+            return (
+              <button
+                key={stepNum}
+                onClick={() => isDone && setCurrentStep(stepNum)}
+                style={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '0.75rem', fontWeight: 700,
+                  fontFamily: "'DM Sans', sans-serif",
+                  border: isActive ? '2px solid var(--accent)' : isDone ? '2px solid var(--accent)' : '1px solid var(--border)',
+                  background: isActive ? 'rgba(0,229,255,0.15)' : isDone ? 'rgba(0,229,255,0.08)' : 'var(--surface2)',
+                  color: isActive ? 'var(--accent)' : isDone ? 'var(--accent)' : 'var(--muted)',
+                  cursor: isDone ? 'pointer' : 'default',
+                  transition: 'all 0.2s',
+                  padding: 0,
+                  minWidth: 32, minHeight: 32,
+                }}
+              >
+                {isDone ? '\u2713' : stepNum}
+              </button>
+            )
+          })}
+        </div>
+        <div style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '0.82rem' }}>
+          {STEPS[currentStep - 1]}
+        </div>
       </div>
 
       {/* Draft saved toast */}

@@ -198,8 +198,10 @@ function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void 
       padding: '12px 8px 0',
       marginBottom: 32,
     }}>
-      <div role="tablist" aria-label="Profile sections" style={{
+      <div role="tablist" aria-label="Profile sections" className="profile-tabs-scrollable" style={{
         display: 'flex', gap: 0, overflowX: 'auto',
+        WebkitOverflowScrolling: 'touch',
+        scrollbarWidth: 'none',
       }}>
         {TABS.map(tab => {
           const isActive = active === tab

@@ -412,6 +412,7 @@ export default function AddToListModal({
         aria-modal="true"
         aria-label={isEditMode ? `Edit ${interpreter.name}` : `Add ${interpreter.name} to list`}
         onClick={(e) => e.stopPropagation()}
+        className="modal-dialog"
         style={{
           background: 'var(--surface, #0f1118)',
           border: '1px solid var(--border, #1e2433)',

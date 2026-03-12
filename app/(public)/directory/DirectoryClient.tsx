@@ -215,6 +215,7 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
     <div style={{ minHeight: '100vh', position: 'relative' }}>
       {/* Body — full width */}
       <div
+        className="directory-body"
         style={{
           padding: '100px 32px 32px',
           display: 'flex',
@@ -433,9 +434,13 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
         .filter-mobile-toggle { display: none; }
         .filter-mobile-drawer { display: none; }
         @media (max-width: 768px) {
-          .filter-sidebar-desktop { display: none; }
-          .filter-mobile-toggle { display: block; }
-          .filter-mobile-drawer { display: block; }
+          .filter-sidebar-desktop { display: none !important; }
+          .filter-mobile-toggle { display: block !important; }
+          .filter-mobile-drawer { display: block !important; }
+          .directory-body { padding: 80px 16px 24px !important; flex-direction: column !important; gap: 16px !important; }
+        }
+        @media (max-width: 480px) {
+          .directory-body { padding: 72px 12px 16px !important; }
         }
       `}</style>
     </div>

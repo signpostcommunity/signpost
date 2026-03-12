@@ -105,6 +105,7 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
             }}
           >
             <div
+              className="card-name-row"
               style={{
                 display: 'flex',
                 alignItems: 'flex-start',
@@ -113,6 +114,7 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
               }}
             >
               <div
+                className="card-name-text"
                 style={{
                   fontFamily: 'var(--font-syne)',
                   fontWeight: 700,
@@ -256,6 +258,23 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
           .add-to-list-btn:hover {
             background: rgba(0,229,255,0.1);
             border-color: var(--accent);
+          }
+          @media (max-width: 640px) {
+            .card-name-row {
+              flex-direction: column !important;
+              align-items: stretch !important;
+            }
+            .add-to-list-btn {
+              width: 100% !important;
+              text-align: center !important;
+              padding: 8px 10px !important;
+              margin-top: 6px;
+            }
+            .card-name-text {
+              overflow: visible !important;
+              text-overflow: clip !important;
+              white-space: normal !important;
+            }
           }
         `}</style>
       </div>

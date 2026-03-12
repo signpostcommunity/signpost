@@ -100,6 +100,7 @@ export default function FlagProfileModal({ isOpen, onClose, interpreterProfileId
     >
       <div
         ref={focusTrapRef}
+        className="modal-dialog"
         role="dialog"
         aria-modal="true"
         aria-labelledby="flag-modal-title"

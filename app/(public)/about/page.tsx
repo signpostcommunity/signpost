@@ -66,7 +66,7 @@ export default function AboutPage() {
     <div>
       {/* Tab bar header */}
       <div style={{ background: '#1a1a24', paddingTop: 48 }}>
-        <div style={{ width: '100%', padding: '0 40px' }}>
+        <div className="about-tab-header" style={{ width: '100%', padding: '0 40px' }}>
           <h1 style={{
             fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.4rem, 2.5vw, 1.8rem)',
             fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.3,
@@ -103,7 +103,7 @@ export default function AboutPage() {
 
       {/* Tab content area */}
       <div style={{ background: 'var(--bg)', minHeight: '60vh' }}>
-        <div style={{ width: '100%', padding: '48px 40px 80px' }}>
+        <div className="about-tab-content" style={{ width: '100%', padding: '48px 40px 80px' }}>
 
           {/* Tab 1: About Us */}
           <div
@@ -633,6 +633,8 @@ export default function AboutPage() {
         @media (max-width: 768px) {
           .about-hero-grid { grid-template-columns: 1fr !important; }
           .contact-form-grid { grid-template-columns: 1fr !important; }
+          .about-tab-header { padding: 0 16px !important; }
+          .about-tab-content { padding: 32px 16px 48px !important; }
         }
         @media (max-width: 640px) {
           .about-hero-grid { grid-template-columns: 1fr !important; }

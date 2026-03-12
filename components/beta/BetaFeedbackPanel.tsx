@@ -194,7 +194,13 @@ export default function BetaFeedbackPanel() {
 
   const isAdmin = pathname.startsWith('/admin');
 
-  const [isOpen, setIsOpen] = useState(true);
+  // Start minimized on mobile
+  const [isOpen, setIsOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth > 768;
+    }
+    return true;
+  });
 
   // Per-page fields (current page)
   const [notes, setNotes] = useState('');
@@ -255,11 +261,12 @@ export default function BetaFeedbackPanel() {
     }
   }, [pathname]);
 
-  // Push page content right when panel is open
+  // Push page content right when panel is open (desktop only)
   useEffect(() => {
     const el = document.getElementById('site-content');
     if (!el) return;
-    if (isOpen) {
+    const isMobile = window.innerWidth <= 768;
+    if (isOpen && !isMobile) {
       el.classList.add('panel-open');
       document.documentElement.style.setProperty('--panel-offset', '320px');
     } else {
@@ -364,32 +371,37 @@ export default function BetaFeedbackPanel() {
 
   // ── Collapsed tab ───────────────────────────────────────────────────────────
   if (!isOpen) {
+    const isMobileView = typeof window !== 'undefined' && window.innerWidth <= 768;
     return (
       <button
         onClick={() => setIsOpen(true)}
         aria-label="Open beta feedback panel"
+        className={isMobileView ? 'beta-panel-mobile-minimized' : ''}
         style={{
           position: 'fixed',
           right: 0,
-          top: '50%',
-          transform: 'translateY(-50%) rotate(90deg)',
+          top: isMobileView ? 'auto' : '50%',
+          bottom: isMobileView ? 16 : 'auto',
+          transform: isMobileView ? 'none' : 'translateY(-50%) rotate(90deg)',
           transformOrigin: 'center center',
           background: '#ff7e45',
           color: '#fff',
           border: 'none',
-          borderRadius: '6px 6px 0 0',
-          padding: '8px 18px',
-          fontSize: '0.68rem',
+          borderRadius: isMobileView ? '8px' : '6px 6px 0 0',
+          padding: isMobileView ? '8px 14px' : '8px 18px',
+          fontSize: isMobileView ? '0.62rem' : '0.68rem',
           fontWeight: 800,
           letterSpacing: '0.12em',
           textTransform: 'uppercase',
           cursor: 'pointer',
           zIndex: 1000,
           whiteSpace: 'nowrap',
-          boxShadow: '-2px 0 12px rgba(0,0,0,0.3)',
+          boxShadow: isMobileView ? '0 4px 16px rgba(0,0,0,0.4)' : '-2px 0 12px rgba(0,0,0,0.3)',
+          minWidth: 'auto',
+          minHeight: 'auto',
         }}
       >
-        Beta Feedback
+        {isMobileView ? 'Beta' : 'Beta Feedback'}
       </button>
     );
   }
@@ -397,6 +409,7 @@ export default function BetaFeedbackPanel() {
   // ── Open panel ──────────────────────────────────────────────────────────────
   return (
     <div
+      className="beta-feedback-panel"
       style={{
         position: 'fixed',
         top: 0,
@@ -856,6 +869,16 @@ export default function BetaFeedbackPanel() {
       >
         Feedback goes directly to Molly &amp; Regina
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .beta-feedback-panel {
+            width: 100% !important;
+            max-width: 100vw !important;
+            border-left: none !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

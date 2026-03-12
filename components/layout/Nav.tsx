@@ -242,12 +242,16 @@ export default function Nav({ initialSession = null }: NavProps) {
             background: 'none',
             border: 'none',
             cursor: 'pointer',
-            padding: '4px',
+            padding: '8px',
+            minWidth: 44,
+            minHeight: 44,
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
-          <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
-          <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
+          <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--accent)', display: 'block', borderRadius: 1 }} />
+          <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--accent)', display: 'block', borderRadius: 1 }} />
+          <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--accent)', display: 'block', borderRadius: 1 }} />
         </button>
       </nav>
 
@@ -282,21 +286,30 @@ export default function Nav({ initialSession = null }: NavProps) {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <button
-              onClick={() => setMobileOpen(false)}
-              aria-label="Close menu"
-              style={{
-                alignSelf: 'flex-end',
-                background: 'none',
-                border: 'none',
-                color: 'var(--muted)',
-                fontSize: '1.2rem',
-                cursor: 'pointer',
-                marginBottom: '16px',
-              }}
-            >
-              <span aria-hidden="true">✕</span>
-            </button>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <div className="wordmark" style={{ fontSize: '1.1rem' }}>
+                sign<span>post</span>
+              </div>
+              <button
+                onClick={() => setMobileOpen(false)}
+                aria-label="Close menu"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--muted)',
+                  fontSize: '1.4rem',
+                  cursor: 'pointer',
+                  padding: '8px',
+                  minWidth: 44,
+                  minHeight: 44,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <span aria-hidden="true">&#10005;</span>
+              </button>
+            </div>
 
             <Link
               href="/directory"
@@ -308,14 +321,27 @@ export default function Nav({ initialSession = null }: NavProps) {
             </Link>
 
             {isLoggedIn ? (
-              <Link
-                href={portalPath(role)}
-                className="btn-primary"
-                onClick={() => setMobileOpen(false)}
-                style={{ textAlign: 'center', marginTop: '8px', textDecoration: 'none' }}
-              >
-                My Portal
-              </Link>
+              <>
+                <Link
+                  href={portalPath(role)}
+                  className="btn-primary"
+                  onClick={() => setMobileOpen(false)}
+                  style={{ textAlign: 'center', marginTop: '8px', textDecoration: 'none', display: 'block' }}
+                >
+                  My Portal
+                </Link>
+                <button
+                  onClick={async () => {
+                    setMobileOpen(false);
+                    await supabase.auth.signOut();
+                    window.location.href = '/';
+                  }}
+                  className="mobile-nav-btn"
+                  style={{ marginTop: '8px', color: 'var(--accent3)', width: '100%', cursor: 'pointer' }}
+                >
+                  Log out
+                </button>
+              </>
             ) : (
               <>
                 <Link
@@ -346,7 +372,7 @@ export default function Nav({ initialSession = null }: NavProps) {
                   href="/request"
                   className="btn-primary"
                   onClick={() => setMobileOpen(false)}
-                  style={{ textAlign: 'center', marginTop: '8px', textDecoration: 'none' }}
+                  style={{ textAlign: 'center', marginTop: '8px', textDecoration: 'none', display: 'block' }}
                 >
                   Request Interpreters
                 </Link>

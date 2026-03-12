@@ -342,10 +342,10 @@ export default function InboxPage() {
           Loading...
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: 16, minHeight: 0 }}>
+        <div className="inbox-panes" style={{ display: 'flex', flexDirection: 'column', flex: 1, gap: 16, minHeight: 0 }}>
 
           {/* ── Top pane: Notifications (~1/3) ── */}
-          <div style={{ flex: '0 0 33%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          <div className="inbox-pane-notif" style={{ flex: '0 0 33%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
             <div style={{
               background: 'var(--surface)', borderRadius: 'var(--radius) var(--radius) 0 0',
               padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10,
@@ -432,6 +432,12 @@ export default function InboxPage() {
       )}
 
       <DashMobileStyles />
+      <style>{`
+        @media (max-width: 768px) {
+          .inbox-panes { flex-direction: column !important; height: auto !important; }
+          .inbox-pane-notif { flex: none !important; max-height: 300px !important; }
+        }
+      `}</style>
     </div>
   )
 }

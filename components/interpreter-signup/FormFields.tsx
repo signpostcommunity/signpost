@@ -260,7 +260,20 @@ export function FormNav({
           disabled={continueDisabled}
           style={{ opacity: continueDisabled ? 0.4 : 1, pointerEvents: continueDisabled ? 'none' : 'auto' }}
         >
-          {continueLabel || 'Continue →'}
+          {continueLabel || 'Save & Continue \u2192'}
+        </button>
+      </div>
+      <div style={{ textAlign: 'center', marginTop: 12 }}>
+        <button
+          type="button"
+          onClick={onContinue}
+          style={{
+            background: 'none', border: 'none', color: 'var(--muted)',
+            fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline',
+            fontFamily: "'DM Sans', sans-serif", padding: '4px 8px',
+          }}
+        >
+          Save Draft
         </button>
       </div>
       <style>{`
