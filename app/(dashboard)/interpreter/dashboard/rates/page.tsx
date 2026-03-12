@@ -472,7 +472,11 @@ export default function RatesPage() {
                   />
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <div style={{
+                  position: 'sticky', bottom: 0, zIndex: 20,
+                  background: 'var(--card-bg)', borderTop: '1px solid var(--border)',
+                  padding: '14px 0', display: 'flex', justifyContent: 'flex-end',
+                }}>
                   <button className="btn-primary" onClick={() => saveProfile(profile.id)} disabled={saving === profile.id} style={{ padding: '9px 22px', opacity: saving === profile.id ? 0.6 : 1 }}>
                     {saving === profile.id ? 'Saving...' : 'Save Changes'}
                   </button>

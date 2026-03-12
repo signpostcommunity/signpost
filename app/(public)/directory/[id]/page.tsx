@@ -46,6 +46,9 @@ export default async function ProfilePage({ params }: Props) {
     certs: ((data.draft_data as Record<string, unknown> | null)?.certifications as Array<{ name: string }> | undefined)
       ?.filter((c: { name: string }) => c.name?.trim())
       .map((c: { name: string }) => c.name.trim()) || [],
+    certDetails: ((data.draft_data as Record<string, unknown> | null)?.certifications as Array<{ name: string; issuingBody?: string; year?: string; verificationLink?: string }> | undefined)
+      ?.filter(c => c.name?.trim())
+      .map(c => ({ name: c.name.trim(), issuingBody: c.issuingBody, year: c.year, verificationLink: c.verificationLink })) || [],
     rating: Number(data.rating) || 0,
     reviews: data.review_count || 0,
     available: data.available ?? true,

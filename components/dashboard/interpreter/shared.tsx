@@ -39,8 +39,8 @@ export function DemoBadge() {
     <span style={{
       fontSize: '0.62rem', fontWeight: 700, fontFamily: "'Syne', sans-serif",
       letterSpacing: '0.08em', textTransform: 'uppercase',
-      background: 'rgba(123,97,255,0.12)', border: '1px solid rgba(123,97,255,0.3)',
-      color: '#a78bfa', borderRadius: 100, padding: '2px 8px',
+      background: 'rgba(255,107,43,0.15)', border: '1px solid rgba(255,107,43,0.4)',
+      color: '#ff6b2b', borderRadius: 100, padding: '2px 8px',
     }}>
       Sample
     </span>

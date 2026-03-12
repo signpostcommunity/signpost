@@ -393,7 +393,10 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{cert}</div>
                         <div style={{ fontSize: '0.72rem', color: 'var(--muted)', lineHeight: 1.3 }}>
-                          {CERT_FULL_NAMES[cert] || cert} · <span style={{ color: '#34d399' }}>✓ Verified</span>
+                          {CERT_FULL_NAMES[cert] || cert}{(() => {
+                            const detail = i.certDetails?.find(d => d.name === cert);
+                            return detail?.verificationLink ? <> · <span style={{ color: '#34d399' }}>✓ Verified</span></> : null;
+                          })()}
                         </div>
                       </div>
                     </div>
@@ -622,7 +625,10 @@ function CredentialsTab({ interpreter: i }: { interpreter: Interpreter }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
       <Section title="Certifications">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {i.certs.map((cert) => (
+          {i.certs.map((cert) => {
+            const detail = i.certDetails?.find(d => d.name === cert);
+            const isVerified = !!detail?.verificationLink;
+            return (
             <div
               key={cert}
               style={{
@@ -639,7 +645,11 @@ function CredentialsTab({ interpreter: i }: { interpreter: Interpreter }) {
                 <div style={{ fontWeight: 600, marginBottom: '2px' }}>{cert}</div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{CERT_FULL_NAMES[cert] || cert}</div>
               </div>
-              <span
+              {isVerified && (
+              <a
+                href={detail!.verificationLink}
+                target="_blank"
+                rel="noopener noreferrer"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -650,12 +660,15 @@ function CredentialsTab({ interpreter: i }: { interpreter: Interpreter }) {
                   padding: '4px 12px',
                   fontSize: '0.75rem',
                   color: '#34d399',
+                  textDecoration: 'none',
                 }}
               >
                 ✓ Verified
-              </span>
+              </a>
+              )}
             </div>
-          ))}
+            );
+          })}
         </div>
       </Section>
 

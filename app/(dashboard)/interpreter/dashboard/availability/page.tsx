@@ -152,13 +152,20 @@ export default function AvailabilityPage() {
         />
       </div>
 
-      <button
-        className="btn-primary"
-        onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 2000) }}
-        style={{ padding: '11px 28px' }}
-      >
-        {saved ? 'Saved ✓' : 'Save Availability'}
-      </button>
+      <div style={{
+        position: 'sticky', bottom: 0, zIndex: 20,
+        background: 'var(--card-bg)', borderTop: '1px solid var(--border)',
+        padding: '14px 24px', marginTop: 16,
+        display: 'flex', justifyContent: 'flex-end',
+      }}>
+        <button
+          className="btn-primary"
+          onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 2000) }}
+          style={{ padding: '11px 28px' }}
+        >
+          {saved ? 'Saved ✓' : 'Save Availability'}
+        </button>
+      </div>
     </div>
   )
 }

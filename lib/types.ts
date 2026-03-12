@@ -12,6 +12,7 @@ export interface Interpreter {
   specs: string[];
   specializedSkills?: string[];
   certs: string[];
+  certDetails?: { name: string; issuingBody?: string; year?: string; verificationLink?: string }[];
   rating: number;
   reviews: number;
   available: boolean;

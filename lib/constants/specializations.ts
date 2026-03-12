@@ -16,21 +16,26 @@ export const SPECIALIZATION_CATEGORIES: Record<string, string[]> = {
     "Doctor / Specialist appointment",
     "Mental health session",
     "Hospital / Emergency",
-    "Dental / Vision"
+    "Dental / Vision",
+    "Interpreting for D/HH Medical Professionals"
   ],
   "Education": [
     "K-12 classroom",
     "IEP / 504 meeting",
     "Higher education lecture",
     "Parent-teacher conference",
-    "Tutoring / Academic support"
+    "Tutoring / Academic support",
+    "Interpreting for D/HH Academics (Higher Ed)"
   ],
   "Workplace & Professional": [
     "Staff meeting / All-hands",
     "Job interview",
     "HR / Employee relations",
     "Training / Onboarding",
-    "Conference / Summit"
+    "Conference / Summit",
+    "Interpreting for D/HH Business Leaders",
+    "Tech / IT",
+    "Science / Research"
   ],
   "Religious & Spiritual": [
     "Worship service",
@@ -59,7 +64,7 @@ export const SPECIALIZED_SKILLS = [
   "Cued Speech Transliteration",
   "DeafBlind Pro-Tactile ASL (PTASL)",
   "Oral Transliteration",
-  "Platform / Highly-Specialized Voice Interpreting",
+  "Platform Voicing / Specialized Voice Interpreting",
   "Trilingual Interpreting"
 ]
 
@@ -101,4 +106,5 @@ export const LEGACY_SPEC_MAP: Record<string, string[]> = {
   "Business": ["Staff meeting / All-hands"],
   "Police / Emergency": ["Police / Law enforcement"],
   "Diplomatic": ["Government / DMV / Benefits"],
+  "Platform / Highly-Specialized Voice Interpreting": ["Platform Voicing / Specialized Voice Interpreting"],
 }

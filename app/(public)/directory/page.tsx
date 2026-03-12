@@ -10,7 +10,9 @@ export default async function DirectoryPage() {
   const { data: rows } = await supabase
     .from('interpreter_profiles')
     .select('id, name, first_name, last_name, city, country, state, sign_languages, spoken_languages, specializations, specialized_skills, regions, rating, review_count, available, avatar_color, bio, video_url, interpreter_type, status, photo_url, draft_data, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity')
-    .in('status', ['approved', 'active']);
+    .in('status', ['approved', 'active'])
+    .order('photo_url', { ascending: false, nullsFirst: false })
+    .order('name', { ascending: true });
 
   const interpreters: Interpreter[] = (rows || []).map((r) => {
     const fullName = r.name || [r.first_name, r.last_name].filter(Boolean).join(' ') || 'Interpreter';
@@ -20,9 +22,14 @@ export default async function DirectoryPage() {
     // Extract certifications from draft_data if present
     const draftData = (r.draft_data || {}) as Record<string, unknown>;
     const draftCerts = Array.isArray(draftData.certifications) ? draftData.certifications : [];
-    const certNames = draftCerts
-      .filter((c: Record<string, unknown>) => c && typeof c.name === 'string' && c.name.trim())
-      .map((c: Record<string, unknown>) => c.name as string);
+    const validCerts = draftCerts.filter((c: Record<string, unknown>) => c && typeof c.name === 'string' && c.name.trim());
+    const certNames = validCerts.map((c: Record<string, unknown>) => c.name as string);
+    const certDetails = validCerts.map((c: Record<string, unknown>) => ({
+      name: c.name as string,
+      issuingBody: (c.issuingBody as string) || undefined,
+      year: (c.year as string) || undefined,
+      verificationLink: (c.verificationLink as string) || undefined,
+    }));
 
     // Build affinities array from boolean columns
     const affinities: string[] = [];
@@ -43,6 +50,7 @@ export default async function DirectoryPage() {
       specs: r.specializations || [],
       specializedSkills: r.specialized_skills || [],
       certs: certNames,
+      certDetails,
       rating: Number(r.rating) || 0,
       reviews: r.review_count || 0,
       available: r.available ?? true,

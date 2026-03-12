@@ -199,7 +199,9 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
                 borderTop: '1px solid var(--border)',
               }}
             >
-              {i.certs.map((cert) => (
+              {i.certs.map((cert) => {
+                const isVerified = i.certDetails?.some(d => d.name === cert && d.verificationLink);
+                return (
                 <span
                   key={cert}
                   style={{
@@ -212,9 +214,10 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
                     fontWeight: 600,
                   }}
                 >
-                  {cert}
+                  {cert}{isVerified && <span style={{ color: '#34d399', marginLeft: 3 }}>✓</span>}
                 </span>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

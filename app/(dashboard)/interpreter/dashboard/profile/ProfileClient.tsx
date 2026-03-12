@@ -162,9 +162,6 @@ const DEFAULT_NOTIFICATION_PREFS: NotificationPreferences = {
   email_enabled: true,
   sms_enabled: false,
   categories: {
-    profile_saved: { email: true, sms: false },
-    profile_approved: { email: true, sms: false },
-    profile_denied: { email: true, sms: false },
     new_request: { email: true, sms: false },
     booking_confirmed: { email: true, sms: false },
     rate_response: { email: true, sms: false },
@@ -175,7 +172,7 @@ const DEFAULT_NOTIFICATION_PREFS: NotificationPreferences = {
     new_message: { email: true, sms: false },
     invoice_paid: { email: true, sms: false },
     team_invite: { email: true, sms: false },
-    added_to_preferred_list: { email: false, sms: false },
+    added_to_preferred_list: { email: true, sms: false },
   },
 }
 
@@ -226,7 +223,12 @@ function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void 
 
 function SaveButton({ saving, onClick }: { saving: boolean; onClick: () => void }) {
   return (
-    <div style={{ paddingTop: 24, borderTop: '1px solid var(--border)', marginTop: 32 }}>
+    <div style={{
+      position: 'sticky', bottom: 0, zIndex: 20,
+      background: 'var(--card-bg)', borderTop: '1px solid var(--border)',
+      padding: '14px 24px', marginTop: 32,
+      display: 'flex', justifyContent: 'flex-end',
+    }}>
       <button
         onClick={onClick}
         disabled={saving}
@@ -1406,14 +1408,6 @@ function CommunityToggle({ label, helper, checked, onChange }: { label: string; 
 
 const NOTIF_SECTIONS: { section: string; items: { key: string; label: string; desc: string }[] }[] = [
   {
-    section: 'Profile',
-    items: [
-      { key: 'profile_saved', label: 'Profile saved', desc: 'Your profile changes were saved' },
-      { key: 'profile_approved', label: 'Profile approved', desc: 'Your profile has been approved' },
-      { key: 'profile_denied', label: 'Profile denied', desc: 'Your profile needs changes' },
-    ],
-  },
-  {
     section: 'Bookings',
     items: [
       { key: 'new_request', label: 'New request received', desc: 'Date, time, and location in subject' },
@@ -1805,6 +1799,10 @@ function SettingsTab({
             {notifToast}
           </div>
         )}
+
+        <p style={{ fontSize: '0.78rem', color: 'var(--muted)', opacity: 0.7, marginTop: 16, lineHeight: 1.5 }}>
+          Every email notification includes a link to manage these settings.
+        </p>
       </div>
 
       {/* Section 3 reserved for future account settings */}
