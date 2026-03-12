@@ -271,6 +271,8 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   function setActiveTab(tab: Tab) {
     setActiveTabRaw(tab)
     window.scrollTo({ top: 0, behavior: 'instant' })
+    // Also scroll the dashboard main container (has its own overflow)
+    document.querySelector('.dash-main')?.scrollTo({ top: 0, behavior: 'instant' })
   }
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
@@ -867,7 +869,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
               rows={4} style={{ ...inputStyle, resize: 'vertical', minHeight: 100 }}
               onFocus={handleFocus} onBlur={handleBlur}
             />
-            <div style={{ fontSize: '0.75rem', textAlign: 'right', marginTop: 4, color: bio.length > 450 ? '#ff6b2b' : 'var(--muted)' }}>
+            <div style={{ fontSize: '0.75rem', textAlign: 'right', marginTop: 4, color: bio.length > 450 ? '#ff7e45' : 'var(--muted)' }}>
               {bio.length} / 500
             </div>
           </div>
@@ -881,7 +883,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
               rows={4} style={{ ...inputStyle, resize: 'vertical', minHeight: 100 }}
               onFocus={handleFocus} onBlur={handleBlur}
             />
-            <div style={{ fontSize: '0.75rem', textAlign: 'right', marginTop: 4, color: bioSpecializations.length > 450 ? '#ff6b2b' : 'var(--muted)' }}>
+            <div style={{ fontSize: '0.75rem', textAlign: 'right', marginTop: 4, color: bioSpecializations.length > 450 ? '#ff7e45' : 'var(--muted)' }}>
               {bioSpecializations.length} / 500
             </div>
           </div>
@@ -895,7 +897,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
               rows={3} style={{ ...inputStyle, resize: 'vertical', minHeight: 80 }}
               onFocus={handleFocus} onBlur={handleBlur}
             />
-            <div style={{ fontSize: '0.75rem', textAlign: 'right', marginTop: 4, color: bioExtra.length > 250 ? '#ff6b2b' : 'var(--muted)' }}>
+            <div style={{ fontSize: '0.75rem', textAlign: 'right', marginTop: 4, color: bioExtra.length > 250 ? '#ff7e45' : 'var(--muted)' }}>
               {bioExtra.length} / 300
             </div>
           </div>
@@ -997,8 +999,8 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           {/* LGBTQ+ */}
           <CommunityToggle label="LGBTQ+" helper="Select if you are available for and affirming of LGBTQ+ clients and settings" checked={lgbtq} onChange={() => setLgbtq(!lgbtq)} />
 
-          {/* Deaf-parented / CODA */}
-          <CommunityToggle label="Deaf-parented / CODA" helper="Select if you grew up with Deaf parents or are a Child of Deaf Adults" checked={deafParented} onChange={() => setDeafParented(!deafParented)} />
+          {/* Deaf-Parented Interpreter / CODA */}
+          <CommunityToggle label="Deaf-Parented Interpreter / CODA" helper="Select if you grew up with Deaf parents or are a Child of Deaf Adults" checked={deafParented} onChange={() => setDeafParented(!deafParented)} />
 
           {/* BIPOC */}
           <CommunityToggle label="BIPOC" checked={bipoc} onChange={() => { if (bipoc) { setBipoc(false); setBipocDetails([]) } else { setBipoc(true) } }} />

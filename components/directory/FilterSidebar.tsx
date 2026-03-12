@@ -308,7 +308,7 @@ export default function FilterSidebar({ filters, onChange }: Props) {
 
         {/* Deaf-parented */}
         <ToggleRow
-          label="Deaf-parented (CODA)"
+          label="Deaf-Parented Interpreter / CODA"
           checked={filters.affinities.includes('Deaf-parented')}
           onChange={() => toggleArray('affinities', 'Deaf-parented')}
         />

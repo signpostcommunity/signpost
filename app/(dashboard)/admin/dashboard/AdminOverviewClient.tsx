@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 
-const ORANGE = '#ff6b2b'
+const ORANGE = '#ff7e45'
 
 function IconUsers() {
   return (

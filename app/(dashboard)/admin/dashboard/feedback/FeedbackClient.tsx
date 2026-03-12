@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-const ORANGE = '#ff6b2b'
+const ORANGE = '#ff7e45'
 
 interface FeedbackItem {
   id: string

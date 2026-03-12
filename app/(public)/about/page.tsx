@@ -133,6 +133,51 @@ export default function AboutPage() {
         </div>
       </div>
 
+      {/* Accessibility Commitment */}
+      <div style={{ marginBottom: 56 }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20,
+        }}>
+          <div style={{
+            fontFamily: 'var(--font-syne)', fontSize: '0.7rem', fontWeight: 700,
+            letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)',
+            whiteSpace: 'nowrap',
+          }}>
+            Our Accessibility Commitment
+          </div>
+          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+        </div>
+
+        <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.75, marginBottom: 24 }}>
+          signpost is built for the Deaf, DeafBlind, and Hard of Hearing community. Accessibility isn&apos;t an afterthought — it&apos;s foundational to everything we build.
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {[
+            { title: 'WCAG 2.2 Level AA', desc: 'We meet or exceed Web Content Accessibility Guidelines 2.2 at the AA conformance level across the entire platform.' },
+            { title: 'Screen reader friendly', desc: 'Semantic HTML, ARIA labels, and full keyboard navigation throughout.' },
+            { title: 'DeafBlind-friendly mode', desc: 'A high-contrast display toggle optimized for DeafBlind users is in active development and will be available before public launch.' },
+            { title: 'Ongoing improvement', desc: 'Accessibility is never "done." We continuously test and improve.' },
+          ].map(item => (
+            <div key={item.title} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+              <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '0.9rem', lineHeight: '1.65', flexShrink: 0 }}>&mdash;</span>
+              <div>
+                <span style={{ fontWeight: 700, color: 'var(--text)', fontSize: '0.9rem' }}>{item.title}</span>
+                <span style={{ color: 'var(--muted)', fontSize: '0.9rem' }}> &mdash; {item.desc}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.75, marginTop: 24, marginBottom: 0 }}>
+          If you experience any accessibility barriers on signpost, please reach out to us at{' '}
+          <a href="mailto:hello@signpost.community" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+            hello@signpost.community
+          </a>
+          . We take every concern seriously and will address it promptly.
+        </p>
+      </div>
+
       {/* Contact */}
       <div style={{
         padding: '40px 32px', background: 'var(--surface)', border: '1px solid var(--border)',

@@ -40,7 +40,7 @@ export function DemoBadge() {
       fontSize: '0.62rem', fontWeight: 700, fontFamily: "'Syne', sans-serif",
       letterSpacing: '0.08em', textTransform: 'uppercase',
       background: 'rgba(255,107,43,0.15)', border: '1px solid rgba(255,107,43,0.4)',
-      color: '#ff6b2b', borderRadius: 100, padding: '2px 8px',
+      color: '#ff7e45', borderRadius: 100, padding: '2px 8px',
     }}>
       Sample
     </span>

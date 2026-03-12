@@ -63,7 +63,7 @@ export default async function ProfilePage({ params }: Props) {
     isDeafInterpreter: data.interpreter_type === 'Deaf Interpreter',
     affinities: [
       ...(data.lgbtq ? ['LGBTQ+'] : []),
-      ...(data.deaf_parented ? ['Deaf-parented / CODA'] : []),
+      ...(data.deaf_parented ? ['Deaf-Parented Interpreter / CODA'] : []),
       ...(data.bipoc && !(data.bipoc_details as string[] | null)?.length ? ['BIPOC'] : []),
     ],
     racialIdentity: data.bipoc && (data.bipoc_details as string[] | null)?.length

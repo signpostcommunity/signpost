@@ -60,7 +60,7 @@ export default function Step4BioVideo({ onBack, onContinue }: {
             onFocus={handleFocus}
             onBlur={handleBlur}
           />
-          <div style={{ fontSize: '0.75rem', textAlign: 'right', marginTop: 4, color: formData.bio.length > 450 ? '#ff6b2b' : 'var(--muted)' }}>
+          <div style={{ fontSize: '0.75rem', textAlign: 'right', marginTop: 4, color: formData.bio.length > 450 ? '#ff7e45' : 'var(--muted)' }}>
             {formData.bio.length} / 500
           </div>
         </div>
@@ -79,7 +79,7 @@ export default function Step4BioVideo({ onBack, onContinue }: {
             onFocus={handleFocus}
             onBlur={handleBlur}
           />
-          <div style={{ fontSize: '0.75rem', textAlign: 'right', marginTop: 4, color: formData.bioSpecializations.length > 450 ? '#ff6b2b' : 'var(--muted)' }}>
+          <div style={{ fontSize: '0.75rem', textAlign: 'right', marginTop: 4, color: formData.bioSpecializations.length > 450 ? '#ff7e45' : 'var(--muted)' }}>
             {formData.bioSpecializations.length} / 500
           </div>
         </div>
@@ -98,7 +98,7 @@ export default function Step4BioVideo({ onBack, onContinue }: {
             onFocus={handleFocus}
             onBlur={handleBlur}
           />
-          <div style={{ fontSize: '0.75rem', textAlign: 'right', marginTop: 4, color: formData.bioExtra.length > 250 ? '#ff6b2b' : 'var(--muted)' }}>
+          <div style={{ fontSize: '0.75rem', textAlign: 'right', marginTop: 4, color: formData.bioExtra.length > 250 ? '#ff7e45' : 'var(--muted)' }}>
             {formData.bioExtra.length} / 300
           </div>
         </div>

@@ -368,7 +368,7 @@ export default function BetaFeedbackPanel() {
           top: '50%',
           transform: 'translateY(-50%) rotate(90deg)',
           transformOrigin: 'center center',
-          background: '#ff6b2b',
+          background: '#ff7e45',
           color: '#fff',
           border: 'none',
           borderRadius: '6px 6px 0 0',
@@ -424,7 +424,7 @@ export default function BetaFeedbackPanel() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span
             style={{
-              background: '#ff6b2b',
+              background: '#ff7e45',
               color: '#fff',
               fontSize: '0.58rem',
               fontWeight: 900,
@@ -507,7 +507,7 @@ export default function BetaFeedbackPanel() {
               {PROFESSIONAL_NEEDS_OPTIONS.map(opt => (
                 <label key={opt} style={radioLabelStyle}>
                   <input type="radio" name="professionalNeeds" value={opt} checked={professionalNeeds === opt}
-                    onChange={() => setProfessionalNeeds(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                    onChange={() => setProfessionalNeeds(opt)} style={{ marginTop: 2, accentColor: '#ff7e45' }} />
                   <span>{opt}</span>
                 </label>
               ))}
@@ -528,7 +528,7 @@ export default function BetaFeedbackPanel() {
               {LIKELIHOOD_OPTIONS.map(opt => (
                 <label key={opt} style={radioLabelStyle}>
                   <input type="radio" name="likelihood" value={opt} checked={likelihood === opt}
-                    onChange={() => setLikelihood(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                    onChange={() => setLikelihood(opt)} style={{ marginTop: 2, accentColor: '#ff7e45' }} />
                   <span>{opt}</span>
                 </label>
               ))}
@@ -544,7 +544,7 @@ export default function BetaFeedbackPanel() {
               {YES_NO.map(opt => (
                 <label key={opt} style={radioLabelStyle}>
                   <input type="radio" name="usedMobile" value={opt} checked={usedMobile === opt}
-                    onChange={() => setUsedMobile(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                    onChange={() => setUsedMobile(opt)} style={{ marginTop: 2, accentColor: '#ff7e45' }} />
                   <span>{opt}</span>
                 </label>
               ))}
@@ -567,7 +567,7 @@ export default function BetaFeedbackPanel() {
               {STAR_RATING_FEEL_OPTIONS.map(opt => (
                 <label key={opt} style={radioLabelStyle}>
                   <input type="radio" name="starRatingFeel" value={opt} checked={starRatingFeel === opt}
-                    onChange={() => setStarRatingFeel(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                    onChange={() => setStarRatingFeel(opt)} style={{ marginTop: 2, accentColor: '#ff7e45' }} />
                   <span>{opt}</span>
                 </label>
               ))}
@@ -578,7 +578,7 @@ export default function BetaFeedbackPanel() {
                 <label key={opt} style={checkboxLabelStyle}>
                   <input type="checkbox" checked={whoShouldRate.includes(opt)}
                     onChange={() => toggleCheckbox(opt, whoShouldRate, setWhoShouldRate)}
-                    style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                    style={{ marginTop: 2, accentColor: '#ff7e45' }} />
                   <span>{opt}</span>
                 </label>
               ))}
@@ -598,7 +598,7 @@ export default function BetaFeedbackPanel() {
               {RATING_DISPLAY_OPTIONS.map(opt => (
                 <label key={opt} style={radioLabelStyle}>
                   <input type="radio" name="ratingDisplay" value={opt} checked={ratingDisplay === opt}
-                    onChange={() => setRatingDisplay(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                    onChange={() => setRatingDisplay(opt)} style={{ marginTop: 2, accentColor: '#ff7e45' }} />
                   <span>{opt}</span>
                 </label>
               ))}
@@ -614,7 +614,7 @@ export default function BetaFeedbackPanel() {
               {YES_NO.map(opt => (
                 <label key={`inv-${opt}`} style={radioLabelStyle}>
                   <input type="radio" name="triedInvoicing" value={opt} checked={triedInvoicing === opt}
-                    onChange={() => setTriedInvoicing(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                    onChange={() => setTriedInvoicing(opt)} style={{ marginTop: 2, accentColor: '#ff7e45' }} />
                   <span>{opt}</span>
                 </label>
               ))}
@@ -625,7 +625,7 @@ export default function BetaFeedbackPanel() {
                 {INVOICING_COMPARE_OPTIONS.map(opt => (
                   <label key={opt} style={radioLabelStyle}>
                     <input type="radio" name="invoicingCompare" value={opt} checked={invoicingCompare === opt}
-                      onChange={() => setInvoicingCompare(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                      onChange={() => setInvoicingCompare(opt)} style={{ marginTop: 2, accentColor: '#ff7e45' }} />
                     <span>{opt}</span>
                   </label>
                 ))}
@@ -642,7 +642,7 @@ export default function BetaFeedbackPanel() {
               {PREMIUM_INTEREST_OPTIONS.map(opt => (
                 <label key={opt} style={radioLabelStyle}>
                   <input type="radio" name="premiumInterest" value={opt} checked={premiumInterest === opt}
-                    onChange={() => setPremiumInterest(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                    onChange={() => setPremiumInterest(opt)} style={{ marginTop: 2, accentColor: '#ff7e45' }} />
                   <span>{opt}</span>
                 </label>
               ))}
@@ -653,7 +653,7 @@ export default function BetaFeedbackPanel() {
                 {PREMIUM_PRICE_OPTIONS.map(opt => (
                   <label key={opt} style={radioLabelStyle}>
                     <input type="radio" name="premiumPrice" value={opt} checked={premiumPrice === opt}
-                      onChange={() => setPremiumPrice(opt)} style={{ marginTop: 2, accentColor: '#ff6b2b' }} />
+                      onChange={() => setPremiumPrice(opt)} style={{ marginTop: 2, accentColor: '#ff7e45' }} />
                     <span>{opt}</span>
                   </label>
                 ))}
@@ -676,7 +676,7 @@ export default function BetaFeedbackPanel() {
               onClick={handleFinalSubmit}
               disabled={submitting}
               style={{
-                background: '#ff6b2b', color: '#fff', border: 'none', borderRadius: 8,
+                background: '#ff7e45', color: '#fff', border: 'none', borderRadius: 8,
                 padding: '13px 16px', fontSize: '0.85rem', fontWeight: 700,
                 cursor: submitting ? 'not-allowed' : 'pointer',
                 opacity: submitting ? 0.6 : 1,
@@ -785,7 +785,7 @@ export default function BetaFeedbackPanel() {
               onClick={handlePageSave}
               disabled={!notes.trim() && !specificAnswer.trim()}
               style={{
-                background: pageSaved ? '#00c875' : '#ff6b2b',
+                background: pageSaved ? '#00c875' : '#ff7e45',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 8,
@@ -819,7 +819,7 @@ export default function BetaFeedbackPanel() {
                     display: 'block',
                     width: '100%',
                     textAlign: 'center',
-                    background: '#ff6b2b',
+                    background: '#ff7e45',
                     color: '#fff',
                     border: 'none',
                     borderRadius: 8,

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
-const ORANGE = '#ff6b2b'
+const ORANGE = '#ff7e45'
 
 interface Flag {
   id: string

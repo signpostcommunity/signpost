@@ -107,8 +107,8 @@ function PendingBadge() {
     <span style={{
       fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px',
       borderRadius: 100, whiteSpace: 'nowrap',
-      background: 'rgba(250,204,21,0.1)', color: '#facc15',
-      border: '1px solid rgba(250,204,21,0.25)',
+      background: 'rgba(255,165,0,0.12)', color: '#f97316',
+      border: '1px solid rgba(249,115,22,0.25)',
       fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
     }}>
       Pending

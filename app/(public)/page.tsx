@@ -112,21 +112,27 @@ export default function HomePage() {
                 Deaf or Hard of Hearing?<br />Build your preferred interpreter list →
               </Link>
 
-              <Link
-                href="/interpreter"
-                className="btn-large hero-interp-btn"
-                style={{
-                  width: '100%',
-                  textAlign: 'center',
-                  display: 'block',
-                  background: 'none',
-                  border: '1.5px solid var(--border)',
-                  color: 'var(--text)',
-                  textDecoration: 'none',
-                }}
-              >
-                Are you an interpreter?<br />Create your free profile →
-              </Link>
+              <div style={{ width: '100%', textAlign: 'center' }}>
+                <div style={{
+                  fontFamily: 'var(--font-syne)', fontSize: '0.68rem', fontWeight: 700,
+                  letterSpacing: '0.12em', textTransform: 'uppercase',
+                  color: 'var(--muted)', marginBottom: 6,
+                }}>
+                  For Interpreters
+                </div>
+                <Link
+                  href="/interpreter"
+                  className="hero-interp-btn"
+                  style={{
+                    display: 'inline-block',
+                    fontSize: '0.9rem',
+                    color: 'var(--accent)',
+                    textDecoration: 'none',
+                  }}
+                >
+                  Create your free profile &rarr;
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -227,8 +233,7 @@ export default function HomePage() {
           color: #c4b5ff !important;
         }
         .hero-interp-btn:hover {
-          border-color: rgba(0,229,255,0.4) !important;
-          color: var(--accent) !important;
+          text-decoration: underline !important;
         }
         .features-grid {
           display: grid;

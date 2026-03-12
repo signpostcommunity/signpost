@@ -10,7 +10,7 @@
   --accent2: #9d87ff;
   --accent3: #ff6b85;
   --text: #f0f2f8;
-  --muted: #b0b8d0;
+  --muted: #b8bfcf;
   --card-bg: #0d1220;
   --radius: 16px;
   --radius-sm: 10px;
@@ -135,7 +135,7 @@ body::before {
 
 /* Beta pill */
 .beta-pill {
-  background: #ff6b2b;
+  background: #ff7e45;
   color: #000;
   font-size: 0.7rem;
   font-weight: 700;

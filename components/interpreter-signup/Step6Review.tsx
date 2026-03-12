@@ -189,9 +189,9 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
           onChange={() => updateField('lgbtq', !formData.lgbtq)}
         />
 
-        {/* Deaf-parented / CODA */}
+        {/* Deaf-Parented Interpreter / CODA */}
         <CommunityToggle
-          label="Deaf-parented / CODA"
+          label="Deaf-Parented Interpreter / CODA"
           helper="Select if you grew up with Deaf parents or are a Child of Deaf Adults"
           checked={formData.deafParented}
           onChange={() => updateField('deafParented', !formData.deafParented)}
@@ -330,7 +330,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
               <span>
                 I have read and agree to the{' '}
                 <a href="/policies" target="_blank" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
-                  Signpost Platform Policies &amp; Terms of Use
+                  signpost Platform Policies &amp; Terms of Use
                 </a>
                 , including the limitation of liability and dispute resolution provisions.
               </span>
@@ -347,7 +347,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
                 style={{ marginTop: 3, accentColor: 'var(--accent)', flexShrink: 0, width: 'auto' }}
               />
               <span>
-                I understand that connections made through Signpost are platform connections. Work relationships that originate here — whether with a new client or a returning one — will continue to be booked through the platform. Routing bookings outside Signpost to avoid the platform fee is not permitted.
+                I understand that connections made through signpost are platform connections. Work relationships that originate here — whether with a new client or a returning one — will continue to be booked through the platform. Routing bookings outside signpost to avoid the platform fee is not permitted.
               </span>
             </label>
 

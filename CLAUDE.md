@@ -208,6 +208,12 @@ Full schema in `supabase/migrations/001_initial_schema.sql`
 
 ## Design System
 
+**Brand rules:**
+- **"signpost" is ALWAYS lowercase** in all user-facing text. Never "Signpost" or "SIGNPOST".
+- **No emoji in UI components.** Use SVG line icons or text only.
+- **WCAG 2.2 Level AA minimum** for all color contrast ratios.
+- **Admin accent orange: `#ff7e45`** (WCAG AA compliant on dark backgrounds).
+
 CSS variables defined in `app/globals.css` and mapped to Tailwind tokens via `@theme inline {}`:
 
 ```css
@@ -219,7 +225,7 @@ CSS variables defined in `app/globals.css` and mapped to Tailwind tokens via `@t
 --accent2: #9d87ff       /* purple — D/HH branding */
 --accent3: #ff6b85       /* pink — error/alert */
 --text: #f0f2f8
---muted: #b0b8d0
+--muted: #b8bfcf
 --card-bg: #0d1220
 --radius: 16px
 --radius-sm: 10px

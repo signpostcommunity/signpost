@@ -17,7 +17,7 @@ interface NavGroup {
   items: NavItem[]
 }
 
-const ORANGE = '#ff6b2b'
+const ORANGE = '#ff7e45'
 
 const NAV: NavGroup[] = [
   {

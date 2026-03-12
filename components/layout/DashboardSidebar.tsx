@@ -179,6 +179,10 @@ function SidebarContent({ userName, userInitials, photoUrl, badges }: {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={() => {
+                    window.scrollTo({ top: 0, behavior: 'instant' })
+                    document.querySelector('.dash-main')?.scrollTo({ top: 0, behavior: 'instant' })
+                  }}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 10,
                     padding: '9px 20px', textDecoration: 'none',
