@@ -19,7 +19,7 @@ export function BetaBanner() {
           Beta
         </span>
         <p style={{ color: 'var(--muted)', fontSize: '0.82rem', margin: 0, lineHeight: 1.5 }}>
-          The data on this page is <strong style={{ color: 'var(--text)' }}>sample content</strong> — not real bookings or messages. It's here so you can explore and test the full flow. Your feedback helps us improve before launch.
+          The data on this page is <strong style={{ color: 'var(--text)' }}>sample content</strong>, not real bookings or messages. It's here so you can explore and test the full flow. Your feedback helps us improve before launch.
         </p>
       </div>
       <button

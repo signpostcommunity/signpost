@@ -145,7 +145,7 @@ export default function DeafPortalClient() {
             }}>Your interpreters.</em>
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: '1rem', lineHeight: 1.75, maxWidth: 560 }}>
-            Request interpreters directly, build your preferred interpreter list, and share your communication preferences — so every booking starts with the right context. Always free for Deaf individuals.
+            Request interpreters directly, build your preferred interpreter list, and share your communication preferences, so every booking starts with the right context. Always free for Deaf individuals.
           </p>
         </div>
 
@@ -185,7 +185,7 @@ export default function DeafPortalClient() {
                 <span style={{ color: '#9d87ff', fontSize: '1rem' }}>&#10003;</span> Share your communication preferences
               </li>
               <li style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--muted)', fontSize: '0.83rem' }}>
-                <span style={{ color: '#9d87ff', fontSize: '1rem' }}>&#10003;</span> Request interpreters directly — always free
+                <span style={{ color: '#9d87ff', fontSize: '1rem' }}>&#10003;</span> Request interpreters directly, always free
               </li>
             </ul>
             <button

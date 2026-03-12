@@ -59,7 +59,7 @@ type RoleConfig = {
 
 const ROLE_CONFIGS: Record<string, RoleConfig> = {
   deaf: {
-    step1Label: 'Step 1 of 2 — Which list should they go on?',
+    step1Label: 'Step 1 of 2: Which list should they go on?',
     tiers: [
       {
         id: 'preferred',
@@ -70,24 +70,24 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
       {
         id: 'secondary',
         label: '✓ Secondary Tier Interpreter',
-        desc: "Good alternatives — contacted if your Preferred list isn't available. Still part of your approved pool. Not a lesser endorsement, just a backup.",
+        desc: "Good alternatives. Contacted if your Preferred list isn't available. Still part of your approved pool. Not a lesser endorsement, just a backup.",
         accentVar: 'accent2',
       },
     ],
     showApprovals: true,
-    step2Label: 'Step 2 of 2 — Approved for which settings?',
+    step2Label: 'Step 2 of 2: Approved for which settings?',
     step2Desc: 'Interpreter skills vary widely, and many Deaf people prefer different interpreters for different situations. This helps requesters and providers know who to call and when.',
     workLabel: '💼 Approved for work settings',
-    workDesc: 'This interpreter will appear on your work list when you share it — visible to employers, HR teams, vocational rehab coordinators, and other professional requesters.',
+    workDesc: 'This interpreter will appear on your work list when you share it, visible to employers, HR teams, vocational rehab coordinators, and other professional requesters.',
     personalLabel: '🏥 Approved for personal and medical settings',
-    personalDesc: 'This interpreter will appear on your personal/medical list when you share it — visible to doctors, hospitals, social services, and other non-work requesters.',
+    personalDesc: 'This interpreter will appear on your personal/medical list when you share it, visible to doctors, hospitals, social services, and other non-work requesters.',
     noteLabel: 'Personal note (optional)',
     notePlaceholder: '"Best for medical — very clear signing, always confirms terminology with me beforehand."',
     confirmLabel: 'Add to my list →',
     requireApproval: true,
   },
   requester: {
-    step1Label: 'Step 1 of 2 — Which list should they go on?',
+    step1Label: 'Step 1 of 2: Which list should they go on?',
     tiers: [
       {
         id: 'preferred',
@@ -103,7 +103,7 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
       },
     ],
     showApprovals: true,
-    step2Label: 'Step 2 of 2 — Approved for which assignment types?',
+    step2Label: 'Step 2 of 2: Approved for which assignment types?',
     step2Desc: "Some interpreters have narrower specializations. Marking which types of assignments they're right for helps you filter correctly when sending requests.",
     workLabel: '💼 Approved for professional / workplace assignments',
     workDesc: 'This interpreter can be assigned to employment-related work: workplace meetings, HR conversations, job training, professional conferences, and similar settings.',
@@ -143,7 +143,7 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
     requireApproval: false,
   },
   default: {
-    step1Label: 'Step 1 of 2 — Which list should they go on?',
+    step1Label: 'Step 1 of 2: Which list should they go on?',
     tiers: [
       {
         id: 'preferred',
@@ -159,7 +159,7 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
       },
     ],
     showApprovals: true,
-    step2Label: 'Step 2 of 2 — Approved for which settings?',
+    step2Label: 'Step 2 of 2: Approved for which settings?',
     step2Desc: 'You can approve an interpreter for one or both settings.',
     workLabel: '💼 Approved for work settings',
     workDesc: 'This interpreter will appear on your work list when you share it.',

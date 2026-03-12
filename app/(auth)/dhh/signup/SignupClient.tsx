@@ -152,7 +152,7 @@ export default function DeafSignupPage() {
             </label>
             {pendingRoles.length > 0 && (
               <p style={{ color: 'var(--muted)', fontSize: '0.75rem', marginLeft: 26, lineHeight: 1.5 }}>
-                ↳ You&apos;ll find a setup prompt in your portal after you finish here — just look for the 🔴 on your role switcher.
+                ↳ You&apos;ll find a setup prompt in your portal after you finish here. Just look for the 🔴 on your role switcher.
               </p>
             )}
           </div>

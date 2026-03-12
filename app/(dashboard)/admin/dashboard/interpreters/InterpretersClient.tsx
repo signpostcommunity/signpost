@@ -225,7 +225,7 @@ export default function InterpretersClient({ interpreters }: { interpreters: Int
               Incomplete Signups ({filteredIncomplete.length})
             </span>
             <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
-              — Started signup but didn&apos;t finish
+              . Started signup but didn&apos;t finish
             </span>
           </div>
           {renderTable(filteredIncomplete, true)}

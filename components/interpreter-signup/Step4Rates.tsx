@@ -278,7 +278,7 @@ function RateProfileCard({
           {/* Travel & Incidentals */}
           <SectionTitle>Travel &amp; Incidental Expenses</SectionTitle>
           <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginBottom: 14 }}>
-            Select which actual travel costs you pass on to clients for on-site jobs. These are billed at cost — not marked up.
+            Select which actual travel costs you pass on to clients for on-site jobs. These are billed at cost, not marked up.
           </p>
           <div style={{
             display: 'grid',
@@ -385,7 +385,7 @@ export default function Step4Rates({ onBack, onContinue }: {
           How rate profiles work
         </div>
         <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65, margin: 0 }}>
-          Rates are never shown publicly on your profile. When a requester contacts you, choose which profile to send with your reply — they see your full rate and terms before confirming. You can customize the quote for any individual job. These profiles are starting points, not locked-in prices.
+          Rates are never shown publicly on your profile. When a requester contacts you, choose which profile to send with your reply. They see your full rate and terms before confirming. You can customize the quote for any individual job. These profiles are starting points, not locked-in prices.
         </p>
       </div>
 

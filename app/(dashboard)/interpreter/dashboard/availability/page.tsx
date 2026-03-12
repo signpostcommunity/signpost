@@ -127,7 +127,7 @@ export default function AvailabilityPage() {
           </div>
         </div>
         <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginTop: 12, lineHeight: 1.5 }}>
-          These hours apply to all days marked as Standard. Days marked By Request have no set hours — requesters know to enquire first.
+          These hours apply to all days marked as Standard. Days marked By Request have no set hours. Requesters know to enquire first.
         </p>
       </div>
 

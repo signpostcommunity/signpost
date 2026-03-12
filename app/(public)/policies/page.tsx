@@ -63,7 +63,7 @@ export default function PoliciesPage() {
           signpost is a marketplace platform that connects sign language interpreters with Deaf and Hard-of-Hearing individuals, organizations, and requesters. signpost provides the technology infrastructure for discovery, communication, scheduling, and payment processing between parties.
         </p>
         <p style={body}>
-          signpost is <strong style={{ color: 'var(--text)' }}>not</strong> an interpreting agency. Interpreters on the platform are independent contractors, not employees of signpost. signpost does not assign, supervise, or direct interpreting work. All professional decisions — including accepting or declining bookings, setting rates, and managing schedules — are made by the interpreter.
+          signpost is <strong style={{ color: 'var(--text)' }}>not</strong> an interpreting agency. Interpreters on the platform are independent contractors, not employees of signpost. signpost does not assign, supervise, or direct interpreting work. All professional decisions, including accepting or declining bookings, setting rates, and managing schedules, are made by the interpreter.
         </p>
         <p style={body}>
           signpost does not guarantee the availability, quality, or outcome of any interpreting service booked through the platform. Requesters and consumers are responsible for evaluating interpreter qualifications, credentials, and suitability for their specific needs.
@@ -78,7 +78,7 @@ export default function PoliciesPage() {
           signpost charges a platform fee on bookings processed through the platform. The current fee structure is displayed during the booking process. signpost reserves the right to adjust platform fees with 30 days&apos; notice to active users.
         </p>
         <p style={body}>
-          Connections made through signpost are platform connections. Work relationships that originate on signpost — whether with a new client or a returning one — will continue to be booked through the platform. Routing bookings outside signpost to avoid the platform fee is a violation of these terms and may result in account suspension or removal.
+          Connections made through signpost are platform connections. Work relationships that originate on signpost, whether with a new client or a returning one, will continue to be booked through the platform. Routing bookings outside signpost to avoid the platform fee is a violation of these terms and may result in account suspension or removal.
         </p>
         <p style={body}>
           signpost does not handle payroll, tax withholding, or benefits. Interpreters are responsible for their own tax obligations, insurance, and business expenses.
@@ -102,7 +102,7 @@ export default function PoliciesPage() {
           Interpreters may list certifications, education, and professional credentials on their profiles. Credentials accompanied by a verification link or uploaded documentation will display a &ldquo;Verified&rdquo; badge on the interpreter&apos;s profile.
         </p>
         <p style={body}>
-          signpost verifies that documentation has been provided but does not independently validate the authenticity of credentials. The &ldquo;Verified&rdquo; badge indicates that the interpreter has submitted supporting documentation — not that signpost has confirmed the credential with the issuing body.
+          signpost verifies that documentation has been provided but does not independently validate the authenticity of credentials. The &ldquo;Verified&rdquo; badge indicates that the interpreter has submitted supporting documentation, not that signpost has confirmed the credential with the issuing body.
         </p>
         <p style={body}>
           Interpreters confirm that all credential and experience information provided is accurate to the best of their knowledge. Misrepresentation of qualifications, certifications, or experience may result in immediate removal from the platform.
@@ -114,7 +114,7 @@ export default function PoliciesPage() {
 
       <Section number={5} title="Privacy and Profile Information">
         <p style={body}>
-          Profile information that interpreters provide — including name, bio, languages, specializations, and credentials — is displayed publicly in the signpost directory to facilitate discovery by potential clients. Rates are never displayed publicly — they are shared privately when an interpreter responds to a booking inquiry.
+          Profile information that interpreters provide, including name, bio, languages, specializations, and credentials, is displayed publicly in the signpost directory to facilitate discovery by potential clients. Rates are never displayed publicly. They are shared privately when an interpreter responds to a booking inquiry.
         </p>
         <p style={body}>
           Contact information (email, phone number) is shared only with confirmed booking parties and is not displayed in the public directory. signpost will never sell or share personal information with third parties for marketing purposes.

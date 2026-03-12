@@ -19,7 +19,7 @@ type TabId = (typeof TABS)[number]['id'];
 const faqItems = [
   {
     q: 'How does signpost work?',
-    a: 'signpost is a directory and booking platform that connects Deaf, DeafBlind, and Hard of Hearing individuals and organizations directly with certified sign language interpreters. Browse interpreter profiles, view credentials and intro videos, and submit booking inquiries — all without going through a traditional agency.',
+    a: 'signpost is a directory and booking platform that connects Deaf, DeafBlind, and Hard of Hearing individuals and organizations directly with certified sign language interpreters. Browse interpreter profiles, view credentials and intro videos, and submit booking inquiries, all without going through a traditional agency.',
   },
   {
     q: 'Is signpost open to all interpreters?',
@@ -27,7 +27,7 @@ const faqItems = [
   },
   {
     q: 'Do I need a certification to sign up?',
-    a: 'You do not need a national certification to create a profile, but your certification status will be clearly displayed on your profile. Pre-certified interpreters, student interpreters, and CDIs (Certified Deaf Interpreters) are all welcome. Transparency is key — clients can see exactly where you are in your professional journey.',
+    a: 'You do not need a national certification to create a profile, but your certification status will be clearly displayed on your profile. Pre-certified interpreters, student interpreters, and CDIs (Certified Deaf Interpreters) are all welcome. Transparency is key: clients can see exactly where you are in your professional journey.',
   },
   {
     q: 'How much does signpost cost?',
@@ -35,7 +35,7 @@ const faqItems = [
   },
   {
     q: 'Does the anti-poaching policy apply to my existing clients?',
-    a: 'No. The anti-poaching policy only applies to organizations and requesters who FIRST connected with an interpreter through signpost. If you already have an existing relationship with a client outside of signpost, that relationship is yours. The policy exists to protect the platform and ensure fair use — not to restrict your existing business.',
+    a: 'No. The anti-poaching policy only applies to organizations and requesters who FIRST connected with an interpreter through signpost. If you already have an existing relationship with a client outside of signpost, that relationship is yours. The policy exists to protect the platform and ensure fair use, not to restrict your existing business.',
   },
   {
     q: 'What is "Deaf-Parented Interpreter / CODA"?',
@@ -273,7 +273,7 @@ export default function AboutPage() {
             </h2>
 
             <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.75, marginBottom: 32 }}>
-              signpost is built for the Deaf, DeafBlind, and Hard of Hearing community. Accessibility isn&apos;t an afterthought — it&apos;s foundational to everything we build.
+              signpost is built for the Deaf, DeafBlind, and Hard of Hearing community. Accessibility isn&apos;t an afterthought. It&apos;s foundational to everything we build.
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 32 }}>
@@ -287,7 +287,7 @@ export default function AboutPage() {
                   <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '0.9rem', lineHeight: '1.65', flexShrink: 0 }}>&mdash;</span>
                   <div>
                     <span style={{ fontWeight: 700, color: 'var(--text)', fontSize: '0.9rem' }}>{item.title}</span>
-                    <span style={{ color: 'var(--muted)', fontSize: '0.9rem' }}> &mdash; {item.desc}</span>
+                    <span style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>: {item.desc}</span>
                   </div>
                 </div>
               ))}
@@ -323,7 +323,7 @@ export default function AboutPage() {
             </h2>
 
             <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.75, marginBottom: 16 }}>
-              signpost exists because of the Deaf community — and we are committed to giving back to it. We believe that the platform we build should actively support the organizations, advocates, and educators who have been doing this work long before us.
+              signpost exists because of the Deaf community, and we are committed to giving back to it. We believe that the platform we build should actively support the organizations, advocates, and educators who have been doing this work long before us.
             </p>
 
             <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.75, marginBottom: 40 }}>

@@ -10,15 +10,15 @@ const features = [
   },
   {
     label: 'Global reach, local knowledge',
-    body: 'ASL, BSL, International Sign, Auslan, LSF, DGS and dozens more. Find interpreters who know your language, your region, and your community — wherever you are.',
+    body: 'ASL, BSL, International Sign, Auslan, LSF, DGS and dozens more. Find interpreters who know your language, your region, and your community, wherever you are.',
   },
   {
     label: 'Transparent credentials & rates',
-    body: "Every rate is set by the interpreter — you always know what you're agreeing to. Certifications are listed directly, with verified badges for documented credentials.",
+    body: "Every rate is set by the interpreter, so you always know what you're agreeing to. Certifications are listed directly, with verified badges for documented credentials.",
   },
   {
     label: 'Direct booking, no middlemen',
-    body: 'Communicate and confirm one-to-one with your interpreter. Legal, medical, technical, academic, conference — find the specialist your situation actually demands.',
+    body: 'Communicate and confirm one-to-one with your interpreter. Legal, medical, technical, academic, conference. Find the specialist your situation actually demands.',
   },
 ];
 
@@ -84,7 +84,7 @@ export default function HomePage() {
                 marginBottom: 32,
               }}
             >
-              Finding the right interpreter shouldn&apos;t be out of your hands. Browse real profiles, watch intro videos, and connect directly — your interpreter, your choice.
+              Finding the right interpreter shouldn&apos;t be out of your hands. Browse real profiles, watch intro videos, and connect directly. Your interpreter, your choice.
             </p>
 
             <div className="hero-ctas">

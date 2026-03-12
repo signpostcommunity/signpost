@@ -139,7 +139,7 @@ function AcceptModal({ booking, onClose, onAccepted }: {
           </div>
           <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 20px' }}>
             {booking.is_seed
-              ? `This is a sample flow — no message was actually sent. The booking has been moved to Confirmed.`
+              ? `This is a sample flow. No message was actually sent. The booking has been moved to Confirmed.`
               : `${booking.requester_name || 'The requester'} will receive your rate and can confirm the booking.`
             }
           </p>

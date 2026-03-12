@@ -244,7 +244,7 @@ export default function InboxPage() {
   if (activeThread && active) {
     const myReplies = sentReplies[activeThread] || []
     return (
-      <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 720 }}>
+      <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
         <button
           onClick={() => setActiveThread(null)}
           style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '0.85rem', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'DM Sans', sans-serif", padding: 0 }}
@@ -333,7 +333,7 @@ export default function InboxPage() {
   /* ── Two-pane inbox view ── */
 
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 760, display: 'flex', flexDirection: 'column', height: 'calc(100vh - 80px)' }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 80px)' }}>
       {hasSeedData && <BetaBanner />}
       <PageHeader title="Inbox" subtitle="Notifications and messages." />
 

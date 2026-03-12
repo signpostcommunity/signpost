@@ -196,7 +196,7 @@ export default function Step5Video({ onBack, onContinue }: {
       <FormSection>
         <SectionTitle>Introduction Video</SectionTitle>
         <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: 20 }}>
-          Upload a short video (about 90 seconds) of yourself. This can either be an introduction, or a (non-confidential) work sample. This is the first thing Deaf clients will see — show them your signing style, your languages, and your personality. No production quality required, just authentic and clear.
+          Upload a short video (about 90 seconds) of yourself. This can either be an introduction, or a (non-confidential) work sample. This is the first thing Deaf clients will see. Show them your signing style, your languages, and your personality. No production quality required, just authentic and clear.
         </p>
 
         <input

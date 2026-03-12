@@ -31,7 +31,7 @@ export default function ClientListsPage() {
       <BetaBanner />
       <PageHeader
         title="Client Interpreter Lists"
-        subtitle="When a Deaf or Hard of Hearing client proactively shares their preferred interpreter list with you, it appears here. These lists belong to your clients — they update automatically when the client makes changes. Work/personal designations reflect the client's preferences, helping you understand which contexts they trust you in."
+        subtitle="When a Deaf or Hard of Hearing client proactively shares their preferred interpreter list with you, it appears here. These lists belong to your clients and update automatically when the client makes changes. Work/personal designations reflect the client's preferences, helping you understand which contexts they trust you in."
       />
 
       {DEMO_CLIENT_LISTS.map(list => {

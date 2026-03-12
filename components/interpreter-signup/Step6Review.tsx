@@ -347,7 +347,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
                 style={{ marginTop: 3, accentColor: 'var(--accent)', flexShrink: 0, width: 'auto' }}
               />
               <span>
-                I understand that connections made through signpost are platform connections. Work relationships that originate here — whether with a new client or a returning one — will continue to be booked through the platform. Routing bookings outside signpost to avoid the platform fee is not permitted.
+                I understand that connections made through signpost are platform connections. Work relationships that originate here, whether with a new client or a returning one, will continue to be booked through the platform. Routing bookings outside signpost to avoid the platform fee is not permitted.
               </span>
             </label>
 
