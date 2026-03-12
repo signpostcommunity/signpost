@@ -78,7 +78,7 @@ export default function PoliciesPage() {
           signpost charges a platform fee on bookings processed through the platform. The current fee structure is displayed during the booking process. signpost reserves the right to adjust platform fees with 30 days&apos; notice to active users.
         </p>
         <p style={body}>
-          Connections made through signpost are platform connections. Work relationships that originate on signpost, whether with a new client or a returning one, will continue to be booked through the platform. Routing bookings outside signpost to avoid the platform fee is a violation of these terms and may result in account suspension or removal.
+          <strong style={{ color: 'var(--text)' }}>Platform Booking Policy:</strong> When an organization or requester first connects with an interpreter through signpost, future bookings with that organization should continue through the platform. This is how signpost sustains itself as a free resource for the Deaf community and for interpreters. Routing bookings outside signpost to avoid the platform fee is a violation of these terms and may result in account suspension or removal. This policy does not apply to clients or organizations the interpreter worked with before joining signpost, or to Deaf/DB/HH individuals the interpreter already knows personally or professionally.
         </p>
         <p style={body}>
           signpost does not handle payroll, tax withholding, or benefits. Interpreters are responsible for their own tax obligations, insurance, and business expenses.

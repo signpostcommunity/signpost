@@ -23,7 +23,6 @@ export default function Footer() {
         <Link href="/interpreter" className="footer-link">Interpreter Portal</Link>
         <Link href="/request" className="footer-link">Request Interpreters</Link>
         <Link href="/about" className="footer-link">About Us</Link>
-        <Link href="/policies" className="footer-link">Policies &amp; Terms</Link>
         <a href="mailto:hello@signpost.community" className="footer-link">hello@signpost.community</a>
       </div>
 

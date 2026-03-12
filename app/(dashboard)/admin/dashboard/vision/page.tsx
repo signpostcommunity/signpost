@@ -374,7 +374,7 @@ function CommitmentsTab() {
       items: [
         'Transparent pricing: $15 flat fee per interpreter per confirmed booking for requesters',
         'signpost never touches interpreter money — invoicing and payment is entirely between interpreter and requester',
-        'Anti-poaching policy only applies to NEW organizational connections made via signpost, not existing relationships',
+        'Platform Booking Policy only applies to NEW organizational connections made via signpost, not existing relationships',
         'Open platform — no gatekeeping, no hidden fees',
       ],
     },

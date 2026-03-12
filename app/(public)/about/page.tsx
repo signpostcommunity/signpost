@@ -34,8 +34,8 @@ const faqItems = [
     a: 'signpost is free for Deaf, DeafBlind, and Hard of Hearing individuals. It is also free for interpreters to create and maintain a profile. For requesters (organizations, agencies, and hearing individuals booking interpreters), there is a flat $15 fee per interpreter per confirmed booking. No hidden fees, no percentage-based commissions.',
   },
   {
-    q: 'Does the anti-poaching policy apply to my existing clients?',
-    a: 'No. The anti-poaching policy only applies to organizations and requesters who FIRST connected with an interpreter through signpost. If you already have an existing relationship with a client outside of signpost, that relationship is yours. The policy exists to protect the platform and ensure fair use, not to restrict your existing business.',
+    q: 'What is the Platform Booking Policy?',
+    a: 'PLATFORM_BOOKING_POLICY',
   },
   {
     q: 'What is "Deaf-Parented Interpreter / CODA"?',
@@ -425,6 +425,26 @@ export default function AboutPage() {
                         </Link>{' '}
                         page.
                       </p>
+                    ) : item.a === 'PLATFORM_BOOKING_POLICY' ? (
+                      <div style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.75 }}>
+                        <p style={{ margin: '0 0 16px' }}>
+                          When an organization or requester first connects with an interpreter through signpost, future bookings with that organization should continue through the platform. This is how signpost sustains itself as a free resource for the Deaf community and for interpreters.
+                        </p>
+                        <p style={{ margin: '0 0 8px', fontWeight: 600, color: 'var(--text)' }}>What this means:</p>
+                        <ul style={{ margin: '0 0 16px', paddingLeft: 20 }}>
+                          <li>If a requester found you on signpost and booked you for the first time through signpost, that&apos;s a signpost connection.</li>
+                          <li>Future work with that same requester should continue to be booked through signpost.</li>
+                          <li>The $15 platform fee per confirmed booking applies to these connections.</li>
+                          <li>Requesters should not ask interpreters to work off-platform to avoid the booking fee. If this happens, interpreters are encouraged to let us know.</li>
+                        </ul>
+                        <p style={{ margin: '0 0 8px', fontWeight: 600, color: 'var(--text)' }}>What this does NOT mean:</p>
+                        <ul style={{ margin: 0, paddingLeft: 20 }}>
+                          <li>This does not apply to clients or organizations you worked with before joining signpost.</li>
+                          <li>This does not apply to Deaf/DB/HH individuals you already know personally or professionally.</li>
+                          <li>If a Deaf person you&apos;ve interpreted for many times happens to also be on signpost, your existing relationship is yours. They can continue to book you via signpost, or however else you may prefer.</li>
+                          <li>If an organization has been booking you independently for years and then joins signpost, your pre-existing relationship is unaffected. They can continue to book you via signpost, or however else you may prefer.</li>
+                        </ul>
+                      </div>
                     ) : (
                       <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.75, margin: 0 }}>
                         {item.a}
