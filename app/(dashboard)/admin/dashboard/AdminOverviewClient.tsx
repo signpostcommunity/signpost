@@ -1,6 +1,44 @@
 'use client'
 
+import Link from 'next/link'
+
 const ORANGE = '#ff6b2b'
+
+function IconUsers() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="var(--muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="9" cy="7" r="4" stroke="var(--muted)" strokeWidth="1.5"/>
+      <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="var(--muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
+function IconInterpreter() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+      <path d="M12 2a5 5 0 015 5v3a5 5 0 01-10 0V7a5 5 0 015-5z" stroke="var(--muted)" strokeWidth="1.5"/>
+      <path d="M19 10v1a7 7 0 01-14 0v-1M12 18v4M8 22h8" stroke="var(--muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
+function IconDeaf() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="var(--muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="9" cy="7" r="4" stroke="var(--muted)" strokeWidth="1.5"/>
+    </svg>
+  )
+}
+
+function IconFeedback() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" stroke="var(--muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+    </svg>
+  )
+}
 
 interface Stats {
   totalUsers: number
@@ -35,10 +73,10 @@ export default function AdminOverviewClient({
   recentFlags: RecentFlag[]
 }) {
   const statCards = [
-    { label: 'Total Users', value: stats.totalUsers, icon: '👤' },
-    { label: 'Interpreters', value: stats.interpreters, icon: '🤟' },
-    { label: 'Deaf/DB/HH Users', value: stats.deafUsers, icon: '💜' },
-    { label: 'Beta Feedback', value: stats.betaFeedback, icon: '💬' },
+    { label: 'Total Users', value: stats.totalUsers, icon: <IconUsers />, href: '/admin/dashboard/users' },
+    { label: 'Interpreters', value: stats.interpreters, icon: <IconInterpreter />, href: '/admin/dashboard/interpreters' },
+    { label: 'Deaf/DB/HH Users', value: stats.deafUsers, icon: <IconDeaf />, href: '/admin/dashboard/users?role=deaf' },
+    { label: 'Beta Feedback', value: stats.betaFeedback, icon: <IconFeedback />, href: '/admin/dashboard/feedback' },
   ]
 
   return (
@@ -53,17 +91,23 @@ export default function AdminOverviewClient({
       {/* Stat cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 40 }}>
         {statCards.map(card => (
-          <div key={card.label} style={{
+          <Link key={card.label} href={card.href} style={{
             background: 'var(--surface)', border: '1px solid var(--border)',
             borderRadius: 'var(--radius-sm)', padding: '20px 24px',
-          }}>
-            <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
-              {card.icon} {card.label}
+            textDecoration: 'none', transition: 'border-color 0.15s',
+            display: 'flex', flexDirection: 'column',
+          }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${ORANGE}66` }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
+              {card.icon}
+              {card.label}
             </div>
             <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '2rem', fontWeight: 700, color: ORANGE }}>
               {card.value}
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
