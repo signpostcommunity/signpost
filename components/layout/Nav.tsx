@@ -255,163 +255,140 @@ export default function Nav({ initialSession = null }: NavProps) {
         </button>
       </nav>
 
-      {/* Mobile drawer */}
+      {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          aria-hidden="true"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Mobile navigation"
           style={{
             position: 'fixed',
-            inset: 0,
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
             zIndex: 200,
-            background: 'rgba(0,0,0,0.7)',
+            background: 'rgba(7,9,16,0.97)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '12px',
+            padding: '20px',
           }}
-          onClick={() => setMobileOpen(false)}
         >
-          <nav
-            role="dialog"
-            aria-modal="true"
-            aria-label="Mobile navigation"
+          {/* Close button */}
+          <button
+            onClick={() => setMobileOpen(false)}
+            aria-label="Close menu"
             style={{
               position: 'absolute',
-              top: 0,
-              right: 0,
-              bottom: 0,
-              width: 280,
-              background: 'var(--surface)',
-              borderLeft: '1px solid var(--border)',
-              padding: '24px 20px',
+              top: 20,
+              right: 20,
+              background: 'none',
+              border: 'none',
+              color: 'var(--muted)',
+              fontSize: '1.5rem',
+              cursor: 'pointer',
+              padding: '8px',
+              minWidth: 44,
+              minHeight: 44,
               display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
+              alignItems: 'center',
+              justifyContent: 'center',
             }}
-            onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <div className="wordmark" style={{ fontSize: '1.1rem' }}>
-                sign<span>post</span>
-              </div>
-              <button
+            <span aria-hidden="true">&#10005;</span>
+          </button>
+
+          <Link
+            href="/directory"
+            className="mobile-nav-btn"
+            onClick={() => setMobileOpen(false)}
+            style={{ textDecoration: 'none' }}
+          >
+            Browse Interpreter Directory
+          </Link>
+
+          {isLoggedIn ? (
+            <>
+              <Link
+                href={portalPath(role)}
+                className="mobile-nav-btn mobile-nav-btn-primary"
                 onClick={() => setMobileOpen(false)}
-                aria-label="Close menu"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--muted)',
-                  fontSize: '1.4rem',
-                  cursor: 'pointer',
-                  padding: '8px',
-                  minWidth: 44,
-                  minHeight: 44,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+                style={{ textDecoration: 'none' }}
               >
-                <span aria-hidden="true">&#10005;</span>
+                My Portal
+              </Link>
+              <button
+                onClick={async () => {
+                  setMobileOpen(false);
+                  await supabase.auth.signOut();
+                  window.location.href = '/';
+                }}
+                className="mobile-nav-btn"
+                style={{ color: 'var(--accent3)', cursor: 'pointer' }}
+              >
+                Log out
               </button>
-            </div>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/interpreter"
+                className="mobile-nav-btn"
+                onClick={() => setMobileOpen(false)}
+                style={{ textDecoration: 'none' }}
+              >
+                Interpreter Portal
+              </Link>
+              <Link
+                href="/dhh"
+                className="mobile-nav-btn"
+                onClick={() => setMobileOpen(false)}
+                style={{ color: 'var(--accent2)', borderColor: 'rgba(157,135,255,0.3)', textDecoration: 'none' }}
+              >
+                D/DB/HH Portal
+              </Link>
+              <Link
+                href="/interpreter/login"
+                className="mobile-nav-btn"
+                onClick={() => setMobileOpen(false)}
+                style={{ textDecoration: 'none' }}
+              >
+                Log in
+              </Link>
+              <Link
+                href="/request"
+                className="mobile-nav-btn mobile-nav-btn-primary"
+                onClick={() => setMobileOpen(false)}
+                style={{ textDecoration: 'none' }}
+              >
+                Request Interpreters
+              </Link>
+            </>
+          )}
 
-            <Link
-              href="/directory"
-              className="mobile-nav-btn"
-              onClick={() => setMobileOpen(false)}
-              style={{ textDecoration: 'none' }}
-            >
-              Browse Interpreter Directory
-            </Link>
-
-            {isLoggedIn ? (
-              <>
-                <Link
-                  href={portalPath(role)}
-                  className="btn-primary"
-                  onClick={() => setMobileOpen(false)}
-                  style={{ textAlign: 'center', marginTop: '8px', textDecoration: 'none', display: 'block' }}
-                >
-                  My Portal
-                </Link>
-                <button
-                  onClick={async () => {
-                    setMobileOpen(false);
-                    await supabase.auth.signOut();
-                    window.location.href = '/';
-                  }}
-                  className="mobile-nav-btn"
-                  style={{ marginTop: '8px', color: 'var(--accent3)', width: '100%', cursor: 'pointer' }}
-                >
-                  Log out
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/interpreter"
-                  className="mobile-nav-btn"
-                  onClick={() => setMobileOpen(false)}
-                  style={{ textDecoration: 'none' }}
-                >
-                  Interpreter Portal
-                </Link>
-                <Link
-                  href="/dhh"
-                  className="mobile-nav-btn"
-                  onClick={() => setMobileOpen(false)}
-                  style={{ color: 'var(--accent2)', textDecoration: 'none' }}
-                >
-                  D/DB/HH Portal
-                </Link>
-                <Link
-                  href="/interpreter/login"
-                  className="mobile-nav-btn"
-                  onClick={() => setMobileOpen(false)}
-                  style={{ textDecoration: 'none' }}
-                >
-                  Log in
-                </Link>
-                <Link
-                  href="/request"
-                  className="btn-primary"
-                  onClick={() => setMobileOpen(false)}
-                  style={{ textAlign: 'center', marginTop: '8px', textDecoration: 'none', display: 'block' }}
-                >
-                  Request Interpreters
-                </Link>
-              </>
-            )}
-
-            <Link
-              href="/about"
-              className="mobile-nav-btn"
-              onClick={() => setMobileOpen(false)}
-              style={{ opacity: 0.7, fontSize: '0.9rem', marginTop: '8px', textDecoration: 'none' }}
-            >
-              About signpost
-            </Link>
-
-            {/* Mobile language selector */}
-            <div style={{ borderTop: '1px solid var(--border)', marginTop: '12px', paddingTop: '12px' }}>
-              <div style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', marginBottom: '8px' }}>
-                Language
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' }}>
-                {languages.map((lang) => (
-                  <button
-                    key={lang.code}
-                    onClick={() => setSelectedLang(lang.code)}
-                    className="mobile-lang-option"
-                    style={{
-                      color: selectedLang === lang.code ? 'var(--accent)' : 'var(--muted)',
-                      fontWeight: selectedLang === lang.code ? 600 : 400,
-                      background: selectedLang === lang.code ? 'var(--surface2)' : 'transparent',
-                    }}
-                  >
-                    <span>{lang.flag}</span>
-                    <span>{lang.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </nav>
+          <Link
+            href="/about"
+            onClick={() => setMobileOpen(false)}
+            style={{
+              width: '100%',
+              maxWidth: 320,
+              fontSize: '0.9rem',
+              color: 'var(--text)',
+              opacity: 0.6,
+              textDecoration: 'none',
+              textAlign: 'center',
+              marginTop: '8px',
+              fontFamily: "'DM Sans', sans-serif",
+              display: 'block',
+            }}
+          >
+            About signpost
+          </Link>
         </div>
       )}
 
@@ -497,32 +474,31 @@ export default function Nav({ initialSession = null }: NavProps) {
         .lang-option:hover { background: var(--surface2); }
         .mobile-nav-btn {
           display: block;
-          padding: 12px 16px;
-          border-radius: 8px;
-          background: none;
+          width: 100%;
+          max-width: 320px;
+          padding: 16px 20px;
+          border-radius: var(--radius);
+          background: var(--surface2);
           border: 1px solid var(--border);
           color: var(--text);
           font-family: 'DM Sans', sans-serif;
-          font-size: 0.95rem;
+          font-size: 1rem;
+          font-weight: 500;
           cursor: pointer;
           text-align: left;
-          transition: background 0.15s;
+          transition: all 0.2s;
+          min-height: 44px;
+          box-sizing: border-box;
         }
-        .mobile-nav-btn:hover { background: var(--surface2); }
-        .mobile-lang-option {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 8px 10px;
-          border-radius: 8px;
-          border: none;
-          font-family: 'DM Sans', sans-serif;
-          font-size: 0.85rem;
-          cursor: pointer;
-          text-align: left;
-          transition: all 0.15s;
+        .mobile-nav-btn:hover { border-color: rgba(0,229,255,0.4); color: var(--accent); }
+        .mobile-nav-btn-primary {
+          background: var(--accent) !important;
+          border-color: var(--accent) !important;
+          color: #000 !important;
+          font-weight: 700 !important;
+          text-align: center !important;
         }
-        .mobile-lang-option:hover { background: var(--surface2); }
+        .mobile-nav-btn-primary:hover { background: #00cceb !important; }
         @media (max-width: 768px) {
           .nav-links { display: none !important; }
           .hamburger { display: flex !important; }

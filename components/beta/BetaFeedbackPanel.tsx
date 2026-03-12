@@ -873,9 +873,18 @@ export default function BetaFeedbackPanel() {
       <style>{`
         @media (max-width: 768px) {
           .beta-feedback-panel {
+            top: auto !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
             width: 100% !important;
             max-width: 100vw !important;
+            height: auto !important;
+            max-height: 70vh !important;
             border-left: none !important;
+            border-top: 1px solid #dedad2 !important;
+            border-radius: 16px 16px 0 0 !important;
+            box-shadow: 0 -4px 32px rgba(0,0,0,0.3) !important;
           }
         }
       `}</style>

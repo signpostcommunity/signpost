@@ -221,35 +221,41 @@ export default function AdminSidebar({ userName = 'Admin', userInitials = 'AD' }
       <div className="admin-sidebar-mobile-bar" style={{
         display: 'none', position: 'sticky', top: 0, zIndex: 50,
         height: 56, alignItems: 'center', justifyContent: 'space-between',
-        padding: '0 20px',
+        padding: '0 12px',
         background: 'var(--surface)', borderBottom: '1px solid var(--border)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 32, height: 32, borderRadius: '50%',
-            background: `linear-gradient(135deg, ${ORANGE}, #ff9a44)`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.7rem', color: '#fff',
-          }}>
-            {userInitials}
-          </div>
-          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.88rem' }}>
-            Admin Dashboard
-          </span>
-        </div>
+        {/* Left: hamburger */}
         <button
           onClick={() => setMobileOpen(true)}
           aria-label="Open menu"
           aria-expanded={mobileOpen}
           style={{
-            background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+            background: 'none', border: 'none', cursor: 'pointer', padding: 8,
             display: 'flex', flexDirection: 'column', gap: 5,
+            minWidth: 44, minHeight: 44, alignItems: 'center', justifyContent: 'center',
           }}
         >
-          <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
-          <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
-          <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--text)', display: 'block' }} />
+          <span aria-hidden="true" style={{ width: 22, height: 2, background: ORANGE, display: 'block', borderRadius: 1 }} />
+          <span aria-hidden="true" style={{ width: 22, height: 2, background: ORANGE, display: 'block', borderRadius: 1 }} />
+          <span aria-hidden="true" style={{ width: 22, height: 2, background: ORANGE, display: 'block', borderRadius: 1 }} />
         </button>
+        {/* Center: name + role */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.88rem' }}>{userName}</span>
+          <span style={{ fontSize: '0.72rem', color: ORANGE, fontWeight: 600 }}>Admin</span>
+        </div>
+        {/* Right: notification bell */}
+        <div
+          style={{
+            color: 'var(--muted)', padding: 8, borderRadius: 8,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            minWidth: 44, minHeight: 44,
+          }}
+        >
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M13.5 6.75a4.5 4.5 0 1 0-9 0c0 4.5-2.25 5.625-2.25 5.625h13.5s-2.25-1.125-2.25-5.625M10.3 14.625a1.5 1.5 0 0 1-2.6 0" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
       </div>
 
       {/* Mobile drawer */}
