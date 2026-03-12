@@ -18,14 +18,16 @@ export async function sendEmail({
   to: string;
   subject: string;
   html: string;
-}) {
+}): Promise<{ id: string } | null> {
   const resend = getResend();
   if (!resend) {
-    console.warn('RESEND_API_KEY not set, skipping email');
-    return;
+    console.warn('[email] RESEND_API_KEY not set, skipping email');
+    return null;
   }
 
-  const { error } = await resend.emails.send({
+  console.log(`[email] calling resend.emails.send() to=${to} subject="${subject}"`);
+
+  const { data, error } = await resend.emails.send({
     from: 'signpost <noreply@send.signpost.community>',
     to,
     subject,
@@ -33,6 +35,10 @@ export async function sendEmail({
   });
 
   if (error) {
+    console.error(`[email] Resend API error: ${error.message}`);
     throw new Error(`Resend error: ${error.message}`);
   }
+
+  console.log(`[email] Resend API success, id=${data?.id}`);
+  return data ?? null;
 }

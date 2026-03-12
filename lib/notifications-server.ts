@@ -22,26 +22,37 @@ interface CreateNotificationParams {
   channel?: 'in_app' | 'email' | 'both'
 }
 
+// Only these status values are allowed by the notifications_status_check constraint
+type NotificationStatus = 'pending' | 'sent' | 'failed' | 'read'
+
 /**
- * Update notification status safely — separates status from error column
- * to avoid silent failures if the error column doesn't exist.
+ * Update notification status safely.
+ * Separates status from optional extra columns to handle missing columns gracefully.
  */
 async function updateNotificationStatus(
   admin: ReturnType<typeof getSupabaseAdmin>,
   id: string,
-  status: string,
+  status: NotificationStatus,
   extra?: { sent_at?: string; error?: string }
 ) {
-  // Always update status first (this column definitely exists)
-  const { error: statusErr } = await admin
+  const payload = extra ? { status, ...extra } : { status }
+  console.log(`[notifications] updating ${id} → status=${status}`, extra ? JSON.stringify(extra) : '')
+
+  const { error: updateErr } = await admin
     .from('notifications')
-    .update({ status, ...extra })
+    .update(payload)
     .eq('id', id)
 
-  if (statusErr) {
-    // If the combined update fails (e.g. error column missing), retry with just status
-    console.warn(`[notifications] combined status update failed (${statusErr.message}), retrying status-only`)
-    await admin.from('notifications').update({ status }).eq('id', id)
+  if (updateErr) {
+    console.warn(`[notifications] update failed (${updateErr.message}), retrying status-only`)
+    // Retry with just status (in case extra columns like 'error' don't exist)
+    const { error: retryErr } = await admin
+      .from('notifications')
+      .update({ status })
+      .eq('id', id)
+    if (retryErr) {
+      console.error(`[notifications] status-only retry also failed: ${retryErr.message}`)
+    }
   }
 }
 
@@ -67,7 +78,7 @@ export async function createNotification(params: CreateNotificationParams) {
         subject: params.subject,
         body: params.body,
         metadata: params.metadata ?? {},
-        status: 'sent',
+        status: 'sent' as NotificationStatus,
         sent_at: new Date().toISOString(),
       })
       .select('id')
@@ -91,7 +102,7 @@ export async function createNotification(params: CreateNotificationParams) {
         subject: params.subject,
         body: params.body,
         metadata: params.metadata ?? {},
-        status: 'pending',
+        status: 'pending' as NotificationStatus,
       })
       .select('id')
       .single()
@@ -102,6 +113,7 @@ export async function createNotification(params: CreateNotificationParams) {
     }
 
     const emailNotifId = emailNotif?.id
+    console.log(`[notifications] email notification row created: ${emailNotifId}`)
 
     // Look up recipient email — try auth.users first, then interpreter_profiles as fallback
     let recipientEmail: string | null = null
@@ -110,6 +122,8 @@ export async function createNotification(params: CreateNotificationParams) {
       const { data: authUser, error: authErr } = await admin.auth.admin.getUserById(params.recipientUserId)
       if (!authErr && authUser?.user?.email) {
         recipientEmail = authUser.user.email
+      } else if (authErr) {
+        console.warn('[notifications] getUserById error:', authErr.message)
       }
     } catch (e) {
       console.warn('[notifications] getUserById threw:', e instanceof Error ? e.message : e)
@@ -117,13 +131,13 @@ export async function createNotification(params: CreateNotificationParams) {
 
     // Fallback: check interpreter_profiles.email
     if (!recipientEmail) {
-      const { data: interpProfile } = await admin
+      const { data: profileRow } = await admin
         .from('interpreter_profiles')
         .select('email')
         .eq('user_id', params.recipientUserId)
         .maybeSingle()
-      if (interpProfile?.email) {
-        recipientEmail = interpProfile.email
+      if (profileRow?.email) {
+        recipientEmail = profileRow.email
       }
     }
 
@@ -140,14 +154,14 @@ export async function createNotification(params: CreateNotificationParams) {
     // Check notification preferences
     let emailEnabled = true
 
-    const { data: interpProfile } = await admin
+    const { data: prefProfile } = await admin
       .from('interpreter_profiles')
       .select('notification_preferences')
       .eq('user_id', params.recipientUserId)
       .maybeSingle()
 
-    if (interpProfile?.notification_preferences) {
-      const prefs = interpProfile.notification_preferences as {
+    if (prefProfile?.notification_preferences) {
+      const prefs = prefProfile.notification_preferences as {
         email_enabled?: boolean
         categories?: Record<string, { email?: boolean }>
       }
@@ -157,8 +171,12 @@ export async function createNotification(params: CreateNotificationParams) {
     }
 
     if (!emailEnabled) {
+      console.log(`[notifications] email disabled by user preferences for ${params.recipientUserId}`)
       if (emailNotifId) {
-        await updateNotificationStatus(admin, emailNotifId, 'skipped')
+        // Use 'failed' (allowed by CHECK constraint) instead of 'skipped'
+        await updateNotificationStatus(admin, emailNotifId, 'failed', {
+          error: 'Email disabled by user notification preferences',
+        })
       }
       return inAppNotif
     }
@@ -172,15 +190,15 @@ export async function createNotification(params: CreateNotificationParams) {
     })
 
     try {
-      console.log(`[notifications] sending email to ${recipientEmail} — subject: "${params.subject}"`)
+      console.log(`[notifications] attempting Resend send to: ${recipientEmail}`)
 
-      await sendEmail({
+      const result = await sendEmail({
         to: recipientEmail,
         subject: params.subject,
         html,
       })
 
-      console.log(`[notifications] email sent successfully to ${recipientEmail}`)
+      console.log(`[notifications] Resend send SUCCESS, id: ${result?.id ?? 'no-id'}`)
 
       // Success: update status to 'sent'
       if (emailNotifId) {
@@ -189,9 +207,8 @@ export async function createNotification(params: CreateNotificationParams) {
         })
       }
     } catch (err) {
-      // Failure: update status to 'failed' with error message
       const errorMsg = err instanceof Error ? err.message : String(err)
-      console.error('[notifications] email send failed:', errorMsg)
+      console.error(`[notifications] Resend send FAILED: ${errorMsg}`)
       if (emailNotifId) {
         await updateNotificationStatus(admin, emailNotifId, 'failed', {
           error: errorMsg,
