@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap';
+import { sendNotification } from '@/lib/notifications';
 
 // ─── Types ───────────────────────────────────────────────────────
 interface Interpreter {
@@ -297,6 +298,24 @@ export default function AddToListModal({
             setSaving(false);
             return;
           }
+
+          // Notify the interpreter they were added to someone's preferred team
+          const { data: memberProfile } = await supabase
+            .from('interpreter_profiles')
+            .select('user_id')
+            .eq('id', interpreter.id)
+            .single();
+
+          if (memberProfile?.user_id) {
+            sendNotification({
+              recipientUserId: memberProfile.user_id,
+              type: 'added_to_preferred_list',
+              subject: 'Someone added you to their preferred interpreter list',
+              body: "You've been added to someone's preferred interpreter list on signpost. This means they trust your work and may reach out for future bookings.",
+              ctaText: 'View Your Dashboard',
+              ctaUrl: 'https://signpost.community/interpreter/dashboard',
+            }).catch(err => console.error('[add-to-list] notification failed:', err));
+          }
         }
       } else {
         // Deaf / Requester / Default → deaf_roster
@@ -309,6 +328,27 @@ export default function AddToListModal({
           approve_personal: approvePersonal,
           notes: note || null,
         });
+
+        if (!insertErr) {
+          // Notify the interpreter they were added to a preferred list
+          // Look up the interpreter's user_id from interpreter_profiles
+          const { data: interpProfile } = await supabase
+            .from('interpreter_profiles')
+            .select('user_id')
+            .eq('id', interpreter.id)
+            .single();
+
+          if (interpProfile?.user_id) {
+            sendNotification({
+              recipientUserId: interpProfile.user_id,
+              type: 'added_to_preferred_list',
+              subject: 'Someone added you to their preferred interpreter list',
+              body: "You've been added to someone's preferred interpreter list on signpost. This means they trust your work and may reach out for future bookings.",
+              ctaText: 'View Your Dashboard',
+              ctaUrl: 'https://signpost.community/interpreter/dashboard',
+            }).catch(err => console.error('[add-to-list] notification failed:', err));
+          }
+        }
 
         if (insertErr) {
           console.error('Insert error (deaf_roster):', JSON.stringify(insertErr, null, 2));

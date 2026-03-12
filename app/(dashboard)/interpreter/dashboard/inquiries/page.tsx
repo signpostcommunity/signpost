@@ -12,6 +12,7 @@ import { sendNotification } from '@/lib/notifications'
 interface Booking {
   id: string
   title: string | null
+  requester_id: string | null
   requester_name: string | null
   specialization: string | null
   date: string
@@ -109,20 +110,45 @@ function AcceptModal({ booking, onClose, onAccepted }: {
       return
     }
 
-    // Send booking_confirmed notification
+    // Send notifications
     if (user) {
       const location = booking.format === 'remote' ? 'Virtual' : (booking.location?.split(',')[0] || 'TBD')
       const dateStr = booking.date ? new Date(booking.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'TBD'
       const timeStr = booking.time_start || ''
+
+      // Notify interpreter (self-confirmation)
       sendNotification({
         recipientUserId: user.id,
         type: 'booking_confirmed',
-        subject: `signpost — Booking confirmed: ${dateStr}, ${timeStr}, ${location}`,
-        body: `You accepted the inquiry "${booking.title || 'Booking'}" on ${dateStr} at ${timeStr}. The requester has been notified.`,
+        subject: `Booking confirmed: ${booking.title || 'Booking'}`,
+        body: `Your booking for ${booking.title || 'Booking'} on ${dateStr} with ${booking.requester_name || 'the requester'} has been confirmed.`,
         metadata: { booking_id: booking.id },
+        ctaText: 'View Confirmed Bookings',
+        ctaUrl: 'https://signpost.community/interpreter/dashboard/confirmed',
       }).catch(err => console.error('[inquiries] confirm notification failed:', err))
-      // TODO: new_request — when request form is built
-      // TODO: booking_reminder — needs a scheduled job (Supabase cron or Edge Function)
+
+      // Notify requester about rate response + booking confirmation
+      if (booking.requester_id) {
+        sendNotification({
+          recipientUserId: booking.requester_id,
+          type: 'rate_response',
+          subject: `Interpreter responded to your request`,
+          body: `An interpreter has sent their rate and availability for ${booking.title || 'your booking request'}. Review their response and confirm the booking.`,
+          metadata: { booking_id: booking.id },
+          ctaText: 'Review Response',
+          ctaUrl: 'https://signpost.community/request/dashboard',
+        }).catch(err => console.error('[inquiries] rate_response notification failed:', err))
+
+        sendNotification({
+          recipientUserId: booking.requester_id,
+          type: 'booking_confirmed',
+          subject: `Booking confirmed: ${booking.title || 'Booking'}`,
+          body: `An interpreter has confirmed your booking for ${booking.title || 'Booking'} on ${dateStr}.`,
+          metadata: { booking_id: booking.id },
+          ctaText: 'View Booking',
+          ctaUrl: 'https://signpost.community/request/dashboard',
+        }).catch(err => console.error('[inquiries] requester confirm notification failed:', err))
+      }
     }
 
     setSent(true)
@@ -459,7 +485,7 @@ export default function InquiriesPage() {
 
     const { data, error } = await supabase
       .from('bookings')
-      .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed, created_at')
+      .select('id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed, created_at')
       .eq('interpreter_id', profile.id)
       .eq('status', 'pending')
       .order('date', { ascending: true })

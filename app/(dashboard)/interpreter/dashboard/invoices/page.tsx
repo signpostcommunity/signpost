@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { BetaBanner, PageHeader, SectionLabel, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import Toast from '@/components/ui/Toast'
 import ConfirmModal from '@/components/ui/ConfirmModal'
+import { sendNotification } from '@/lib/notifications'
 
 /* ── Types ── */
 
@@ -294,6 +295,7 @@ export default function InvoicesPage() {
 
   async function handleMarkPaid(invoice: Invoice) {
     const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
     const { error } = await supabase
       .from('invoices')
       .update({ status: 'paid', paid_at: new Date().toISOString() })
@@ -304,6 +306,19 @@ export default function InvoicesPage() {
     } else {
       showToast(`Invoice ${invoice.invoice_number} marked as paid`)
       fetchData()
+
+      // Notify interpreter that invoice was paid
+      if (user) {
+        sendNotification({
+          recipientUserId: user.id,
+          type: 'invoice_paid',
+          subject: `Invoice paid: ${invoice.invoice_number}`,
+          body: `Your invoice ${invoice.invoice_number} for ${invoice.job_title || 'a booking'} ($${invoice.total?.toFixed(2) || '0.00'}) has been marked as paid.`,
+          metadata: { invoice_id: invoice.id },
+          ctaText: 'View Invoice',
+          ctaUrl: `https://signpost.community/interpreter/dashboard/invoices/${invoice.id}`,
+        }).catch(err => console.error('[invoices] paid notification failed:', err))
+      }
     }
   }
 

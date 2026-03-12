@@ -13,6 +13,7 @@ import { sendNotification } from '@/lib/notifications'
 interface Booking {
   id: string
   title: string | null
+  requester_id: string | null
   requester_name: string | null
   specialization: string | null
   date: string
@@ -184,10 +185,23 @@ function CancelModal({ booking, onClose, onCancelled }: {
     sendNotification({
       recipientUserId: user.id,
       type: 'cancelled_by_you',
-      subject: `signpost — Booking cancelled: ${dateStr}, ${timeStr}, ${location}`,
-      body: `Your cancellation for "${booking.title || 'Booking'}" on ${dateStr} at ${timeStr} has been processed. Reason: ${finalReason}`,
+      subject: `Booking cancelled: ${booking.title || 'Booking'}`,
+      body: `Your cancellation for "${booking.title || 'Booking'}" on ${dateStr} has been processed. Reason: ${finalReason}`,
       metadata: { booking_id: booking.id },
     }).catch(err => console.error('[confirmed] cancel notification failed:', err))
+
+    // Notify the requester about the cancellation
+    if (booking.requester_id) {
+      sendNotification({
+        recipientUserId: booking.requester_id,
+        type: 'booking_cancelled',
+        subject: `Booking cancelled: ${booking.title || 'Booking'}`,
+        body: `The interpreter has cancelled the booking for ${booking.title || 'Booking'} on ${dateStr}. Reason: ${finalReason}`,
+        metadata: { booking_id: booking.id },
+        ctaText: 'View Details',
+        ctaUrl: 'https://signpost.community/request/dashboard',
+      }).catch(err => console.error('[confirmed] requester cancel notification failed:', err))
+    }
 
     onCancelled(subOption === 'help')
   }
@@ -1479,7 +1493,7 @@ export default function ConfirmedPage() {
 
     const { data, error } = await supabase
       .from('bookings')
-      .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, description, notes, status, is_seed, cancellation_reason, sub_search_initiated, rate_profile_id')
+      .select('id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, description, notes, status, is_seed, cancellation_reason, sub_search_initiated, rate_profile_id')
       .eq('interpreter_id', profile.id)
       .in('status', ['confirmed', 'completed', 'cancelled'])
       .order('date', { ascending: true })

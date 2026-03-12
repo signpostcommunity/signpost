@@ -342,6 +342,38 @@ npm run seed       # Seed 10 demo interpreters into Supabase
 
 ## Session Handoff
 
+### Session 8 — March 11, 2026
+
+**Completed:**
+- ✅ Resend email integration (`lib/email.ts`): lazily-initialized Resend client, sends branded HTML emails when RESEND_API_KEY is set
+- ✅ Email template (`lib/email-template.ts`): dark-themed HTML email template with signpost wordmark, CTA button, footer with notification preferences link
+- ✅ Server-side notification service (`lib/notifications-server.ts`): inserts notification rows, checks user prefs from interpreter_profiles, sends email via Resend using admin client
+- ✅ Updated client-side notifications (`lib/notifications.ts`): simplified to insert in-app row + fire API route for email delivery
+- ✅ Updated API route (`app/api/notifications/send/route.ts`): now uses createNotification server-side service instead of stub
+- ✅ Notification preferences API (`app/api/notifications/preferences/route.ts`): returns user's notification prefs, defaults to email ON for deaf/requester users
+- ✅ Wired notification triggers: booking confirmed (both parties), booking cancelled (requester), rate response (requester), added to preferred list (interpreter), invoice paid (interpreter)
+- ✅ Added requester_id to Booking interfaces in inquiries + confirmed pages for cross-party notifications
+- ✅ Notification bell badge already counts unread notifications from notifications table
+
+**Key files:**
+- `lib/email.ts` — Resend email delivery utility
+- `lib/email-template.ts` — HTML email template wrapper
+- `lib/notifications-server.ts` — server-side notification service (uses admin client)
+- `lib/notifications.ts` — client-side notification helper
+- `app/api/notifications/send/route.ts` — email delivery API route
+- `app/api/notifications/preferences/route.ts` — user notification preferences API
+
+**Environment variables needed:**
+- `RESEND_API_KEY` — Resend API key for email delivery (optional; emails silently skip if not set)
+- `SUPABASE_SERVICE_ROLE_KEY` — required for server-side notification service
+
+**In progress / pick up here next session:**
+- Requester booking creation flow (will enable `new_request` notification to interpreters)
+- Message creation flow (will enable `new_message` notification)
+- Interpreter signup Steps 2–6 audit vs prototype
+- Requester signup flow audit
+- Remaining deaf dashboard tabs
+
 ### Session 7 — March 10, 2026
 
 **Completed:**
