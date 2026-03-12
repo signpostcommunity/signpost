@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 import { createNotification } from '@/lib/notifications-server'
 
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
+    // Verify authenticated user
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { recipientUserId, subject, body, type, metadata, ctaText, ctaUrl, channel } = await request.json()
 
     if (!recipientUserId || !subject || !body || !type) {
@@ -19,7 +27,7 @@ export async function POST(request: NextRequest) {
       metadata,
       ctaText,
       ctaUrl,
-      channel: channel ?? 'email',
+      channel: channel ?? 'both',
     })
 
     return NextResponse.json({ sent: true, notificationId: notif?.id ?? null })

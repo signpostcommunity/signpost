@@ -1,5 +1,3 @@
-import { createClient } from '@/lib/supabase/client'
-
 export type NotificationType =
   | 'welcome' | 'profile_approved' | 'profile_denied'
   | 'new_request' | 'booking_confirmed' | 'rate_response'
@@ -21,33 +19,12 @@ interface SendNotificationParams {
 
 /**
  * Client-side notification helper.
- * Creates an in-app notification row and fires the server-side
- * API route for email delivery via Resend.
+ * Routes ALL notification creation through the server-side API route,
+ * which handles both in-app insert and email delivery via Resend.
  */
 export async function sendNotification(params: SendNotificationParams) {
-  const supabase = createClient()
-
-  // 1. Always create in-app notification row
-  const { error: inAppErr } = await supabase
-    .from('notifications')
-    .insert({
-      recipient_user_id: params.recipientUserId,
-      type: params.type,
-      channel: 'in_app',
-      subject: params.subject,
-      body: params.body,
-      metadata: params.metadata ?? {},
-      status: 'sent',
-      sent_at: new Date().toISOString(),
-    })
-
-  if (inAppErr) {
-    console.error('[notifications] in_app insert failed:', inAppErr.message)
-  }
-
-  // 2. Fire email delivery via API route (server-side handles prefs + Resend)
   try {
-    await fetch('/api/notifications/send', {
+    const res = await fetch('/api/notifications/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -58,9 +35,14 @@ export async function sendNotification(params: SendNotificationParams) {
         metadata: params.metadata,
         ctaText: params.ctaText,
         ctaUrl: params.ctaUrl,
+        channel: 'both',
       }),
     })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      console.error('[notifications] API error:', data.error || res.statusText)
+    }
   } catch (e) {
-    console.error('[notifications] email send request failed:', e instanceof Error ? e.message : e)
+    console.error('[notifications] send request failed:', e instanceof Error ? e.message : e)
   }
 }
