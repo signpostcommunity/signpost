@@ -196,6 +196,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
         { id: draftUserId, role: 'interpreter' },
         { onConflict: 'id' }
       )
+      // Save draft_data AND copy all fields to individual columns
       await supabase
         .from('interpreter_profiles')
         .upsert({
@@ -204,6 +205,38 @@ export function FormProvider({ children }: { children: ReactNode }) {
           status: 'draft',
           draft_step: currentStep,
           draft_data: formData,
+          // Copy all form fields to individual columns
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          pronouns: formData.pronouns || null,
+          email: formData.email,
+          phone: formData.phone,
+          country: formData.country,
+          city: formData.city,
+          state: formData.state,
+          bio: formData.bio,
+          bio_specializations: formData.bioSpecializations,
+          bio_extra: formData.bioExtra,
+          interpreter_type: formData.interpreterType,
+          work_mode: formData.modeOfWork,
+          years_experience: formData.yearsExperience,
+          regions: formData.regions,
+          event_coordination: formData.eventCoordination,
+          event_coordination_desc: formData.coordinationBio,
+          sign_languages: formData.signLanguages,
+          spoken_languages: formData.spokenLanguages,
+          specializations: formData.specializations,
+          specialized_skills: formData.specializedSkills,
+          lgbtq: formData.lgbtq,
+          deaf_parented: formData.deafParented,
+          bipoc: formData.bipoc,
+          bipoc_details: formData.bipocDetails,
+          religious_affiliation: formData.religiousAffiliation,
+          religious_details: formData.religiousDetails,
+          video_url: formData.videoUrl,
+          video_desc: formData.videoDescription,
+          photo_url: formData.avatarUrl,
+          gender_identity: formData.genderIdentity,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' })
     } catch (e) {

@@ -116,6 +116,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         bipoc_details: formData.bipocDetails,
         religious_affiliation: formData.religiousAffiliation,
         religious_details: formData.religiousDetails,
+        gender_identity: formData.genderIdentity,
         video_url: formData.videoUrl,
         video_desc: formData.videoDescription,
         photo_url: formData.avatarUrl,

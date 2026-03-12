@@ -247,6 +247,15 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   console.log('PROFILE LOAD - rawProfile from server:', JSON.stringify(rawProfile, null, 2))
   const p = (rawProfile || {}) as ProfileData
   const hasProfile = !!rawProfile
+
+  // Fall back to draft_data if individual columns are empty
+  const dd = (p.draft_data || {}) as Record<string, unknown>
+  function fallback<T>(column: T | null | undefined, draftKey: string, defaultVal: T): T {
+    if (column !== null && column !== undefined && column !== '') return column
+    const draftVal = dd[draftKey]
+    if (draftVal !== null && draftVal !== undefined && draftVal !== '') return draftVal as T
+    return defaultVal
+  }
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -266,38 +275,38 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
-  // ── Personal state ─────────────────────────────────────────────────────
-  const [firstName, setFirstName] = useState(p.first_name || '')
-  const [lastName, setLastName] = useState(p.last_name || '')
-  const [city, setCity] = useState(p.city || '')
-  const [stateProvince, setStateProvince] = useState(p.state || '')
-  const [country, setCountry] = useState(p.country || '')
-  const [phone, setPhone] = useState(p.phone || '')
-  const [yearsExperience, setYearsExperience] = useState(p.years_experience || '')
-  const [interpreterType, setInterpreterType] = useState(p.interpreter_type || '')
-  const [modeOfWork, setModeOfWork] = useState(p.work_mode || '')
-  const [eventCoordination, setEventCoordination] = useState(p.event_coordination || false)
-  const [coordinationBio, setCoordinationBio] = useState(p.event_coordination_desc || '')
+  // ── Personal state (columns → draft_data fallback) ─────────────────────
+  const [firstName, setFirstName] = useState(fallback(p.first_name, 'firstName', ''))
+  const [lastName, setLastName] = useState(fallback(p.last_name, 'lastName', ''))
+  const [city, setCity] = useState(fallback(p.city, 'city', ''))
+  const [stateProvince, setStateProvince] = useState(fallback(p.state, 'state', ''))
+  const [country, setCountry] = useState(fallback(p.country, 'country', ''))
+  const [phone, setPhone] = useState(fallback(p.phone, 'phone', ''))
+  const [yearsExperience, setYearsExperience] = useState(fallback(p.years_experience, 'yearsExperience', ''))
+  const [interpreterType, setInterpreterType] = useState(fallback(p.interpreter_type, 'interpreterType', ''))
+  const [modeOfWork, setModeOfWork] = useState(fallback(p.work_mode, 'modeOfWork', ''))
+  const [eventCoordination, setEventCoordination] = useState(fallback(p.event_coordination, 'eventCoordination', false))
+  const [coordinationBio, setCoordinationBio] = useState(fallback(p.event_coordination_desc, 'coordinationBio', ''))
 
   // ── Languages state ────────────────────────────────────────────────────
-  const [signLangs, setSignLangs] = useState<string[]>(p.sign_languages || [])
-  const [spokenLangs, setSpokenLangs] = useState<string[]>(p.spoken_languages || [])
-  const [specs, setSpecs] = useState<string[]>(p.specializations || [])
-  const [specializedSkills, setSpecializedSkills] = useState<string[]>(p.specialized_skills || [])
+  const [signLangs, setSignLangs] = useState<string[]>(fallback(p.sign_languages, 'signLanguages', [] as string[]))
+  const [spokenLangs, setSpokenLangs] = useState<string[]>(fallback(p.spoken_languages, 'spokenLanguages', [] as string[]))
+  const [specs, setSpecs] = useState<string[]>(fallback(p.specializations, 'specializations', [] as string[]))
+  const [specializedSkills, setSpecializedSkills] = useState<string[]>(fallback(p.specialized_skills, 'specializedSkills', [] as string[]))
   const [otherSpecs, setOtherSpecs] = useState('')
   const [signRegional, setSignRegional] = useState<string[]>([])
   const [spokenRegional, setSpokenRegional] = useState<string[]>([])
 
   // ── Service area state ─────────────────────────────────────────────────
-  const [regions, setRegions] = useState<string[]>(p.regions || [])
+  const [regions, setRegions] = useState<string[]>(fallback(p.regions, 'regions', [] as string[]))
 
   // ── Bio & Video state ──────────────────────────────────────────────────
-  const [bio, setBio] = useState(p.bio || '')
-  const [bioSpecializations, setBioSpecializations] = useState(p.bio_specializations || '')
-  const [bioExtra, setBioExtra] = useState(p.bio_extra || '')
-  const [videoUrl, setVideoUrl] = useState(p.video_url || '')
+  const [bio, setBio] = useState(fallback(p.bio, 'bio', ''))
+  const [bioSpecializations, setBioSpecializations] = useState(fallback(p.bio_specializations, 'bioSpecializations', ''))
+  const [bioExtra, setBioExtra] = useState(fallback(p.bio_extra, 'bioExtra', ''))
+  const [videoUrl, setVideoUrl] = useState(fallback(p.video_url, 'videoUrl', ''))
   const [videoUrlError, setVideoUrlError] = useState<string | null>(null)
-  const [videoDescription, setVideoDescription] = useState(p.video_desc || '')
+  const [videoDescription, setVideoDescription] = useState(fallback(p.video_desc, 'videoDescription', ''))
 
   // ── Payment & Invoicing state ───────────────────────────────────────
   const [invoicingPref, setInvoicingPref] = useState(p.invoicing_preference || 'own')
@@ -310,12 +319,12 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const [notifSaving, setNotifSaving] = useState(false)
 
   // ── Community & Identity state ────────────────────────────────────
-  const [lgbtq, setLgbtq] = useState(p.lgbtq || false)
-  const [deafParented, setDeafParented] = useState(p.deaf_parented || false)
-  const [bipoc, setBipoc] = useState(p.bipoc || false)
-  const [bipocDetails, setBipocDetails] = useState<string[]>(p.bipoc_details || [])
-  const [religiousAff, setReligiousAff] = useState(p.religious_affiliation || false)
-  const [religiousDetails, setReligiousDetails] = useState<string[]>(p.religious_details || [])
+  const [lgbtq, setLgbtq] = useState(fallback(p.lgbtq, 'lgbtq', false))
+  const [deafParented, setDeafParented] = useState(fallback(p.deaf_parented, 'deafParented', false))
+  const [bipoc, setBipoc] = useState(fallback(p.bipoc, 'bipoc', false))
+  const [bipocDetails, setBipocDetails] = useState<string[]>(fallback(p.bipoc_details, 'bipocDetails', [] as string[]))
+  const [religiousAff, setReligiousAff] = useState(fallback(p.religious_affiliation, 'religiousAffiliation', false))
+  const [religiousDetails, setReligiousDetails] = useState<string[]>(fallback(p.religious_details, 'religiousDetails', [] as string[]))
 
   // ── Client-side fallback: load profile if server prop was null ──────
   useEffect(() => {
@@ -342,7 +351,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       // Now try interpreter_profiles
       const { data, error, status, statusText } = await supabase
         .from('interpreter_profiles')
-        .select('name, first_name, last_name, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, bio_specializations, bio_extra, sign_languages, spoken_languages, specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms, notification_preferences, notification_phone')
+        .select('name, first_name, last_name, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, bio_specializations, bio_extra, sign_languages, spoken_languages, specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms, notification_preferences, notification_phone, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity')
         .eq('user_id', user.id)
         .maybeSingle()
       console.log('PROFILE CLIENT-SIDE LOAD:', JSON.stringify({ data, error, status, statusText, userId: user.id }, null, 2))
@@ -478,7 +487,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   }
 
   // ── Photo upload state ─────────────────────────────────────────────────
-  const [photoUrl, setPhotoUrl] = useState(p.photo_url || '')
+  const [photoUrl, setPhotoUrl] = useState(fallback(p.photo_url, 'avatarUrl', ''))
   const [uploading, setUploading] = useState(false)
   const [uploadMsg, setUploadMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
