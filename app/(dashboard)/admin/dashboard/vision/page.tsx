@@ -455,6 +455,7 @@ export default function VisionPage() {
           </h1>
           <div role="tablist" aria-label="Product vision sections" style={{
             display: 'flex', gap: 0, overflowX: 'auto', WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
           }}>
             {TABS.map((tab) => (
               <button
@@ -472,6 +473,7 @@ export default function VisionPage() {
                   border: 'none',
                   borderBottom: activeTab === tab.id ? `2px solid ${ORANGE}` : '2px solid transparent',
                   cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.15s ease',
+                  flexShrink: 0,
                 }}
               >
                 {tab.label}

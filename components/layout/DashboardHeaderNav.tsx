@@ -28,7 +28,7 @@ export default function DashboardHeaderNav({ portalPath }: { portalPath: string 
   }, []);
 
   return (
-    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: 'auto' }}>
+    <div className="dash-header-links" style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: 'auto' }}>
       <Link href="/directory" className="nav-btn" style={{ textDecoration: 'none' }}>
         Browse Interpreter Directory
       </Link>

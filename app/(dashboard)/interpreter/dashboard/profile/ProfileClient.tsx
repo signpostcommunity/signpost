@@ -226,6 +226,7 @@ function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void 
                 borderRadius: isActive ? '8px 8px 0 0' : '8px 8px 0 0',
                 transition: 'all 0.15s',
                 whiteSpace: 'nowrap',
+                flexShrink: 0,
               }}
             >
               {tab}

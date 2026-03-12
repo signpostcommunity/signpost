@@ -223,6 +223,18 @@ img {
 
 /* Tablet (768px) */
 @media (max-width: 768px) {
+  /* ── Nav: hide desktop links, show hamburger ── */
+  .nav-links {
+    display: none !important;
+  }
+  .hamburger {
+    display: flex !important;
+  }
+  /* Dashboard header: hide nav links on mobile */
+  .dash-header-links {
+    display: none !important;
+  }
+
   /* Nav padding reduction */
   nav[aria-label="Main navigation"] {
     padding: 14px 16px !important;
@@ -286,7 +298,24 @@ img {
     grid-template-columns: repeat(2, 1fr) !important;
   }
 
-  /* Profile editor tabs: horizontal scroll */
+  /* ── Tabs: prevent overlap, enable horizontal scroll ── */
+  [role="tablist"] {
+    display: flex !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap !important;
+  }
+  [role="tablist"]::-webkit-scrollbar {
+    display: none;
+  }
+  [role="tablist"] > button,
+  [role="tablist"] > [role="tab"] {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    font-size: 0.8rem !important;
+    padding: 12px 14px !important;
+  }
   .profile-tabs-scrollable {
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch;
@@ -296,15 +325,11 @@ img {
   .profile-tabs-scrollable::-webkit-scrollbar {
     display: none;
   }
-
-  /* About page tabs: horizontal scroll */
-  [role="tablist"] {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-  [role="tablist"]::-webkit-scrollbar {
-    display: none;
+  .profile-tabs-scrollable > button {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    font-size: 0.8rem !important;
+    padding: 10px 14px !important;
   }
 
   /* Signup step compact display */
