@@ -570,7 +570,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const initials = `${initialsSource[0] || ''}${(lastName || p.last_name || '')[0] || ''}`.toUpperCase() || '?'
 
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 780 }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       <PageHeader
         title="My Profile"
         subtitle={hasProfile

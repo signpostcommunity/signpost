@@ -40,7 +40,7 @@ export default function AvailabilityPage() {
   }
 
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 720 }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       <PageHeader title="Availability" subtitle="Set your working status for each day. Requesters see this on your profile." />
 
       {/* Timezone */}

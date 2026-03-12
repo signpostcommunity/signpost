@@ -261,7 +261,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, profil
   const hasSeedData = pendingBookings.some(b => b.is_seed) || confirmedBookings.some(b => b.is_seed)
 
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 900 }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       {hasSeedData && <BetaBanner />}
 
       <PageHeader

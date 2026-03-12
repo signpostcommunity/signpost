@@ -653,7 +653,7 @@ export default function DhhBookingsPage() {
   const viewingBooking = allBookings.find(b => b.id === viewing)
 
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 900 }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       <BetaBanner />
       <PageHeader title="My Bookings" subtitle="Appointments scheduled for you, requested by you or on your behalf." />
 

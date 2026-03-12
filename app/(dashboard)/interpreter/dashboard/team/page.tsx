@@ -328,7 +328,7 @@ export default function TeamPage() {
   } : null
 
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 760 }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       <BetaBanner />
       <PageHeader
         title="Preferred Team Interpreters"

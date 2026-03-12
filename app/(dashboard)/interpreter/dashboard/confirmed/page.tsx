@@ -1580,7 +1580,7 @@ export default function ConfirmedPage() {
   const hasSeedData = bookings.some(b => b.is_seed)
 
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 900 }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       {hasSeedData && <BetaBanner />}
       <PageHeader title="Confirmed Bookings" subtitle="All your accepted and confirmed bookings." />
 

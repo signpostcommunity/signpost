@@ -394,7 +394,7 @@ export default function InvoicesPage() {
   /* ── Render ── */
 
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', maxWidth: 900 }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       <DashMobileStyles />
       <PageHeader title="Invoices" subtitle="Manage invoices for completed jobs." />
 
