@@ -8,6 +8,29 @@ interface Props {
   userRole?: string | null;
 }
 
+const CERT_ABBREVIATIONS: Record<string, string> = {
+  'NIC': 'NIC',
+  'CI': 'CI',
+  'CT': 'CT',
+  'CDI': 'CDI',
+  'SC:L': 'SC:L',
+  'EFSLI': 'EFSLI',
+  'NIC-Master': 'NIC-Master',
+  'NIC-Advanced': 'NIC-Advanced',
+  'NAD': 'NAD',
+  'RID': 'RID',
+  'BEI': 'BEI',
+  'CASLI': 'CASLI',
+};
+
+function abbreviateCert(cert: string): string {
+  if (cert.length <= 25) return cert;
+  for (const [abbr] of Object.entries(CERT_ABBREVIATIONS)) {
+    if (cert.includes(abbr)) return abbr;
+  }
+  return cert;
+}
+
 export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddToList, userRole }: Props) {
   return (
     <Link
@@ -95,48 +118,30 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
 
         {/* Card body */}
         <div style={{ padding: '18px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-          {/* Name + Add to my list */}
-          {/* Name + Add to my list */}
+          {/* Name */}
           <div
             style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '6px',
+              fontFamily: 'var(--font-syne)',
+              fontWeight: 700,
+              fontSize: '1rem',
+              lineHeight: 1.2,
+              wordBreak: 'break-word',
             }}
           >
-            <div
-              className="card-name-row"
-              style={{
-                display: 'flex',
-                alignItems: 'flex-start',
-                justifyContent: 'space-between',
-                gap: '8px',
+            {i.name}
+          </div>
+          {/* Add to list — own row */}
+          <div style={{ marginTop: '6px' }}>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onAddToList?.(i);
               }}
+              className="add-to-list-btn"
             >
-              <div
-                className="card-name-text"
-                style={{
-                  fontFamily: 'var(--font-syne)',
-                  fontWeight: 700,
-                  fontSize: '1rem',
-                  lineHeight: 1.2,
-                  minWidth: 0,
-                  wordBreak: 'break-word',
-                }}
-              >
-                {i.name}
-              </div>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onAddToList?.(i);
-                }}
-                className="add-to-list-btn"
-              >
-                {userRole === 'interpreter' ? '+ Add to my team' : '+ Add to my list'}
-              </button>
-            </div>
+              {userRole === 'interpreter' ? '+ Add to my team' : '+ Add to my list'}
+            </button>
           </div>
           {/* Location — full width below name */}
           <div
@@ -213,6 +218,7 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
             >
               {i.certs.map((cert) => {
                 const isVerified = i.certDetails?.some(d => d.name === cert && d.verificationLink);
+                const displayCert = abbreviateCert(cert);
                 return (
                 <span
                   key={cert}
@@ -226,7 +232,7 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
                     fontWeight: 600,
                   }}
                 >
-                  {cert}{isVerified && <span style={{ color: '#34d399', marginLeft: 3 }}>✓</span>}
+                  {displayCert}{isVerified && <span style={{ color: '#34d399', marginLeft: 3 }}>✓</span>}
                 </span>
                 );
               })}
@@ -259,21 +265,10 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
             border-color: var(--accent);
           }
           @media (max-width: 768px) {
-            .card-name-row {
-              flex-direction: column !important;
-              align-items: stretch !important;
-            }
             .add-to-list-btn {
               width: 100% !important;
               text-align: center !important;
               padding: 8px 10px !important;
-              margin-top: 6px;
-            }
-            .card-name-text {
-              overflow: visible !important;
-              text-overflow: clip !important;
-              white-space: normal !important;
-              word-break: break-word !important;
             }
           }
         `}</style>

@@ -237,6 +237,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
           video_desc: formData.videoDescription,
           photo_url: formData.avatarUrl,
           gender_identity: formData.genderIdentity,
+          other_specializations: formData.otherSpecializations || null,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' })
     } catch (e) {

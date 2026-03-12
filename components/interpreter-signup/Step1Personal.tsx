@@ -211,8 +211,14 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
           <FormField>
             <FieldLabel>Pronouns</FieldLabel>
             <SelectInput
-              value={formData.pronouns}
-              onChange={e => updateField('pronouns', e.target.value)}
+              value={formData.pronouns === 'she/her' || formData.pronouns === 'he/him' || formData.pronouns === 'they/them' || formData.pronouns === 'she/they' || formData.pronouns === 'he/they' || formData.pronouns === '' ? formData.pronouns : 'Other'}
+              onChange={e => {
+                if (e.target.value === 'Other') {
+                  updateField('pronouns', 'Other')
+                } else {
+                  updateField('pronouns', e.target.value)
+                }
+              }}
             >
               <option value="">Select…</option>
               <option>she/her</option>
@@ -222,6 +228,14 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
               <option>he/they</option>
               <option>Other</option>
             </SelectInput>
+            {(formData.pronouns === 'Other' || (formData.pronouns && !['she/her', 'he/him', 'they/them', 'she/they', 'he/they', ''].includes(formData.pronouns))) && (
+              <TextInput
+                placeholder="Enter your pronouns (e.g. ze/zir/zim)"
+                value={formData.pronouns === 'Other' ? '' : formData.pronouns}
+                onChange={e => updateField('pronouns', e.target.value || 'Other')}
+                style={{ marginTop: 8 }}
+              />
+            )}
           </FormField>
         </FormRow>
 

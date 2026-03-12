@@ -120,6 +120,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         video_url: formData.videoUrl,
         video_desc: formData.videoDescription,
         photo_url: formData.avatarUrl,
+        other_specializations: formData.otherSpecializations || null,
         submitted_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' }).select('id').single()
@@ -137,7 +138,10 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         }
       }
     } catch (insertError) {
-      console.warn('Beta: insert failed, proceeding to auto sign-in anyway', insertError)
+      console.error('Profile save failed:', insertError)
+      setError(`Profile save failed: ${(insertError as Error).message || 'Unknown error'}. Please try again.`)
+      setIsSubmitting(false)
+      return
     }
 
     // BETA: unconditional auto sign-in and redirect

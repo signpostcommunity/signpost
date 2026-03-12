@@ -110,21 +110,37 @@ export default function Step5Skills({ onBack, onContinue }: {
                 {!isCollapsed && (
                   <div style={{ padding: '0 12px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {subs.map(sub => (
-                      <label key={sub} style={{
-                        display: 'flex', alignItems: 'center', gap: 10,
-                        padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
-                        background: formData.specializations.includes(sub) ? 'rgba(0,229,255,0.06)' : 'transparent',
-                        transition: 'background 0.15s',
-                        fontSize: '0.85rem', color: formData.specializations.includes(sub) ? 'var(--text)' : 'var(--muted)',
-                      }}>
-                        <input
-                          type="checkbox"
-                          checked={formData.specializations.includes(sub)}
-                          onChange={() => toggleSpec(sub)}
-                          style={{ accentColor: 'var(--accent)', width: 'auto', flexShrink: 0 }}
-                        />
-                        {sub}
-                      </label>
+                      <div key={sub}>
+                        <label style={{
+                          display: 'flex', alignItems: 'center', gap: 10,
+                          padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
+                          background: formData.specializations.includes(sub) ? 'rgba(0,229,255,0.06)' : 'transparent',
+                          transition: 'background 0.15s',
+                          fontSize: '0.85rem', color: formData.specializations.includes(sub) ? 'var(--text)' : 'var(--muted)',
+                        }}>
+                          <input
+                            type="checkbox"
+                            checked={formData.specializations.includes(sub)}
+                            onChange={() => toggleSpec(sub)}
+                            style={{ accentColor: 'var(--accent)', width: 'auto', flexShrink: 0 }}
+                          />
+                          {sub}
+                        </label>
+                        {sub === 'Other (describe in notes)' && formData.specializations.includes(sub) && (
+                          <textarea
+                            placeholder="Describe your specialization"
+                            value={formData.otherSpecializations}
+                            onChange={e => updateField('otherSpecializations', e.target.value)}
+                            style={{
+                              width: '100%', marginTop: 6, marginLeft: 12, boxSizing: 'border-box',
+                              background: 'var(--surface2)', border: '1px solid var(--border)',
+                              borderRadius: 'var(--radius-sm)', padding: '10px 14px',
+                              color: 'var(--text)', fontFamily: "'DM Sans', sans-serif",
+                              fontSize: '0.85rem', outline: 'none', resize: 'vertical', minHeight: 60,
+                            }}
+                          />
+                        )}
+                      </div>
                     ))}
                   </div>
                 )}

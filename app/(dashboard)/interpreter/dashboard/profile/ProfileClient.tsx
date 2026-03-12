@@ -544,11 +544,32 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
     const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(path)
     const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`
 
-    const { data: dbData, error: dbError } = await supabase
+    let dbData, dbError;
+    // Try to update existing row
+    const updateResult = await supabase
       .from('interpreter_profiles')
       .update({ photo_url: publicUrl, updated_at: new Date().toISOString() })
       .eq('user_id', user.id)
       .select()
+
+    dbData = updateResult.data;
+    dbError = updateResult.error;
+
+    // If no row found, create one
+    if (!dbError && (!dbData || dbData.length === 0)) {
+      const insertResult = await supabase
+        .from('interpreter_profiles')
+        .insert({
+          user_id: user.id,
+          name: [firstName, lastName].filter(Boolean).join(' ') || userEmail,
+          photo_url: publicUrl,
+          status: 'approved',
+          updated_at: new Date().toISOString(),
+        })
+        .select()
+      dbData = insertResult.data;
+      dbError = insertResult.error;
+    }
 
     console.log('Photo save response:', { data: dbData, error: dbError })
 
@@ -556,7 +577,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
     if (dbError) {
       setUploadMsg({ text: `Save failed: ${dbError.message}`, type: 'error' })
     } else if (!dbData || dbData.length === 0) {
-      setUploadMsg({ text: 'Save failed: no profile row found. Save your profile first.', type: 'error' })
+      setUploadMsg({ text: 'Your profile is still being created. Please refresh the page and try again in a moment.', type: 'error' })
     } else {
       setPhotoUrl(publicUrl)
       setUploadMsg({ text: 'Photo updated.', type: 'success' })
