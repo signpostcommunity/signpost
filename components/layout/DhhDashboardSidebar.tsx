@@ -244,11 +244,12 @@ export default function DhhDashboardSidebar({ userName = 'User', userInitials = 
         .eq('deaf_user_id', user.id)
         .in('tier', ['preferred', 'approved'])
 
-      // Unread notifications count
+      // Unread notifications count (in_app only)
       const { count: notifCount } = await supabase
         .from('notifications')
         .select('id', { count: 'exact', head: true })
         .eq('recipient_user_id', user.id)
+        .eq('channel', 'in_app')
         .neq('status', 'read')
 
       // Unread messages count
@@ -265,6 +266,15 @@ export default function DhhDashboardSidebar({ userName = 'User', userInitials = 
       })
     }
     fetchBadges()
+
+    // Re-fetch when inbox page marks items as read/deleted
+    function handleUnreadChanged() { fetchBadges() }
+    window.addEventListener('signpost:unread-changed', handleUnreadChanged)
+    const interval = setInterval(fetchBadges, 30000)
+    return () => {
+      window.removeEventListener('signpost:unread-changed', handleUnreadChanged)
+      clearInterval(interval)
+    }
   }, [])
 
   return (

@@ -121,6 +121,24 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         video_desc: formData.videoDescription,
         photo_url: formData.avatarUrl,
         other_specializations: formData.otherSpecializations || null,
+        notification_preferences: {
+          email_enabled: true,
+          sms_enabled: true,
+          categories: {
+            new_request: { email: true, sms: true },
+            booking_confirmed: { email: true, sms: true },
+            rate_response: { email: true, sms: true },
+            cancelled_by_requester: { email: true, sms: true },
+            cancelled_by_you: { email: true, sms: true },
+            sub_search_update: { email: true, sms: true },
+            booking_reminder: { email: true, sms: true },
+            new_message: { email: true, sms: true },
+            invoice_paid: { email: true, sms: true },
+            team_invite: { email: true, sms: true },
+            added_to_preferred_list: { email: true, sms: true },
+            welcome: { email: true, sms: true },
+          },
+        },
         submitted_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' }).select('id').single()
@@ -136,6 +154,25 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         } catch (seedErr) {
           console.warn('Beta: seed call failed, continuing', seedErr)
         }
+      }
+
+      // Send welcome notification (email + in-app) — fires once on signup only
+      try {
+        await fetch('/api/notifications/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            recipientUserId: userId,
+            type: 'welcome',
+            channel: 'both',
+            subject: 'Welcome to signpost',
+            body: 'Thanks for joining the signpost beta! Your interpreter profile is live. Log in anytime at signpost.community to update your profile, explore the directory, and connect with the community. If you have questions, reach us at hello@signpost.community.',
+            ctaText: 'Go to your dashboard',
+            ctaUrl: 'https://signpost.community/interpreter/dashboard',
+          }),
+        })
+      } catch (welcomeErr) {
+        console.warn('Welcome notification failed, continuing', welcomeErr)
       }
     } catch (insertError) {
       console.error('Profile save failed:', insertError)

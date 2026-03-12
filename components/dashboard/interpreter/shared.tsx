@@ -229,12 +229,12 @@ export function DashMobileStyles() {
         .dash-page-content { padding: 24px 20px !important; }
         .request-card { padding: 16px 16px !important; }
         .request-card-header {
-          flex-direction: column !important;
+          flex-direction: column-reverse !important;
           align-items: flex-start !important;
           gap: 10px !important;
         }
         .request-card-badges {
-          margin-left: 48px;
+          margin-left: 0;
         }
         .request-card-details {
           padding: 12px 0 !important;

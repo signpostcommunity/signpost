@@ -88,6 +88,10 @@ export default function DhhInboxPage() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
+  function notifyUnreadChanged() {
+    window.dispatchEvent(new Event('signpost:unread-changed'))
+  }
+
   async function markNotificationAsRead(notifId: string) {
     const res = await fetch(`/api/notifications/${notifId}`, {
       method: 'PATCH',
@@ -96,6 +100,7 @@ export default function DhhInboxPage() {
     })
     if (res.ok) {
       setNotifications(prev => prev.map(n => n.id === notifId ? { ...n, status: 'read' } : n))
+      notifyUnreadChanged()
     }
   }
 
@@ -103,6 +108,7 @@ export default function DhhInboxPage() {
     const res = await fetch('/api/notifications/mark-all-read', { method: 'PATCH' })
     if (res.ok) {
       setNotifications(prev => prev.map(n => ({ ...n, status: 'read' })))
+      notifyUnreadChanged()
     }
   }
 
@@ -110,6 +116,7 @@ export default function DhhInboxPage() {
     const res = await fetch(`/api/notifications/${notifId}`, { method: 'DELETE' })
     if (res.ok) {
       setNotifications(prev => prev.filter(n => n.id !== notifId))
+      notifyUnreadChanged()
     }
   }
 
@@ -121,6 +128,7 @@ export default function DhhInboxPage() {
     })
     if (res.ok) {
       setMessages(prev => prev.map(m => m.id === msgId ? { ...m, is_read: true } : m))
+      notifyUnreadChanged()
     }
   }
 
@@ -132,6 +140,7 @@ export default function DhhInboxPage() {
     })
     if (res.ok) {
       setMessages(prev => prev.map(m => m.id === msgId ? { ...m, archived: true } : m))
+      notifyUnreadChanged()
     }
   }
 

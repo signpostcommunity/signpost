@@ -11,7 +11,6 @@ import {
 } from '@/lib/data/languages'
 import { SPECIALIZATION_CATEGORIES, SPECIALIZED_SKILLS } from '@/lib/constants/specializations'
 import { getVideoEmbedUrl, isValidVideoUrl } from '@/lib/videoUtils'
-import { sendNotification } from '@/lib/notifications'
 import LocationPicker from '@/components/shared/LocationPicker'
 
 // ── Shared styles ────────────────────────────────────────────────────────────
@@ -160,19 +159,20 @@ interface NotificationPreferences {
 
 const DEFAULT_NOTIFICATION_PREFS: NotificationPreferences = {
   email_enabled: true,
-  sms_enabled: false,
+  sms_enabled: true,
   categories: {
-    new_request: { email: true, sms: false },
-    booking_confirmed: { email: true, sms: false },
-    rate_response: { email: true, sms: false },
-    cancelled_by_requester: { email: true, sms: false },
-    cancelled_by_you: { email: true, sms: false },
-    sub_search_update: { email: true, sms: false },
-    booking_reminder: { email: true, sms: false },
-    new_message: { email: true, sms: false },
-    invoice_paid: { email: true, sms: false },
-    team_invite: { email: true, sms: false },
-    added_to_preferred_list: { email: true, sms: false },
+    new_request: { email: true, sms: true },
+    booking_confirmed: { email: true, sms: true },
+    rate_response: { email: true, sms: true },
+    cancelled_by_requester: { email: true, sms: true },
+    cancelled_by_you: { email: true, sms: true },
+    sub_search_update: { email: true, sms: true },
+    booking_reminder: { email: true, sms: true },
+    new_message: { email: true, sms: true },
+    invoice_paid: { email: true, sms: true },
+    team_invite: { email: true, sms: true },
+    added_to_preferred_list: { email: true, sms: true },
+    welcome: { email: true, sms: true },
   },
 }
 
@@ -495,13 +495,6 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       console.log('PROFILE SAVE - verify read-back:', JSON.stringify({ verifyData, verifyError }, null, 2))
 
       setToast({ message: 'Changes saved.', type: 'success' })
-      // Send profile_saved notification
-      sendNotification({
-        recipientUserId: user.id,
-        type: 'profile_saved',
-        subject: 'signpost — Profile changes saved',
-        body: 'Your profile changes have been saved successfully.',
-      }).catch(err => console.error('[profile] notification send failed:', err))
       // Refresh server components (sidebar name/photo)
       router.refresh()
     }
@@ -1746,6 +1739,14 @@ function SettingsTab({
       {/* ── Section 2: Notifications ─────────────────────────────────── */}
       <div style={{ ...cardStyle, marginTop: 8 }}>
         <div style={sectionTitleStyle}>Notifications</div>
+
+        <div style={{
+          background: 'rgba(0,229,255,0.05)', border: '1px solid rgba(0,229,255,0.15)',
+          borderRadius: 'var(--radius-sm)', padding: '12px 16px', marginBottom: 20,
+          fontSize: '0.84rem', color: 'var(--muted)', lineHeight: 1.5,
+        }}>
+          You&apos;re receiving all notifications by default. Customize which notifications you receive below.
+        </div>
 
         {/* Master toggles */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 28 }}>

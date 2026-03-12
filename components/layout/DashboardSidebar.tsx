@@ -258,11 +258,12 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
 
       if (invErr) console.error('[sidebar] invoice drafts count failed:', invErr.message)
 
-      // Unread notifications count
+      // Unread notifications count (in_app only, exclude failed/pending email rows)
       const { count: notifCount, error: notifErr } = await supabase
         .from('notifications')
         .select('id', { count: 'exact', head: true })
         .eq('recipient_user_id', user.id)
+        .eq('channel', 'in_app')
         .neq('status', 'read')
 
       if (notifErr) console.error('[sidebar] notifications count failed:', notifErr.message)
@@ -276,6 +277,18 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
       })
     }
     fetchBadges()
+
+    // Re-fetch when inbox page marks items as read/deleted
+    function handleUnreadChanged() { fetchBadges() }
+    window.addEventListener('signpost:unread-changed', handleUnreadChanged)
+
+    // Poll every 30 seconds for updates
+    const interval = setInterval(fetchBadges, 30000)
+
+    return () => {
+      window.removeEventListener('signpost:unread-changed', handleUnreadChanged)
+      clearInterval(interval)
+    }
   }, [])
 
   return (

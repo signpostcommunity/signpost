@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/client'
 
 export type NotificationType =
-  | 'profile_saved' | 'profile_approved' | 'profile_denied'
+  | 'welcome' | 'profile_approved' | 'profile_denied'
   | 'new_request' | 'booking_confirmed' | 'rate_response'
   | 'booking_cancelled'
   | 'cancelled_by_requester' | 'cancelled_by_you'

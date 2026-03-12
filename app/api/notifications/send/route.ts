@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
-    const { recipientUserId, subject, body, type, metadata, ctaText, ctaUrl } = await request.json()
+    const { recipientUserId, subject, body, type, metadata, ctaText, ctaUrl, channel } = await request.json()
 
     if (!recipientUserId || !subject || !body || !type) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
       metadata,
       ctaText,
       ctaUrl,
+      channel: channel ?? 'email',
     })
 
     return NextResponse.json({ sent: true, notificationId: notif?.id ?? null })

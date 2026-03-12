@@ -102,14 +102,6 @@ function NotificationIcon({ type, size = 20 }: { type: string; size?: number }) 
           <path d="M9 12l2 2 4-4" />
         </svg>
       )
-    case 'profile_saved':
-      return (
-        <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
-          <polyline points="17 21 17 13 7 13 7 21" />
-          <polyline points="7 3 7 8 15 8" />
-        </svg>
-      )
     default:
       return (
         <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -197,6 +189,10 @@ export default function InboxPage() {
     fetchNotifications()
   }, [fetchMessages, fetchNotifications])
 
+  function notifyUnreadChanged() {
+    window.dispatchEvent(new Event('signpost:unread-changed'))
+  }
+
   async function markMessageAsRead(msgId: string) {
     const res = await fetch(`/api/messages/${msgId}`, {
       method: 'PATCH',
@@ -205,6 +201,7 @@ export default function InboxPage() {
     })
     if (res.ok) {
       setMessages(prev => prev.map(m => m.id === msgId ? { ...m, is_read: true } : m))
+      notifyUnreadChanged()
     }
   }
 
@@ -216,6 +213,7 @@ export default function InboxPage() {
     })
     if (res.ok) {
       setMessages(prev => prev.map(m => m.id === msgId ? { ...m, archived: true } : m))
+      notifyUnreadChanged()
     }
   }
 
@@ -227,6 +225,7 @@ export default function InboxPage() {
     })
     if (res.ok) {
       setNotifications(prev => prev.map(n => n.id === notifId ? { ...n, status: 'read' } : n))
+      notifyUnreadChanged()
     }
   }
 
@@ -234,6 +233,7 @@ export default function InboxPage() {
     const res = await fetch('/api/notifications/mark-all-read', { method: 'PATCH' })
     if (res.ok) {
       setNotifications(prev => prev.map(n => ({ ...n, status: 'read' })))
+      notifyUnreadChanged()
     }
   }
 
@@ -241,6 +241,7 @@ export default function InboxPage() {
     const res = await fetch(`/api/notifications/${notifId}`, { method: 'DELETE' })
     if (res.ok) {
       setNotifications(prev => prev.filter(n => n.id !== notifId))
+      notifyUnreadChanged()
     }
   }
 

@@ -25,14 +25,14 @@ export async function sendEmail({
     return;
   }
 
-  try {
-    await resend.emails.send({
-      from: 'signpost <notifications@signpost.community>',
-      to,
-      subject,
-      html,
-    });
-  } catch (error) {
-    console.error('Email send failed:', error);
+  const { error } = await resend.emails.send({
+    from: 'signpost <noreply@send.signpost.community>',
+    to,
+    subject,
+    html,
+  });
+
+  if (error) {
+    throw new Error(`Resend error: ${error.message}`);
   }
 }

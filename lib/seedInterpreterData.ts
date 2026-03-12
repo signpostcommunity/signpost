@@ -255,7 +255,7 @@ export async function seedInterpreterData(interpreterProfileId: string): Promise
         .from('notifications')
         .insert({
           recipient_user_id: interpProfile.user_id,
-          type: 'profile_saved',
+          type: 'welcome',
           channel: 'in_app',
           subject: 'signpost — Welcome! Your profile has been created',
           body: 'Your interpreter profile has been set up with demo data. Explore your dashboard, fill out your profile, and customize your notification preferences in Settings.',
