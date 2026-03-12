@@ -431,14 +431,14 @@ export default function AboutPage() {
                           When an organization or requester first connects with an interpreter through signpost, future bookings with that organization should continue through the platform. This is how signpost sustains itself as a free resource for the Deaf community and for interpreters.
                         </p>
                         <p style={{ margin: '0 0 8px', fontWeight: 600, color: 'var(--text)' }}>What this means:</p>
-                        <ul style={{ margin: '0 0 16px', paddingLeft: 20 }}>
+                        <ul style={{ margin: '0 0 16px', paddingLeft: 20, listStyleType: 'disc' }}>
                           <li>If a requester found you on signpost and booked you for the first time through signpost, that&apos;s a signpost connection.</li>
                           <li>Future work with that same requester should continue to be booked through signpost.</li>
                           <li>The $15 platform fee per confirmed booking applies to these connections.</li>
                           <li>Requesters should not ask interpreters to work off-platform to avoid the booking fee. If this happens, interpreters are encouraged to let us know.</li>
                         </ul>
                         <p style={{ margin: '0 0 8px', fontWeight: 600, color: 'var(--text)' }}>What this does NOT mean:</p>
-                        <ul style={{ margin: 0, paddingLeft: 20 }}>
+                        <ul style={{ margin: 0, paddingLeft: 20, listStyleType: 'disc' }}>
                           <li>This does not apply to clients or organizations you worked with before joining signpost.</li>
                           <li>This does not apply to Deaf/DB/HH individuals you already know personally or professionally.</li>
                           <li>If a Deaf person you&apos;ve interpreted for many times happens to also be on signpost, your existing relationship is yours. They can continue to book you via signpost, or however else you may prefer.</li>

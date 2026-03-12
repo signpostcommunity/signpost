@@ -50,7 +50,7 @@ function FeatureBlock({ title, items, accent }: { title: string; items: string[]
       }}>
         {title}
       </h3>
-      <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 6, listStyleType: 'disc' }}>
         {items.map((item, i) => (
           <li key={i} style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.7 }}>
             <span dangerouslySetInnerHTML={{ __html: item }} />
@@ -78,7 +78,7 @@ function WowFeature({ title, intro, bullets, callout, accent }: {
       <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.7, marginBottom: 12 }}>
         {intro}
       </p>
-      <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 16 }}>
+      <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 16, listStyleType: 'disc' }}>
         {bullets.map((b, i) => (
           <li key={i} style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.65 }}>
             <span dangerouslySetInnerHTML={{ __html: b }} />
@@ -287,7 +287,7 @@ function InterpreterPortalTab() {
       <div className="vision-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
         <div>
           <SectionLabel color={CYAN}>Currently Live</SectionLabel>
-          <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 8, listStyleType: 'disc' }}>
             {[
               '6-step profile builder (personal info, languages, credentials, bio, skills, community & identity)',
               'Directory listing with photo, intro video, certifications, specializations',
@@ -304,7 +304,7 @@ function InterpreterPortalTab() {
 
         <div>
           <SectionLabel color={CYAN}>Planned</SectionLabel>
-          <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 8, listStyleType: 'disc' }}>
             {[
               'Calendar sync (Google Calendar, Outlook)',
               'Push notifications (mobile app)',
@@ -339,7 +339,7 @@ function RequesterPortalTab() {
       <div className="vision-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
         <div>
           <SectionLabel color={CYAN}>Planned Features</SectionLabel>
-          <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 8, listStyleType: 'disc' }}>
             {[
               '5-step signup (role selection, account details, first request, find interpreters, confirmation)',
               'Request management (all requests, drafts, status tracking)',
@@ -353,7 +353,7 @@ function RequesterPortalTab() {
 
         <div>
           <SectionLabel color={CYAN}>Pricing & Payment</SectionLabel>
-          <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 8, listStyleType: 'disc' }}>
             {[
               'Client Interpreter Lists (receiving shared Deaf user preferences)',
               '$15 flat fee per interpreter per confirmed booking',
@@ -424,7 +424,7 @@ function CommitmentsTab() {
         {sections.map((section) => (
           <div key={section.title}>
             <SectionLabel color={WARM}>{section.title}</SectionLabel>
-            <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 8, listStyleType: 'disc' }}>
               {section.items.map((item, i) => (
                 <li key={i} style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.7 }}>{item}</li>
               ))}
