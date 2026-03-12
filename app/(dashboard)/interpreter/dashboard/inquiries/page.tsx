@@ -131,7 +131,7 @@ function AcceptModal({ booking, onClose, onAccepted }: {
 
   if (sent) return (
     <div style={overlayStyle}>
-      <div style={modalStyle}>
+      <div className="modal-dialog" style={modalStyle}>
         <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
           <div style={{ fontSize: '2rem', marginBottom: 12 }}>✓</div>
           <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent)', marginBottom: 8 }}>
@@ -157,7 +157,7 @@ function AcceptModal({ booking, onClose, onAccepted }: {
 
   return (
     <div style={overlayStyle}>
-      <div style={{ ...modalStyle, maxHeight: '90vh', overflowY: 'auto' }}>
+      <div className="modal-dialog" style={{ ...modalStyle, maxHeight: '90vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Send Rate — {booking.title || 'Booking'}</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
@@ -252,7 +252,7 @@ function DetailModal({ booking, onClose }: {
 
   return (
     <div role="presentation" style={overlayStyle} onClick={onClose}>
-      <div style={{
+      <div className="modal-dialog" style={{
         background: 'var(--card-bg)', border: '1px solid var(--border)',
         borderRadius: 'var(--radius)', width: '90%', maxWidth: 560,
         overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '90vh',
@@ -378,7 +378,7 @@ function DeclineModal({ booking, onConfirm, onClose }: {
 
   return (
     <div style={overlayStyle}>
-      <div style={modalStyle}>
+      <div className="modal-dialog" style={modalStyle}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Decline: {booking.title || 'Booking'}</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>

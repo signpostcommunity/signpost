@@ -275,7 +275,7 @@ function DetailModal({ booking, onClose, onToast }: {
 
   return (
     <div role="presentation" style={overlayStyle} onClick={onClose}>
-      <div style={{
+      <div className="modal-dialog" style={{
         background: 'var(--card-bg)', border: '1px solid var(--border)',
         borderRadius: 'var(--radius)', width: '90%', maxWidth: 560,
         overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '90vh',

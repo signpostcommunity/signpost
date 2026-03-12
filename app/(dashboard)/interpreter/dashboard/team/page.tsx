@@ -101,7 +101,7 @@ function InviteModal({ onClose, onSaved, interpreterId, interpreterFullName }: {
 
   if (success) return (
     <div style={overlayStyle}>
-      <div style={modalStyle}>
+      <div className="modal-dialog" style={modalStyle}>
         <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
           <div style={{ fontSize: '2rem', marginBottom: 12 }}>✓</div>
           <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent)', marginBottom: 8 }}>
@@ -115,7 +115,7 @@ function InviteModal({ onClose, onSaved, interpreterId, interpreterFullName }: {
 
   return (
     <div style={overlayStyle}>
-      <div style={modalStyle}>
+      <div className="modal-dialog" style={modalStyle}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Invite to your preferred team</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>

@@ -233,6 +233,22 @@ img {
     margin-right: 0 !important;
   }
 
+  /* General page padding reduction */
+  section, .hero-section {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  /* Section headings: slightly smaller */
+  h2 {
+    font-size: 1.5rem !important;
+  }
+
+  /* Card padding reduction */
+  .interp-card > div:last-child {
+    padding: 20px !important;
+  }
+
   /* Beta panel: minimized on mobile */
   .beta-panel-mobile-minimized {
     width: auto !important;
@@ -246,10 +262,23 @@ img {
     box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
   }
 
-  /* Touch targets on mobile — 44px minimum */
+  /* Touch targets on mobile — 44px minimum (WCAG 2.5.8) */
   button, a, [role="button"], input[type="checkbox"], input[type="radio"] {
     min-height: 44px;
     min-width: 44px;
+  }
+
+  /* Form inputs: 16px font prevents iOS zoom on focus */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+
+  /* No text smaller than 14px */
+  * {
+    min-font-size: 14px;
+  }
+  small, .text-xs {
+    font-size: 14px !important;
   }
 
   /* Stat cards: 2x2 grid */
@@ -288,6 +317,11 @@ img {
   .signup-step-circles {
     display: flex !important;
   }
+
+  /* Dashboard pages: reduce padding */
+  .dash-page-content {
+    padding: 24px 16px !important;
+  }
 }
 
 /* Phone (480px) */
@@ -297,9 +331,19 @@ img {
     font-size: 16px;
   }
 
+  /* Section headings: further reduce */
+  h2 {
+    font-size: 1.3rem !important;
+  }
+
   /* Tighter padding on cards */
   .interp-card > div:last-child {
-    padding: 14px !important;
+    padding: 16px !important;
+  }
+
+  /* Tighter section spacing */
+  section {
+    margin-bottom: 24px;
   }
 
   /* Directory page padding */
@@ -312,6 +356,11 @@ img {
   [role="tabpanel"] {
     padding-left: 0 !important;
     padding-right: 0 !important;
+  }
+
+  /* Dashboard pages: even tighter */
+  .dash-page-content {
+    padding: 16px 12px !important;
   }
 }
 
@@ -347,12 +396,16 @@ img {
     overflow-y: auto !important;
     display: flex !important;
     flex-direction: column !important;
+    padding: 20px !important;
+    z-index: 1001 !important;
   }
   .modal-dialog .modal-actions {
     margin-top: auto;
     padding-top: 16px;
   }
-  .modal-dialog .modal-actions button {
+  .modal-dialog .modal-actions button,
+  .modal-dialog .modal-actions .btn-primary,
+  .modal-dialog .modal-actions .ghost-btn {
     width: 100% !important;
   }
 }

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { BetaBanner, PageHeader, SectionLabel, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import Toast from '@/components/ui/Toast'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 
 /* ── Types ── */
 
@@ -168,7 +169,7 @@ Thank you`
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       zIndex: 1000, padding: 20,
     }} onClick={onClose}>
-      <div style={{
+      <div className="modal-dialog" style={{
         background: 'var(--surface)', border: '1px solid var(--border)',
         borderRadius: 'var(--radius)', padding: '28px 32px',
         width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto',
@@ -233,6 +234,7 @@ export default function InvoicesPage() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
   const [reminderInvoice, setReminderInvoice] = useState<Invoice | null>(null)
   const [interpreterId, setInterpreterId] = useState<string | null>(null)
+  const [confirmAction, setConfirmAction] = useState<{ invoice: Invoice; type: 'delete' | 'void' } | null>(null)
 
   function showToast(message: string, type: 'success' | 'error' | 'info' = 'success') {
     setToast({ message, type })
@@ -305,38 +307,37 @@ export default function InvoicesPage() {
     }
   }
 
-  async function handleDelete(invoice: Invoice) {
-    if (!window.confirm(`Delete draft invoice ${invoice.invoice_number}? This cannot be undone.`)) return
-
-    const supabase = createClient()
-    const { error } = await supabase
-      .from('invoices')
-      .delete()
-      .eq('id', invoice.id)
-
-    if (error) {
-      showToast('Failed to delete invoice', 'error')
-    } else {
-      showToast(`Invoice ${invoice.invoice_number} deleted`)
-      fetchData()
-    }
+  function handleDelete(invoice: Invoice) {
+    setConfirmAction({ invoice, type: 'delete' })
   }
 
-  async function handleVoid(invoice: Invoice) {
-    if (!window.confirm('Void this invoice? This marks it as cancelled and cannot be undone.')) return
+  function handleVoid(invoice: Invoice) {
+    setConfirmAction({ invoice, type: 'void' })
+  }
 
+  async function executeConfirmAction() {
+    if (!confirmAction) return
+    const { invoice, type } = confirmAction
     const supabase = createClient()
-    const { error } = await supabase
-      .from('invoices')
-      .update({ status: 'void' })
-      .eq('id', invoice.id)
 
-    if (error) {
-      showToast('Failed to void invoice', 'error')
+    if (type === 'delete') {
+      const { error } = await supabase.from('invoices').delete().eq('id', invoice.id)
+      if (error) {
+        showToast('Failed to delete invoice', 'error')
+      } else {
+        showToast(`Invoice ${invoice.invoice_number} deleted`)
+        fetchData()
+      }
     } else {
-      showToast(`Invoice ${invoice.invoice_number} voided`)
-      fetchData()
+      const { error } = await supabase.from('invoices').update({ status: 'void' }).eq('id', invoice.id)
+      if (error) {
+        showToast('Failed to void invoice', 'error')
+      } else {
+        showToast(`Invoice ${invoice.invoice_number} voided`)
+        fetchData()
+      }
     }
+    setConfirmAction(null)
   }
 
   function handleReminderSent() {
@@ -629,6 +630,21 @@ export default function InvoicesPage() {
           onSent={handleReminderSent}
         />
       )}
+
+      {/* Confirm Modal (replaces window.confirm) */}
+      <ConfirmModal
+        isOpen={!!confirmAction}
+        onConfirm={executeConfirmAction}
+        onCancel={() => setConfirmAction(null)}
+        title={confirmAction?.type === 'delete' ? 'Delete Invoice' : 'Void Invoice'}
+        description={
+          confirmAction?.type === 'delete'
+            ? `Delete draft invoice ${confirmAction.invoice.invoice_number}? This cannot be undone.`
+            : 'Void this invoice? This marks it as cancelled and cannot be undone.'
+        }
+        confirmLabel={confirmAction?.type === 'delete' ? 'Delete' : 'Void Invoice'}
+        destructive
+      />
 
       {/* Toast */}
       {toast && (

@@ -63,7 +63,7 @@ function DetailModal({ request, onClose, onCancel }: {
 
   return (
     <div role="presentation" style={backdropStyle} onClick={onClose}>
-      <div style={modalBoxStyle} onClick={e => e.stopPropagation()}>
+      <div className="modal-dialog" style={modalBoxStyle} onClick={e => e.stopPropagation()}>
         <button onClick={onClose} style={{ position: 'absolute', top: 14, right: 14, background: 'none', border: 'none', color: 'var(--muted)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
 
         <h2 style={{ fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: '1.25rem', marginBottom: 20 }}>Request Details</h2>
@@ -163,7 +163,7 @@ function NewRequestModal({ onClose, onSubmit }: { onClose: () => void; onSubmit:
 
   return (
     <div role="presentation" style={backdropStyle} onClick={onClose}>
-      <div style={{ ...modalBoxStyle, maxWidth: 560 }} onClick={e => e.stopPropagation()}>
+      <div className="modal-dialog" style={{ ...modalBoxStyle, maxWidth: 560 }} onClick={e => e.stopPropagation()}>
         <button onClick={onClose} style={{ position: 'absolute', top: 14, right: 14, background: 'none', border: 'none', color: 'var(--muted)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
 
         <h2 style={{ fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: '1.25rem', marginBottom: 4 }}>New Interpreter Request</h2>

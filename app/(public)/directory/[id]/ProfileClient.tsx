@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type { Interpreter } from '@/lib/types';
 import { getVideoEmbedUrl } from '@/lib/videoUtils';
 import FlagProfileModal from '@/components/directory/FlagProfileModal';
+import AddToListModal from '@/components/directory/AddToListModal';
 import { groupSpecsByCategory } from '@/lib/constants/specializations';
 
 const TABS = ['Overview', 'Credentials', 'Availability'] as const;
@@ -33,6 +34,7 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
   const [activeTab, setActiveTab] = useState<Tab>('Overview');
   const [toast, setToast] = useState<string | null>(null);
   const [flagModalOpen, setFlagModalOpen] = useState(false);
+  const [addToListOpen, setAddToListOpen] = useState(false);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -49,7 +51,7 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
           paddingTop: '80px',
         }}
       >
-        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 32px 0' }}>
+        <div className="profile-header-inner" style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 32px 0' }}>
           {/* Back */}
           <Link
             href="/directory"
@@ -255,7 +257,7 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
                 Request Booking
               </Link>
               <button
-                onClick={() => showToast(`Added ${i.name} to your list`)}
+                onClick={() => setAddToListOpen(true)}
                 style={{
                   width: '100%',
                   padding: '10px 24px',
@@ -325,7 +327,7 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
       </div>
 
       {/* ── Tab content area (darker background) ── */}
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 32px 80px' }}>
+      <div className="profile-content-inner" style={{ maxWidth: 1200, margin: '0 auto', padding: '28px 32px 80px' }}>
         <div
           style={{
             display: 'flex',
@@ -445,7 +447,7 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
       </div>
 
       {/* Flag this profile link */}
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px 40px', textAlign: 'center' }}>
+      <div className="profile-flag-row" style={{ maxWidth: 1200, margin: '0 auto', padding: '0 32px 40px', textAlign: 'center' }}>
         <button
           onClick={() => setFlagModalOpen(true)}
           style={{
@@ -473,6 +475,26 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
         onSuccess={() => showToast('Thank you. Your report has been submitted and will be reviewed.')}
       />
 
+      {/* Add to List modal */}
+      <AddToListModal
+        isOpen={addToListOpen}
+        onClose={() => setAddToListOpen(false)}
+        interpreter={{
+          id: String(i.id),
+          name: i.name,
+          initials: i.initials,
+          avatar_color: i.color,
+          sign_languages: i.signLangs,
+          specializations: i.specs,
+          location: i.location,
+        }}
+        userRole="deaf"
+        onSuccess={() => {
+          setAddToListOpen(false);
+          showToast(`${i.name} added to your list`);
+        }}
+      />
+
       {/* Toast */}
       {toast && (
         <div style={{
@@ -487,6 +509,11 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
       <style>{`
         @media (max-width: 900px) {
           .profile-sidebar-desktop { display: none !important; }
+        }
+        @media (max-width: 768px) {
+          .profile-header-inner { padding: 16px 16px 0 !important; }
+          .profile-content-inner { padding: 20px 16px 60px !important; }
+          .profile-flag-row { padding: 0 16px 32px !important; }
         }
       `}</style>
     </div>

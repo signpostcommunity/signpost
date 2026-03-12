@@ -201,7 +201,7 @@ function CancelModal({ booking, onClose, onCancelled }: {
 
   return (
     <div role="presentation" style={overlayStyle} onClick={onClose}>
-      <div style={modalStyle} onClick={e => e.stopPropagation()}>
+      <div className="modal-dialog" style={modalStyle} onClick={e => e.stopPropagation()}>
 
         {/* Step 1: Reason */}
         {step === 1 && (
@@ -404,7 +404,7 @@ function ForwardToTeamModal({ booking, interpreterId, onClose, onForwarded }: {
 
   return (
     <div role="presentation" style={overlayStyle} onClick={onClose}>
-      <div style={modalStyle} onClick={e => e.stopPropagation()}>
+      <div className="modal-dialog" style={modalStyle} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.05rem' }}>Forward to Team</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
@@ -591,7 +591,7 @@ function DetailModal({ booking, onClose }: { booking: Booking; onClose: () => vo
 
   return (
     <div role="presentation" style={overlayStyle} onClick={onClose}>
-      <div style={{
+      <div className="modal-dialog" style={{
         background: 'var(--card-bg)', border: '1px solid var(--border)',
         borderRadius: 'var(--radius)', width: '90%', maxWidth: 560,
         overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '90vh',
@@ -1080,7 +1080,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
   if (loading) {
     return (
       <div role="presentation" style={overlayStyle} onClick={onClose}>
-        <div style={{ ...modalStyle, maxWidth: 620 }} onClick={e => e.stopPropagation()}>
+        <div className="modal-dialog" style={{ ...modalStyle, maxWidth: 620 }} onClick={e => e.stopPropagation()}>
           <div style={{ padding: 40, textAlign: 'center', color: 'var(--muted)' }}>Loading invoice...</div>
         </div>
       </div>
@@ -1089,7 +1089,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
 
   return (
     <div role="presentation" style={overlayStyle} onClick={onClose}>
-      <div style={{
+      <div className="modal-dialog" style={{
         background: 'var(--card-bg)', border: '1px solid var(--border)',
         borderRadius: 'var(--radius)', width: '92%', maxWidth: 620,
         overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '92vh',
