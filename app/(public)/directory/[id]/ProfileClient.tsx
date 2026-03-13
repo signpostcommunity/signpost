@@ -2,10 +2,13 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import type { Interpreter } from '@/lib/types';
 import { getVideoEmbedUrl } from '@/lib/videoUtils';
 import FlagProfileModal from '@/components/directory/FlagProfileModal';
 import AddToListModal from '@/components/directory/AddToListModal';
+import SendMessageModal from '@/components/messaging/SendMessageModal';
+import { createClient } from '@/lib/supabase/client';
 import { groupSpecsByCategory } from '@/lib/constants/specializations';
 
 const TABS = ['Overview', 'Credentials', 'Availability'] as const;
@@ -32,9 +35,11 @@ const CERT_FULL_NAMES: Record<string, string> = {
 
 export default function ProfileClient({ interpreter: i }: { interpreter: Interpreter }) {
   const [activeTab, setActiveTab] = useState<Tab>('Overview');
+  const router = useRouter();
   const [toast, setToast] = useState<string | null>(null);
   const [flagModalOpen, setFlagModalOpen] = useState(false);
   const [addToListOpen, setAddToListOpen] = useState(false);
+  const [messageModalOpen, setMessageModalOpen] = useState(false);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -275,7 +280,19 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
                 + Add to my list
               </button>
               <button
-                onClick={() => showToast('Messaging feature coming soon')}
+                onClick={async () => {
+                  const supabase = createClient();
+                  const { data: { user } } = await supabase.auth.getUser();
+                  if (!user) {
+                    router.push(`/interpreter/login?redirect=/directory/${i.id}`);
+                    return;
+                  }
+                  if (!i.userId) {
+                    showToast('Unable to message this interpreter at this time');
+                    return;
+                  }
+                  setMessageModalOpen(true);
+                }}
                 style={{
                   width: '100%',
                   padding: '10px 24px',
@@ -494,6 +511,17 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
           showToast(`${i.name} added to your list`);
         }}
       />
+
+      {/* Send Message modal */}
+      {messageModalOpen && i.userId && (
+        <SendMessageModal
+          recipientId={i.userId}
+          recipientName={i.name}
+          recipientPhoto={i.photoUrl || null}
+          onClose={() => setMessageModalOpen(false)}
+          onSent={() => showToast(`Message sent to ${i.name}`)}
+        />
+      )}
 
       {/* Toast */}
       {toast && (

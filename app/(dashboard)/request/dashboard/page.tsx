@@ -345,7 +345,7 @@ export default function RequesterDashboardPage() {
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
                 <button onClick={() => setDetailRequest(req)} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 6, padding: '7px 14px', color: 'var(--muted)', fontSize: '0.78rem', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>View</button>
-                <button onClick={() => showToast(`Messaging ${req.interpreter}...`)} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 6, padding: '7px 14px', color: 'var(--muted)', fontSize: '0.78rem', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>Message</button>
+                <button onClick={() => showToast('Open this interpreter\'s profile to send a message')} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 6, padding: '7px 14px', color: 'var(--muted)', fontSize: '0.78rem', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>Message</button>
               </div>
             </div>
           );
