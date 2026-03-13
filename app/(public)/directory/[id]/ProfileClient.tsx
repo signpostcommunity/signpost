@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { Interpreter } from '@/lib/types';
@@ -40,6 +40,24 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
   const [flagModalOpen, setFlagModalOpen] = useState(false);
   const [addToListOpen, setAddToListOpen] = useState(false);
   const [messageModalOpen, setMessageModalOpen] = useState(false);
+  const [userRole, setUserRole] = useState<'deaf' | 'requester' | 'interpreter' | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+        .then(({ data }) => {
+          if (data?.role) {
+            setUserRole(data.role as 'deaf' | 'requester' | 'interpreter');
+          }
+        });
+    });
+  }, []);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -505,7 +523,7 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
           specializations: i.specs,
           location: i.location,
         }}
-        userRole="deaf"
+        userRole={userRole}
         onSuccess={() => {
           setAddToListOpen(false);
           showToast(`${i.name} added to your list`);

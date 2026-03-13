@@ -56,6 +56,9 @@ type RoleConfig = {
   notePlaceholder: string;
   confirmLabel: string;
   requireApproval: boolean;
+  /** Label for the negative-list toggle (Do Not Book / Non-Recommended) */
+  negativeListLabel: string;
+  negativeListDesc: string;
 };
 
 const ROLE_CONFIGS: Record<string, RoleConfig> = {
@@ -86,6 +89,8 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
     notePlaceholder: '"Best for medical — very clear signing, always confirms terminology with me beforehand."',
     confirmLabel: 'Add to my list →',
     requireApproval: true,
+    negativeListLabel: 'Do Not Book',
+    negativeListDesc: 'This interpreter will be flagged on your list so requesters know not to book them when you share your list.',
   },
   requester: {
     step1Label: 'Step 1 of 2: Which list should they go on?',
@@ -114,6 +119,8 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
     notePlaceholder: '"Excellent for high-stakes medical settings. Always arrives early and reviews materials in advance."',
     confirmLabel: 'Add to my list →',
     requireApproval: true,
+    negativeListLabel: 'Do Not Book',
+    negativeListDesc: 'This interpreter will be flagged on your list so they are not booked.',
   },
   interpreter: {
     step1Label: 'Which tier should they be on?',
@@ -142,6 +149,8 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
     notePlaceholder: '"Great partner for conference work — excellent at relay and pacing."',
     confirmLabel: 'Add to my team →',
     requireApproval: false,
+    negativeListLabel: 'Not recommended for teaming',
+    negativeListDesc: 'This is for your personal reference only. The interpreter will not be notified.',
   },
   default: {
     step1Label: 'Step 1 of 2: Which list should they go on?',
@@ -170,6 +179,8 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
     notePlaceholder: '"Best for medical — very clear signing."',
     confirmLabel: 'Add to my list →',
     requireApproval: true,
+    negativeListLabel: 'Do Not Book',
+    negativeListDesc: 'This interpreter will be flagged on your list so requesters know not to book them.',
   },
 };
 
@@ -190,6 +201,7 @@ export default function AddToListModal({
   const [approveWork, setApproveWork] = useState(false);
   const [approvePersonal, setApprovePersonal] = useState(false);
   const [note, setNote] = useState('');
+  const [negativeList, setNegativeList] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmingRemove, setConfirmingRemove] = useState(false);
@@ -205,6 +217,7 @@ export default function AddToListModal({
       setApproveWork(false);
       setApprovePersonal(false);
       setNote(isEditMode ? (editNotes || '') : '');
+      setNegativeList(false);
       setError(null);
       setSaving(false);
       setConfirmingRemove(false);
@@ -230,9 +243,11 @@ export default function AddToListModal({
 
   if (!isOpen || !interpreter) return null;
 
-  const canConfirm =
-    selectedTier !== null &&
-    (!cfg.requireApproval || approveWork || approvePersonal);
+  // When negative list is active, tier and approvals are irrelevant
+  const canConfirm = negativeList
+    ? true
+    : selectedTier !== null &&
+      (!cfg.requireApproval || approveWork || approvePersonal);
 
   const handleConfirm = async () => {
     if (!canConfirm || saving) return;
@@ -255,7 +270,11 @@ export default function AddToListModal({
           // Edit mode — UPDATE existing row
           const { error: updateErr } = await supabase
             .from('interpreter_preferred_team')
-            .update({ tier: selectedTier, notes: note || null })
+            .update({
+              tier: negativeList ? 'non_recommended' : selectedTier,
+              notes: note || null,
+              non_recommended: negativeList,
+            })
             .eq('id', editRowId);
 
           if (updateErr) {
@@ -288,8 +307,9 @@ export default function AddToListModal({
               last_name: interpreter.last_name || interpreter.name.split(' ').slice(1).join(' '),
               email: '',
               status: 'accepted',
-              tier: selectedTier,
+              tier: negativeList ? 'non_recommended' : selectedTier,
               notes: note || null,
+              non_recommended: negativeList,
             });
 
           if (insertErr) {
@@ -299,108 +319,114 @@ export default function AddToListModal({
             return;
           }
 
-          // Notify the interpreter they were added to someone's preferred team
-          const { data: memberProfile } = await supabase
-            .from('interpreter_profiles')
-            .select('user_id')
-            .eq('id', interpreter.id)
-            .single();
-
-          if (memberProfile?.user_id) {
-            // Get adder's name
-            const { data: adderProfile } = await supabase
+          // Don't notify if non-recommended — that's private
+          if (!negativeList) {
+            // Notify the interpreter they were added to someone's preferred team
+            const { data: memberProfile } = await supabase
               .from('interpreter_profiles')
-              .select('first_name, last_name')
-              .eq('user_id', user.id)
+              .select('user_id')
+              .eq('id', interpreter.id)
               .single();
-            const adderName = adderProfile
-              ? `${adderProfile.first_name || ''} ${adderProfile.last_name || ''}`.trim()
-              : '';
 
-            sendNotification({
-              recipientUserId: memberProfile.user_id,
-              type: 'added_to_preferred_list_by_interpreter',
-              subject: adderName
-                ? `You've been added to ${adderName}'s Preferred Team`
-                : "You've been added to a Preferred Team",
-              body: adderName
-                ? `${adderName} has added you to their Preferred Team Interpreter list on signpost. This means they trust your work and want to team with you on future bookings. Thank you for being a trusted colleague.`
-                : "You've been added to a Preferred Team Interpreter list on signpost.",
-              metadata: { adder_name: adderName || undefined },
-              ctaText: 'View My Dashboard',
-              ctaUrl: 'https://signpost.community/interpreter/dashboard',
-            }).catch(err => console.error('[add-to-list] notification failed:', err));
+            if (memberProfile?.user_id) {
+              // Get adder's name
+              const { data: adderProfile } = await supabase
+                .from('interpreter_profiles')
+                .select('first_name, last_name')
+                .eq('user_id', user.id)
+                .single();
+              const adderName = adderProfile
+                ? `${adderProfile.first_name || ''} ${adderProfile.last_name || ''}`.trim()
+                : '';
+
+              sendNotification({
+                recipientUserId: memberProfile.user_id,
+                type: 'added_to_preferred_list_by_interpreter',
+                subject: adderName
+                  ? `You've been added to ${adderName}'s Preferred Team`
+                  : "You've been added to a Preferred Team",
+                body: adderName
+                  ? `${adderName} has added you to their Preferred Team Interpreter list on signpost. This means they trust your work and want to team with you on future bookings. Thank you for being a trusted colleague.`
+                  : "You've been added to a Preferred Team Interpreter list on signpost.",
+                metadata: { adder_name: adderName || undefined },
+                ctaText: 'View My Dashboard',
+                ctaUrl: 'https://signpost.community/interpreter/dashboard',
+              }).catch(err => console.error('[add-to-list] notification failed:', err));
+            }
           }
         }
       } else {
         // Deaf / Requester / Default → deaf_roster
-        // Uses correct column names: deaf_user_id, notes (verified against actual schema)
         const { error: insertErr } = await supabase.from('deaf_roster').insert({
           deaf_user_id: user.id,
           interpreter_id: interpreter.id,
-          tier: selectedTier,
-          approve_work: approveWork,
-          approve_personal: approvePersonal,
+          tier: negativeList ? 'dnb' : selectedTier,
+          approve_work: negativeList ? false : approveWork,
+          approve_personal: negativeList ? false : approvePersonal,
           notes: note || null,
+          do_not_book: negativeList,
         });
 
         if (!insertErr) {
-          // Notify the interpreter they were added to a preferred list
-          const { data: interpProfile } = await supabase
-            .from('interpreter_profiles')
-            .select('user_id')
-            .eq('id', interpreter.id)
-            .single();
+          // Don't notify if Do Not Book
+          if (!negativeList) {
+            // Notify the interpreter they were added to a preferred list
+            const { data: interpProfile } = await supabase
+              .from('interpreter_profiles')
+              .select('user_id')
+              .eq('id', interpreter.id)
+              .single();
 
-          if (interpProfile?.user_id) {
-            // Determine notification type and adder name based on role
-            let notifType: 'added_to_preferred_list_by_dhh' | 'added_to_preferred_list_by_org' | 'added_to_preferred_list' = 'added_to_preferred_list';
-            let adderName = '';
-            const notifMetadata: Record<string, unknown> = {};
+            if (interpProfile?.user_id) {
+              // Determine notification type and adder name based on role
+              let notifType: 'added_to_preferred_list_by_dhh' | 'added_to_preferred_list_by_org' | 'added_to_preferred_list' = 'added_to_preferred_list';
+              let adderName = '';
+              const notifMetadata: Record<string, unknown> = {};
 
-            if (userRole === 'deaf') {
-              notifType = 'added_to_preferred_list_by_dhh';
-              const { data: deafProfile } = await supabase
-                .from('deaf_profiles')
-                .select('first_name, last_name')
-                .eq('user_id', user.id)
-                .maybeSingle();
-              adderName = deafProfile
-                ? `${deafProfile.first_name || ''} ${deafProfile.last_name || ''}`.trim()
-                : '';
-              notifMetadata.adder_name = adderName || undefined;
-            } else if (userRole === 'requester') {
-              notifType = 'added_to_preferred_list_by_org';
-              const { data: reqProfile } = await supabase
-                .from('requester_profiles')
-                .select('first_name, last_name, organization_name')
-                .eq('user_id', user.id)
-                .maybeSingle();
-              if (reqProfile?.organization_name) {
-                adderName = reqProfile.organization_name;
-                notifMetadata.organization_name = adderName;
-              } else if (reqProfile) {
-                adderName = `${reqProfile.first_name || ''} ${reqProfile.last_name || ''}`.trim();
+              if (userRole === 'deaf') {
+                notifType = 'added_to_preferred_list_by_dhh';
+                const { data: deafProfile } = await supabase
+                  .from('deaf_profiles')
+                  .select('first_name, last_name')
+                  .eq('user_id', user.id)
+                  .maybeSingle();
+                adderName = deafProfile
+                  ? `${deafProfile.first_name || ''} ${deafProfile.last_name || ''}`.trim()
+                  : '';
                 notifMetadata.adder_name = adderName || undefined;
+              } else if (userRole === 'requester') {
+                notifType = 'added_to_preferred_list_by_org';
+                const { data: reqProfile } = await supabase
+                  .from('requester_profiles')
+                  .select('first_name, last_name, organization_name')
+                  .eq('user_id', user.id)
+                  .maybeSingle();
+                if (reqProfile?.organization_name) {
+                  adderName = reqProfile.organization_name;
+                  notifMetadata.organization_name = adderName;
+                } else if (reqProfile) {
+                  adderName = `${reqProfile.first_name || ''} ${reqProfile.last_name || ''}`.trim();
+                  notifMetadata.adder_name = adderName || undefined;
+                }
               }
+
+              const fallbackSubject = adderName
+                ? `You've been added to ${adderName}'s preferred interpreter list`
+                : "You've been added to a preferred interpreter list";
+              const fallbackBody = adderName
+                ? `${adderName} has added you to their preferred interpreter list on signpost.`
+                : "You've been added to a preferred interpreter list on signpost.";
+
+              sendNotification({
+                recipientUserId: interpProfile.user_id,
+                type: notifType,
+                subject: fallbackSubject,
+                body: fallbackBody,
+                metadata: notifMetadata,
+                ctaText: 'View My Dashboard',
+                ctaUrl: 'https://signpost.community/interpreter/dashboard',
+              }).catch(err => console.error('[add-to-list] notification failed:', err));
             }
-
-            const fallbackSubject = adderName
-              ? `You've been added to ${adderName}'s preferred interpreter list`
-              : "You've been added to a preferred interpreter list";
-            const fallbackBody = adderName
-              ? `${adderName} has added you to their preferred interpreter list on signpost.`
-              : "You've been added to a preferred interpreter list on signpost.";
-
-            sendNotification({
-              recipientUserId: interpProfile.user_id,
-              type: notifType,
-              subject: fallbackSubject,
-              body: fallbackBody,
-              metadata: notifMetadata,
-              ctaText: 'View My Dashboard',
-              ctaUrl: 'https://signpost.community/interpreter/dashboard',
-            }).catch(err => console.error('[add-to-list] notification failed:', err));
           }
         }
 
@@ -409,10 +435,11 @@ export default function AddToListModal({
           console.error('Attempted payload:', {
             deaf_user_id: user.id,
             interpreter_id: interpreter.id,
-            tier: selectedTier,
-            approve_work: approveWork,
-            approve_personal: approvePersonal,
+            tier: negativeList ? 'dnb' : selectedTier,
+            approve_work: negativeList ? false : approveWork,
+            approve_personal: negativeList ? false : approvePersonal,
             notes: note || null,
+            do_not_book: negativeList,
           });
 
           if (insertErr.code === '23505') {
@@ -579,109 +606,178 @@ export default function AddToListModal({
             gap: '20px',
           }}
         >
-          {/* Step 1: Tier selection */}
-          <div>
-            <div
+          {/* Negative list toggle (Do Not Book / Non-Recommended) */}
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '12px',
+              padding: '14px 16px',
+              borderRadius: '10px',
+              border: `1.5px solid ${
+                negativeList
+                  ? 'var(--accent3, #ff6b85)'
+                  : 'var(--border, #1e2433)'
+              }`,
+              background: negativeList
+                ? 'rgba(255, 107, 133, 0.06)'
+                : 'var(--card-bg, #0d1220)',
+              cursor: 'pointer',
+              transition: 'border-color 0.15s',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={negativeList}
+              onChange={(e) => setNegativeList(e.target.checked)}
               style={{
-                fontFamily: "'Syne', sans-serif",
-                fontWeight: 700,
-                fontSize: '0.72rem',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                color: 'var(--muted, #b0b8d0)',
-                marginBottom: '10px',
+                appearance: 'none',
+                WebkitAppearance: 'none',
+                width: '18px',
+                height: '18px',
+                borderRadius: '5px',
+                flexShrink: 0,
+                marginTop: '1px',
+                border: `1.5px solid ${
+                  negativeList
+                    ? 'var(--accent3, #ff6b85)'
+                    : 'var(--border, #1e2433)'
+                }`,
+                background: negativeList
+                  ? 'var(--accent3, #ff6b85)'
+                  : 'var(--surface, #0f1118)',
+                cursor: 'pointer',
+                transition: 'all 0.15s',
               }}
-            >
-              {cfg.step1Label}
+            />
+            <div style={{ flex: 1 }}>
+              <div
+                style={{
+                  fontWeight: 600,
+                  fontSize: '0.87rem',
+                  marginBottom: '2px',
+                  color: negativeList ? '#ff8099' : 'var(--text, #f0f2f8)',
+                }}
+              >
+                {cfg.negativeListLabel}
+              </div>
+              <div
+                style={{
+                  color: 'var(--muted, #b0b8d0)',
+                  fontSize: '0.77rem',
+                  lineHeight: 1.5,
+                }}
+              >
+                {cfg.negativeListDesc}
+              </div>
             </div>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '10px',
-              }}
-            >
-              {cfg.tiers.map((tier) => (
-                <div
-                  key={tier.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => setSelectedTier(tier.id)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedTier(tier.id); } }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '14px',
-                    padding: '16px 18px',
-                    borderRadius: '10px',
-                    border: `2px solid ${
-                      isSelected(tier)
-                        ? accentColor(tier)
-                        : 'var(--border, #1e2433)'
-                    }`,
-                    background: isSelected(tier)
-                      ? accentBg(tier)
-                      : 'var(--card-bg, #0d1220)',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s',
-                  }}
-                >
+          </label>
+
+          {/* Step 1: Tier selection — hidden when negative list is active */}
+          {!negativeList && (
+            <div>
+              <div
+                style={{
+                  fontFamily: "'Syne', sans-serif",
+                  fontWeight: 700,
+                  fontSize: '0.72rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.08em',
+                  color: 'var(--muted, #b0b8d0)',
+                  marginBottom: '10px',
+                }}
+              >
+                {cfg.step1Label}
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                }}
+              >
+                {cfg.tiers.map((tier) => (
                   <div
+                    key={tier.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedTier(tier.id)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedTier(tier.id); } }}
                     style={{
-                      width: '18px',
-                      height: '18px',
-                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '14px',
+                      padding: '16px 18px',
+                      borderRadius: '10px',
                       border: `2px solid ${
                         isSelected(tier)
                           ? accentColor(tier)
                           : 'var(--border, #1e2433)'
                       }`,
-                      flexShrink: 0,
-                      marginTop: '1px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      background: isSelected(tier)
+                        ? accentBg(tier)
+                        : 'var(--card-bg, #0d1220)',
+                      cursor: 'pointer',
                       transition: 'all 0.15s',
                     }}
                   >
-                    {isSelected(tier) && (
+                    <div
+                      style={{
+                        width: '18px',
+                        height: '18px',
+                        borderRadius: '50%',
+                        border: `2px solid ${
+                          isSelected(tier)
+                            ? accentColor(tier)
+                            : 'var(--border, #1e2433)'
+                        }`,
+                        flexShrink: 0,
+                        marginTop: '1px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {isSelected(tier) && (
+                        <div
+                          style={{
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            background: accentColor(tier),
+                          }}
+                        />
+                      )}
+                    </div>
+                    <div>
                       <div
                         style={{
-                          width: '8px',
-                          height: '8px',
-                          borderRadius: '50%',
-                          background: accentColor(tier),
+                          fontWeight: 600,
+                          fontSize: '0.9rem',
+                          marginBottom: '3px',
                         }}
-                      />
-                    )}
-                  </div>
-                  <div>
-                    <div
-                      style={{
-                        fontWeight: 600,
-                        fontSize: '0.9rem',
-                        marginBottom: '3px',
-                      }}
-                    >
-                      {tier.label}
-                    </div>
-                    <div
-                      style={{
-                        color: 'var(--muted, #b0b8d0)',
-                        fontSize: '0.78rem',
-                        lineHeight: 1.55,
-                      }}
-                    >
-                      {tier.desc}
+                      >
+                        {tier.label}
+                      </div>
+                      <div
+                        style={{
+                          color: 'var(--muted, #b0b8d0)',
+                          fontSize: '0.78rem',
+                          lineHeight: 1.55,
+                        }}
+                      >
+                        {tier.desc}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Step 2: Approval settings (deaf + requester only) */}
-          {cfg.showApprovals && (
+          {/* Step 2: Approval settings (deaf + requester only) — hidden when negative list */}
+          {cfg.showApprovals && !negativeList && (
             <div>
               <div
                 style={{
@@ -850,7 +946,7 @@ export default function AddToListModal({
             </div>
           )}
 
-          {/* Note */}
+          {/* Note — always visible */}
           <div>
             <div
               style={{
@@ -1001,8 +1097,8 @@ export default function AddToListModal({
             onClick={handleConfirm}
             disabled={!canConfirm || saving}
             style={{
-              background: 'var(--accent, #00e5ff)',
-              color: '#000',
+              background: negativeList ? 'var(--accent3, #ff6b85)' : 'var(--accent, #00e5ff)',
+              color: negativeList ? '#fff' : '#000',
               border: 'none',
               borderRadius: '10px',
               padding: '10px 24px',
@@ -1014,7 +1110,13 @@ export default function AddToListModal({
               fontFamily: "'DM Sans', sans-serif",
             }}
           >
-            {saving ? 'Saving...' : isEditMode ? 'Save changes' : cfg.confirmLabel}
+            {saving
+              ? 'Saving...'
+              : isEditMode
+                ? 'Save changes'
+                : negativeList
+                  ? (userRole === 'interpreter' ? 'Mark as non-recommended' : 'Add to Do Not Book')
+                  : cfg.confirmLabel}
           </button>
         </div>
       </div>

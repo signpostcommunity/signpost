@@ -12,21 +12,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Verify DHH role
+    // Verify DHH role — check deaf_profiles existence (reliable for multi-role users)
     const admin = getSupabaseAdmin()
-    const { data: profile, error: profileError } = await admin
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+    const { data: deafRow, error: deafCheckError } = await admin
+      .from('deaf_profiles')
+      .select('id')
+      .or(`user_id.eq.${user.id},id.eq.${user.id}`)
+      .maybeSingle()
 
-    if (profileError) {
-      console.error('[dhh/request] profile lookup failed:', profileError.message)
+    if (deafCheckError) {
+      console.error('[dhh/request] deaf_profiles check failed:', deafCheckError.message)
       return NextResponse.json({ error: 'Profile not found' }, { status: 403 })
     }
 
-    if (profile.role !== 'deaf') {
-      return NextResponse.json({ error: 'Only Deaf/DB/HH users can create personal requests' }, { status: 403 })
+    if (!deafRow) {
+      // Fallback: check user_profiles.role or pending_roles
+      const { data: userProfile } = await admin
+        .from('user_profiles')
+        .select('role, pending_roles')
+        .eq('id', user.id)
+        .single()
+
+      const hasDeafRole = userProfile?.role === 'deaf' ||
+        (Array.isArray(userProfile?.pending_roles) && userProfile.pending_roles.includes('deaf'))
+
+      if (!hasDeafRole) {
+        return NextResponse.json({ error: 'Only Deaf/DB/HH users can create personal requests' }, { status: 403 })
+      }
     }
 
     const body = await request.json()
