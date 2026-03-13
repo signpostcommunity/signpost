@@ -307,12 +307,27 @@ export default function AddToListModal({
             .single();
 
           if (memberProfile?.user_id) {
+            // Get adder's name
+            const { data: adderProfile } = await supabase
+              .from('interpreter_profiles')
+              .select('first_name, last_name')
+              .eq('user_id', user.id)
+              .single();
+            const adderName = adderProfile
+              ? `${adderProfile.first_name || ''} ${adderProfile.last_name || ''}`.trim()
+              : '';
+
             sendNotification({
               recipientUserId: memberProfile.user_id,
-              type: 'added_to_preferred_list',
-              subject: 'Someone added you to their preferred interpreter list',
-              body: "You've been added to someone's preferred interpreter list on signpost. This means they trust your work and may reach out for future bookings.",
-              ctaText: 'View Your Dashboard',
+              type: 'added_to_preferred_list_by_interpreter',
+              subject: adderName
+                ? `You've been added to ${adderName}'s Preferred Team`
+                : "You've been added to a Preferred Team",
+              body: adderName
+                ? `${adderName} has added you to their Preferred Team Interpreter list on signpost. This means they trust your work and want to team with you on future bookings. Thank you for being a trusted colleague.`
+                : "You've been added to a Preferred Team Interpreter list on signpost.",
+              metadata: { adder_name: adderName || undefined },
+              ctaText: 'View My Dashboard',
               ctaUrl: 'https://signpost.community/interpreter/dashboard',
             }).catch(err => console.error('[add-to-list] notification failed:', err));
           }
@@ -331,7 +346,6 @@ export default function AddToListModal({
 
         if (!insertErr) {
           // Notify the interpreter they were added to a preferred list
-          // Look up the interpreter's user_id from interpreter_profiles
           const { data: interpProfile } = await supabase
             .from('interpreter_profiles')
             .select('user_id')
@@ -339,12 +353,52 @@ export default function AddToListModal({
             .single();
 
           if (interpProfile?.user_id) {
+            // Determine notification type and adder name based on role
+            let notifType: 'added_to_preferred_list_by_dhh' | 'added_to_preferred_list_by_org' | 'added_to_preferred_list' = 'added_to_preferred_list';
+            let adderName = '';
+            const notifMetadata: Record<string, unknown> = {};
+
+            if (userRole === 'deaf') {
+              notifType = 'added_to_preferred_list_by_dhh';
+              const { data: deafProfile } = await supabase
+                .from('deaf_profiles')
+                .select('first_name, last_name')
+                .eq('user_id', user.id)
+                .maybeSingle();
+              adderName = deafProfile
+                ? `${deafProfile.first_name || ''} ${deafProfile.last_name || ''}`.trim()
+                : '';
+              notifMetadata.adder_name = adderName || undefined;
+            } else if (userRole === 'requester') {
+              notifType = 'added_to_preferred_list_by_org';
+              const { data: reqProfile } = await supabase
+                .from('requester_profiles')
+                .select('first_name, last_name, organization_name')
+                .eq('user_id', user.id)
+                .maybeSingle();
+              if (reqProfile?.organization_name) {
+                adderName = reqProfile.organization_name;
+                notifMetadata.organization_name = adderName;
+              } else if (reqProfile) {
+                adderName = `${reqProfile.first_name || ''} ${reqProfile.last_name || ''}`.trim();
+                notifMetadata.adder_name = adderName || undefined;
+              }
+            }
+
+            const fallbackSubject = adderName
+              ? `You've been added to ${adderName}'s preferred interpreter list`
+              : "You've been added to a preferred interpreter list";
+            const fallbackBody = adderName
+              ? `${adderName} has added you to their preferred interpreter list on signpost.`
+              : "You've been added to a preferred interpreter list on signpost.";
+
             sendNotification({
               recipientUserId: interpProfile.user_id,
-              type: 'added_to_preferred_list',
-              subject: 'Someone added you to their preferred interpreter list',
-              body: "You've been added to someone's preferred interpreter list on signpost. This means they trust your work and may reach out for future bookings.",
-              ctaText: 'View Your Dashboard',
+              type: notifType,
+              subject: fallbackSubject,
+              body: fallbackBody,
+              metadata: notifMetadata,
+              ctaText: 'View My Dashboard',
               ctaUrl: 'https://signpost.community/interpreter/dashboard',
             }).catch(err => console.error('[add-to-list] notification failed:', err));
           }

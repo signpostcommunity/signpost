@@ -11,16 +11,16 @@ export function emailTemplate({
   ctaUrl?: string;
   preferencesUrl?: string;
 }): string {
-  const prefUrl = preferencesUrl || 'https://signpost.community/interpreter/dashboard';
+  const prefUrl = preferencesUrl || 'https://signpost.community/interpreter/dashboard/profile?tab=account-settings';
 
   const ctaBlock = ctaText && ctaUrl
     ? `
       <tr>
-        <td style="padding: 28px 0 0;">
+        <td style="padding: 28px 36px 0;">
           <a href="${ctaUrl}" style="
             display: inline-block;
             background: #00e5ff;
-            color: #000000;
+            color: #0a0a0f;
             font-family: 'Helvetica Neue', Arial, sans-serif;
             font-weight: 700;
             font-size: 15px;
@@ -70,14 +70,14 @@ export function emailTemplate({
                 font-family: 'Helvetica Neue', Arial, sans-serif;
                 font-weight: 700;
                 font-size: 20px;
-                color: #f0f2f8;
+                color: #ffffff;
                 line-height: 1.3;
               ">${heading}</h1>
               <div style="
                 font-family: 'Helvetica Neue', Arial, sans-serif;
                 font-size: 15px;
                 line-height: 1.65;
-                color: #d0d4e0;
+                color: #b0b0b0;
               ">${body}</div>
             </td>
           </tr>
@@ -104,7 +104,7 @@ export function emailTemplate({
                       font-family: 'Helvetica Neue', Arial, sans-serif;
                       font-size: 12px;
                       line-height: 1.5;
-                    "><a href="${prefUrl}" style="color: #00e5ff; text-decoration: none;">Manage your notification preferences &rarr;</a></p>
+                    "><a href="${prefUrl}" style="color: #00e5ff; text-decoration: none;">Update your notification preferences &rarr;</a></p>
                     <p style="
                       margin: 0;
                       font-family: 'Helvetica Neue', Arial, sans-serif;

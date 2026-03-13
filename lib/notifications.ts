@@ -6,6 +6,9 @@ export type NotificationType =
   | 'sub_search_update' | 'booking_reminder'
   | 'new_message' | 'invoice_paid'
   | 'team_invite' | 'added_to_preferred_list'
+  | 'added_to_preferred_list_by_interpreter'
+  | 'added_to_preferred_list_by_org'
+  | 'added_to_preferred_list_by_dhh'
 
 interface SendNotificationParams {
   recipientUserId: string

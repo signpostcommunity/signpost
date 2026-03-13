@@ -10,6 +10,9 @@ export type NotificationType =
   | 'sub_search_update' | 'booking_reminder'
   | 'new_message' | 'invoice_paid'
   | 'team_invite' | 'added_to_preferred_list'
+  | 'added_to_preferred_list_by_interpreter'
+  | 'added_to_preferred_list_by_org'
+  | 'added_to_preferred_list_by_dhh'
 
 interface CreateNotificationParams {
   recipientUserId: string
@@ -20,6 +23,80 @@ interface CreateNotificationParams {
   ctaText?: string
   ctaUrl?: string
   channel?: 'in_app' | 'email' | 'both'
+}
+
+/**
+ * Map variant notification types to their base preference category key.
+ * All preferred list variants share the same user preference toggle.
+ */
+function getPreferenceCategoryKey(type: NotificationType): string {
+  if (
+    type === 'added_to_preferred_list_by_interpreter' ||
+    type === 'added_to_preferred_list_by_org' ||
+    type === 'added_to_preferred_list_by_dhh'
+  ) {
+    return 'added_to_preferred_list'
+  }
+  return type
+}
+
+/**
+ * Generate rich email content for specific notification types.
+ * Returns null for types that should use the default params-based content.
+ */
+function getEmailContent(
+  type: NotificationType,
+  metadata: Record<string, unknown>,
+  params: CreateNotificationParams
+): { subject: string; htmlBody: string; ctaText: string; ctaUrl: string } | null {
+  if (type === 'welcome') {
+    return {
+      subject: 'Welcome to signpost!',
+      htmlBody: `<p>Thanks for joining signpost! Your interpreter profile is live.</p>
+<p><strong>What comes next:</strong></p>
+<p>Your profile is live in the directory. Requesters will find you when you match their search filters (language, specialization, location, certification) or when a Deaf/DB/HH client includes you on their preferred interpreter list.</p>
+<p>When you receive a new request, you'll be notified via in-app notification, email, and/or SMS depending on your preferences. You can review the request details and respond with your rate, decline, or ask questions. <a href="https://signpost.community/interpreter/dashboard/profile?tab=account-settings" style="color: #00e5ff; text-decoration: none;">Update your notification preferences</a></p>
+<p>You control your rates and terms. Set your standard rate, minimum hours, and cancellation policy from your dashboard. You can also create custom rates for specific jobs.</p>
+<p>Your &ldquo;Book Me on signpost&rdquo; link is ready to share. Add it to your email signature, website, or social media. Anyone who clicks it goes straight to your profile with a Request button. Find it in your dashboard.</p>
+<p>This is free for interpreters. When requesters book you via signpost, they pay a simple flat platform fee (currently $15 per booking) to help support this site. They never pay an additional percentage added to your rates, or any hidden fees. It's that simple.</p>
+<p>Keep your profile up to date. The more complete your profile (photo, intro video, credentials, specializations, bio), the easier it is for the right clients to find you.</p>
+<p>Questions? Reach us anytime at hello@signpost.community.</p>`,
+      ctaText: 'Go to My Dashboard',
+      ctaUrl: 'https://signpost.community/interpreter/dashboard',
+    }
+  }
+
+  const adderName = (metadata.adder_name as string) || (metadata.organization_name as string) || 'Someone'
+
+  if (type === 'added_to_preferred_list_by_interpreter') {
+    return {
+      subject: `You've been added to ${adderName}'s Preferred Team`,
+      htmlBody: `<p>${adderName} has added you to their Preferred Team Interpreter list on signpost. This means they trust your work and want to team with you on future bookings. Thank you for being a trusted colleague.</p>`,
+      ctaText: 'View My Dashboard',
+      ctaUrl: 'https://signpost.community/interpreter/dashboard',
+    }
+  }
+
+  if (type === 'added_to_preferred_list_by_org') {
+    const orgName = (metadata.organization_name as string) || adderName
+    return {
+      subject: `You've been added to ${orgName}'s preferred interpreter list`,
+      htmlBody: `<p>${orgName} has added you to their preferred interpreter list on signpost. This means they value your work and may reach out for future bookings directly. Thank you for being a trusted interpreter to this organization.</p>`,
+      ctaText: 'View My Dashboard',
+      ctaUrl: 'https://signpost.community/interpreter/dashboard',
+    }
+  }
+
+  if (type === 'added_to_preferred_list_by_dhh') {
+    return {
+      subject: `You've been added to ${adderName}'s preferred interpreter list`,
+      htmlBody: `<p>${adderName} has added you to their preferred interpreter list on signpost. This means they trust you and want you for their future bookings. When ${adderName} or someone booking on their behalf sends a request, you will be among the first interpreters contacted. Thank you for being a trusted interpreter to this client.</p>`,
+      ctaText: 'View My Dashboard',
+      ctaUrl: 'https://signpost.community/interpreter/dashboard',
+    }
+  }
+
+  return null
 }
 
 // Only these status values are allowed by the notifications_status_check constraint
@@ -166,7 +243,8 @@ export async function createNotification(params: CreateNotificationParams) {
         categories?: Record<string, { email?: boolean }>
       }
       const globalEnabled = prefs.email_enabled !== false
-      const categoryPref = prefs.categories?.[params.type]
+      const prefKey = getPreferenceCategoryKey(params.type)
+      const categoryPref = prefs.categories?.[prefKey]
       emailEnabled = globalEnabled && (categoryPref?.email !== false)
     }
 
@@ -182,11 +260,13 @@ export async function createNotification(params: CreateNotificationParams) {
     }
 
     // Build and send email via Resend
+    const emailContent = getEmailContent(params.type, params.metadata ?? {}, params)
     const html = emailTemplate({
-      heading: params.subject,
-      body: `<p>${params.body}</p>`,
-      ctaText: params.ctaText,
-      ctaUrl: params.ctaUrl,
+      heading: emailContent?.subject ?? params.subject,
+      body: emailContent?.htmlBody ?? `<p>${params.body}</p>`,
+      ctaText: emailContent?.ctaText ?? params.ctaText,
+      ctaUrl: emailContent?.ctaUrl ?? params.ctaUrl,
+      preferencesUrl: 'https://signpost.community/interpreter/dashboard/profile?tab=account-settings',
     })
 
     try {

@@ -165,9 +165,9 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
             recipientUserId: userId,
             type: 'welcome',
             channel: 'both',
-            subject: 'Welcome to signpost',
-            body: 'Thanks for joining the signpost beta! Your interpreter profile is live. Log in anytime at signpost.community to update your profile, explore the directory, and connect with the community. If you have questions, reach us at hello@signpost.community.',
-            ctaText: 'Go to your dashboard',
+            subject: 'Welcome to signpost!',
+            body: 'Thanks for joining signpost! Your interpreter profile is live. Visit your dashboard to complete your profile, set your rates, and start receiving requests.',
+            ctaText: 'Go to My Dashboard',
             ctaUrl: 'https://signpost.community/interpreter/dashboard',
           }),
         })
