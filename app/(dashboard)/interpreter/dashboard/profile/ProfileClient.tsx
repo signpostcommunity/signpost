@@ -112,9 +112,12 @@ function ToggleTile({ label, selected, onToggle, dotColor }: {
 // ── Types ────────────────────────────────────────────────────────────────────
 
 interface ProfileData {
+  id?: string | null
   name?: string | null
   first_name?: string | null
   last_name?: string | null
+  email?: string | null
+  pronouns?: string | null
   city?: string | null
   state?: string | null
   country?: string | null
@@ -308,6 +311,8 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const [modeOfWork, setModeOfWork] = useState(fallback(p.work_mode, 'modeOfWork', ''))
   const [eventCoordination, setEventCoordination] = useState(fallback(p.event_coordination, 'eventCoordination', false))
   const [coordinationBio, setCoordinationBio] = useState(fallback(p.event_coordination_desc, 'coordinationBio', ''))
+  const [pronouns, setPronouns] = useState(fallback(p.pronouns, 'pronouns', ''))
+  const [genderIdentity, setGenderIdentity] = useState(fallback(p.gender_identity, 'genderIdentity', ''))
 
   // ── Languages state ────────────────────────────────────────────────────
   const [signLangs, setSignLangs] = useState<string[]>(fallback(p.sign_languages, 'signLanguages', [] as string[]))
@@ -372,7 +377,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       // Now try interpreter_profiles
       const { data, error, status, statusText } = await supabase
         .from('interpreter_profiles')
-        .select('name, first_name, last_name, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, bio_specializations, bio_extra, sign_languages, spoken_languages, specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms, notification_preferences, notification_phone, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity')
+        .select('id, name, first_name, last_name, email, pronouns, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, bio_specializations, bio_extra, sign_languages, spoken_languages, specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms, notification_preferences, notification_phone, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity')
         .eq('user_id', user.id)
         .maybeSingle()
       console.log('PROFILE CLIENT-SIDE LOAD:', JSON.stringify({ data, error, status, statusText, userId: user.id }, null, 2))
@@ -389,6 +394,8 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       if (d.work_mode != null) setModeOfWork(d.work_mode)
       if (d.event_coordination != null) setEventCoordination(d.event_coordination)
       if (d.event_coordination_desc != null) setCoordinationBio(d.event_coordination_desc)
+      if ((d as ProfileData).pronouns != null) setPronouns((d as ProfileData).pronouns || '')
+      if ((d as ProfileData).gender_identity != null) setGenderIdentity((d as ProfileData).gender_identity || '')
       if (d.sign_languages) setSignLangs(d.sign_languages)
       if (d.spoken_languages) setSpokenLangs(d.spoken_languages)
       if (d.specializations) setSpecs(d.specializations)
@@ -679,6 +686,16 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
               <input value={lastName} onChange={e => setLastName(e.target.value)} style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
             </div>
           </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, marginBottom: 16 }}>
+            <div>
+              <label style={labelStyle}>Pronouns</label>
+              <input value={pronouns} onChange={e => setPronouns(e.target.value)} placeholder="e.g. she/her, he/him, they/them" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+            </div>
+            <div>
+              <label style={labelStyle}>Gender Identity</label>
+              <input value={genderIdentity} onChange={e => setGenderIdentity(e.target.value)} placeholder="Optional" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+            </div>
+          </div>
           <div style={{ marginBottom: 16 }}>
             <LocationPicker
               country={country}
@@ -768,7 +785,8 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           </div>
 
           <SaveButton saving={saving} onClick={() => saveFields({
-            first_name: firstName, last_name: lastName, city, state: stateProvince, country, phone,
+            first_name: firstName, last_name: lastName, pronouns, gender_identity: genderIdentity,
+            city, state: stateProvince, country, phone,
             years_experience: yearsExperience, interpreter_type: interpreterType,
             work_mode: modeOfWork,
             event_coordination: eventCoordination, event_coordination_desc: coordinationBio,
@@ -879,6 +897,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
         <CredentialsTab
           saving={saving}
           onSave={saveFields}
+          profileId={p.id || null}
           initialCerts={(p.draft_data as Record<string, unknown>)?.certifications as CertEntry[] | undefined}
           initialEducation={(p.draft_data as Record<string, unknown>)?.education as EduEntry[] | undefined}
           existingDraftData={p.draft_data || {}}
@@ -1112,9 +1131,10 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
 interface CertEntry { id: string; name: string; issuingBody: string; year: string; verificationLink: string }
 interface EduEntry { id: string; degree: string; institution: string; year: string }
 
-function CredentialsTab({ saving, onSave, initialCerts, initialEducation, existingDraftData }: {
+function CredentialsTab({ saving, onSave, profileId, initialCerts, initialEducation, existingDraftData }: {
   saving: boolean
   onSave: (fields: Record<string, unknown>) => Promise<void>
+  profileId: string | null
   initialCerts?: CertEntry[]
   initialEducation?: EduEntry[]
   existingDraftData: Record<string, unknown>
@@ -1125,6 +1145,38 @@ function CredentialsTab({ saving, onSave, initialCerts, initialEducation, existi
   const [education, setEducation] = useState<EduEntry[]>(
     initialEducation?.length ? initialEducation : [{ id: `edu-${Date.now()}`, degree: '', institution: '', year: '' }]
   )
+  const [loadedFromDb, setLoadedFromDb] = useState(false)
+
+  // Load certs/education from dedicated tables on mount
+  useEffect(() => {
+    if (!profileId) return
+    const supabase = createClient()
+    ;(async () => {
+      const [certsResult, eduResult] = await Promise.all([
+        supabase.from('interpreter_certifications').select('id, name, issuing_body, year, verification_url').eq('interpreter_id', profileId),
+        supabase.from('interpreter_education').select('id, degree, institution, year').eq('interpreter_id', profileId),
+      ])
+      if (certsResult.data && certsResult.data.length > 0) {
+        setCerts(certsResult.data.map((c: { id: string; name: string; issuing_body: string; year: number | null; verification_url: string | null }) => ({
+          id: c.id,
+          name: c.name || '',
+          issuingBody: c.issuing_body || '',
+          year: c.year ? String(c.year) : '',
+          verificationLink: c.verification_url || '',
+        })))
+      }
+      if (eduResult.data && eduResult.data.length > 0) {
+        setEducation(eduResult.data.map((e: { id: string; degree: string; institution: string; year: number | null }) => ({
+          id: e.id,
+          degree: e.degree || '',
+          institution: e.institution || '',
+          year: e.year ? String(e.year) : '',
+        })))
+      }
+      setLoadedFromDb(true)
+    })()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profileId])
 
   function updateCert(id: string, field: keyof CertEntry, value: string) {
     setCerts(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c))
@@ -1248,9 +1300,51 @@ function CredentialsTab({ saving, onSave, initialCerts, initialEducation, existi
         + Add More Education
       </button>
 
-      <SaveButton saving={saving} onClick={() => {
+      <SaveButton saving={saving} onClick={async () => {
+        if (!profileId) {
+          // No profile yet — save to draft_data as fallback
+          const validCerts = certs.filter(c => c.name.trim())
+          const validEdu = education.filter(e => e.degree.trim())
+          onSave({
+            draft_data: { ...existingDraftData, certifications: validCerts, education: validEdu },
+          })
+          return
+        }
+        const supabase = createClient()
         const validCerts = certs.filter(c => c.name.trim())
         const validEdu = education.filter(e => e.degree.trim())
+
+        // Delete existing + re-insert certifications
+        const { error: delCertErr } = await supabase.from('interpreter_certifications').delete().eq('interpreter_id', profileId)
+        if (delCertErr) console.error('[profile] Failed to clear certs:', delCertErr)
+
+        for (const cert of validCerts) {
+          const { error: certErr } = await supabase.from('interpreter_certifications').insert({
+            interpreter_id: profileId,
+            name: cert.name,
+            issuing_body: cert.issuingBody,
+            year: cert.year ? parseInt(cert.year, 10) : null,
+            verification_url: cert.verificationLink || null,
+            verified: false,
+          })
+          if (certErr) console.error('[profile] Failed to save cert:', cert.name, certErr)
+        }
+
+        // Delete existing + re-insert education
+        const { error: delEduErr } = await supabase.from('interpreter_education').delete().eq('interpreter_id', profileId)
+        if (delEduErr) console.error('[profile] Failed to clear education:', delEduErr)
+
+        for (const edu of validEdu) {
+          const { error: eduErr } = await supabase.from('interpreter_education').insert({
+            interpreter_id: profileId,
+            degree: edu.degree,
+            institution: edu.institution,
+            year: edu.year ? parseInt(edu.year, 10) : null,
+          })
+          if (eduErr) console.error('[profile] Failed to save education:', edu.degree, eduErr)
+        }
+
+        // Also update draft_data backup
         onSave({
           draft_data: { ...existingDraftData, certifications: validCerts, education: validEdu },
         })

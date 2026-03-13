@@ -76,18 +76,22 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         if (!userId) throw new Error('Account creation failed — no user ID returned.')
 
         // Insert user_profiles row (must happen before interpreter_profiles due to FK)
-        await supabase.from('user_profiles').upsert(
+        const { error: upError } = await supabase.from('user_profiles').upsert(
           { id: userId, role: 'interpreter', pending_roles: formData.pendingRoles.length > 0 ? formData.pendingRoles : [] },
           { onConflict: 'id' }
         )
+        if (upError) {
+          console.error('[signup] Failed to upsert user_profiles:', upError.code, upError.message, upError.details)
+          throw new Error('Failed to create user profile: ' + upError.message)
+        }
       }
 
       // Upsert interpreter_profiles — BETA: auto-approve, no admin review
-      const { data: profileRow } = await supabase.from('interpreter_profiles').upsert({
+      const { data: profileRow, error: profileError } = await supabase.from('interpreter_profiles').upsert({
         user_id: userId,
         name: [formData.firstName, formData.lastName].filter(Boolean).join(' ') || formData.email || 'Interpreter',
         status: 'approved',
-        draft_step: 6,
+        draft_step: null,
         draft_data: formData,
         first_name: formData.firstName,
         last_name: formData.lastName,
@@ -143,17 +147,81 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' }).select('id').single()
 
-      // BETA: seed demo bookings + messages for new interpreter
-      if (profileRow?.id) {
-        try {
-          await fetch('/api/seed-interpreter', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ interpreterProfileId: profileRow.id }),
-          })
-        } catch (seedErr) {
-          console.warn('Beta: seed call failed, continuing', seedErr)
+      if (profileError) {
+        console.error('[signup] Failed to save profile fields:', profileError.code, profileError.message, profileError.details)
+        throw new Error('Save failed: ' + profileError.message)
+      }
+      const profileId = profileRow?.id
+      if (!profileId) {
+        console.error('[signup] No profile ID returned after upsert')
+        throw new Error('Save failed: could not find your profile')
+      }
+
+      // Write certifications to interpreter_certifications table
+      const validCerts = formData.certifications.filter(c => c.name.trim())
+      if (validCerts.length > 0) {
+        // Delete existing certs to avoid duplicates on re-submit
+        const { error: delCertError } = await supabase
+          .from('interpreter_certifications')
+          .delete()
+          .eq('interpreter_id', profileId)
+        if (delCertError) {
+          console.error('[signup] Failed to clear existing certifications:', delCertError.code, delCertError.message)
         }
+
+        for (const cert of validCerts) {
+          const { error: certError } = await supabase
+            .from('interpreter_certifications')
+            .insert({
+              interpreter_id: profileId,
+              name: cert.name,
+              issuing_body: cert.issuingBody,
+              year: cert.year ? parseInt(cert.year, 10) : null,
+              verification_url: cert.verificationLink || null,
+              verified: false,
+            })
+          if (certError) {
+            console.error('[signup] Failed to save certification:', cert.name, certError.code, certError.message)
+          }
+        }
+      }
+
+      // Write education to interpreter_education table
+      const validEdu = formData.education.filter(e => e.degree.trim())
+      if (validEdu.length > 0) {
+        // Delete existing education to avoid duplicates on re-submit
+        const { error: delEduError } = await supabase
+          .from('interpreter_education')
+          .delete()
+          .eq('interpreter_id', profileId)
+        if (delEduError) {
+          console.error('[signup] Failed to clear existing education:', delEduError.code, delEduError.message)
+        }
+
+        for (const edu of validEdu) {
+          const { error: eduError } = await supabase
+            .from('interpreter_education')
+            .insert({
+              interpreter_id: profileId,
+              degree: edu.degree,
+              institution: edu.institution,
+              year: edu.year ? parseInt(edu.year, 10) : null,
+            })
+          if (eduError) {
+            console.error('[signup] Failed to save education:', edu.degree, eduError.code, eduError.message)
+          }
+        }
+      }
+
+      // BETA: seed demo bookings + messages for new interpreter
+      try {
+        await fetch('/api/seed-interpreter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ interpreterProfileId: profileId }),
+        })
+      } catch (seedErr) {
+        console.warn('Beta: seed call failed, continuing', seedErr)
       }
 
       // Send welcome notification (email + in-app) — fires once on signup only
@@ -175,7 +243,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         console.warn('Welcome notification failed, continuing', welcomeErr)
       }
     } catch (insertError) {
-      console.error('Profile save failed:', insertError)
+      console.error('[signup] Profile save failed:', insertError)
       setError(`Profile save failed: ${(insertError as Error).message || 'Unknown error'}. Please try again.`)
       setIsSubmitting(false)
       return
