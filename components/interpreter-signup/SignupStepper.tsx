@@ -55,7 +55,7 @@ export default function SignupStepper() {
           return (
             <button
               key={stepNum}
-              onClick={() => isDone && setCurrentStep(stepNum)}
+              onClick={() => { if (isDone) { setCurrentStep(stepNum); window.scrollTo({ top: 0, behavior: 'smooth' }) } }}
               style={{
                 flex: '1 1 0', minWidth: 0, textAlign: 'center',
                 padding: '10px 4px', borderRadius: 8,
@@ -89,7 +89,7 @@ export default function SignupStepper() {
             return (
               <button
                 key={stepNum}
-                onClick={() => isDone && setCurrentStep(stepNum)}
+                onClick={() => { if (isDone) { setCurrentStep(stepNum); window.scrollTo({ top: 0, behavior: 'smooth' }) } }}
                 style={{
                   width: 32, height: 32, borderRadius: '50%',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',

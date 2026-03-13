@@ -52,6 +52,7 @@ function SignupForm() {
     // If user is already authenticated (OAuth), skip account creation
     if (draftUserId) {
       setCurrentStep(2)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
       return
     }
 
@@ -97,6 +98,7 @@ function SignupForm() {
       }
 
       setCurrentStep(2)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (e) {
       setStep1Error(e instanceof Error ? e.message : 'Account creation failed.')
     } finally {
@@ -107,6 +109,12 @@ function SignupForm() {
   async function goToStep(step: number) {
     await saveDraft()
     setCurrentStep(step)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function goBack(step: number) {
+    setCurrentStep(step)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (
@@ -130,19 +138,19 @@ function SignupForm() {
           </>
         )}
         {currentStep === 2 && (
-          <Step2Languages onBack={() => setCurrentStep(1)} onContinue={() => goToStep(3)} />
+          <Step2Languages onBack={() => goBack(1)} onContinue={() => goToStep(3)} />
         )}
         {currentStep === 3 && (
-          <Step3Credentials onBack={() => setCurrentStep(2)} onContinue={() => goToStep(4)} />
+          <Step3Credentials onBack={() => goBack(2)} onContinue={() => goToStep(4)} />
         )}
         {currentStep === 4 && (
-          <Step4BioVideo onBack={() => setCurrentStep(3)} onContinue={() => goToStep(5)} />
+          <Step4BioVideo onBack={() => goBack(3)} onContinue={() => goToStep(5)} />
         )}
         {currentStep === 5 && (
-          <Step5Skills onBack={() => setCurrentStep(4)} onContinue={() => goToStep(6)} />
+          <Step5Skills onBack={() => goBack(4)} onContinue={() => goToStep(6)} />
         )}
         {currentStep === 6 && (
-          <Step6Review onBack={() => setCurrentStep(5)} />
+          <Step6Review onBack={() => goBack(5)} />
         )}
       </div>
     </div>

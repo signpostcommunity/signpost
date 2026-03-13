@@ -124,6 +124,16 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
     setTimeout(() => setToast({ message: '', visible: false }), 3000);
   };
 
+  // Language matching helper: handles both short codes ("ASL") and full names ("American Sign Language (ASL)")
+  // stored in DB. Short codes match via exact match or parenthetical, e.g. "ASL" matches "American Sign Language (ASL)".
+  // Full names match via startsWith, e.g. "Spanish" matches "Spanish (Español)".
+  function langMatches(stored: string, filter: string): boolean {
+    if (stored === filter) return true;
+    if (stored.includes(`(${filter})`)) return true;
+    if (stored.startsWith(filter)) return true;
+    return false;
+  }
+
   const filtered = useMemo(() => {
     return interpreters.filter((i) => {
       // Search across name, location, state, sign languages, spoken languages, specs, regions
@@ -162,11 +172,11 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
         // 'international' — no location filter
       }
 
-      // Sign languages
-      if (filters.signLangs.length > 0 && !filters.signLangs.some((l) => i.signLangs.includes(l))) return false;
+      // Sign languages — handles both short codes (seed data) and full names (signup data)
+      if (filters.signLangs.length > 0 && !filters.signLangs.some((l) => i.signLangs.some(sl => langMatches(sl, l)))) return false;
 
-      // Spoken languages
-      if (filters.spokenLangs.length > 0 && !filters.spokenLangs.some((l) => i.spokenLangs.includes(l))) return false;
+      // Spoken languages — handles both short names (seed data) and full names (signup data)
+      if (filters.spokenLangs.length > 0 && !filters.spokenLangs.some((l) => i.spokenLangs.some(sl => langMatches(sl, l)))) return false;
 
       // Specializations
       if (filters.specs.length > 0 && !filters.specs.some((s) => i.specs.includes(s) || (i.specializedSkills || []).includes(s))) return false;
