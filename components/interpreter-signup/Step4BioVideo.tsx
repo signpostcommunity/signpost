@@ -130,6 +130,7 @@ export default function Step4BioVideo({ onBack, onContinue }: {
           {videoUrlError && (
             <div style={{ color: 'var(--accent3)', fontSize: '0.78rem', marginTop: 6 }}>{videoUrlError}</div>
           )}
+          <div style={{ color: 'var(--muted)', fontSize: '0.78rem', marginTop: 6 }}>Please enter a YouTube or Vimeo link. Direct file upload coming soon.</div>
         </div>
 
         {/* Live preview */}

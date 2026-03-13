@@ -149,6 +149,8 @@ export async function POST(request: NextRequest) {
           subject: `New message from ${senderName}`,
           body: preview,
           metadata: { conversationId, senderId, senderName },
+          ctaText: 'Read and Reply',
+          ctaUrl: `/interpreter/dashboard/inbox/conversation/${conversationId}`,
         }),
       })
     } catch {

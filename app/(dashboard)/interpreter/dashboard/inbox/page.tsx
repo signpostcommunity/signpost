@@ -369,7 +369,7 @@ export default function InboxPage() {
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 80px)' }}>
       {hasSeedData && <BetaBanner />}
-      <PageHeader title="Messages & Notifications" subtitle="Your conversations and notifications." />
+      <PageHeader title="Messages & Notifications" />
 
       {/* Tab bar */}
       <div style={{

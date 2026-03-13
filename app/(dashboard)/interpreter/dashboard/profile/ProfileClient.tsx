@@ -341,7 +341,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
 
   // ── Notification state ──────────────────────────────────────────────
   const [notifPrefs, setNotifPrefs] = useState<NotificationPreferences>(p.notification_preferences || DEFAULT_NOTIFICATION_PREFS)
-  const [notifPhone, setNotifPhone] = useState(p.notification_phone || '')
+  const [notifPhone, setNotifPhone] = useState(p.notification_phone || p.phone || '')
   const [notifSaving, setNotifSaving] = useState(false)
 
   // ── Community & Identity state ────────────────────────────────────
@@ -693,7 +693,41 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
             </div>
             <div>
               <label style={labelStyle}>Gender Identity</label>
-              <input value={genderIdentity} onChange={e => setGenderIdentity(e.target.value)} placeholder="Optional" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+              <select
+                value={['Woman', 'Man', 'Non-binary', 'Genderqueer', 'Genderfluid', 'Agender', 'Two-Spirit', 'Prefer not to say', ''].includes(genderIdentity) ? genderIdentity : 'Other'}
+                onChange={e => {
+                  if (e.target.value === 'Other') {
+                    setGenderIdentity('Other')
+                  } else {
+                    setGenderIdentity(e.target.value)
+                  }
+                }}
+                style={inputStyle} onFocus={handleFocus} onBlur={handleBlur}
+              >
+                <option value="">Select…</option>
+                <option>Woman</option>
+                <option>Man</option>
+                <option>Non-binary</option>
+                <option>Genderqueer</option>
+                <option>Genderfluid</option>
+                <option>Agender</option>
+                <option>Two-Spirit</option>
+                <option>Prefer not to say</option>
+                <option>Other</option>
+              </select>
+              {(genderIdentity === 'Other' || (genderIdentity && !['Woman', 'Man', 'Non-binary', 'Genderqueer', 'Genderfluid', 'Agender', 'Two-Spirit', 'Prefer not to say', ''].includes(genderIdentity))) && (
+                <input
+                  value={genderIdentity === 'Other' ? '' : genderIdentity}
+                  onChange={e => setGenderIdentity(e.target.value || 'Other')}
+                  placeholder="Enter your gender identity"
+                  style={{ ...inputStyle, marginTop: 8 }}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                />
+              )}
+              <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 6, lineHeight: 1.4 }}>
+                This field helps medical providers and other requesters accommodate specific client preferences when requested.
+              </div>
             </div>
           </div>
           <div style={{ marginBottom: 16 }}>
@@ -978,6 +1012,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
             {videoUrlError && (
               <div style={{ color: 'var(--accent3)', fontSize: '0.78rem', marginTop: 6 }}>{videoUrlError}</div>
             )}
+            <div style={{ color: 'var(--muted)', fontSize: '0.78rem', marginTop: 6 }}>Please enter a YouTube or Vimeo link. Direct file upload coming soon.</div>
             {/* TODO: direct video upload — spec in master doc */}
           </div>
 
@@ -1211,13 +1246,13 @@ function CredentialsTab({ saving, onSave, profileId, initialCerts, initialEducat
             borderRadius: 'var(--radius-sm)', padding: '20px 24px',
           }}>
             <div style={{ marginBottom: 10 }}>
-              <label style={labelStyle}>Certification Name</label>
-              <input value={cert.name} onChange={e => updateCert(cert.id, 'name', e.target.value)} placeholder="e.g. NIC Advanced" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+              <label style={labelStyle}>Issuing Body</label>
+              <input value={cert.issuingBody} onChange={e => updateCert(cert.id, 'issuingBody', e.target.value)} placeholder="e.g. RID" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: 12, marginBottom: 10 }}>
               <div>
-                <label style={labelStyle}>Issuing Body</label>
-                <input value={cert.issuingBody} onChange={e => updateCert(cert.id, 'issuingBody', e.target.value)} placeholder="e.g. RID" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+                <label style={labelStyle}>Certification Name</label>
+                <input value={cert.name} onChange={e => updateCert(cert.id, 'name', e.target.value)} placeholder="e.g. NIC Advanced" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
               </div>
               <div>
                 <label style={labelStyle}>Year</label>
@@ -1262,13 +1297,13 @@ function CredentialsTab({ saving, onSave, profileId, initialCerts, initialEducat
             borderRadius: 'var(--radius-sm)', padding: '20px 24px',
           }}>
             <div style={{ marginBottom: 10 }}>
-              <label style={labelStyle}>Degree / Qualification</label>
-              <input value={edu.degree} onChange={e => updateEdu(edu.id, 'degree', e.target.value)} placeholder="MA Interpreter Studies" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+              <label style={labelStyle}>Institution</label>
+              <input value={edu.institution} onChange={e => updateEdu(edu.id, 'institution', e.target.value)} placeholder="Universidad de Salamanca" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: 12, marginBottom: 10 }}>
               <div>
-                <label style={labelStyle}>Institution</label>
-                <input value={edu.institution} onChange={e => updateEdu(edu.id, 'institution', e.target.value)} placeholder="Universidad de Salamanca" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+                <label style={labelStyle}>Degree / Qualification</label>
+                <input value={edu.degree} onChange={e => updateEdu(edu.id, 'degree', e.target.value)} placeholder="MA Interpreter Studies" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
               </div>
               <div>
                 <label style={labelStyle}>Year</label>

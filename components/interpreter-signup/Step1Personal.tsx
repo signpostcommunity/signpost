@@ -237,6 +237,41 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
               />
             )}
           </FormField>
+          <FormField>
+            <FieldLabel>Gender Identity</FieldLabel>
+            <SelectInput
+              value={['Woman', 'Man', 'Non-binary', 'Genderqueer', 'Genderfluid', 'Agender', 'Two-Spirit', 'Prefer not to say', ''].includes(formData.genderIdentity) ? formData.genderIdentity : 'Other'}
+              onChange={e => {
+                if (e.target.value === 'Other') {
+                  updateField('genderIdentity', 'Other')
+                } else {
+                  updateField('genderIdentity', e.target.value)
+                }
+              }}
+            >
+              <option value="">Select…</option>
+              <option>Woman</option>
+              <option>Man</option>
+              <option>Non-binary</option>
+              <option>Genderqueer</option>
+              <option>Genderfluid</option>
+              <option>Agender</option>
+              <option>Two-Spirit</option>
+              <option>Prefer not to say</option>
+              <option>Other</option>
+            </SelectInput>
+            {(formData.genderIdentity === 'Other' || (formData.genderIdentity && !['Woman', 'Man', 'Non-binary', 'Genderqueer', 'Genderfluid', 'Agender', 'Two-Spirit', 'Prefer not to say', ''].includes(formData.genderIdentity))) && (
+              <TextInput
+                placeholder="Enter your gender identity"
+                value={formData.genderIdentity === 'Other' ? '' : formData.genderIdentity}
+                onChange={e => updateField('genderIdentity', e.target.value || 'Other')}
+                style={{ marginTop: 8 }}
+              />
+            )}
+            <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 6, lineHeight: 1.4 }}>
+              This field helps medical providers and other requesters accommodate specific client preferences when requested.
+            </div>
+          </FormField>
         </FormRow>
 
         <LocationPicker

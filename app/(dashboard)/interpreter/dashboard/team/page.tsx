@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { BetaBanner, PageHeader, Avatar, GhostButton } from '@/components/dashboard/interpreter/shared'
 import AddToListModal from '@/components/directory/AddToListModal'
+import SendMessageModal from '@/components/messaging/SendMessageModal'
 import Toast from '@/components/ui/Toast'
 
 const overlayStyle: React.CSSProperties = {
@@ -48,6 +49,7 @@ type TeamMember = {
   notes: string | null
   photo_url: string | null
   avatar_color: string | null
+  user_id: string | null
 }
 
 // ── Invite Modal ──────────────────────────────────────────────────────────────
@@ -176,13 +178,14 @@ function InviteModal({ onClose, onSaved, interpreterId, interpreterFullName }: {
 
 // ── Section Header ────────────────────────────────────────────────────────────
 
-function TierSection({ title, accentColor, members, onMoveTier, onRemove, onEdit, targetTierLabel }: {
+function TierSection({ title, accentColor, members, onMoveTier, onRemove, onEdit, onMessage, targetTierLabel }: {
   title: string
   accentColor: string
   members: TeamMember[]
   onMoveTier: (id: string) => void
   onRemove: (id: string) => void
   onEdit: (member: TeamMember) => void
+  onMessage: (member: TeamMember) => void
   targetTierLabel: string
 }) {
   return (
@@ -214,6 +217,7 @@ function TierSection({ title, accentColor, members, onMoveTier, onRemove, onEdit
               onMoveTier={() => onMoveTier(member.id)}
               onRemove={() => onRemove(member.id)}
               onEdit={() => onEdit(member)}
+              onMessage={() => onMessage(member)}
               moveLabel={targetTierLabel}
             />
           ))}
@@ -233,6 +237,7 @@ export default function TeamPage() {
   const [interpreterName, setInterpreterName] = useState('')
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null)
+  const [messagingMember, setMessagingMember] = useState<TeamMember | null>(null)
 
   const fetchTeam = useCallback(async () => {
     const supabase = createClient()
@@ -251,7 +256,7 @@ export default function TeamPage() {
 
     const { data: members, error } = await supabase
       .from('interpreter_preferred_team')
-      .select('id, first_name, last_name, email, status, member_interpreter_id, tier, notes, interpreter_profiles:member_interpreter_id(photo_url, avatar_color)')
+      .select('id, first_name, last_name, email, status, member_interpreter_id, tier, notes, interpreter_profiles:member_interpreter_id(photo_url, avatar_color, user_id)')
       .eq('interpreter_id', profile.id)
       .order('id', { ascending: false })
 
@@ -260,7 +265,7 @@ export default function TeamPage() {
       setTeam([])
     } else {
       const mapped = (members || []).map((m: Record<string, unknown>) => {
-        const joined = m.interpreter_profiles as { photo_url?: string; avatar_color?: string } | null
+        const joined = m.interpreter_profiles as { photo_url?: string; avatar_color?: string; user_id?: string } | null
         return {
           id: m.id as string,
           first_name: m.first_name as string,
@@ -272,6 +277,7 @@ export default function TeamPage() {
           notes: (m.notes as string) || null,
           photo_url: joined?.photo_url || null,
           avatar_color: joined?.avatar_color || null,
+          user_id: joined?.user_id || null,
         }
       })
       setTeam(mapped)
@@ -369,6 +375,7 @@ export default function TeamPage() {
             onMoveTier={moveTier}
             onRemove={removeMember}
             onEdit={openEdit}
+            onMessage={setMessagingMember}
             targetTierLabel="Move to Secondary Tier"
           />
           <TierSection
@@ -378,6 +385,7 @@ export default function TeamPage() {
             onMoveTier={moveTier}
             onRemove={removeMember}
             onEdit={openEdit}
+            onMessage={setMessagingMember}
             targetTierLabel="Move to Top Tier"
           />
         </>
@@ -430,6 +438,19 @@ export default function TeamPage() {
         }}
       />
 
+      {messagingMember && messagingMember.user_id && (
+        <SendMessageModal
+          recipientId={messagingMember.user_id}
+          recipientName={`${messagingMember.first_name} ${messagingMember.last_name}`}
+          recipientPhoto={messagingMember.photo_url}
+          onClose={() => setMessagingMember(null)}
+          onSent={() => {
+            setMessagingMember(null)
+            setToast({ message: 'Message sent.', type: 'success' })
+          }}
+        />
+      )}
+
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   )
@@ -437,16 +458,18 @@ export default function TeamPage() {
 
 // ── Team Card ─────────────────────────────────────────────────────────────────
 
-function TeamCard({ member, onMoveTier, onRemove, onEdit, moveLabel }: {
+function TeamCard({ member, onMoveTier, onRemove, onEdit, onMessage, moveLabel }: {
   member: TeamMember
   onMoveTier: () => void
   onRemove: () => void
   onEdit: () => void
+  onMessage: () => void
   moveLabel: string
 }) {
   const [hover, setHover] = useState(false)
   const initials = `${(member.first_name[0] || '').toUpperCase()}${(member.last_name[0] || '').toUpperCase()}`
   const fullName = `${member.first_name} ${member.last_name}`
+  const profileHref = member.member_interpreter_id ? `/directory/${member.member_interpreter_id}` : null
 
   return (
     <div
@@ -461,7 +484,18 @@ function TeamCard({ member, onMoveTier, onRemove, onEdit, moveLabel }: {
         cursor: 'pointer',
       }}
     >
-      {member.photo_url ? (
+      {profileHref ? (
+        <Link href={profileHref} onClick={e => e.stopPropagation()} style={{ flexShrink: 0 }}>
+          {member.photo_url ? (
+            <img src={member.photo_url} alt={fullName} style={{
+              width: 44, height: 44, borderRadius: '50%', objectFit: 'cover',
+              border: '2px solid var(--accent)',
+            }} />
+          ) : (
+            <Avatar initials={initials} gradient={member.avatar_color || 'linear-gradient(135deg,#7b61ff,#00e5ff)'} size={44} />
+          )}
+        </Link>
+      ) : member.photo_url ? (
         <img src={member.photo_url} alt={fullName} style={{
           width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', flexShrink: 0,
           border: '2px solid var(--accent)',
@@ -470,7 +504,14 @@ function TeamCard({ member, onMoveTier, onRemove, onEdit, moveLabel }: {
         <Avatar initials={initials} gradient={member.avatar_color || 'linear-gradient(135deg,#7b61ff,#00e5ff)'} size={44} />
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>{fullName}</div>
+        {profileHref ? (
+          <Link href={profileHref} onClick={e => e.stopPropagation()} style={{ fontWeight: 600, fontSize: '0.92rem', color: 'var(--text)', textDecoration: 'none' }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)' }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text)' }}
+          >{fullName}</Link>
+        ) : (
+          <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>{fullName}</div>
+        )}
         {member.notes && (
           <div style={{
             fontSize: '0.78rem', color: 'var(--muted)', marginTop: 6,
@@ -481,6 +522,21 @@ function TeamCard({ member, onMoveTier, onRemove, onEdit, moveLabel }: {
         )}
       </div>
       <div style={{ display: 'flex', gap: 8, flexShrink: 0, alignSelf: 'center' }}>
+        {member.user_id && (
+          <button
+            onClick={e => { e.stopPropagation(); onMessage() }}
+            style={{
+              background: 'none', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
+              fontSize: '0.73rem', padding: '5px 12px', cursor: 'pointer',
+              whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'DM Sans', sans-serif",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
+          >
+            Message
+          </button>
+        )}
         <button
           onClick={e => { e.stopPropagation(); onMoveTier() }}
           style={{

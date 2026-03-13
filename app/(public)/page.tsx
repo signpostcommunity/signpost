@@ -112,31 +112,21 @@ export default function HomePage() {
                 Deaf or Hard of Hearing?<br />Build your preferred interpreter list →
               </Link>
 
-              <div style={{ width: '100%', textAlign: 'center', marginTop: 8 }}>
-                <div
-                  aria-hidden="true"
-                  style={{
-                    fontFamily: 'var(--font-syne)', fontSize: '0.68rem', fontWeight: 700,
-                    letterSpacing: '0.12em', textTransform: 'uppercase',
-                    color: 'var(--muted)', marginBottom: 6,
-                    pointerEvents: 'none', cursor: 'default', userSelect: 'none',
-                  }}
-                >
-                  For Interpreters
-                </div>
-                <Link
-                  href="/interpreter"
-                  className="hero-interp-btn"
-                  style={{
-                    display: 'inline-block',
-                    fontSize: '0.9rem',
-                    color: 'var(--accent)',
-                    textDecoration: 'none',
-                  }}
-                >
-                  Create your free profile &rarr;
-                </Link>
-              </div>
+              <Link
+                href="/interpreter"
+                className="btn-large hero-interp-btn"
+                style={{
+                  width: '100%',
+                  textAlign: 'center',
+                  display: 'block',
+                  background: 'none',
+                  border: '1.5px solid rgba(0,229,255,0.35)',
+                  color: 'var(--accent)',
+                  textDecoration: 'none',
+                }}
+              >
+                For Interpreters<br />Create your free profile →
+              </Link>
             </div>
           </div>
         </div>

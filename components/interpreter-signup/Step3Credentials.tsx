@@ -75,19 +75,19 @@ export default function Step3Credentials({ onBack, onContinue }: {
             }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16 }}>
                 <FormField>
-                  <FieldLabel>Certification Name</FieldLabel>
-                  <TextInput
-                    placeholder="e.g. NIC Advanced"
-                    value={cert.name}
-                    onChange={e => updateCert(cert.id, 'name', e.target.value)}
-                  />
-                </FormField>
-                <FormField>
                   <FieldLabel>Issuing Body</FieldLabel>
                   <TextInput
                     placeholder="e.g. RID"
                     value={cert.issuingBody}
                     onChange={e => updateCert(cert.id, 'issuingBody', e.target.value)}
+                  />
+                </FormField>
+                <FormField>
+                  <FieldLabel>Certification Name</FieldLabel>
+                  <TextInput
+                    placeholder="e.g. NIC Advanced"
+                    value={cert.name}
+                    onChange={e => updateCert(cert.id, 'name', e.target.value)}
                   />
                 </FormField>
                 <FormField>
@@ -138,21 +138,21 @@ export default function Step3Credentials({ onBack, onContinue }: {
             }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}>
                 <FormField>
-                  <FieldLabel>Degree / Qualification</FieldLabel>
-                  <TextInput
-                    placeholder="MA Interpreter Studies"
-                    value={edu.degree}
-                    onChange={e => updateEdu(edu.id, 'degree', e.target.value)}
-                  />
-                </FormField>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: 16 }}>
-                <FormField>
                   <FieldLabel>Institution</FieldLabel>
                   <TextInput
                     placeholder="Universidad de Salamanca"
                     value={edu.institution}
                     onChange={e => updateEdu(edu.id, 'institution', e.target.value)}
+                  />
+                </FormField>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: 16 }}>
+                <FormField>
+                  <FieldLabel>Degree / Qualification</FieldLabel>
+                  <TextInput
+                    placeholder="MA Interpreter Studies"
+                    value={edu.degree}
+                    onChange={e => updateEdu(edu.id, 'degree', e.target.value)}
                   />
                 </FormField>
                 <FormField>

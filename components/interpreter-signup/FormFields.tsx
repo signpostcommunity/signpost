@@ -279,21 +279,6 @@ export function FormNav({
           </button>
         </div>
 
-        {/* Save Draft — muted text link below */}
-        <div style={{ textAlign: 'center' }}>
-          <button
-            type="button"
-            onClick={handleSaveDraft}
-            style={{
-              background: 'none', border: 'none', color: 'var(--muted)',
-              fontSize: '0.8rem', cursor: 'pointer',
-              fontFamily: "'DM Sans', sans-serif", padding: '4px 8px',
-              opacity: 0.7,
-            }}
-          >
-            {draftSaved ? 'Draft saved \u2713' : 'Save Draft'}
-          </button>
-        </div>
       </div>
       <style>{`
         @media (max-width: 768px) {

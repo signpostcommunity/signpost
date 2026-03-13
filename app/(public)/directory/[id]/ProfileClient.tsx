@@ -638,7 +638,7 @@ function OverviewTab({ interpreter: i }: { interpreter: Interpreter }) {
             return <p style={{ color: 'var(--muted)', fontSize: '0.88rem' }}>No specializations listed.</p>;
           }
           return (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: '24px' }} className="specs-grid">
               {categories.map(([cat, subs]) => (
                 <div key={cat}>
                   <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#c8c4bc', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontFamily: 'var(--font-syne)' }}>
@@ -653,6 +653,7 @@ function OverviewTab({ interpreter: i }: { interpreter: Interpreter }) {
                   </div>
                 </div>
               ))}
+              <style>{`.specs-grid { grid-template-columns: 1fr !important; } @media (min-width: 768px) { .specs-grid { grid-template-columns: repeat(2, 1fr) !important; } }`}</style>
               {i.specializedSkills && i.specializedSkills.length > 0 && (
                 <div>
                   <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#a891ff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontFamily: 'var(--font-syne)' }}>

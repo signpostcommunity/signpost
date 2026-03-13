@@ -37,33 +37,6 @@ export default function SignupStepper() {
           <p style={{ color: 'var(--muted)', margin: 0 }}>
             Join the <span className="wordmark">sign<span>post</span></span> community and connect with the global Deaf community.
           </p>
-          {draftUserId && (
-            <button
-              onClick={handleSaveExit}
-              disabled={isSaving}
-              style={{
-                background: 'none',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-sm)',
-                color: 'var(--muted)',
-                fontSize: '0.8rem',
-                padding: '6px 14px',
-                cursor: 'pointer',
-                fontFamily: "'DM Sans', sans-serif",
-                transition: 'all 0.2s',
-              }}
-              onMouseEnter={e => {
-                (e.target as HTMLButtonElement).style.borderColor = 'var(--accent)'
-                ;(e.target as HTMLButtonElement).style.color = 'var(--accent)'
-              }}
-              onMouseLeave={e => {
-                (e.target as HTMLButtonElement).style.borderColor = 'var(--border)'
-                ;(e.target as HTMLButtonElement).style.color = 'var(--muted)'
-              }}
-            >
-              {isSaving ? 'Saving…' : 'Save Draft'}
-            </button>
-          )}
         </div>
       </div>
 
