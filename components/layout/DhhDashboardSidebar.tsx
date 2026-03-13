@@ -30,9 +30,14 @@ const NAV: NavGroup[] = [
         badgeKey: 'roster',
       },
       {
-        label: 'Personal Interpreter Request',
+        label: 'New Request',
         href: '/dhh/dashboard/request',
-        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L13 6L5 14H2V11L10 3Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/><path d="M8.5 4.5L11.5 7.5" stroke="currentColor" strokeWidth="1.3"/></svg>,
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
+      },
+      {
+        label: 'My Requests',
+        href: '/dhh/dashboard/requests',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M5 6h6M5 8.5h6M5 11h4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>,
       },
       {
         label: 'Messages & Notifications',
