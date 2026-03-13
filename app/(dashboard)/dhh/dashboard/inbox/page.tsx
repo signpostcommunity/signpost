@@ -2,7 +2,8 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { BetaBanner, PageHeader, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 
@@ -62,6 +63,7 @@ export default function DhhInboxPage() {
   const [notifCollapsed, setNotifCollapsed] = useState(false)
   const [msgCollapsed, setMsgCollapsed] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
+  const [expandedNotifId, setExpandedNotifId] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
     const supabase = createClient()
@@ -181,23 +183,67 @@ export default function DhhInboxPage() {
                   <div style={{ padding: '28px 20px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem' }}>No notifications yet.</div>
                 ) : notifications.map(notif => {
                   const isUnread = notif.status !== 'read'
+                  const isExpanded = expandedNotifId === notif.id
                   return (
-                    <div key={notif.id} onClick={() => { if (isUnread) markNotificationAsRead(notif.id) }} style={{
-                      padding: '14px 20px', cursor: 'pointer', borderBottom: '1px solid var(--border)',
-                      display: 'flex', alignItems: 'flex-start', gap: 12, opacity: isUnread ? 1 : 0.6,
-                      background: isUnread ? 'rgba(157,135,255,0.04)' : 'transparent',
+                    <div key={notif.id} style={{
+                      borderBottom: '1px solid var(--border)',
+                      borderLeft: isUnread ? '3px solid #9d87ff' : '3px solid transparent',
+                      transition: 'background 0.15s, border-color 0.2s',
                     }}>
-                      <NotificationIcon />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 3 }}>
-                          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.86rem', fontWeight: isUnread ? 600 : 400, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{notif.subject || '(no subject)'}</span>
-                          <span style={{ fontSize: '0.72rem', color: 'var(--muted)', flexShrink: 0 }}>{timeAgo(notif.created_at)}</span>
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        aria-expanded={isExpanded}
+                        onClick={() => {
+                          const willExpand = !isExpanded
+                          setExpandedNotifId(willExpand ? notif.id : null)
+                          if (willExpand && isUnread) markNotificationAsRead(notif.id)
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            const willExpand = !isExpanded
+                            setExpandedNotifId(willExpand ? notif.id : null)
+                            if (willExpand && isUnread) markNotificationAsRead(notif.id)
+                          }
+                        }}
+                        style={{
+                          padding: '14px 20px', cursor: 'pointer',
+                          display: 'flex', alignItems: 'flex-start', gap: 12, outline: 'none',
+                          background: isUnread ? 'rgba(157,135,255,0.04)' : 'transparent',
+                          transition: 'background 0.15s',
+                        }}
+                      >
+                        <NotificationIcon />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: isExpanded ? 0 : 3 }}>
+                            <span style={{
+                              fontFamily: "'DM Sans', sans-serif", fontSize: '0.86rem',
+                              fontWeight: isUnread ? 600 : 400, color: 'var(--text)',
+                              ...(isExpanded ? {} : { whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' }),
+                            }}>{notif.subject || '(no subject)'}</span>
+                            <span style={{ fontSize: '0.72rem', color: 'var(--muted)', flexShrink: 0 }}>{timeAgo(notif.created_at)}</span>
+                          </div>
+                          {!isExpanded && notif.body && <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.45, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{notif.body}</p>}
                         </div>
-                        {notif.body && <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.45, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{notif.body}</p>}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                          <button onClick={(e) => { e.stopPropagation(); deleteNotification(notif.id) }} title="Delete" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: 4, flexShrink: 0 }}>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+                          </button>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'transform 0.2s', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}><path d="M6 9l6 6 6-6" /></svg>
+                        </div>
                       </div>
-                      <button onClick={(e) => { e.stopPropagation(); deleteNotification(notif.id) }} title="Delete" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: 4, flexShrink: 0 }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
-                      </button>
+                      {isExpanded && (
+                        <div style={{ padding: '0 20px 16px 50px', background: 'rgba(157,135,255,0.02)' }}>
+                          {notif.body && <p style={{ margin: '0 0 12px', fontSize: '0.85rem', color: '#b0b0b0', lineHeight: 1.65, fontFamily: "'DM Sans', sans-serif" }}>{notif.body}</p>}
+                          <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginBottom: 8, fontFamily: "'DM Sans', sans-serif" }}>
+                            {new Date(notif.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+                          </div>
+                          <Link href="/dhh/dashboard/profile?tab=account-settings" style={{ fontSize: '0.75rem', color: 'var(--muted)', fontFamily: "'DM Sans', sans-serif", textDecoration: 'none', opacity: 0.7 }}>
+                            Manage notification preferences
+                          </Link>
+                        </div>
+                      )}
                     </div>
                   )
                 })}

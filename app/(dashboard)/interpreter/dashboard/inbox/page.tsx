@@ -2,7 +2,8 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { BetaBanner, PageHeader, DemoBadge, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 
@@ -84,6 +85,9 @@ function NotificationIcon({ type, size = 20 }: { type: string; size?: number }) 
         </svg>
       )
     case 'added_to_preferred_list':
+    case 'added_to_preferred_list_by_interpreter':
+    case 'added_to_preferred_list_by_org':
+    case 'added_to_preferred_list_by_dhh':
       return (
         <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
@@ -137,6 +141,7 @@ export default function InboxPage() {
   const [notifCollapsed, setNotifCollapsed] = useState(false)
   const [msgCollapsed, setMsgCollapsed] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
+  const [expandedNotifId, setExpandedNotifId] = useState<string | null>(null)
 
   const fetchMessages = useCallback(async () => {
     const supabase = createClient()
@@ -431,10 +436,16 @@ export default function InboxPage() {
                       <NotificationRow
                         key={notif.id}
                         notif={notif}
-                        onClick={() => {
-                          if (notif.status !== 'read') markNotificationAsRead(notif.id)
+                        expanded={expandedNotifId === notif.id}
+                        onToggle={() => {
+                          const willExpand = expandedNotifId !== notif.id
+                          setExpandedNotifId(willExpand ? notif.id : null)
+                          if (willExpand && notif.status !== 'read') {
+                            markNotificationAsRead(notif.id)
+                          }
                         }}
                         onDelete={() => deleteNotification(notif.id)}
+                        prefsHref="/interpreter/dashboard/profile?tab=account-settings"
                       />
                     ))}
                   </div>
@@ -530,72 +541,135 @@ export default function InboxPage() {
   )
 }
 
-/* ── Notification Row ── */
+/* ── Notification Row (expandable) ── */
 
-function NotificationRow({ notif, onClick, onDelete }: { notif: Notification; onClick: () => void; onDelete: () => void }) {
+function NotificationRow({ notif, expanded, onToggle, onDelete, prefsHref }: {
+  notif: Notification
+  expanded: boolean
+  onToggle: () => void
+  onDelete: () => void
+  prefsHref: string
+}) {
   const [hover, setHover] = useState(false)
+  const bodyRef = useRef<HTMLDivElement>(null)
   const isUnread = notif.status !== 'read'
+
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      onToggle()
+    }
+  }
 
   return (
     <div
-      onClick={onClick}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
       style={{
-        padding: '14px 20px',
-        cursor: 'pointer',
-        transition: 'background 0.15s, opacity 0.15s',
-        background: isUnread
-          ? (hover ? 'rgba(0,229,255,0.07)' : 'rgba(0,229,255,0.04)')
-          : (hover ? 'rgba(255,255,255,0.02)' : 'transparent'),
         borderBottom: '1px solid var(--border)',
-        display: 'flex', alignItems: 'flex-start', gap: 12,
-        opacity: isUnread ? 1 : 0.6,
+        borderLeft: isUnread ? '3px solid var(--accent)' : '3px solid transparent',
+        transition: 'background 0.15s, border-color 0.2s',
       }}
     >
-      <div style={{ flexShrink: 0, marginTop: 2 }}>
-        <NotificationIcon type={notif.type} size={18} />
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 3 }}>
-          <span style={{
-            fontFamily: "'DM Sans', sans-serif", fontSize: '0.86rem',
-            fontWeight: isUnread ? 600 : 400, color: 'var(--text)',
-            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-          }}>
-            {notif.subject || '(no subject)'}
-          </span>
-          <span style={{ fontSize: '0.72rem', color: 'var(--muted)', flexShrink: 0, fontFamily: "'DM Sans', sans-serif" }}>
-            {timeAgo(notif.created_at)}
-          </span>
-        </div>
-        {notif.body && (
-          <p style={{
-            margin: 0, fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.45,
-            fontFamily: "'DM Sans', sans-serif",
-            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-          }}>
-            {notif.body}
-          </p>
-        )}
-      </div>
-      <button
-        className="notif-delete-btn"
-        onClick={(e) => { e.stopPropagation(); onDelete() }}
-        title="Delete notification"
+      {/* Clickable header */}
+      <div
+        role="button"
+        tabIndex={0}
+        aria-expanded={expanded}
+        onClick={onToggle}
+        onKeyDown={handleKeyDown}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
         style={{
-          background: 'none', border: 'none', cursor: 'pointer',
-          color: 'var(--muted)', padding: 4, flexShrink: 0,
-          display: hover ? 'flex' : 'none', alignItems: 'center', justifyContent: 'center',
-          borderRadius: 4, transition: 'color 0.15s',
+          padding: '14px 20px',
+          cursor: 'pointer',
+          transition: 'background 0.15s',
+          background: isUnread
+            ? (hover ? 'rgba(0,229,255,0.07)' : 'rgba(0,229,255,0.04)')
+            : (hover ? 'rgba(255,255,255,0.02)' : 'transparent'),
+          display: 'flex', alignItems: 'flex-start', gap: 12,
+          outline: 'none',
         }}
-        onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent3)' }}
-        onMouseLeave={e => { e.currentTarget.style.color = 'var(--muted)' }}
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M18 6L6 18M6 6l12 12" />
-        </svg>
-      </button>
+        <div style={{ flexShrink: 0, marginTop: 2 }}>
+          <NotificationIcon type={notif.type} size={18} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: expanded ? 0 : 3 }}>
+            <span style={{
+              fontFamily: "'DM Sans', sans-serif", fontSize: '0.86rem',
+              fontWeight: isUnread ? 600 : 400, color: 'var(--text)',
+              ...(expanded ? {} : { whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' }),
+            }}>
+              {notif.subject || '(no subject)'}
+            </span>
+            <span style={{ fontSize: '0.72rem', color: 'var(--muted)', flexShrink: 0, fontFamily: "'DM Sans', sans-serif" }}>
+              {timeAgo(notif.created_at)}
+            </span>
+          </div>
+          {!expanded && notif.body && (
+            <p style={{
+              margin: 0, fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.45,
+              fontFamily: "'DM Sans', sans-serif",
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            }}>
+              {notif.body}
+            </p>
+          )}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+          <button
+            className="notif-delete-btn"
+            onClick={(e) => { e.stopPropagation(); onDelete() }}
+            title="Delete notification"
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--muted)', padding: 4,
+              display: hover ? 'flex' : 'none', alignItems: 'center', justifyContent: 'center',
+              borderRadius: 4, transition: 'color 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent3)' }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--muted)' }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'transform 0.2s', transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </div>
+      </div>
+
+      {/* Expanded body */}
+      {expanded && (
+        <div
+          ref={bodyRef}
+          style={{
+            padding: '0 20px 16px 50px',
+            background: 'rgba(0,229,255,0.02)',
+          }}
+        >
+          {notif.body && (
+            <p style={{
+              margin: '0 0 12px', fontSize: '0.85rem', color: '#b0b0b0', lineHeight: 1.65,
+              fontFamily: "'DM Sans', sans-serif",
+            }}>
+              {notif.body}
+            </p>
+          )}
+          <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginBottom: 8, fontFamily: "'DM Sans', sans-serif" }}>
+            {new Date(notif.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
+          </div>
+          <Link
+            href={prefsHref}
+            style={{
+              fontSize: '0.75rem', color: 'var(--muted)', fontFamily: "'DM Sans', sans-serif",
+              textDecoration: 'none', opacity: 0.7,
+            }}
+          >
+            Manage notification preferences
+          </Link>
+        </div>
+      )}
     </div>
   )
 }
