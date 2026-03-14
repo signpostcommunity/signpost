@@ -679,7 +679,7 @@ function OverviewTab({ interpreter: i }: { interpreter: Interpreter }) {
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {i.specializedSkills.map(s => (
-                      <span key={s} style={{ padding: '6px 14px', background: 'rgba(123,97,255,0.08)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '0.82rem', color: '#f0f2f8', fontWeight: 600 }}>
+                      <span key={s} style={{ padding: '6px 14px', background: 'rgba(123,97,255,0.08)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '0.82rem', color: '#f0f2f8' }}>
                         {s}
                       </span>
                     ))}
