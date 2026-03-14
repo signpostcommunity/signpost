@@ -290,7 +290,7 @@ function DetailModal({ booking, onClose, onToast }: {
           </div>
           {isCancelled
             ? <CancelledBadge reason={booking.cancellation_reason} />
-            : booking.status === 'confirmed'
+            : booking.status === 'confirmed' || booking.status === 'filled'
               ? <ConfirmedBadge />
               : <PendingBadge />
           }
@@ -425,7 +425,7 @@ function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast }: 
           <DemoBadge />
           {isCancelled
             ? <CancelledBadge reason={booking.cancellation_reason} />
-            : booking.status === 'confirmed'
+            : booking.status === 'confirmed' || booking.status === 'filled'
               ? <ConfirmedBadge />
               : <PendingBadge />
           }

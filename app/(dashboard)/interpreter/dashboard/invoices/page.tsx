@@ -269,13 +269,21 @@ export default function InvoicesPage() {
     const allInvoices = invData || []
     setInvoices(allInvoices)
 
-    // Fetch completed bookings
-    const { data: bookingsData, error: bookingsErr } = await supabase
-      .from('bookings')
-      .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, is_seed')
+    // Fetch completed bookings via booking_recipients
+    const { data: completedRecipients, error: bookingsErr } = await supabase
+      .from('booking_recipients')
+      .select(`
+        booking:bookings(
+          id, title, requester_name, specialization, date, time_start, time_end, location, format, is_seed, status
+        )
+      `)
       .eq('interpreter_id', profile.id)
-      .eq('status', 'completed')
-      .order('date', { ascending: false })
+      .eq('status', 'confirmed')
+
+    const bookingsData = (completedRecipients || [])
+      .map((r: Record<string, unknown>) => r.booking as CompletedBooking & { status: string } | null)
+      .filter((b): b is CompletedBooking & { status: string } => b !== null && b.status === 'completed')
+      .sort((a, b) => b.date.localeCompare(a.date))
 
     if (bookingsErr) {
       console.error('[invoices] completed bookings fetch failed:', bookingsErr.message)

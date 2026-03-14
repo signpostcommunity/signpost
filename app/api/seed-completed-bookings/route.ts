@@ -69,40 +69,72 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Profile not found or not yours' }, { status: 403 })
     }
 
-    // Check if completed seed bookings already exist
     const admin = getSupabaseAdmin()
-    const { data: existing, error: checkErr } = await admin
-      .from('bookings')
-      .select('title')
-      .eq('interpreter_id', interpreterProfileId)
-      .eq('is_seed', true)
-      .eq('status', 'completed')
-      .in('title', COMPLETED_SEED_TITLES)
 
-    if (checkErr) {
-      console.error('[seed-completed] check failed:', checkErr.message)
-      return NextResponse.json({ error: 'Check failed' }, { status: 500 })
+    // Check if completed seed bookings already exist for this interpreter via booking_recipients
+    const { data: recipientRows } = await admin
+      .from('booking_recipients')
+      .select('booking_id')
+      .eq('interpreter_id', interpreterProfileId)
+
+    const recipientBookingIds = (recipientRows || []).map(r => r.booking_id)
+
+    let existingTitles = new Set<string>()
+    if (recipientBookingIds.length > 0) {
+      const { data: existing, error: checkErr } = await admin
+        .from('bookings')
+        .select('title')
+        .in('id', recipientBookingIds)
+        .eq('is_seed', true)
+        .eq('status', 'completed')
+        .in('title', COMPLETED_SEED_TITLES)
+
+      if (checkErr) {
+        console.error('[seed-completed] check failed:', checkErr.message)
+        return NextResponse.json({ error: 'Check failed' }, { status: 500 })
+      }
+
+      existingTitles = new Set((existing || []).map(b => b.title))
     }
 
-    const existingTitles = new Set((existing || []).map(b => b.title))
     const toInsert = COMPLETED_SEED_BOOKINGS
       .filter(b => !existingTitles.has(b.title))
-      .map(b => ({ ...b, interpreter_id: interpreterProfileId, requester_id: null }))
+      .map(b => ({ ...b, requester_id: null }))
 
     if (toInsert.length === 0) {
       return NextResponse.json({ inserted: 0 })
     }
 
-    const { error: insertErr } = await admin
+    const { data: inserted, error: insertErr } = await admin
       .from('bookings')
       .insert(toInsert)
+      .select('id, title')
 
     if (insertErr) {
       console.error('[seed-completed] insert failed:', insertErr.message)
       return NextResponse.json({ error: 'Insert failed' }, { status: 500 })
     }
 
-    console.log(`[seed-completed] inserted ${toInsert.length} completed bookings for ${interpreterProfileId}`)
+    // Create booking_recipients for each inserted booking
+    if (inserted && inserted.length > 0) {
+      const recipientsPayload = inserted.map(b => ({
+        booking_id: b.id,
+        interpreter_id: interpreterProfileId,
+        status: 'confirmed',
+        sent_at: new Date().toISOString(),
+        confirmed_at: new Date().toISOString(),
+      }))
+
+      const { error: recipErr } = await admin
+        .from('booking_recipients')
+        .insert(recipientsPayload)
+
+      if (recipErr) {
+        console.error('[seed-completed] booking_recipients insert failed:', recipErr.message)
+      }
+    }
+
+    console.log(`[seed-completed] inserted ${toInsert.length} completed bookings + recipients for ${interpreterProfileId}`)
     return NextResponse.json({ inserted: toInsert.length })
   } catch (err) {
     console.error('[seed-completed] error:', err)

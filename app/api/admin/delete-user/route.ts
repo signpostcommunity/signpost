@@ -37,8 +37,8 @@ export async function POST(request: NextRequest) {
     .maybeSingle()
 
   if (interpProfile) {
-    // Delete bookings referencing this interpreter
-    await admin.from('bookings').delete().eq('interpreter_id', interpProfile.id)
+    // Delete booking_recipients for this interpreter
+    await admin.from('booking_recipients').delete().eq('interpreter_id', interpProfile.id)
     // Delete reviews for this interpreter
     await admin.from('reviews').delete().eq('interpreter_id', interpProfile.id)
     // Delete messages where this interpreter is involved
@@ -66,7 +66,16 @@ export async function POST(request: NextRequest) {
   // Also delete by id (some deaf_profiles use auth uid as primary key)
   await admin.from('deaf_profiles').delete().eq('id', userId)
 
-  // Delete requester data
+  // Delete deaf-related booking data
+  await admin.from('booking_dhh_clients').delete().eq('dhh_user_id', userId)
+
+  // Delete requester data (clean up booking_recipients and booking_dhh_clients first)
+  const { data: reqBookings } = await admin.from('bookings').select('id').eq('requester_id', userId)
+  const reqBookingIds = (reqBookings || []).map(b => b.id)
+  if (reqBookingIds.length > 0) {
+    await admin.from('booking_recipients').delete().in('booking_id', reqBookingIds)
+    await admin.from('booking_dhh_clients').delete().in('booking_id', reqBookingIds)
+  }
   await admin.from('bookings').delete().eq('requester_id', userId)
   await admin.from('requester_profiles').delete().eq('id', userId)
 

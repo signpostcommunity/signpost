@@ -74,7 +74,7 @@ function FormatBadge({ format }: { format: string | null }) {
 
 function isBookingCompleted(booking: BookingWithInterpreter): boolean {
   if (booking.status === 'completed') return true
-  if (booking.status === 'confirmed') {
+  if (booking.status === 'confirmed' || booking.status === 'filled') {
     return new Date(booking.date + 'T23:59:59') < new Date()
   }
   return false

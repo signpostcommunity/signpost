@@ -6,17 +6,36 @@ function daysFromNow(n: number): string {
   return d.toISOString().split('T')[0]
 }
 
+// Track original status for creating booking_recipients
+interface SeedBooking {
+  requester_id: null
+  title: string
+  requester_name: string
+  specialization: string
+  date: string
+  time_start: string
+  time_end: string
+  location: string
+  format: 'in_person' | 'remote'
+  recurrence: string
+  description: string
+  notes: string
+  interpreter_count: number
+  status: 'open' | 'filled' | 'completed'
+  is_seed: true
+  _recipient_status: 'sent' | 'confirmed'
+}
+
 // BETA: seed realistic demo bookings + messages for new interpreters
 export async function seedInterpreterData(interpreterProfileId: string): Promise<{ success: boolean; error?: string }> {
   try {
     const supabase = getSupabaseAdmin()
 
-    // ── Bookings: 3 pending (inquiries) + 3 confirmed ──────────────────────
+    // ── Bookings: 3 open (inquiries) + 2 completed + 3 filled (confirmed) ──
 
-    const bookingsPayload = [
-      // Pending inquiries
+    const bookingsPayload: SeedBooking[] = [
+      // Open inquiries (recipient status: sent)
       {
-        interpreter_id: interpreterProfileId,
         requester_id: null,
         title: 'Staff Meeting Interpretation',
         requester_name: 'Lakewood Community College — HR Dept',
@@ -30,11 +49,11 @@ export async function seedInterpreterData(interpreterProfileId: string): Promise
         description: 'Biweekly staff meeting. ~15 attendees. One Deaf staff member. Mostly spoken English with ASL interpretation needed throughout. Materials can be shared in advance.',
         notes: 'D/HH Client: Janet Liu. Communication prefs: ASL preferred, comfortable with spoken English for brief exchanges. No positioning preference.',
         interpreter_count: 1,
-        status: 'pending' as const,
+        status: 'open' as const,
         is_seed: true,
+        _recipient_status: 'sent' as const,
       },
       {
-        interpreter_id: interpreterProfileId,
         requester_id: null,
         title: 'Therapy Session — Ongoing Client',
         requester_name: 'Dr. Anika Patel, PsyD',
@@ -48,11 +67,11 @@ export async function seedInterpreterData(interpreterProfileId: string): Promise
         description: 'Weekly therapy session for a Deaf client. Therapist uses talk therapy approach. Familiarity with mental health terminology preferred. NDA may be required.',
         notes: 'D/HH Client: Jordan Lee. Communication prefs: Uses a mix of ASL and SimCom. Prefers interpreter remain neutral in affect during sessions. Do not paraphrase — interpret as closely as possible.',
         interpreter_count: 1,
-        status: 'pending' as const,
+        status: 'open' as const,
         is_seed: true,
+        _recipient_status: 'sent' as const,
       },
       {
-        interpreter_id: interpreterProfileId,
         requester_id: null,
         title: 'Parent-Teacher Conference',
         requester_name: 'Greenfield Elementary School',
@@ -66,12 +85,12 @@ export async function seedInterpreterData(interpreterProfileId: string): Promise
         description: 'Conference between Deaf parent and child\'s teacher. Discussion will cover academic progress, behavior, and IEP goals. Relaxed setting.',
         notes: 'D/HH Client: Rosa Hernandez. Communication prefs: ASL preferred, some written English. May bring a family member who signs.',
         interpreter_count: 1,
-        status: 'pending' as const,
+        status: 'open' as const,
         is_seed: true,
+        _recipient_status: 'sent' as const,
       },
       // Completed (past) bookings
       {
-        interpreter_id: interpreterProfileId,
         requester_id: null,
         title: 'Annual Employee Benefits Meeting',
         requester_name: 'Lakewood Community College — HR Dept',
@@ -87,9 +106,9 @@ export async function seedInterpreterData(interpreterProfileId: string): Promise
         recurrence: 'one-time',
         interpreter_count: 1,
         is_seed: true,
+        _recipient_status: 'confirmed' as const,
       },
       {
-        interpreter_id: interpreterProfileId,
         requester_id: null,
         title: 'Physical Therapy Session',
         requester_name: 'Dr. Sarah Kim, PT — Bayside Physical Therapy',
@@ -105,10 +124,10 @@ export async function seedInterpreterData(interpreterProfileId: string): Promise
         recurrence: 'one-time',
         interpreter_count: 1,
         is_seed: true,
+        _recipient_status: 'confirmed' as const,
       },
-      // Confirmed bookings
+      // Filled (confirmed) bookings
       {
-        interpreter_id: interpreterProfileId,
         requester_id: null,
         title: 'Cardiology Follow-Up',
         requester_name: 'Swedish Medical Center — Scheduling',
@@ -122,11 +141,11 @@ export async function seedInterpreterData(interpreterProfileId: string): Promise
         description: 'Post-surgical follow-up for a Deaf patient. Cardiologist will review test results and discuss next steps. Patient uses ASL as primary language.',
         notes: 'D/HH Client: David Osei. Communication prefs: Black ASL preferred. Client may use tactile signing for complex medical terminology. Prefers interpreter positioned directly across from them.',
         interpreter_count: 1,
-        status: 'confirmed' as const,
+        status: 'filled' as const,
         is_seed: true,
+        _recipient_status: 'confirmed' as const,
       },
       {
-        interpreter_id: interpreterProfileId,
         requester_id: null,
         title: 'Workplace Safety Training',
         requester_name: 'Pacific Northwest Construction — Safety Office',
@@ -140,11 +159,11 @@ export async function seedInterpreterData(interpreterProfileId: string): Promise
         description: 'Annual OSHA safety training. Two Deaf employees attending. Heavy use of industry-specific terminology. Hard hat and steel toes required on site. Materials shared 48hrs in advance.',
         notes: 'D/HH Client: Marcus Webb. Communication prefs: ASL preferred, uses some gestures for technical terms. Prefers interpreter on his right side.',
         interpreter_count: 2,
-        status: 'confirmed' as const,
+        status: 'filled' as const,
         is_seed: true,
+        _recipient_status: 'confirmed' as const,
       },
       {
-        interpreter_id: interpreterProfileId,
         requester_id: null,
         title: 'Deaf Community Leadership Meeting',
         requester_name: 'Washington State Deaf Association',
@@ -158,21 +177,48 @@ export async function seedInterpreterData(interpreterProfileId: string): Promise
         description: 'Monthly board meeting. Mix of Deaf and hearing board members. ASL is the primary language of the meeting. Voicing for hearing participants who don\'t sign.',
         notes: 'D/HH Client: Multiple board members. Communication prefs: ASL is primary language of the meeting. Some board members are DeafBlind — pro-tactile support may be needed.',
         interpreter_count: 1,
-        status: 'confirmed' as const,
+        status: 'filled' as const,
         is_seed: true,
+        _recipient_status: 'confirmed' as const,
       },
     ]
 
+    // Extract _recipient_status before inserting (not a DB column)
+    const recipientStatusByTitle: Record<string, string> = {}
+    const dbPayload = bookingsPayload.map(({ _recipient_status, ...rest }) => {
+      recipientStatusByTitle[rest.title] = _recipient_status
+      return rest
+    })
+
     const { data: insertedBookings, error: bookingsErr } = await supabase
       .from('bookings')
-      .insert(bookingsPayload)
+      .insert(dbPayload)
       .select('id, title')
 
     if (bookingsErr) {
       console.error('[seed] bookings insert failed:', bookingsErr.message)
     }
 
-    // Build a lookup from title → booking ID for linking messages
+    // Create booking_recipients for each booking
+    if (insertedBookings) {
+      const recipientsPayload = insertedBookings.map(b => ({
+        booking_id: b.id,
+        interpreter_id: interpreterProfileId,
+        status: recipientStatusByTitle[b.title] || 'sent',
+        sent_at: new Date().toISOString(),
+        ...(recipientStatusByTitle[b.title] === 'confirmed' ? { confirmed_at: new Date().toISOString() } : {}),
+      }))
+
+      const { error: recipientsErr } = await supabase
+        .from('booking_recipients')
+        .insert(recipientsPayload)
+
+      if (recipientsErr) {
+        console.error('[seed] booking_recipients insert failed:', recipientsErr.message)
+      }
+    }
+
+    // Build a lookup from title -> booking ID for linking messages
     const bookingIdByTitle: Record<string, string> = {}
     if (insertedBookings) {
       for (const b of insertedBookings) {
@@ -273,7 +319,7 @@ export async function seedInterpreterData(interpreterProfileId: string): Promise
       return { success: false, error: `${bookingsErr?.message || ''} ${messagesErr?.message || ''}`.trim() }
     }
 
-    console.log(`[seed] seeded 8 bookings + 4 messages + 1 notification for interpreter ${interpreterProfileId}`)
+    console.log(`[seed] seeded 8 bookings + 8 booking_recipients + 4 messages + 1 notification for interpreter ${interpreterProfileId}`)
     return { success: true }
   } catch (err) {
     const msg = err instanceof Error ? err.message : 'Unknown seed error'

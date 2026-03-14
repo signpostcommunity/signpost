@@ -303,12 +303,12 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
     async function fetchData() {
       const supabase = createClient()
 
-      // Pending bookings count (exact)
+      // Pending bookings count (via booking_recipients)
       const { count: pendingCount, error: pendingCountErr } = await supabase
-        .from('bookings')
+        .from('booking_recipients')
         .select('id', { count: 'exact', head: true })
         .eq('interpreter_id', interpreterProfileId!)
-        .eq('status', 'pending')
+        .in('status', ['sent', 'viewed', 'responded'])
 
       if (pendingCountErr) {
         console.error('[overview] pending count failed:', pendingCountErr.message)
@@ -316,46 +316,71 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         setNewInquiries(pendingCount ?? 0)
       }
 
-      // Pending bookings data (for display, limit 2)
-      const { data: pending, error: pendingErr } = await supabase
-        .from('bookings')
-        .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed')
+      // Pending bookings data (for display, limit 2, via booking_recipients)
+      const { data: pendingRecipients, error: pendingErr } = await supabase
+        .from('booking_recipients')
+        .select(`
+          id,
+          status,
+          booking:bookings(
+            id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed
+          )
+        `)
         .eq('interpreter_id', interpreterProfileId!)
-        .eq('status', 'pending')
-        .order('date', { ascending: true })
+        .in('status', ['sent', 'viewed', 'responded'])
+        .order('sent_at', { ascending: true })
         .limit(2)
 
-      if (!pendingErr && pending) {
+      if (!pendingErr && pendingRecipients) {
+        const pending = pendingRecipients
+          .filter((r: Record<string, unknown>) => r.booking)
+          .map((r: Record<string, unknown>) => r.booking as Booking)
         setPendingBookings(pending)
       }
 
-      // Confirmed this month count
+      // Confirmed this month count (via booking_recipients + bookings)
       const now = new Date()
       const startOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
       const endOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()}`
 
-      const { count: confirmedCount, error: confirmedErr } = await supabase
-        .from('bookings')
-        .select('id', { count: 'exact', head: true })
+      const { data: confirmedRecipients, error: confirmedErr } = await supabase
+        .from('booking_recipients')
+        .select('id, booking:bookings(date)')
         .eq('interpreter_id', interpreterProfileId!)
         .eq('status', 'confirmed')
-        .gte('date', startOfMonth)
-        .lte('date', endOfMonth)
 
-      if (!confirmedErr) setConfirmedThisMonth(confirmedCount ?? 0)
+      if (!confirmedErr && confirmedRecipients) {
+        const thisMonthCount = confirmedRecipients.filter((r: Record<string, unknown>) => {
+          const b = r.booking as { date: string } | null
+          return b && b.date >= startOfMonth && b.date <= endOfMonth
+        }).length
+        setConfirmedThisMonth(thisMonthCount)
+      }
 
       // Upcoming confirmed bookings for display
       const today = now.toISOString().slice(0, 10)
-      const { data: confirmed, error: confDataErr } = await supabase
-        .from('bookings')
-        .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed')
+      const { data: upcomingRecipients, error: confDataErr } = await supabase
+        .from('booking_recipients')
+        .select(`
+          id,
+          booking:bookings(
+            id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed
+          )
+        `)
         .eq('interpreter_id', interpreterProfileId!)
         .eq('status', 'confirmed')
-        .gte('date', today)
-        .order('date', { ascending: true })
-        .limit(2)
 
-      if (!confDataErr && confirmed) setConfirmedBookings(confirmed)
+      if (!confDataErr && upcomingRecipients) {
+        const upcoming = upcomingRecipients
+          .filter((r: Record<string, unknown>) => {
+            const b = r.booking as { date: string } | null
+            return b && b.date >= today
+          })
+          .map((r: Record<string, unknown>) => r.booking as Booking)
+          .sort((a, b) => a.date.localeCompare(b.date))
+          .slice(0, 2)
+        setConfirmedBookings(upcoming)
+      }
 
       // Preferred team count — table may not exist
       const { count: teamC, error: teamErr } = await supabase

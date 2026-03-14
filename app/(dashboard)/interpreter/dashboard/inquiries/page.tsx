@@ -11,6 +11,8 @@ import { sendNotification } from '@/lib/notifications'
 
 interface Booking {
   id: string
+  recipient_id: string
+  recipient_status: string
   title: string | null
   requester_id: string | null
   requester_name: string | null
@@ -100,9 +102,13 @@ function AcceptModal({ booking, onClose, onAccepted }: {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     const { error } = await supabase
-      .from('bookings')
-      .update({ status: 'confirmed' })
-      .eq('id', booking.id)
+      .from('booking_recipients')
+      .update({
+        status: 'responded',
+        responded_at: new Date().toISOString(),
+        response_notes: note || null,
+      })
+      .eq('id', booking.recipient_id)
 
     if (error) {
       console.error('[inquiries] accept failed:', error.message)
@@ -390,9 +396,13 @@ function DeclineModal({ booking, onConfirm, onClose }: {
     const supabase = createClient()
     const finalReason = reason === 'Other' && otherText ? `Other: ${otherText}` : reason
     const { error } = await supabase
-      .from('bookings')
-      .update({ status: 'declined' })
-      .eq('id', booking.id)
+      .from('booking_recipients')
+      .update({
+        status: 'declined',
+        declined_at: new Date().toISOString(),
+        decline_reason: finalReason,
+      })
+      .eq('id', booking.recipient_id)
 
     if (error) {
       console.error('[inquiries] decline failed:', error.message)
@@ -484,16 +494,33 @@ export default function InquiriesPage() {
     if (profileErr || !profile) { setLoading(false); return }
 
     const { data, error } = await supabase
-      .from('bookings')
-      .select('id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed, created_at')
+      .from('booking_recipients')
+      .select(`
+        id,
+        status,
+        sent_at,
+        booking:bookings(
+          id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed, created_at
+        )
+      `)
       .eq('interpreter_id', profile.id)
-      .eq('status', 'pending')
-      .order('date', { ascending: true })
+      .in('status', ['sent', 'viewed', 'responded'])
+      .order('sent_at', { ascending: false })
 
     if (error) {
       console.error('[inquiries] fetch failed:', error.message)
     } else {
-      setBookings(data || [])
+      const mapped = (data || [])
+        .filter((r: Record<string, unknown>) => r.booking)
+        .map((r: Record<string, unknown>) => {
+          const b = r.booking as Record<string, unknown>
+          return {
+            ...b,
+            recipient_id: r.id as string,
+            recipient_status: r.status as string,
+          } as unknown as Booking
+        })
+      setBookings(mapped)
     }
     setLoading(false)
   }, [])
@@ -574,7 +601,20 @@ export default function InquiriesPage() {
               <button className="btn-primary" style={{ fontSize: '0.82rem', padding: '8px 18px' }} onClick={() => setAccepting(inq.id)}>
                 Accept &amp; Send Rate
               </button>
-              <GhostButton onClick={() => setViewing(inq.id)}>View Details</GhostButton>
+              <GhostButton onClick={() => {
+                setViewing(inq.id)
+                if (inq.recipient_status === 'sent') {
+                  const supabase = createClient()
+                  supabase
+                    .from('booking_recipients')
+                    .update({ status: 'viewed', viewed_at: new Date().toISOString() })
+                    .eq('id', inq.recipient_id)
+                    .eq('status', 'sent')
+                    .then(() => {
+                      setBookings(prev => prev.map(b => b.id === inq.id ? { ...b, recipient_status: 'viewed' } : b))
+                    })
+                }
+              }}>View Details</GhostButton>
               <GhostButton danger onClick={() => setDeclining(inq.id)}>Decline</GhostButton>
             </div>
           </div>

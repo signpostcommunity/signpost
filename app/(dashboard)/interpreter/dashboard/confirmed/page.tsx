@@ -12,6 +12,7 @@ import { sendNotification } from '@/lib/notifications'
 
 interface Booking {
   id: string
+  recipient_id: string
   title: string | null
   requester_id: string | null
   requester_name: string | null
@@ -157,6 +158,17 @@ function CancelModal({ booking, onClose, onCancelled }: {
       ? otherText.trim()
       : reason
 
+    // Update recipient status to withdrawn
+    const { error: recipientErr } = await supabase
+      .from('booking_recipients')
+      .update({ status: 'withdrawn', withdrawn_at: new Date().toISOString() })
+      .eq('id', booking.recipient_id)
+
+    if (recipientErr) {
+      console.error('[confirmed] recipient withdraw failed:', recipientErr.message)
+    }
+
+    // Update the booking itself
     const { error } = await supabase
       .from('bookings')
       .update({
@@ -1491,17 +1503,39 @@ export default function ConfirmedPage() {
         .catch(err => console.error('[confirmed] backfill failed:', err))
     }
 
-    const { data, error } = await supabase
-      .from('bookings')
-      .select('id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, description, notes, status, is_seed, cancellation_reason, sub_search_initiated, rate_profile_id')
+    const { data: recipientData, error } = await supabase
+      .from('booking_recipients')
+      .select(`
+        id,
+        status,
+        rate_profile_id,
+        booking:bookings(
+          id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, description, notes, status, is_seed, cancellation_reason, sub_search_initiated
+        )
+      `)
       .eq('interpreter_id', profile.id)
-      .in('status', ['confirmed', 'completed', 'cancelled'])
-      .order('date', { ascending: true })
+      .in('status', ['confirmed', 'withdrawn'])
 
     if (error) {
       console.error('[confirmed] fetch failed:', error.message)
     } else {
-      setBookings(data || [])
+      const data = (recipientData || [])
+        .filter((r: Record<string, unknown>) => r.booking)
+        .map((r: Record<string, unknown>) => {
+          const b = r.booking as Record<string, unknown>
+          // Determine display status: use booking status for completed/cancelled, otherwise confirmed
+          let displayStatus = 'confirmed'
+          if (b.status === 'completed') displayStatus = 'completed'
+          else if (b.status === 'cancelled' || r.status === 'withdrawn') displayStatus = 'cancelled'
+          return {
+            ...b,
+            recipient_id: r.id as string,
+            rate_profile_id: r.rate_profile_id as string | null,
+            status: displayStatus,
+          } as unknown as Booking
+        })
+        .sort((a, b) => a.date.localeCompare(b.date))
+      setBookings(data)
 
       // Fetch invoice status for all bookings
       const bookingIds = (data || []).map(b => b.id)

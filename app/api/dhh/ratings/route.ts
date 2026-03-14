@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     // Verify the booking belongs to this user and is completed/past
     const { data: booking, error: bookingError } = await admin
       .from('bookings')
-      .select('id, status, date, dhh_client_id, requester_id, interpreter_id')
+      .select('id, status, date, requester_id')
       .eq('id', bookingId)
       .single()
 
@@ -49,15 +49,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
     }
 
-    // Check the booking belongs to this user
-    const isOwner = booking.dhh_client_id === user.id || booking.requester_id === user.id
+    // Check the booking belongs to this user (via booking_dhh_clients or requester_id)
+    const { data: dhhClientEntry } = await admin
+      .from('booking_dhh_clients')
+      .select('id')
+      .eq('booking_id', bookingId)
+      .eq('dhh_user_id', user.id)
+      .maybeSingle()
+
+    const isOwner = !!dhhClientEntry || booking.requester_id === user.id
     if (!isOwner) {
       return NextResponse.json({ error: 'Not your booking' }, { status: 403 })
     }
 
-    // Check booking is completed or past confirmed
+    // Check booking is completed or past filled
     const isPast = new Date(booking.date + 'T23:59:59') < new Date()
-    if (booking.status !== 'completed' && !(booking.status === 'confirmed' && isPast)) {
+    if (booking.status !== 'completed' && !(booking.status === 'filled' && isPast)) {
       return NextResponse.json({ error: 'Booking is not completed' }, { status: 400 })
     }
 

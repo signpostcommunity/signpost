@@ -222,18 +222,18 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
 
       if (!profile) return
 
-      // Pending inquiries count
+      // Pending inquiries count (via booking_recipients)
       const { count: inquiriesCount, error: inqErr } = await supabase
-        .from('bookings')
+        .from('booking_recipients')
         .select('id', { count: 'exact', head: true })
         .eq('interpreter_id', profile.id)
-        .eq('status', 'pending')
+        .in('status', ['sent', 'viewed', 'responded'])
 
       if (inqErr) console.error('[sidebar] inquiries count failed:', inqErr.message)
 
-      // Confirmed bookings count
+      // Confirmed bookings count (via booking_recipients)
       const { count: confirmedCount, error: confErr } = await supabase
-        .from('bookings')
+        .from('booking_recipients')
         .select('id', { count: 'exact', head: true })
         .eq('interpreter_id', profile.id)
         .eq('status', 'confirmed')

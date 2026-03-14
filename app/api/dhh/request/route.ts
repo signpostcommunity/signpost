@@ -71,43 +71,64 @@ export async function POST(request: NextRequest) {
     // Map format value for DB constraint (in_person, remote, hybrid)
     const dbFormat = format === 'in-person' ? 'in_person' : format
 
-    const bookingIds: string[] = []
+    // Create ONE booking (the request)
+    const { data: booking, error: insertError } = await admin
+      .from('bookings')
+      .insert({
+        requester_id: user.id,
+        status: 'open',
+        request_type: 'personal',
+        title,
+        date,
+        time_start: timeStart,
+        time_end: timeEnd,
+        timezone: timezone || 'America/Los_Angeles',
+        format: dbFormat,
+        location: location || null,
+        event_type: eventType || null,
+        event_category: eventCategory || null,
+        interpreter_count: interpreterCount || interpreterIds.length,
+        description: description || null,
+        notes: description || null,
+        requester_name: dhhClientName,
+        is_seed: false,
+      })
+      .select('id')
+      .single()
 
-    // Create one booking per interpreter
+    if (insertError) {
+      console.error('[dhh/request] booking insert failed:', insertError.message)
+      return NextResponse.json({ error: `Failed to create booking: ${insertError.message}` }, { status: 500 })
+    }
+
+    // Create booking_dhh_client entry
+    const { error: dhhClientErr } = await admin
+      .from('booking_dhh_clients')
+      .insert({
+        booking_id: booking.id,
+        dhh_user_id: user.id,
+        comm_prefs_snapshot: commPrefs,
+        added_at: new Date().toISOString(),
+      })
+
+    if (dhhClientErr) {
+      console.error('[dhh/request] booking_dhh_clients insert failed:', dhhClientErr.message)
+    }
+
+    // Create booking_recipients for each interpreter
     for (const interpreterId of interpreterIds) {
-      const { data: booking, error: insertError } = await admin
-        .from('bookings')
+      const { error: recipientErr } = await admin
+        .from('booking_recipients')
         .insert({
-          dhh_client_id: user.id,
-          requester_id: user.id,
+          booking_id: booking.id,
           interpreter_id: interpreterId,
-          status: 'pending',
-          request_type: 'personal',
-          title,
-          date,
-          time_start: timeStart,
-          time_end: timeEnd,
-          timezone: timezone || 'America/Los_Angeles',
-          format: dbFormat,
-          location: location || null,
-          event_type: eventType || null,
-          event_category: eventCategory || null,
-          interpreter_count: interpreterCount || 1,
-          description: description || null,
-          notes: description || null,
-          comm_prefs_snapshot: commPrefs,
-          requester_name: dhhClientName,
-          is_seed: false,
+          status: 'sent',
+          sent_at: new Date().toISOString(),
         })
-        .select('id')
-        .single()
 
-      if (insertError) {
-        console.error('[dhh/request] booking insert failed:', insertError.message)
-        return NextResponse.json({ error: `Failed to create booking: ${insertError.message}` }, { status: 500 })
+      if (recipientErr) {
+        console.error('[dhh/request] booking_recipients insert failed:', recipientErr.message)
       }
-
-      bookingIds.push(booking.id)
 
       // Look up interpreter's user_id for notification
       const { data: interpProfile, error: interpError } = await admin
@@ -155,7 +176,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ success: true, bookingIds })
+    return NextResponse.json({ success: true, bookingIds: [booking.id] })
   } catch (err) {
     console.error('[dhh/request] error:', err instanceof Error ? err.message : err)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
@@ -172,17 +193,36 @@ export async function GET() {
 
     const admin = getSupabaseAdmin()
 
+    // Get bookings where this user is a DHH client (via booking_dhh_clients)
+    const { data: dhhEntries, error: dhhErr } = await admin
+      .from('booking_dhh_clients')
+      .select('booking_id')
+      .eq('dhh_user_id', user.id)
+
+    // Also check bookings where user is the requester (for backwards compat)
+    const { data: reqBookings, error: reqErr } = await admin
+      .from('bookings')
+      .select('id')
+      .eq('requester_id', user.id)
+
+    const dhhBookingIds = (dhhEntries || []).map(e => e.booking_id)
+    const reqBookingIds = (reqBookings || []).map(b => b.id)
+    const allBookingIds = [...new Set([...dhhBookingIds, ...reqBookingIds])]
+
+    if (allBookingIds.length === 0) {
+      return NextResponse.json({ bookings: [] })
+    }
+
     const { data: bookings, error: fetchError } = await admin
       .from('bookings')
       .select(`
         id, title, date, time_start, time_end, timezone, location, format,
         status, request_type, event_type, event_category, interpreter_count,
-        description, notes, comm_prefs_snapshot, is_seed,
+        description, notes, is_seed,
         cancellation_reason, cancelled_by, cancelled_at, sub_search_initiated,
-        created_at, requester_name,
-        interpreter_id
+        created_at, requester_name
       `)
-      .eq('dhh_client_id', user.id)
+      .in('id', allBookingIds)
       .order('date', { ascending: false })
 
     if (fetchError) {
@@ -190,15 +230,27 @@ export async function GET() {
       return NextResponse.json({ error: 'Failed to fetch requests' }, { status: 500 })
     }
 
-    // Enrich with interpreter info
-    const interpreterIds = [...new Set((bookings || []).map(b => b.interpreter_id).filter(Boolean))]
+    // Get interpreter info for each booking via booking_recipients
+    const { data: recipients } = await admin
+      .from('booking_recipients')
+      .select('booking_id, interpreter_id, status')
+      .in('booking_id', allBookingIds)
+
+    // Build per-booking recipient lookup
+    const recipientsByBooking: Record<string, { interpreter_id: string; status: string }[]> = {}
+    for (const r of recipients || []) {
+      if (!recipientsByBooking[r.booking_id]) recipientsByBooking[r.booking_id] = []
+      recipientsByBooking[r.booking_id].push(r)
+    }
+
+    const allInterpreterIds = [...new Set((recipients || []).map(r => r.interpreter_id))]
     let interpreterMap: Record<string, { name: string; first_name: string | null; last_name: string | null; photo_url: string | null }> = {}
 
-    if (interpreterIds.length > 0) {
+    if (allInterpreterIds.length > 0) {
       const { data: interpreters, error: interpError } = await admin
         .from('interpreter_profiles')
         .select('id, name, first_name, last_name, photo_url')
-        .in('id', interpreterIds)
+        .in('id', allInterpreterIds)
 
       if (interpError) {
         console.error('[dhh/request] interpreter lookup failed:', interpError.message)
@@ -214,10 +266,15 @@ export async function GET() {
       }
     }
 
-    const enriched = (bookings || []).map(b => ({
-      ...b,
-      interpreter: interpreterMap[b.interpreter_id] || null,
-    }))
+    const enriched = (bookings || []).map(b => {
+      const bookingRecipients = recipientsByBooking[b.id] || []
+      const firstRecipient = bookingRecipients[0]
+      return {
+        ...b,
+        interpreter_id: firstRecipient?.interpreter_id || null,
+        interpreter: firstRecipient ? interpreterMap[firstRecipient.interpreter_id] || null : null,
+      }
+    })
 
     return NextResponse.json({ bookings: enriched })
   } catch (err) {

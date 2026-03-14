@@ -205,13 +205,13 @@ async function checkAccessRules(
   return false
 }
 
-// Check if requester has a booking with this interpreter
+// Check if requester has a booking with this interpreter (via booking_recipients)
 async function hasBookingBetween(
   admin: ReturnType<typeof getSupabaseAdmin>,
   requesterId: string,
   interpreterUserId: string
 ): Promise<boolean> {
-  // interpreter_id in bookings references interpreter_profiles.id (not auth.users.id)
+  // interpreter_id in booking_recipients references interpreter_profiles.id (not auth.users.id)
   const { data: interpProfile } = await admin
     .from('interpreter_profiles')
     .select('id')
@@ -220,11 +220,21 @@ async function hasBookingBetween(
 
   if (!interpProfile) return false
 
+  // Get bookings where this interpreter is a recipient
+  const { data: recipientRows } = await admin
+    .from('booking_recipients')
+    .select('booking_id')
+    .eq('interpreter_id', interpProfile.id)
+
+  if (!recipientRows || recipientRows.length === 0) return false
+  const bookingIds = recipientRows.map(r => r.booking_id)
+
+  // Check if any of those bookings belong to this requester
   const { data: booking } = await admin
     .from('bookings')
     .select('id')
     .eq('requester_id', requesterId)
-    .eq('interpreter_id', interpProfile.id)
+    .in('id', bookingIds)
     .limit(1)
     .single()
 
@@ -247,12 +257,21 @@ async function hasSharedBooking(
 
   const interpreterIds = roster.map((r: { interpreter_id: string }) => r.interpreter_id)
 
-  // Check if any of those interpreters have a booking with the requester
+  // Get bookings where any roster interpreter is a recipient
+  const { data: recipientRows } = await admin
+    .from('booking_recipients')
+    .select('booking_id')
+    .in('interpreter_id', interpreterIds)
+
+  if (!recipientRows || recipientRows.length === 0) return false
+  const bookingIds = [...new Set(recipientRows.map(r => r.booking_id))]
+
+  // Check if any of those bookings belong to this requester
   const { data: booking } = await admin
     .from('bookings')
     .select('id')
     .eq('requester_id', requesterId)
-    .in('interpreter_id', interpreterIds)
+    .in('id', bookingIds)
     .limit(1)
     .single()
 
