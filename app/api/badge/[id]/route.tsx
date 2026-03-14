@@ -135,10 +135,11 @@ export async function GET(
       <text x="130" y="42" font-family="'Syne'" font-weight="700" font-size="22" fill="#f0f2f8">${esc(displayName)}</text>
       <text x="130" y="62" font-family="'Inter'" font-weight="400" font-size="14" fill="#b0b8d0">${esc(subtitle)}</text>
       <rect x="130" y="80" width="2.5" height="18" rx="1" fill="#00e5ff" />
-      <text x="138" y="95" font-family="'Inter'" font-weight="400" font-size="16" fill="#b0b8d0">Book me on</text>
-      <text x="238" y="95" font-family="'Syne'" font-weight="800" font-size="18" fill="#ffffff">sign</text>
-      <text x="274" y="95" font-family="'Syne'" font-weight="800" font-size="18" fill="#00e5ff">post</text>
-      <text x="312" y="95" font-size="20" fill="#00e5ff">\u203A</text>
+      <text x="138" y="95" font-family="'Inter'" font-weight="400" font-size="16" fill="#f0f2f8">Book me</text>
+      <text x="199" y="95" font-family="'Inter'" font-weight="400" font-size="16" fill="#b0b8d0">on</text>
+      <text x="222" y="95" font-family="'Syne'" font-weight="800" font-size="18" fill="#ffffff">sign</text>
+      <text x="258" y="95" font-family="'Syne'" font-weight="800" font-size="18" fill="#00e5ff">post</text>
+      <text x="302" y="95" font-size="20" fill="#00e5ff">\u203A</text>
     </svg>`
 
     const fonts = await loadFonts()
