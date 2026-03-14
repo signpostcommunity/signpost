@@ -5,7 +5,6 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { SPECIALIZATION_CATEGORIES } from '@/lib/constants/specializations'
 import InterpreterPicker from '@/components/dhh/InterpreterPicker'
 import CommPrefsDisplay from '@/components/dhh/CommPrefsDisplay'
 import { BetaBanner, PageHeader, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
@@ -19,7 +18,12 @@ const TIMEZONES = [
   { label: 'Hawaii Time (HT)', value: 'Pacific/Honolulu' },
 ]
 
-const categories = Object.keys(SPECIALIZATION_CATEGORIES)
+const PERSONAL_EVENT_TYPES = [
+  'Wedding',
+  'Funeral / Memorial',
+  'Family reunion / Celebration',
+  'Private appointment',
+]
 
 const sectionHeadingStyle: React.CSSProperties = {
   fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem',
@@ -61,7 +65,6 @@ export default function DhhRequestPage() {
 
   // Form state
   const [title, setTitle] = useState('')
-  const [category, setCategory] = useState('')
   const [eventType, setEventType] = useState('')
   const [format, setFormat] = useState('in-person')
   const [location, setLocation] = useState('')
@@ -97,8 +100,6 @@ export default function DhhRequestPage() {
     init()
   }, [])
 
-  const subcategories = category ? (SPECIALIZATION_CATEGORIES[category] || []) : []
-
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
 
@@ -123,7 +124,7 @@ export default function DhhRequestPage() {
           format,
           location: format === 'remote' ? 'Remote' : location.trim(),
           eventType: eventType || null,
-          eventCategory: category || null,
+          eventCategory: eventType ? 'Personal & Life Events' : null,
           interpreterCount,
           description: description.trim(),
           interpreterIds: selectedInterpreters,
@@ -177,36 +178,22 @@ export default function DhhRequestPage() {
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              placeholder="e.g. Doctor appointment, IEP meeting"
+              placeholder="e.g. Family reunion, doctor appointment, wedding, church service"
               style={inputStyle}
               required
             />
           </div>
 
-          <div style={{ display: 'flex', gap: 12, marginBottom: 18, flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: 180 }}>
-              <label style={labelStyle}>Event Category</label>
-              <select
-                value={category}
-                onChange={e => { setCategory(e.target.value); setEventType('') }}
-                style={selectStyle}
-              >
-                <option value="">Select category...</option>
-                {categories.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-            <div style={{ flex: 1, minWidth: 180 }}>
-              <label style={labelStyle}>Event Type</label>
-              <select
-                value={eventType}
-                onChange={e => setEventType(e.target.value)}
-                style={selectStyle}
-                disabled={!category}
-              >
-                <option value="">Select type...</option>
-                {subcategories.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
+          <div style={fieldGroupStyle}>
+            <label style={labelStyle}>Event Type</label>
+            <select
+              value={eventType}
+              onChange={e => setEventType(e.target.value)}
+              style={selectStyle}
+            >
+              <option value="">Select event type...</option>
+              {PERSONAL_EVENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
           </div>
 
           <div style={fieldGroupStyle}>

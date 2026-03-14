@@ -28,6 +28,8 @@ interface BookingWithInterpreter {
   cancelled_at?: string | null
   created_at: string
   interpreter_id: string
+  requester_id?: string | null
+  dhh_client_id?: string | null
   interpreter: {
     name: string
     first_name: string | null
@@ -120,7 +122,6 @@ function RequestCard({ booking, onExpand, expanded, ratedBookings, onRated }: {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-          {/* Interpreter avatar */}
           {interp?.photo_url ? (
             <img
               src={interp.photo_url}
@@ -220,11 +221,14 @@ function RequestCard({ booking, onExpand, expanded, ratedBookings, onRated }: {
   )
 }
 
+type Tab = 'professional' | 'personal'
+
 export default function DhhRequestsListPage() {
   const [bookings, setBookings] = useState<BookingWithInterpreter[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [ratedBookings, setRatedBookings] = useState<Set<string>>(new Set())
+  const [activeTab, setActiveTab] = useState<Tab>('professional')
 
   const fetchRequests = useCallback(async () => {
     try {
@@ -264,39 +268,71 @@ export default function DhhRequestsListPage() {
     setRatedBookings(prev => new Set(prev).add(bookingId))
   }
 
+  // Filter bookings by tab
+  const professionalBookings = bookings.filter(b => b.request_type === 'professional' || (!b.request_type && !b.requester_id))
+  const personalBookings = bookings.filter(b => b.request_type === 'personal')
+  const activeBookings = activeTab === 'professional' ? professionalBookings : personalBookings
+
+  const tabStyle = (tab: Tab): React.CSSProperties => ({
+    background: 'none', border: 'none', cursor: 'pointer',
+    padding: '10px 20px', fontFamily: "'Syne', sans-serif", fontWeight: 700,
+    fontSize: '0.88rem',
+    color: activeTab === tab ? 'var(--accent)' : 'var(--muted)',
+    borderBottom: activeTab === tab ? '2px solid var(--accent)' : '2px solid transparent',
+    transition: 'color 0.15s, border-color 0.15s',
+  })
+
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       <BetaBanner />
-      <PageHeader title="My Requests" subtitle="Personal interpreter requests you've submitted." />
+      <PageHeader title="My Requests" subtitle="Track interpreter requests and bookings." />
+
+      {/* Tab bar */}
+      <div style={{
+        display: 'flex', gap: 0, marginBottom: 20,
+        borderBottom: '1px solid var(--border)',
+      }}>
+        <button onClick={() => { setActiveTab('professional'); setExpandedId(null) }} style={tabStyle('professional')}>
+          Requests made on my behalf
+        </button>
+        <button onClick={() => { setActiveTab('personal'); setExpandedId(null) }} style={tabStyle('personal')}>
+          My personal requests
+        </button>
+      </div>
 
       {loading ? (
         <div style={{ padding: '40px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem' }}>
           Loading...
         </div>
-      ) : bookings.length === 0 ? (
+      ) : activeBookings.length === 0 ? (
         <div style={{
           border: '2px dashed var(--border)', borderRadius: 'var(--radius)',
           padding: '40px 24px', textAlign: 'center',
           color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.6,
         }}>
-          No requests yet. Submit your first interpreter request.
-          <div style={{ marginTop: 14 }}>
-            <Link
-              href="/dhh/dashboard/request"
-              style={{
-                display: 'inline-block', padding: '10px 24px',
-                background: 'linear-gradient(135deg, #9d87ff, #7b61ff)',
-                borderRadius: 'var(--radius-sm)', color: '#fff',
-                textDecoration: 'none', fontSize: '0.88rem', fontWeight: 700,
-                fontFamily: "'Syne', sans-serif",
-              }}
-            >
-              New Request
-            </Link>
-          </div>
+          {activeTab === 'professional'
+            ? 'No requests made on your behalf yet. These appear when an organization books an interpreter for you.'
+            : 'No personal requests yet. Submit your first interpreter request.'
+          }
+          {activeTab === 'personal' && (
+            <div style={{ marginTop: 14 }}>
+              <Link
+                href="/dhh/dashboard/request"
+                style={{
+                  display: 'inline-block', padding: '10px 24px',
+                  background: 'linear-gradient(135deg, #9d87ff, #7b61ff)',
+                  borderRadius: 'var(--radius-sm)', color: '#fff',
+                  textDecoration: 'none', fontSize: '0.88rem', fontWeight: 700,
+                  fontFamily: "'Syne', sans-serif",
+                }}
+              >
+                New Request
+              </Link>
+            </div>
+          )}
         </div>
       ) : (
-        bookings.map(b => (
+        activeBookings.map(b => (
           <RequestCard
             key={b.id}
             booking={b}

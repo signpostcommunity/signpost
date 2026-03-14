@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { createBrowserClient } from '@supabase/ssr';
 import type { Session } from '@supabase/supabase-js';
 
@@ -25,6 +26,7 @@ export default function Nav({ initialSession = null }: NavProps) {
   const langRef = useRef<HTMLDivElement>(null);
   const [session, setSession] = useState<Session | null>(initialSession);
   const [role, setRole] = useState<string>('interpreter');
+  const pathname = usePathname();
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -36,7 +38,35 @@ export default function Nav({ initialSession = null }: NavProps) {
   function portalPath(r: string) {
     if (r === 'deaf') return '/dhh/dashboard';
     if (r === 'requester' || r === 'org') return '/request/dashboard';
+    if (r === 'admin') return '/admin/dashboard';
     return '/interpreter/dashboard';
+  }
+
+  // Persist last active portal role when user is on a dashboard route
+  useEffect(() => {
+    if (pathname.startsWith('/dhh')) {
+      try { localStorage.setItem('signpost:lastRole', 'deaf') } catch {}
+    } else if (pathname.startsWith('/request')) {
+      try { localStorage.setItem('signpost:lastRole', 'requester') } catch {}
+    } else if (pathname.startsWith('/interpreter')) {
+      try { localStorage.setItem('signpost:lastRole', 'interpreter') } catch {}
+    } else if (pathname.startsWith('/admin')) {
+      try { localStorage.setItem('signpost:lastRole', 'admin') } catch {}
+    }
+  }, [pathname]);
+
+  // Determine portal link: URL context → localStorage last role → DB role
+  function getPortalHref() {
+    if (pathname.startsWith('/dhh')) return '/dhh/dashboard';
+    if (pathname.startsWith('/request')) return '/request/dashboard';
+    if (pathname.startsWith('/interpreter')) return '/interpreter/dashboard';
+    if (pathname.startsWith('/admin')) return '/admin/dashboard';
+    // Off-dashboard: check last active role
+    try {
+      const lastRole = localStorage.getItem('signpost:lastRole');
+      if (lastRole) return portalPath(lastRole);
+    } catch {}
+    return portalPath(role);
   }
 
   // Fetch role from user_profiles table (reliable source of truth)
@@ -119,7 +149,7 @@ export default function Nav({ initialSession = null }: NavProps) {
               <Link href="/directory" className="nav-btn" style={{ textDecoration: 'none' }}>
                 Browse Interpreter Directory
               </Link>
-              <Link href={portalPath(role)} className="btn-primary" style={{ textDecoration: 'none' }}>
+              <Link href={getPortalHref()} className="btn-primary" style={{ textDecoration: 'none' }}>
                 My Portal
               </Link>
             </>
@@ -315,7 +345,7 @@ export default function Nav({ initialSession = null }: NavProps) {
           {isLoggedIn ? (
             <>
               <Link
-                href={portalPath(role)}
+                href={getPortalHref()}
                 className="mobile-nav-btn mobile-nav-btn-primary"
                 onClick={() => setMobileOpen(false)}
                 style={{ textDecoration: 'none' }}
@@ -393,7 +423,7 @@ export default function Nav({ initialSession = null }: NavProps) {
       )}
 
       <style>{`
-        .nav-logo { font-size: 1.4rem; }
+        .nav-logo { font-size: 1.4rem; flex-shrink: 0; margin-right: 16px; }
         .nav-btn {
           background: none;
           border: none;
