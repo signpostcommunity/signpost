@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   ALL_SIGN_LANGS,
   ALL_SPOKEN_LANGS,
@@ -18,10 +18,10 @@ interface Props {
 
 const RADIUS_OPTIONS = [
   { label: 'Any distance', value: 'any' },
-  { label: 'Within 100 mi (same state)', value: '100' },
-  { label: 'Within 250 mi (same state)', value: '250' },
-  { label: 'Anywhere in country', value: 'country' },
-  { label: 'International', value: 'international' },
+  { label: 'Within 25 miles', value: '25' },
+  { label: 'Within 50 miles', value: '50' },
+  { label: 'Within 100 miles', value: '100' },
+  { label: 'Within 250 miles', value: '250' },
 ];
 
 const GENDER_OPTIONS = [
@@ -32,6 +32,59 @@ const GENDER_OPTIONS = [
 ];
 
 export default function FilterSidebar({ filters, onChange }: Props) {
+  const [locationInput, setLocationInput] = useState(filters.userLocationLabel || '')
+  const [geocoding, setGeocoding] = useState(false)
+  const [geoError, setGeoError] = useState('')
+
+  const geocodeLocation = useCallback(async (locationText: string) => {
+    if (!locationText.trim()) return
+    setGeocoding(true)
+    setGeoError('')
+    try {
+      const res = await fetch('/api/geocode', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city: locationText.trim() }),
+      })
+      if (res.ok) {
+        const { latitude, longitude } = await res.json()
+        onChange({ ...filters, userLat: latitude, userLng: longitude, userLocationLabel: locationText.trim() })
+      } else {
+        setGeoError('Location not found')
+      }
+    } catch {
+      setGeoError('Geocoding failed')
+    } finally {
+      setGeocoding(false)
+    }
+  }, [filters, onChange])
+
+  function useMyLocation() {
+    if (!navigator.geolocation) {
+      setGeoError('Geolocation not supported')
+      return
+    }
+    setGeocoding(true)
+    setGeoError('')
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setGeocoding(false)
+        setLocationInput('My location')
+        onChange({
+          ...filters,
+          userLat: pos.coords.latitude,
+          userLng: pos.coords.longitude,
+          userLocationLabel: 'My location',
+        })
+      },
+      () => {
+        setGeocoding(false)
+        setGeoError('Location access denied')
+      },
+      { timeout: 10000 }
+    )
+  }
+
   function toggleArray(key: keyof FilterState, value: string) {
     const current = filters[key] as string[];
     const next = current.includes(value)
@@ -55,6 +108,10 @@ export default function FilterSidebar({ filters, onChange }: Props) {
       affinities: [],
       racialIdentity: [],
       religiousAffiliation: [],
+      distanceRadius: 'any',
+      userLat: null,
+      userLng: null,
+      userLocationLabel: '',
     });
   }
 
@@ -67,7 +124,7 @@ export default function FilterSidebar({ filters, onChange }: Props) {
     certifiedOnly ||
     filters.regions.length > 0 ||
     filters.search !== '' ||
-    (filters.country !== '' && filters.country !== 'any') ||
+    (filters.distanceRadius !== 'any' && filters.userLat != null) ||
     filters.gender !== '' ||
     filters.isDeafInterpreter ||
     filters.availability === 'hearing' ||
@@ -150,29 +207,85 @@ export default function FilterSidebar({ filters, onChange }: Props) {
 
       {/* 2. Distance */}
       <CollapsibleSection label="Distance">
-        {filters.search ? (
-          <select
-            value={filters.country || 'any'}
-            onChange={(e) => {
-              onChange({ ...filters, country: e.target.value === 'any' ? '' : e.target.value });
+        {/* Your location input */}
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
+          <input
+            type="text"
+            placeholder="Your city or location..."
+            value={locationInput}
+            onChange={(e) => setLocationInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') geocodeLocation(locationInput)
             }}
-            style={selectStyle}
+            onBlur={() => {
+              if (locationInput.trim() && locationInput.trim() !== filters.userLocationLabel) {
+                geocodeLocation(locationInput)
+              }
+            }}
+            style={{
+              ...selectStyle,
+              cursor: 'text',
+              appearance: 'none' as const,
+              backgroundImage: 'none',
+              paddingRight: '12px',
+              flex: 1,
+            }}
+          />
+          <button
+            onClick={useMyLocation}
+            title="Use my location"
+            disabled={geocoding}
+            style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border)',
+              borderRadius: '8px',
+              padding: '8px 10px',
+              color: 'var(--muted)',
+              cursor: geocoding ? 'wait' : 'pointer',
+              flexShrink: 0,
+              display: 'flex',
+              alignItems: 'center',
+            }}
           >
-            {RADIUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        ) : (
-          <>
-            <select disabled style={{ ...selectStyle, opacity: 0.5, cursor: 'not-allowed' }}>
-              <option>Any distance</option>
-            </select>
-            <p style={{ fontSize: '0.72rem', color: 'var(--muted)', opacity: 0.7, marginTop: 6, lineHeight: 1.4 }}>
-              Enter a location in Search to filter by distance.
-            </p>
-          </>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 2v4m0 12v4m10-10h-4M6 12H2" />
+            </svg>
+          </button>
+        </div>
+        {geocoding && (
+          <p style={{ fontSize: '0.72rem', color: 'var(--accent)', marginBottom: 6 }}>Finding location...</p>
+        )}
+        {geoError && (
+          <p style={{ fontSize: '0.72rem', color: 'var(--accent3)', marginBottom: 6 }}>{geoError}</p>
+        )}
+        {filters.userLat != null && (
+          <p style={{ fontSize: '0.72rem', color: 'var(--accent)', marginBottom: 6 }}>
+            Location set: {filters.userLocationLabel}
+          </p>
+        )}
+
+        {/* Radius dropdown */}
+        <select
+          value={filters.distanceRadius}
+          onChange={(e) => onChange({ ...filters, distanceRadius: e.target.value })}
+          disabled={filters.userLat == null}
+          style={{
+            ...selectStyle,
+            opacity: filters.userLat == null ? 0.5 : 1,
+            cursor: filters.userLat == null ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {RADIUS_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        {filters.userLat == null && (
+          <p style={{ fontSize: '0.72rem', color: 'var(--muted)', opacity: 0.7, marginTop: 6, lineHeight: 1.4 }}>
+            Enter your location or use geolocation to filter by distance.
+          </p>
         )}
       </CollapsibleSection>
 

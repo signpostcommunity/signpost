@@ -9,7 +9,7 @@ export default async function DirectoryPage() {
 
   const { data: rows } = await supabase
     .from('interpreter_profiles')
-    .select('id, name, first_name, last_name, city, country, state, sign_languages, spoken_languages, specializations, specialized_skills, regions, rating, review_count, available, avatar_color, bio, video_url, interpreter_type, status, photo_url, draft_data, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity')
+    .select('id, name, first_name, last_name, city, country, state, sign_languages, spoken_languages, specializations, specialized_skills, regions, rating, review_count, available, avatar_color, bio, video_url, interpreter_type, status, photo_url, draft_data, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, latitude, longitude')
     .in('status', ['approved', 'active'])
     .order('photo_url', { ascending: false, nullsFirst: false })
     .order('name', { ascending: true });
@@ -64,6 +64,8 @@ export default async function DirectoryPage() {
       photoUrl: r.photo_url || undefined,
       racialIdentity: (r.bipoc_details || []) as string[],
       religiousAffiliation: (r.religious_details || []) as string[],
+      latitude: r.latitude ?? null,
+      longitude: r.longitude ?? null,
     };
   });
 

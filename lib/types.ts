@@ -30,6 +30,9 @@ export interface Interpreter {
   affinities: string[]; // e.g. ['LGBTQ+', 'Deaf-parented']
   racialIdentity: string[]; // e.g. ['Black/African American', 'Asian/Pacific Islander']
   religiousAffiliation: string[]; // e.g. ['Jewish', 'Muslim']
+  latitude?: number | null;
+  longitude?: number | null;
+  distance?: number | null; // calculated client-side, miles
 }
 
 export interface RateProfile {
@@ -86,4 +89,9 @@ export interface FilterState {
   affinities: string[];
   racialIdentity: string[];
   religiousAffiliation: string[];
+  // Distance filter
+  distanceRadius: string; // 'any' | '25' | '50' | '100' | '250'
+  userLat: number | null;
+  userLng: number | null;
+  userLocationLabel: string;
 }

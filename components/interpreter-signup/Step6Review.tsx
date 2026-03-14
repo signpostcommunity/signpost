@@ -213,6 +213,25 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         }
       }
 
+      // Geocode location and update lat/lng (non-blocking)
+      if (formData.city || formData.state || formData.country) {
+        try {
+          const geoRes = await fetch('/api/geocode', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ city: formData.city, state: formData.state, country: formData.country }),
+          })
+          if (geoRes.ok) {
+            const { latitude, longitude } = await geoRes.json()
+            await supabase.from('interpreter_profiles')
+              .update({ latitude, longitude })
+              .eq('user_id', userId)
+          }
+        } catch (geoErr) {
+          console.warn('[signup] Geocoding failed, continuing without coordinates:', geoErr)
+        }
+      }
+
       // BETA: seed demo bookings + messages for new interpreter
       try {
         await fetch('/api/seed-interpreter', {

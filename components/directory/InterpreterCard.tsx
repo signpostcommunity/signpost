@@ -162,6 +162,11 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
               />
             </svg>
             {i.location}
+            {i.distance != null && (
+              <span style={{ color: 'var(--accent)', fontSize: '0.72rem', marginLeft: '4px' }}>
+                ~{i.distance} mi
+              </span>
+            )}
           </div>
 
           {/* Sign languages + Spoken languages */}

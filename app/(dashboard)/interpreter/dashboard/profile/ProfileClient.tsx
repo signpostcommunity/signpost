@@ -504,6 +504,30 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       setToast({ message: 'Changes saved.', type: 'success' })
       // Refresh server components (sidebar name/photo)
       router.refresh()
+
+      // If location fields changed, geocode and update lat/lng (non-blocking)
+      if ('city' in fields || 'state' in fields || 'country' in fields) {
+        const locCity = ('city' in fields ? fields.city : city) as string
+        const locState = ('state' in fields ? fields.state : stateProvince) as string
+        const locCountry = ('country' in fields ? fields.country : country) as string
+        if (locCity || locState || locCountry) {
+          try {
+            const geoRes = await fetch('/api/geocode', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ city: locCity, state: locState, country: locCountry }),
+            })
+            if (geoRes.ok) {
+              const { latitude, longitude } = await geoRes.json()
+              await supabase.from('interpreter_profiles')
+                .update({ latitude, longitude })
+                .eq('user_id', user.id)
+            }
+          } catch (geoErr) {
+            console.warn('[profile] Geocoding failed, continuing without coordinates:', geoErr)
+          }
+        }
+      }
     }
   }
 
@@ -726,7 +750,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                 />
               )}
               <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 6, lineHeight: 1.4 }}>
-                This field helps medical providers and other requesters accommodate specific client preferences when requested.
+                Optional. Helps requesters accommodate specific client preferences when requested.
               </div>
             </div>
           </div>
@@ -1263,6 +1287,9 @@ function CredentialsTab({ saving, onSave, profileId, initialCerts, initialEducat
               <div>
                 <label style={labelStyle}>Verification link</label>
                 <input type="url" value={cert.verificationLink} onChange={e => updateCert(cert.id, 'verificationLink', e.target.value)} placeholder="https://rid.org/verify/..." style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+                <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 6, lineHeight: 1.4 }}>
+                  Link to your credential on Credly, the RID registry, or your certifying body&apos;s website.
+                </div>
               </div>
               {certs.length > 1 && (
                 <button onClick={() => removeCert(cert.id)} style={{

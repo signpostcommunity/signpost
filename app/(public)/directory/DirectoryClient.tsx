@@ -9,6 +9,16 @@ import VideoPreviewModal from '@/components/directory/VideoPreviewModal';
 import AddToListModal from '@/components/directory/AddToListModal';
 import { createClient } from '@/lib/supabase/client';
 
+function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 3959 // Earth radius in miles
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
 const defaultFilters: FilterState = {
   signLangs: [],
   spokenLangs: [],
@@ -23,6 +33,10 @@ const defaultFilters: FilterState = {
   affinities: [],
   racialIdentity: [],
   religiousAffiliation: [],
+  distanceRadius: 'any',
+  userLat: null,
+  userLng: null,
+  userLocationLabel: '',
 };
 
 export default function DirectoryClient({ interpreters }: { interpreters: Interpreter[] }) {
@@ -135,7 +149,7 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
   }
 
   const filtered = useMemo(() => {
-    return interpreters.filter((i) => {
+    const base = interpreters.filter((i) => {
       // Search across name, location, state, sign languages, spoken languages, specs, regions
       if (filters.search) {
         const q = filters.search.toLowerCase();
@@ -154,22 +168,14 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
         if (!searchable.includes(q)) return false;
       }
 
-      // Distance filter — crude state/country matching
-      if (filters.search && filters.country && filters.country !== 'any') {
-        const searchLower = filters.search.toLowerCase();
-        if (filters.country === '100' || filters.country === '250') {
-          // Same state: match interpreter's state or city against search term
-          const stateMatch = i.state && i.state.toLowerCase().includes(searchLower);
-          const cityMatch = i.location.toLowerCase().includes(searchLower);
-          if (!stateMatch && !cityMatch) return false;
-        } else if (filters.country === 'country') {
-          // Same country: match interpreter's country against search term
-          const countryMatch = i.country && i.country.toLowerCase().includes(searchLower);
-          const stateMatch = i.state && i.state.toLowerCase().includes(searchLower);
-          const cityMatch = i.location.toLowerCase().includes(searchLower);
-          if (!countryMatch && !stateMatch && !cityMatch) return false;
+      // Distance filter — Haversine calculation
+      if (filters.distanceRadius !== 'any' && filters.userLat != null && filters.userLng != null) {
+        const radiusMiles = parseInt(filters.distanceRadius, 10);
+        if (i.latitude != null && i.longitude != null) {
+          const dist = haversineDistance(filters.userLat, filters.userLng, i.latitude, i.longitude);
+          if (dist > radiusMiles) return false;
         }
-        // 'international' — no location filter
+        // Interpreters without coordinates are always shown
       }
 
       // Sign languages — handles both short codes (seed data) and full names (signup data)
@@ -207,7 +213,27 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
 
       return true;
     });
-  }, [filters]);
+
+    // Calculate distances and sort when user location is set
+    const withDistances = base.map(i => {
+      if (filters.userLat != null && filters.userLng != null && i.latitude != null && i.longitude != null) {
+        return { ...i, distance: Math.round(haversineDistance(filters.userLat, filters.userLng, i.latitude, i.longitude)) };
+      }
+      return { ...i, distance: null };
+    });
+
+    if (filters.userLat != null && filters.userLng != null && filters.distanceRadius !== 'any') {
+      // Sort by distance (closest first), interpreters without coords go to end
+      withDistances.sort((a, b) => {
+        if (a.distance == null && b.distance == null) return 0;
+        if (a.distance == null) return 1;
+        if (b.distance == null) return -1;
+        return a.distance - b.distance;
+      });
+    }
+
+    return withDistances;
+  }, [filters, interpreters]);
 
   const activeFilterCount =
     filters.signLangs.length +
@@ -219,7 +245,8 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
     filters.racialIdentity.length +
     filters.religiousAffiliation.length +
     (filters.gender ? 1 : 0) +
-    (filters.isDeafInterpreter ? 1 : 0);
+    (filters.isDeafInterpreter ? 1 : 0) +
+    (filters.distanceRadius !== 'any' && filters.userLat != null ? 1 : 0);
 
   return (
     <div style={{ minHeight: '100vh', position: 'relative' }}>
