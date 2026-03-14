@@ -145,7 +145,7 @@ export async function GET(
           <tspan font-family="'Inter'" font-weight="400" fill="#b0b8d0">on  </tspan>
           <tspan font-family="'Syne'" font-weight="800" font-size="18" fill="#ffffff">sign</tspan>
           <tspan font-family="'Syne'" font-weight="800" font-size="18" fill="#00e5ff">post</tspan>
-          <tspan font-family="'Inter'" font-weight="400" font-size="20" fill="#00e5ff">    \u203A</tspan>
+          <tspan font-family="'Inter'" font-weight="400" font-size="20" fill="#00e5ff" dx="6" dy="2">    \u203A</tspan>
         </text>
       </g>
     </svg>`
