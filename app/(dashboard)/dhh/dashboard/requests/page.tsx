@@ -5,6 +5,9 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { BetaBanner, PageHeader, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+import RequestTracker from '@/components/dashboard/dhh/RequestTracker'
+import InterpreterRating from '@/components/dashboard/dhh/InterpreterRating'
+import { createClient } from '@/lib/supabase/client'
 
 interface BookingWithInterpreter {
   id: string
@@ -22,7 +25,9 @@ interface BookingWithInterpreter {
   description: string | null
   notes: string | null
   cancellation_reason: string | null
+  cancelled_at?: string | null
   created_at: string
+  interpreter_id: string
   interpreter: {
     name: string
     first_name: string | null
@@ -46,27 +51,6 @@ function formatTime(start: string, end: string): string {
   return `${fmt(start)} – ${fmt(end)}`
 }
 
-function StatusBadge({ status }: { status: string }) {
-  const configs: Record<string, { bg: string; color: string; border: string; label: string }> = {
-    pending: { bg: 'rgba(255,165,0,0.12)', color: '#f97316', border: 'rgba(249,115,22,0.25)', label: 'Pending' },
-    confirmed: { bg: 'rgba(52,211,153,0.1)', color: '#34d399', border: 'rgba(52,211,153,0.3)', label: 'Confirmed' },
-    cancelled: { bg: 'rgba(255,107,133,0.1)', color: '#ff6b85', border: 'rgba(255,107,133,0.3)', label: 'Cancelled' },
-    declined: { bg: 'rgba(255,107,133,0.1)', color: '#ff6b85', border: 'rgba(255,107,133,0.3)', label: 'Declined' },
-    completed: { bg: 'rgba(184,191,207,0.1)', color: 'var(--muted)', border: 'rgba(184,191,207,0.25)', label: 'Completed' },
-  }
-  const c = configs[status] || configs.pending
-  return (
-    <span style={{
-      fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px',
-      borderRadius: 100, whiteSpace: 'nowrap',
-      background: c.bg, color: c.color, border: `1px solid ${c.border}`,
-      fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
-    }}>
-      {c.label}
-    </span>
-  )
-}
-
 function FormatBadge({ format }: { format: string | null }) {
   if (!format) return null
   const label = format === 'in_person' ? 'In-person' : format === 'remote' ? 'Remote' : 'Hybrid'
@@ -81,16 +65,29 @@ function FormatBadge({ format }: { format: string | null }) {
   )
 }
 
-function RequestCard({ booking, onExpand, expanded }: {
+function isBookingCompleted(booking: BookingWithInterpreter): boolean {
+  if (booking.status === 'completed') return true
+  if (booking.status === 'confirmed') {
+    return new Date(booking.date + 'T23:59:59') < new Date()
+  }
+  return false
+}
+
+function RequestCard({ booking, onExpand, expanded, ratedBookings, onRated }: {
   booking: BookingWithInterpreter
   onExpand: () => void
   expanded: boolean
+  ratedBookings: Set<string>
+  onRated: (bookingId: string) => void
 }) {
   const interp = booking.interpreter
   const interpName = interp?.name || 'Interpreter'
   const interpInitials = interp?.first_name
     ? `${interp.first_name[0]}${interp.last_name?.[0] || ''}`.toUpperCase()
     : interpName[0]?.toUpperCase() || 'I'
+
+  const completed = isBookingCompleted(booking)
+  const hasRating = ratedBookings.has(booking.id)
 
   return (
     <div style={{
@@ -102,7 +99,7 @@ function RequestCard({ booking, onExpand, expanded }: {
         onClick={onExpand}
         aria-expanded={expanded}
         style={{
-          width: '100%', padding: '18px 24px', cursor: 'pointer',
+          width: '100%', padding: '18px 24px 6px', cursor: 'pointer',
           background: 'none', border: 'none', textAlign: 'left',
           display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
           gap: 12,
@@ -140,9 +137,13 @@ function RequestCard({ booking, onExpand, expanded }: {
               {interpInitials}
             </div>
           )}
-          <StatusBadge status={booking.status} />
         </div>
       </button>
+
+      {/* Compact tracker — always visible below card header */}
+      <div style={{ padding: '0 24px 12px' }}>
+        <RequestTracker booking={booking} compact hasRating={hasRating} />
+      </div>
 
       {/* Expanded details */}
       {expanded && (
@@ -150,8 +151,11 @@ function RequestCard({ booking, onExpand, expanded }: {
           padding: '0 24px 20px', borderTop: '1px solid var(--border)',
         }}>
           <div style={{ paddingTop: 16 }}>
+            {/* Full tracker */}
+            <RequestTracker booking={booking} hasRating={hasRating} />
+
             {/* Interpreter */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, marginTop: 8 }}>
               {interp?.photo_url ? (
                 <img src={interp.photo_url} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} />
               ) : (
@@ -199,6 +203,16 @@ function RequestCard({ booking, onExpand, expanded }: {
                 {booking.cancellation_reason}
               </div>
             )}
+
+            {/* Rating UI — shows when booking is completed */}
+            {completed && booking.interpreter_id && (
+              <InterpreterRating
+                bookingId={booking.id}
+                interpreterId={booking.interpreter_id}
+                interpreterName={interpName}
+                onRated={() => onRated(booking.id)}
+              />
+            )}
           </div>
         </div>
       )}
@@ -210,6 +224,7 @@ export default function DhhRequestsListPage() {
   const [bookings, setBookings] = useState<BookingWithInterpreter[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [ratedBookings, setRatedBookings] = useState<Set<string>>(new Set())
 
   const fetchRequests = useCallback(async () => {
     try {
@@ -224,7 +239,30 @@ export default function DhhRequestsListPage() {
     setLoading(false)
   }, [])
 
-  useEffect(() => { fetchRequests() }, [fetchRequests])
+  // Fetch which bookings have already been rated
+  const fetchRatings = useCallback(async () => {
+    try {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('interpreter_ratings')
+        .select('booking_id')
+
+      if (data) {
+        setRatedBookings(new Set(data.map(r => r.booking_id)))
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchRequests()
+    fetchRatings()
+  }, [fetchRequests, fetchRatings])
+
+  function handleRated(bookingId: string) {
+    setRatedBookings(prev => new Set(prev).add(bookingId))
+  }
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
@@ -264,6 +302,8 @@ export default function DhhRequestsListPage() {
             booking={b}
             expanded={expandedId === b.id}
             onExpand={() => setExpandedId(expandedId === b.id ? null : b.id)}
+            ratedBookings={ratedBookings}
+            onRated={handleRated}
           />
         ))
       )}
