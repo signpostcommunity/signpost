@@ -89,7 +89,7 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
     notePlaceholder: '"Best for medical — very clear signing, always confirms terminology with me beforehand."',
     confirmLabel: 'Add to my list →',
     requireApproval: true,
-    negativeListLabel: 'Do Not Book',
+    negativeListLabel: '✕ Do Not Book',
     negativeListDesc: 'This interpreter will be flagged on your list so requesters know not to book them when you share your list.',
   },
   requester: {
@@ -119,7 +119,7 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
     notePlaceholder: '"Excellent for high-stakes medical settings. Always arrives early and reviews materials in advance."',
     confirmLabel: 'Add to my list →',
     requireApproval: true,
-    negativeListLabel: 'Do Not Book',
+    negativeListLabel: '✕ Do Not Book',
     negativeListDesc: 'This interpreter will be flagged on your list so they are not booked.',
   },
   interpreter: {
@@ -149,7 +149,7 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
     notePlaceholder: '"Great partner for conference work — excellent at relay and pacing."',
     confirmLabel: 'Add to my team →',
     requireApproval: false,
-    negativeListLabel: 'Not Recommended',
+    negativeListLabel: '✕ Not Recommended',
     negativeListDesc: 'This is for your personal reference only. The interpreter will not be notified.',
   },
   default: {
@@ -179,7 +179,7 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
     notePlaceholder: '"Best for medical — very clear signing."',
     confirmLabel: 'Add to my list →',
     requireApproval: true,
-    negativeListLabel: 'Do Not Book',
+    negativeListLabel: '✕ Do Not Book',
     negativeListDesc: 'This interpreter will be flagged on your list so requesters know not to book them.',
   },
 };
