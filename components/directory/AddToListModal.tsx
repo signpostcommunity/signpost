@@ -149,7 +149,7 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
     notePlaceholder: '"Great partner for conference work — excellent at relay and pacing."',
     confirmLabel: 'Add to my team →',
     requireApproval: false,
-    negativeListLabel: 'Not recommended for teaming',
+    negativeListLabel: 'Not Recommended',
     negativeListDesc: 'This is for your personal reference only. The interpreter will not be notified.',
   },
   default: {
@@ -606,73 +606,6 @@ export default function AddToListModal({
             gap: '20px',
           }}
         >
-          {/* Negative list toggle (Do Not Book / Non-Recommended) */}
-          <label
-            style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '12px',
-              padding: '14px 16px',
-              borderRadius: '10px',
-              border: `1.5px solid ${
-                negativeList
-                  ? 'var(--accent3, #ff6b85)'
-                  : 'var(--border, #1e2433)'
-              }`,
-              background: negativeList
-                ? 'rgba(255, 107, 133, 0.06)'
-                : 'var(--card-bg, #0d1220)',
-              cursor: 'pointer',
-              transition: 'border-color 0.15s',
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={negativeList}
-              onChange={(e) => setNegativeList(e.target.checked)}
-              style={{
-                appearance: 'none',
-                WebkitAppearance: 'none',
-                width: '18px',
-                height: '18px',
-                borderRadius: '5px',
-                flexShrink: 0,
-                marginTop: '1px',
-                border: `1.5px solid ${
-                  negativeList
-                    ? 'var(--accent3, #ff6b85)'
-                    : 'var(--border, #1e2433)'
-                }`,
-                background: negativeList
-                  ? 'var(--accent3, #ff6b85)'
-                  : 'var(--surface, #0f1118)',
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-              }}
-            />
-            <div style={{ flex: 1 }}>
-              <div
-                style={{
-                  fontWeight: 600,
-                  fontSize: '0.87rem',
-                  marginBottom: '2px',
-                  color: negativeList ? '#ff8099' : 'var(--text, #f0f2f8)',
-                }}
-              >
-                {cfg.negativeListLabel}
-              </div>
-              <div
-                style={{
-                  color: 'var(--muted, #b0b8d0)',
-                  fontSize: '0.77rem',
-                  lineHeight: 1.5,
-                }}
-              >
-                {cfg.negativeListDesc}
-              </div>
-            </div>
-          </label>
-
           {/* Step 1: Tier selection — hidden when negative list is active */}
           {!negativeList && (
             <div>
@@ -775,6 +708,73 @@ export default function AddToListModal({
               </div>
             </div>
           )}
+
+          {/* Negative list toggle (Do Not Book / Not Recommended) */}
+          <label
+            style={{
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '12px',
+              padding: '14px 16px',
+              borderRadius: '10px',
+              border: `1.5px solid ${
+                negativeList
+                  ? 'var(--accent3, #ff6b85)'
+                  : 'var(--border, #1e2433)'
+              }`,
+              background: negativeList
+                ? 'rgba(255, 107, 133, 0.06)'
+                : 'var(--card-bg, #0d1220)',
+              cursor: 'pointer',
+              transition: 'border-color 0.15s',
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={negativeList}
+              onChange={(e) => setNegativeList(e.target.checked)}
+              style={{
+                appearance: 'none',
+                WebkitAppearance: 'none',
+                width: '18px',
+                height: '18px',
+                borderRadius: '5px',
+                flexShrink: 0,
+                marginTop: '1px',
+                border: `1.5px solid ${
+                  negativeList
+                    ? 'var(--accent3, #ff6b85)'
+                    : 'var(--border, #1e2433)'
+                }`,
+                background: negativeList
+                  ? 'var(--accent3, #ff6b85)'
+                  : 'var(--surface, #0f1118)',
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+              }}
+            />
+            <div style={{ flex: 1 }}>
+              <div
+                style={{
+                  fontWeight: 600,
+                  fontSize: '0.87rem',
+                  marginBottom: '2px',
+                  color: negativeList ? '#ff8099' : 'var(--text, #f0f2f8)',
+                }}
+              >
+                {cfg.negativeListLabel}
+              </div>
+              <div
+                style={{
+                  color: 'var(--muted, #b0b8d0)',
+                  fontSize: '0.77rem',
+                  lineHeight: 1.5,
+                }}
+              >
+                {cfg.negativeListDesc}
+              </div>
+            </div>
+          </label>
 
           {/* Step 2: Approval settings (deaf + requester only) — hidden when negative list */}
           {cfg.showApprovals && !negativeList && (
