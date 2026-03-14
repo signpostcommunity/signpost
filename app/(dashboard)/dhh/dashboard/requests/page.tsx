@@ -56,11 +56,16 @@ function formatTime(start: string, end: string): string {
 function FormatBadge({ format }: { format: string | null }) {
   if (!format) return null
   const label = format === 'in_person' ? 'In-person' : format === 'remote' ? 'Remote' : 'Hybrid'
+  const colors = format === 'in_person'
+    ? { bg: 'rgba(0,229,255,0.15)', color: '#00e5ff', border: 'rgba(0,229,255,0.25)' }
+    : format === 'remote'
+    ? { bg: 'rgba(123,97,255,0.15)', color: '#7b61ff', border: 'rgba(123,97,255,0.25)' }
+    : { bg: 'rgba(249,115,22,0.15)', color: '#f97316', border: 'rgba(249,115,22,0.25)' }
   return (
     <span style={{
       fontSize: '0.7rem', fontWeight: 600, padding: '2px 8px',
-      borderRadius: 100, background: 'rgba(0,229,255,0.08)',
-      color: 'var(--accent)', border: '1px solid rgba(0,229,255,0.2)',
+      borderRadius: 100, background: colors.bg,
+      color: colors.color, border: `1px solid ${colors.border}`,
     }}>
       {label}
     </span>
@@ -90,18 +95,20 @@ function RequestCard({ booking, onExpand, expanded, ratedBookings, onRated }: {
 
   const completed = isBookingCompleted(booking)
   const hasRating = ratedBookings.has(booking.id)
+  const isDismissed = booking.status === 'cancelled' || booking.status === 'declined'
 
   return (
     <div style={{
       background: 'var(--card-bg)', border: '1px solid var(--border)',
       borderRadius: 'var(--radius)', marginBottom: 12, overflow: 'hidden',
+      opacity: isDismissed ? 0.6 : 1,
     }}>
       {/* Card header — clickable */}
       <button
         onClick={onExpand}
         aria-expanded={expanded}
         style={{
-          width: '100%', padding: '18px 24px 6px', cursor: 'pointer',
+          width: '100%', padding: '18px 24px 14px', cursor: 'pointer',
           background: 'none', border: 'none', textAlign: 'left',
           display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
           gap: 12,
@@ -111,8 +118,18 @@ function RequestCard({ booking, onExpand, expanded, ratedBookings, onRated }: {
           <div style={{
             fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif",
             color: 'var(--text)', marginBottom: 6,
+            display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
           }}>
             {booking.title || 'Interpreter Request'}
+            {isDismissed && (
+              <span style={{
+                fontSize: '0.68rem', fontWeight: 600, padding: '2px 8px',
+                borderRadius: 100, background: 'rgba(255,107,133,0.15)',
+                color: '#ff6b85',
+              }}>
+                {booking.status === 'cancelled' ? 'Cancelled' : 'Declined'}
+              </span>
+            )}
           </div>
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', fontSize: '0.8rem', color: 'var(--muted)' }}>
             <span>{formatDate(booking.date)}</span>
@@ -140,11 +157,6 @@ function RequestCard({ booking, onExpand, expanded, ratedBookings, onRated }: {
           )}
         </div>
       </button>
-
-      {/* Compact tracker — always visible below card header */}
-      <div style={{ padding: '0 24px 12px' }}>
-        <RequestTracker booking={booking} compact hasRating={hasRating} />
-      </div>
 
       {/* Expanded details */}
       {expanded && (

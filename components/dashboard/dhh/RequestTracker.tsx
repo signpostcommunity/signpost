@@ -153,6 +153,7 @@ export default function RequestTracker({ booking, compact = false, hasRating = f
         const isError = isTerminal && isLast
         const isRateStep = !isTerminal && isLast && step.state === 'current'
         const isGreenCheck = isRateStep && hasRating
+        const isConfirmedStep = !isTerminal && i === 2 && step.state === 'completed'
 
         return (
           <div
@@ -186,6 +187,8 @@ export default function RequestTracker({ booking, compact = false, hasRating = f
                     ? { background: '#ff6b85' }
                     : isGreenCheck
                     ? { background: 'rgba(52,211,153,0.15)', border: '2px solid #34d399' }
+                    : isConfirmedStep
+                    ? { background: '#34d399' }
                     : step.state === 'completed'
                     ? { background: '#00e5ff' }
                     : step.state === 'current'
@@ -214,7 +217,7 @@ export default function RequestTracker({ booking, compact = false, hasRating = f
 
               {/* Label */}
               <span style={{
-                fontSize,
+                fontSize: compact ? '0.65rem' : '0.69rem',
                 color: isError
                   ? '#ff6b85'
                   : step.state === 'future'
@@ -225,10 +228,9 @@ export default function RequestTracker({ booking, compact = false, hasRating = f
                 fontWeight: step.state === 'current' ? 600 : 400,
                 textAlign: 'center',
                 lineHeight: 1.3,
-                whiteSpace: compact ? 'nowrap' : 'normal',
-                overflow: compact ? 'hidden' : undefined,
-                textOverflow: compact ? 'ellipsis' : undefined,
-                maxWidth: '100%',
+                maxWidth: compact ? 72 : 88,
+                wordWrap: 'break-word',
+                overflowWrap: 'break-word',
               }}>
                 {step.label}
               </span>
@@ -241,7 +243,7 @@ export default function RequestTracker({ booking, compact = false, hasRating = f
                 height: 2,
                 marginTop: circleSize / 2 - 1,
                 minWidth: 12,
-                background: step.state === 'completed' ? '#00e5ff' : '#1e2433',
+                background: '#1e2433',
                 borderRadius: 1,
               }} />
             )}
