@@ -148,6 +148,133 @@ function StatCard({ num, label, href }: { num: number; label: string; href: stri
   )
 }
 
+/* ── Book Me Badge Section ── */
+
+function BookMeBadgeSection({ interpreterProfileId, displayName, onToast }: {
+  interpreterProfileId: string; displayName: string; onToast: (m: string) => void
+}) {
+  const [guideOpen, setGuideOpen] = useState(false)
+
+  const badgeUrl = `https://signpost.community/api/badge/${interpreterProfileId}`
+  const profileUrl = `https://signpost.community/directory/${interpreterProfileId}`
+  const embedHtml = `<a href="${profileUrl}"><img src="${badgeUrl}" alt="Book ${displayName} on signpost" width="500" style="border-radius:16px;border:0;"></a>`
+
+  function copyBadgeEmbed() {
+    navigator.clipboard.writeText(embedHtml)
+    onToast('Badge copied! Paste it in your email signature.')
+  }
+
+  function copyImageLink() {
+    navigator.clipboard.writeText(badgeUrl)
+    onToast('Image link copied!')
+  }
+
+  const linkStyle: React.CSSProperties = {
+    color: 'var(--accent)', textDecoration: 'none', fontWeight: 600,
+  }
+
+  return (
+    <div style={{
+      background: 'var(--card-bg)', border: '1px solid var(--border)',
+      borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 24,
+    }}>
+      <div style={{
+        fontFamily: "'Syne', sans-serif", fontSize: '0.7rem', fontWeight: 700,
+        letterSpacing: '0.12em', textTransform: 'uppercase',
+        color: 'var(--accent)', marginBottom: 16,
+      }}>
+        Book Me Badge
+      </div>
+
+      {/* Badge preview */}
+      <div style={{
+        background: 'var(--surface)', border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-sm)', padding: '16px',
+        marginBottom: 16, display: 'flex', justifyContent: 'center',
+      }}>
+        <img
+          src={`/api/badge/${interpreterProfileId}`}
+          alt={`Book ${displayName} on signpost`}
+          width={500}
+          style={{ borderRadius: '16px', maxWidth: '100%', height: 'auto' }}
+        />
+      </div>
+
+      {/* Buttons */}
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
+        <button
+          onClick={copyBadgeEmbed}
+          className="btn-primary"
+          style={{ fontSize: '0.82rem', padding: '10px 20px' }}
+        >
+          Copy badge for email
+        </button>
+        <button
+          onClick={copyImageLink}
+          style={{
+            background: 'none', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)', padding: '10px 20px',
+            color: 'var(--muted)', fontSize: '0.82rem', fontWeight: 600,
+            cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+            transition: 'border-color 0.15s',
+          }}
+        >
+          Copy badge image link
+        </button>
+      </div>
+
+      {/* How to add — collapsible */}
+      <button
+        onClick={() => setGuideOpen(!guideOpen)}
+        aria-expanded={guideOpen}
+        style={{
+          background: 'none', border: 'none', cursor: 'pointer',
+          color: 'var(--muted)', fontSize: '0.82rem', fontWeight: 600,
+          fontFamily: "'DM Sans', sans-serif", padding: '4px 0',
+          display: 'flex', alignItems: 'center', gap: 6,
+        }}
+      >
+        How to add your badge
+        <svg
+          width="12" height="12" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+          style={{ transform: guideOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+
+      {guideOpen && (
+        <div style={{
+          marginTop: 12, padding: '16px', background: 'var(--surface)',
+          border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
+          fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.7,
+          display: 'flex', flexDirection: 'column', gap: 14,
+        }}>
+          <div>
+            <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Gmail</div>
+            <a href="https://mail.google.com/mail/u/0/#settings/general" target="_blank" rel="noopener noreferrer" style={linkStyle}>
+              Go to your signature settings
+            </a>
+            . Scroll down to &quot;Signature,&quot; click in the signature box, paste, and click &quot;Save changes&quot; at the bottom of the page.
+          </div>
+          <div>
+            <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>LinkedIn</div>
+            <a href="https://www.linkedin.com/in/me" target="_blank" rel="noopener noreferrer" style={linkStyle}>
+              Go to your LinkedIn profile
+            </a>
+            . Add the badge image to your Featured section or About section.
+          </div>
+          <div>
+            <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Other email providers</div>
+            Look for &quot;Signature&quot; in your email settings, paste the badge, and save.
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 /* ── Main Component ── */
 
 interface OverviewClientProps {
@@ -158,7 +285,7 @@ interface OverviewClientProps {
   vanitySlug: string | null
 }
 
-export default function OverviewClient({ interpreterProfileId, firstName, profileStatus, vanitySlug }: OverviewClientProps) {
+export default function OverviewClient({ interpreterProfileId, firstName, lastName, profileStatus, vanitySlug }: OverviewClientProps) {
   const displayName = firstName || 'there'
   const hasDraftProfile = profileStatus === 'draft'
   const [toast, setToast] = useState<string | null>(null)
@@ -347,6 +474,15 @@ export default function OverviewClient({ interpreterProfileId, firstName, profil
           </Link>
         )}
       </div>
+
+      {/* Book Me Badge */}
+      {interpreterProfileId && !hasDraftProfile && (
+        <BookMeBadgeSection
+          interpreterProfileId={interpreterProfileId}
+          displayName={[firstName, lastName].filter(Boolean).join(' ') || 'Interpreter'}
+          onToast={showToast}
+        />
+      )}
 
       {!hasDraftProfile && !loading && (
         <>
