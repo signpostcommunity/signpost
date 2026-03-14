@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getSupabaseAdmin } from '@/lib/supabase/admin'
 
 export async function POST() {
   const supabase = await createClient()
@@ -25,11 +26,14 @@ export async function POST() {
     return NextResponse.json({ error: 'OPENCAGE_API_KEY not configured' }, { status: 500 })
   }
 
+  // Use admin client to bypass RLS for reads and writes
+  const admin = getSupabaseAdmin()
+
   // Fetch profiles without coordinates that have location data
-  const { data: profiles, error: fetchError } = await supabase
+  const { data: profiles, error: fetchError } = await admin
     .from('interpreter_profiles')
     .select('id, city, state, country')
-    .is('latitude', null)
+    .or('latitude.is.null,longitude.is.null')
     .or('city.not.is.null,state.not.is.null')
 
   if (fetchError) {
@@ -58,7 +62,7 @@ export async function POST() {
 
       if (data.results && data.results.length > 0) {
         const { lat, lng } = data.results[0].geometry
-        const { error: updateError } = await supabase
+        const { error: updateError } = await admin
           .from('interpreter_profiles')
           .update({ latitude: lat, longitude: lng })
           .eq('id', profile.id)
