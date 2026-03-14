@@ -110,38 +110,44 @@ export async function GET(
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
 
-    // Build avatar SVG fragment
-    const avatarFragment = avatarDataUri
-      ? `<defs>
-          <clipPath id="avatar-clip">
+    // Build avatar-specific defs and elements
+    const avatarDefs = avatarDataUri
+      ? `<clipPath id="avatar-clip">
             <circle cx="65" cy="65" r="47" />
-          </clipPath>
-        </defs>
-        <image href="${avatarDataUri}" x="18" y="18" width="94" height="94" clip-path="url(#avatar-clip)" preserveAspectRatio="xMidYMid slice" />
-        <circle cx="65" cy="65" r="47" fill="none" stroke="#00e5ff" stroke-width="2" />`
-      : `<defs>
-          <linearGradient id="avatar-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          </clipPath>`
+      : `<linearGradient id="avatar-grad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stop-color="#7b61ff" />
             <stop offset="100%" stop-color="#00e5ff" />
-          </linearGradient>
-        </defs>
-        <circle cx="65" cy="65" r="47" fill="url(#avatar-grad)" />
+          </linearGradient>`
+
+    const avatarElements = avatarDataUri
+      ? `<image href="${avatarDataUri}" x="18" y="18" width="94" height="94" clip-path="url(#avatar-clip)" preserveAspectRatio="xMidYMid slice" />
+        <circle cx="65" cy="65" r="47" fill="none" stroke="#00e5ff" stroke-width="2" />`
+      : `<circle cx="65" cy="65" r="47" fill="url(#avatar-grad)" />
         <circle cx="65" cy="65" r="47" fill="none" stroke="#00e5ff" stroke-width="2" />
         <text x="65" y="65" text-anchor="middle" dominant-baseline="central" font-family="'Syne'" font-weight="700" font-size="28" fill="#ffffff">${esc(initials)}</text>`
 
     const svgString = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="500" height="130" viewBox="0 0 500 130">
-      <rect width="500" height="130" rx="16" fill="#0a0a0f" />
-      ${avatarFragment}
-      <text x="130" y="42" font-family="'Syne'" font-weight="700" font-size="22" fill="#f0f2f8">${esc(displayName)}</text>
-      <text x="130" y="62" font-family="'Inter'" font-weight="400" font-size="14" fill="#b0b8d0">${esc(subtitle)}</text>
-      <rect x="130" y="80" width="2.5" height="18" rx="1" fill="#00e5ff" />
-      <text x="138" y="95" font-size="16">
-        <tspan font-family="'Inter'" font-weight="400" fill="#f0f2f8">Book me </tspan>
-        <tspan font-family="'Inter'" font-weight="400" fill="#b0b8d0">on  </tspan>
-        <tspan font-family="'Syne'" font-weight="800" font-size="18" fill="#ffffff">sign</tspan>
-        <tspan font-family="'Syne'" font-weight="800" font-size="18" fill="#00e5ff">post</tspan>
-        <tspan font-family="'Inter'" font-weight="400" font-size="20" fill="#00e5ff">  \u203A</tspan>
-      </text>
+      <defs>
+        <clipPath id="badge-clip">
+          <rect width="500" height="130" rx="16"/>
+        </clipPath>
+        ${avatarDefs}
+      </defs>
+      <g clip-path="url(#badge-clip)">
+        <rect width="500" height="130" rx="16" fill="#0a0a0f" />
+        ${avatarElements}
+        <text x="130" y="42" font-family="'Syne'" font-weight="700" font-size="22" fill="#f0f2f8">${esc(displayName)}</text>
+        <text x="130" y="62" font-family="'Inter'" font-weight="400" font-size="14" fill="#b0b8d0">${esc(subtitle)}</text>
+        <rect x="130" y="80" width="2.5" height="18" rx="1" fill="#00e5ff" />
+        <text x="138" y="95" font-size="16">
+          <tspan font-family="'Inter'" font-weight="400" fill="#f0f2f8">Book me </tspan>
+          <tspan font-family="'Inter'" font-weight="400" fill="#b0b8d0">on  </tspan>
+          <tspan font-family="'Syne'" font-weight="800" font-size="18" fill="#ffffff">sign</tspan>
+          <tspan font-family="'Syne'" font-weight="800" font-size="18" fill="#00e5ff">post</tspan>
+          <tspan font-family="'Inter'" font-weight="400" font-size="20" fill="#00e5ff">    \u203A</tspan>
+        </text>
+      </g>
     </svg>`
 
     const fonts = await loadFonts()
