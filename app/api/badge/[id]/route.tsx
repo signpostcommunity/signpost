@@ -5,6 +5,22 @@ import { join } from 'path'
 
 let wasmInitialized = false
 
+const fontCache: { syne700?: ArrayBuffer; syne800?: ArrayBuffer; inter400?: ArrayBuffer } = {}
+
+async function loadFonts() {
+  if (!fontCache.syne700) {
+    const [syne700, syne800, inter400] = await Promise.all([
+      fetch('https://fonts.gstatic.com/s/syne/v24/8vIS7w4qzmVxsWxjBZRjr0FKM_3fvj6k.ttf').then(r => r.arrayBuffer()),
+      fetch('https://fonts.gstatic.com/s/syne/v24/8vIS7w4qzmVxsWxjBZRjr0FKM_24vj6k.ttf').then(r => r.arrayBuffer()),
+      fetch('https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hjQ.ttf').then(r => r.arrayBuffer()),
+    ])
+    fontCache.syne700 = syne700
+    fontCache.syne800 = syne800
+    fontCache.inter400 = inter400
+  }
+  return fontCache as Required<typeof fontCache>
+}
+
 async function ensureWasm() {
   if (wasmInitialized) return
   const wasmPath = join(process.cwd(), 'node_modules/@resvg/resvg-wasm/index_bg.wasm')
@@ -111,22 +127,32 @@ export async function GET(
         </defs>
         <circle cx="65" cy="65" r="47" fill="url(#avatar-grad)" />
         <circle cx="65" cy="65" r="47" fill="none" stroke="#00e5ff" stroke-width="2" />
-        <text x="65" y="65" text-anchor="middle" dominant-baseline="central" font-family="Syne, sans-serif" font-weight="700" font-size="28" fill="#ffffff">${esc(initials)}</text>`
+        <text x="65" y="65" text-anchor="middle" dominant-baseline="central" font-family="'Syne'" font-weight="700" font-size="28" fill="#ffffff">${esc(initials)}</text>`
 
     const svgString = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="500" height="130" viewBox="0 0 500 130">
       <rect width="500" height="130" rx="16" fill="#0a0a0f" />
       ${avatarFragment}
-      <text x="130" y="42" font-family="Syne, sans-serif" font-weight="700" font-size="22" fill="#f0f2f8">${esc(displayName)}</text>
-      <text x="130" y="62" font-family="Inter, sans-serif" font-weight="400" font-size="14" fill="#b0b8d0">${esc(subtitle)}</text>
+      <text x="130" y="42" font-family="'Syne'" font-weight="700" font-size="22" fill="#f0f2f8">${esc(displayName)}</text>
+      <text x="130" y="62" font-family="'Inter'" font-weight="400" font-size="14" fill="#b0b8d0">${esc(subtitle)}</text>
       <rect x="130" y="80" width="2.5" height="18" rx="1" fill="#00e5ff" />
-      <text x="138" y="95" font-family="Inter, sans-serif" font-weight="400" font-size="16" fill="#b0b8d0">Book me on</text>
-      <text x="238" y="95" font-family="Syne, sans-serif" font-weight="800" font-size="18" fill="#ffffff">sign</text>
-      <text x="274" y="95" font-family="Syne, sans-serif" font-weight="800" font-size="18" fill="#00e5ff">post</text>
+      <text x="138" y="95" font-family="'Inter'" font-weight="400" font-size="16" fill="#b0b8d0">Book me on</text>
+      <text x="238" y="95" font-family="'Syne'" font-weight="800" font-size="18" fill="#ffffff">sign</text>
+      <text x="274" y="95" font-family="'Syne'" font-weight="800" font-size="18" fill="#00e5ff">post</text>
       <text x="312" y="95" font-size="20" fill="#00e5ff">\u203A</text>
     </svg>`
 
+    const fonts = await loadFonts()
+
     const resvg = new Resvg(svgString, {
       fitTo: { mode: 'width', value: 1000 },
+      font: {
+        fontBuffers: [
+          new Uint8Array(fonts.syne700),
+          new Uint8Array(fonts.syne800),
+          new Uint8Array(fonts.inter400),
+        ],
+        loadSystemFonts: false,
+      },
     })
     const pngData = resvg.render()
     const pngBuffer = pngData.asPng()
