@@ -188,9 +188,9 @@ function BookMeBadgeSection({ interpreterProfileId, displayName, onToast }: {
 
       {/* Badge preview */}
       <div style={{
-        background: '#ffffff', border: '1px solid #e0e0e0',
-        borderRadius: '12px', padding: '24px 32px',
+        background: '#1a1a24', padding: '24px 32px',
         marginBottom: 16, display: 'flex', justifyContent: 'center',
+        maxWidth: 540,
       }}>
         <img
           src={`/api/badge/${interpreterProfileId}`}
