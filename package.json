@@ -10,6 +10,7 @@
     "seed": "npx tsx lib/data/seed-script.ts"
   },
   "dependencies": {
+    "@resvg/resvg-wasm": "^2.6.2",
     "@supabase/ssr": "^0.9.0",
     "@supabase/supabase-js": "^2.98.0",
     "@vercel/og": "^0.11.1",

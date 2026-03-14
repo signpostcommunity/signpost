@@ -1,18 +1,16 @@
-import { ImageResponse } from '@vercel/og'
 import { createClient } from '@supabase/supabase-js'
+import { initWasm, Resvg } from '@resvg/resvg-wasm'
+import { readFile } from 'fs/promises'
+import { join } from 'path'
 
-export const runtime = 'nodejs'
+let wasmInitialized = false
 
-// Load Syne font weights from Google Fonts
-async function loadFonts() {
-  const [syne700, syne800] = await Promise.all([
-    fetch('https://fonts.gstatic.com/s/syne/v24/8vIS7w4qzmVxsWxjBZRjr0FKM_3fvj6k.ttf').then(r => r.arrayBuffer()),
-    fetch('https://fonts.gstatic.com/s/syne/v24/8vIS7w4qzmVxsWxjBZRjr0FKM_24vj6k.ttf').then(r => r.arrayBuffer()),
-  ])
-  return [
-    { name: 'Syne', data: syne700, weight: 700 as const, style: 'normal' as const },
-    { name: 'Syne', data: syne800, weight: 800 as const, style: 'normal' as const },
-  ]
+async function ensureWasm() {
+  if (wasmInitialized) return
+  const wasmPath = join(process.cwd(), 'node_modules/@resvg/resvg-wasm/index_bg.wasm')
+  const wasmBuffer = await readFile(wasmPath)
+  await initWasm(wasmBuffer)
+  wasmInitialized = true
 }
 
 export async function GET(
@@ -22,162 +20,123 @@ export async function GET(
   const { id } = await params
 
   try {
+    await ensureWasm()
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
-  const { data: profile, error } = await supabase
-    .from('interpreter_profiles')
-    .select('name, first_name, last_name, photo_url, sign_languages, draft_data')
-    .eq('id', id)
-    .single()
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    const { data: profile, error } = await supabase
+      .from('interpreter_profiles')
+      .select('name, first_name, last_name, photo_url, sign_languages, draft_data')
+      .eq('id', id)
+      .single()
 
-  if (error || !profile) {
-    return new Response('Not found', { status: 404 })
-  }
-
-  const displayName = profile.name || [profile.first_name, profile.last_name].filter(Boolean).join(' ') || 'Interpreter'
-
-  // Extract certs from draft_data
-  const draftData = (profile.draft_data || {}) as Record<string, unknown>
-  const certs = Array.isArray(draftData.certifications)
-    ? draftData.certifications
-        .filter((c: Record<string, unknown>) => c && typeof c.name === 'string' && c.name.trim())
-        .map((c: Record<string, unknown>) => c.name as string)
-    : []
-
-  // Build subtitle: sign language abbreviation + certs
-  const langAbbrev = (profile.sign_languages || []).map((l: string) => {
-    const match = l.match(/\(([^)]+)\)/)
-    return match ? match[1] : l
-  })
-  const subtitleParts = [...langAbbrev.map((l: string) => `${l} interpreter`), ...certs]
-  const subtitle = subtitleParts.join(' \u00B7 ') || 'Interpreter'
-
-  // Fetch avatar as ArrayBuffer if available
-  let avatarBuf: ArrayBuffer | null = null
-  if (profile.photo_url) {
-    try {
-      const avatarRes = await fetch(profile.photo_url)
-      if (avatarRes.ok) {
-        avatarBuf = await avatarRes.arrayBuffer()
-      }
-    } catch {
-      // Fallback to initials if fetch fails
+    if (error || !profile) {
+      return new Response('Not found', { status: 404 })
     }
-  }
 
-  const fonts = await loadFonts()
+    const displayName =
+      profile.name ||
+      [profile.first_name, profile.last_name].filter(Boolean).join(' ') ||
+      'Interpreter'
 
-  const initials = displayName.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)
+    // Extract certs from draft_data
+    const draftData = (profile.draft_data || {}) as Record<string, unknown>
+    const certs = Array.isArray(draftData.certifications)
+      ? draftData.certifications
+          .filter(
+            (c: Record<string, unknown>) =>
+              c && typeof c.name === 'string' && c.name.trim()
+          )
+          .map((c: Record<string, unknown>) => c.name as string)
+      : []
 
-  const response = new ImageResponse(
-    (
-      <div
-        style={{
-          width: '500px',
-          height: '130px',
-          background: '#0a0a0f',
-          borderRadius: '16px',
-          display: 'flex',
-          alignItems: 'center',
-          position: 'relative',
-          fontFamily: 'sans-serif',
-        }}
-      >
-        {/* Avatar */}
-        <div
-          style={{
-            position: 'absolute',
-            left: '18px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: '94px',
-            height: '94px',
-            borderRadius: '50%',
-            border: '2px solid #00e5ff',
-            overflow: 'hidden',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'linear-gradient(135deg, #7b61ff, #00e5ff)',
-          }}
-        >
-          {avatarBuf ? (
-            <img
-              src={`data:image/jpeg;base64,${Buffer.from(avatarBuf).toString('base64')}`}
-              width={94}
-              height={94}
-              style={{ objectFit: 'cover', borderRadius: '50%' }}
-            />
-          ) : (
-            <span style={{ color: '#fff', fontSize: '28px', fontFamily: 'Syne', fontWeight: 700 }}>
-              {initials}
-            </span>
-          )}
-        </div>
+    // Build subtitle: sign language abbreviation + certs
+    const langAbbrev = (profile.sign_languages || []).map((l: string) => {
+      const match = l.match(/\(([^)]+)\)/)
+      return match ? match[1] : l
+    })
+    const subtitleParts = [
+      ...langAbbrev.map((l: string) => `${l} interpreter`),
+      ...certs,
+    ]
+    const subtitle = subtitleParts.join(' \u00B7 ') || 'Interpreter'
 
-        {/* Text block */}
-        <div
-          style={{
-            position: 'absolute',
-            left: '130px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '4px',
-          }}
-        >
-          {/* Name */}
-          <div style={{ fontFamily: 'Syne', fontWeight: 700, fontSize: '22px', color: '#f0f2f8' }}>
-            {displayName}
-          </div>
+    // Fetch avatar and convert to base64 data URI
+    let avatarDataUri = ''
+    if (profile.photo_url) {
+      try {
+        const avatarRes = await fetch(profile.photo_url)
+        if (avatarRes.ok) {
+          const buf = await avatarRes.arrayBuffer()
+          const base64 = Buffer.from(buf).toString('base64')
+          const contentType = avatarRes.headers.get('content-type') || 'image/jpeg'
+          avatarDataUri = `data:${contentType};base64,${base64}`
+        }
+      } catch {
+        // Fallback to initials
+      }
+    }
 
-          {/* Certs line */}
-          <div style={{ fontSize: '14px', color: '#b0b8d0' }}>
-            {subtitle}
-          </div>
+    const initials = displayName
+      .split(' ')
+      .map((w: string) => w[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
 
-          {/* Book me on signpost line */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0px', marginTop: '2px' }}>
-            <div
-              style={{
-                width: '2.5px',
-                height: '18px',
-                background: '#00e5ff',
-                borderRadius: '2px',
-                marginRight: '8px',
-                flexShrink: 0,
-              }}
-            />
-            <span style={{ fontSize: '16px', color: '#b0b8d0' }}>Book me on</span>
-            <span style={{ fontFamily: 'Syne', fontWeight: 800, fontSize: '18px', color: '#ffffff', marginLeft: '6px' }}>
-              sign
-            </span>
-            <span style={{ fontFamily: 'Syne', fontWeight: 800, fontSize: '18px', color: '#00e5ff' }}>
-              post
-            </span>
-            <span style={{ color: '#00e5ff', fontSize: '18px', marginLeft: '4px', fontWeight: 700 }}>
-              ›
-            </span>
-          </div>
-        </div>
-      </div>
-    ),
-    {
-      width: 500,
-      height: 130,
-      fonts,
+    // Escape XML special characters
+    const esc = (s: string) =>
+      s
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+
+    // Build avatar SVG fragment
+    const avatarFragment = avatarDataUri
+      ? `<defs>
+          <clipPath id="avatar-clip">
+            <circle cx="65" cy="65" r="47" />
+          </clipPath>
+        </defs>
+        <image href="${avatarDataUri}" x="18" y="18" width="94" height="94" clip-path="url(#avatar-clip)" preserveAspectRatio="xMidYMid slice" />
+        <circle cx="65" cy="65" r="47" fill="none" stroke="#00e5ff" stroke-width="2" />`
+      : `<defs>
+          <linearGradient id="avatar-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#7b61ff" />
+            <stop offset="100%" stop-color="#00e5ff" />
+          </linearGradient>
+        </defs>
+        <circle cx="65" cy="65" r="47" fill="url(#avatar-grad)" />
+        <circle cx="65" cy="65" r="47" fill="none" stroke="#00e5ff" stroke-width="2" />
+        <text x="65" y="65" text-anchor="middle" dominant-baseline="central" font-family="Syne, sans-serif" font-weight="700" font-size="28" fill="#ffffff">${esc(initials)}</text>`
+
+    const svgString = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="500" height="130" viewBox="0 0 500 130">
+      <rect width="500" height="130" rx="16" fill="#0a0a0f" />
+      ${avatarFragment}
+      <text x="130" y="42" font-family="Syne, sans-serif" font-weight="700" font-size="22" fill="#f0f2f8">${esc(displayName)}</text>
+      <text x="130" y="62" font-family="Inter, sans-serif" font-weight="400" font-size="14" fill="#b0b8d0">${esc(subtitle)}</text>
+      <rect x="130" y="80" width="2.5" height="18" rx="1" fill="#00e5ff" />
+      <text x="138" y="95" font-family="Inter, sans-serif" font-weight="400" font-size="16" fill="#b0b8d0">Book me on</text>
+      <text x="238" y="95" font-family="Syne, sans-serif" font-weight="800" font-size="18" fill="#ffffff">sign</text>
+      <text x="274" y="95" font-family="Syne, sans-serif" font-weight="800" font-size="18" fill="#00e5ff">post</text>
+      <text x="312" y="95" font-size="20" fill="#00e5ff">\u203A</text>
+    </svg>`
+
+    const resvg = new Resvg(svgString, {
+      fitTo: { mode: 'width', value: 1000 },
+    })
+    const pngData = resvg.render()
+    const pngBuffer = pngData.asPng()
+
+    return new Response(Buffer.from(pngBuffer), {
       headers: {
+        'Content-Type': 'image/png',
         'Cache-Control': 'public, max-age=3600, s-maxage=86400',
       },
-    }
-  )
-
-  return response
-
+    })
   } catch (err: unknown) {
     const e = err as Error
     return new Response(
