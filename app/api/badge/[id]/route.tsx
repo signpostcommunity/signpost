@@ -21,6 +21,8 @@ export async function GET(
 ) {
   const { id } = await params
 
+  try {
+
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -175,4 +177,16 @@ export async function GET(
   )
 
   return response
+
+  } catch (err: unknown) {
+    const e = err as Error
+    return new Response(
+      JSON.stringify({
+        error: e.message,
+        stack: e.stack,
+        name: e.name,
+      }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    )
+  }
 }
