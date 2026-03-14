@@ -658,7 +658,7 @@ function OverviewTab({ interpreter: i }: { interpreter: Interpreter }) {
           return (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: '24px' }} className="specs-grid">
               {categories.map(([cat, subs]) => (
-                <div key={cat}>
+                <div key={cat} style={{ marginBottom: '20px' }}>
                   <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#c8c4bc', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontFamily: 'var(--font-syne)' }}>
                     {cat}
                   </div>
