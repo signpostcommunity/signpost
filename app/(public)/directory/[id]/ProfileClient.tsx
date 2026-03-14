@@ -659,7 +659,7 @@ function OverviewTab({ interpreter: i }: { interpreter: Interpreter }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: '24px' }} className="specs-grid">
               {categories.map(([cat, subs]) => (
                 <div key={cat} style={{ marginBottom: '20px' }}>
-                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#c8c4bc', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontFamily: 'var(--font-syne)' }}>
+                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#00e5ff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontFamily: 'var(--font-syne)' }}>
                     {cat}
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -679,7 +679,7 @@ function OverviewTab({ interpreter: i }: { interpreter: Interpreter }) {
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {i.specializedSkills.map(s => (
-                      <span key={s} style={{ padding: '6px 14px', background: 'rgba(123,97,255,0.08)', border: '1px solid rgba(123,97,255,0.3)', borderRadius: '8px', fontSize: '0.82rem', color: '#a891ff', fontWeight: 600 }}>
+                      <span key={s} style={{ padding: '6px 14px', background: 'rgba(123,97,255,0.08)', border: '1px solid var(--border)', borderRadius: '8px', fontSize: '0.82rem', color: '#f0f2f8', fontWeight: 600 }}>
                         {s}
                       </span>
                     ))}

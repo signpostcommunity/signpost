@@ -108,5 +108,5 @@ export const LEGACY_SPEC_MAP: Record<string, string[]> = {
   "Business": ["Staff meeting / All-hands"],
   "Police / Emergency": ["Police / Law enforcement"],
   "Diplomatic": ["Government / DMV / Benefits"],
-  "Platform / Highly-Specialized Voice Interpreting": ["Platform Voicing / Specialized Voice Interpreting"],
+  "Platform / Specialized Voice Interpreting": ["Platform Voicing / Specialized Voice Interpreting"],
 }
