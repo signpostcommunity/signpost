@@ -86,6 +86,8 @@ export type FormData = {
   agreeTerms: boolean
   agreeBooking: boolean
   agreeCredentials: boolean
+  // Book Me link
+  vanitySlug: string
   // Legacy (kept for compatibility)
   rateProfiles: RateProfile[]
   otherSpecializations: string
@@ -151,6 +153,7 @@ const initialFormData: FormData = {
   religiousAffiliation: false, religiousDetails: [],
   pendingRoles: [],
   agreeTerms: false, agreeBooking: false, agreeCredentials: false,
+  vanitySlug: '',
   rateProfiles: defaultRateProfiles, otherSpecializations: '', genderIdentity: '',
 }
 
@@ -238,6 +241,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
           photo_url: formData.avatarUrl,
           gender_identity: formData.genderIdentity,
           other_specializations: formData.otherSpecializations || null,
+          vanity_slug: formData.vanitySlug || null,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' })
     } catch (e) {

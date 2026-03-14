@@ -125,6 +125,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         video_desc: formData.videoDescription,
         photo_url: formData.avatarUrl,
         other_specializations: formData.otherSpecializations || null,
+        vanity_slug: formData.vanitySlug || null,
         notification_preferences: {
           email_enabled: true,
           sms_enabled: true,
@@ -256,6 +257,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
             body: 'Thanks for joining signpost! Your interpreter profile is live. Visit your dashboard to complete your profile, set your rates, and start receiving requests.',
             ctaText: 'Go to My Dashboard',
             ctaUrl: 'https://signpost.community/interpreter/dashboard',
+            metadata: { vanity_slug: formData.vanitySlug || null },
           }),
         })
       } catch (welcomeErr) {

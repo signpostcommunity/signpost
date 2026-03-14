@@ -155,9 +155,10 @@ interface OverviewClientProps {
   firstName: string | null
   lastName: string | null
   profileStatus: string | null
+  vanitySlug: string | null
 }
 
-export default function OverviewClient({ interpreterProfileId, firstName, profileStatus }: OverviewClientProps) {
+export default function OverviewClient({ interpreterProfileId, firstName, profileStatus, vanitySlug }: OverviewClientProps) {
   const displayName = firstName || 'there'
   const hasDraftProfile = profileStatus === 'draft'
   const [toast, setToast] = useState<string | null>(null)
@@ -300,6 +301,51 @@ export default function OverviewClient({ interpreterProfileId, firstName, profil
         <StatCard num={confirmedThisMonth} label="Confirmed This Month" href="/interpreter/dashboard/confirmed" />
         <StatCard num={teamCount} label="Interpreters in Your Preferred Team" href="/interpreter/dashboard/team" />
         <StatCard num={daysAvailable} label="Days Available This Week" href="/interpreter/dashboard/availability" />
+      </div>
+
+      {/* Book Me Link Card */}
+      <div style={{
+        background: 'var(--card-bg)', border: '1px solid var(--border)',
+        borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 24,
+      }}>
+        <div style={{
+          fontFamily: "'Syne', sans-serif", fontSize: '0.7rem', fontWeight: 700,
+          letterSpacing: '0.12em', textTransform: 'uppercase',
+          color: 'var(--accent)', marginBottom: 12,
+        }}>
+          Your Book Me Link
+        </div>
+        {vanitySlug ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <span style={{
+              fontSize: '1rem', fontWeight: 600, color: 'var(--accent)',
+              fontFamily: "'DM Sans', sans-serif", wordBreak: 'break-all',
+            }}>
+              signpost.community/book/{vanitySlug}
+            </span>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(`https://signpost.community/book/${vanitySlug}`)
+                showToast('Copied to clipboard!')
+              }}
+              style={{
+                background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.3)',
+                color: 'var(--accent)', borderRadius: 8, padding: '6px 14px',
+                fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
+                fontFamily: "'DM Sans', sans-serif",
+              }}
+            >
+              Copy link
+            </button>
+          </div>
+        ) : (
+          <Link
+            href="/interpreter/dashboard/profile"
+            style={{ color: 'var(--accent)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}
+          >
+            Set up your Book Me link →
+          </Link>
+        )}
       </div>
 
       {!hasDraftProfile && !loading && (

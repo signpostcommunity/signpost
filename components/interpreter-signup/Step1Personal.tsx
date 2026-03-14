@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useForm } from './FormContext'
 import {
   StepWrapper, FormSection, SectionTitle, FormRow, FormField, FieldLabel,
@@ -10,6 +10,7 @@ import {
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton'
 import LocationPicker from '@/components/shared/LocationPicker'
 import { createClient } from '@/lib/supabase/client'
+import { generateSlug, validateSlug } from '@/lib/slugUtils'
 
 const REGIONS = [
   { label: '🌍 Worldwide', color: '#00e5ff' },
@@ -31,6 +32,53 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadMsg, setUploadMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
+
+  // Slug state
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
+  const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle')
+  const [slugError, setSlugError] = useState<string | null>(null)
+  const slugCheckTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const checkSlugAvailability = useCallback((slug: string) => {
+    if (slugCheckTimer.current) clearTimeout(slugCheckTimer.current)
+    const validation = validateSlug(slug)
+    if (!validation.valid) {
+      setSlugStatus('invalid')
+      setSlugError(validation.error || 'Invalid slug')
+      return
+    }
+    setSlugStatus('checking')
+    setSlugError(null)
+    slugCheckTimer.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/check-slug?slug=${encodeURIComponent(slug)}`)
+        const data = await res.json()
+        if (data.available) {
+          setSlugStatus('available')
+          setSlugError(null)
+        } else {
+          setSlugStatus(data.reason === 'taken' ? 'taken' : data.reason === 'reserved' ? 'invalid' : 'invalid')
+          setSlugError(data.reason === 'taken' ? 'Already taken' : data.reason === 'reserved' ? 'This URL is reserved' : 'Invalid slug')
+        }
+      } catch {
+        setSlugStatus('invalid')
+        setSlugError('Could not check availability')
+      }
+    }, 500)
+  }, [])
+
+  // Auto-generate slug from name when not manually edited
+  useEffect(() => {
+    if (slugManuallyEdited) return
+    const slug = generateSlug(formData.firstName, formData.lastName)
+    if (slug && slug.length >= 3) {
+      updateField('vanitySlug', slug)
+      checkSlugAvailability(slug)
+    } else {
+      updateField('vanitySlug', slug)
+      setSlugStatus('idle')
+    }
+  }, [formData.firstName, formData.lastName, slugManuallyEdited, updateField, checkSlugAvailability])
 
   const worldwideSelected = formData.regions.includes('🌍 Worldwide')
 
@@ -207,6 +255,60 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
           </FormField>
         </FormRow>
 
+        {/* Book Me Link */}
+        <FormField>
+          <FieldLabel>Your Book Me Link</FieldLabel>
+          <div style={{
+            display: 'flex', alignItems: 'center', borderRadius: 'var(--radius-sm)',
+            overflow: 'hidden', border: '1px solid var(--border)',
+          }}>
+            <div style={{
+              background: 'var(--surface2)', padding: '11px 12px', fontSize: '0.85rem',
+              color: 'var(--muted)', whiteSpace: 'nowrap', borderRight: '1px solid var(--border)',
+              flexShrink: 0, fontFamily: "'DM Sans', sans-serif",
+            }}>
+              signpost.community/book/
+            </div>
+            <input
+              type="text"
+              value={formData.vanitySlug}
+              placeholder="your-name"
+              onChange={e => {
+                const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '')
+                setSlugManuallyEdited(true)
+                updateField('vanitySlug', val)
+                if (val.length >= 3) {
+                  checkSlugAvailability(val)
+                } else if (val.length > 0) {
+                  setSlugStatus('invalid')
+                  setSlugError('Must be at least 3 characters')
+                } else {
+                  setSlugStatus('idle')
+                  setSlugError(null)
+                }
+              }}
+              style={{
+                flex: 1, background: 'var(--surface)', border: 'none', padding: '11px 14px',
+                color: 'var(--text)', fontSize: '0.9rem', outline: 'none',
+                fontFamily: "'DM Sans', sans-serif", minWidth: 0,
+              }}
+            />
+          </div>
+          {formData.vanitySlug && slugStatus !== 'idle' && (
+            <div style={{
+              fontSize: '0.78rem', marginTop: 6, display: 'flex', alignItems: 'center', gap: 4,
+              color: slugStatus === 'available' ? '#34d399'
+                : slugStatus === 'checking' ? 'var(--muted)'
+                : 'var(--accent3)',
+            }}>
+              {slugStatus === 'checking' && 'Checking...'}
+              {slugStatus === 'available' && <><span style={{ fontWeight: 600 }}>&#10003;</span> Available</>}
+              {slugStatus === 'taken' && <><span style={{ fontWeight: 600 }}>&#10005;</span> {slugError}</>}
+              {slugStatus === 'invalid' && <><span style={{ fontWeight: 600 }}>&#10005;</span> {slugError}</>}
+            </div>
+          )}
+        </FormField>
+
         <FormRow>
           <FormField>
             <FieldLabel>Pronouns</FieldLabel>
@@ -269,7 +371,7 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
               />
             )}
             <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 6, lineHeight: 1.4 }}>
-              This field helps medical providers and other requesters accommodate specific client preferences when requested.
+              Optional. Helps requesters accommodate specific client preferences when requested.
             </div>
           </FormField>
         </FormRow>

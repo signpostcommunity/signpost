@@ -50,6 +50,11 @@ function getEmailContent(
   params: CreateNotificationParams
 ): { subject: string; htmlBody: string; ctaText: string; ctaUrl: string } | null {
   if (type === 'welcome') {
+    const vanitySlug = metadata.vanity_slug as string | undefined
+    const bookMeSection = vanitySlug
+      ? `<p>Your Book Me link is ready: <a href="https://signpost.community/book/${vanitySlug}" style="color: #00e5ff; text-decoration: none; font-weight: 600;">signpost.community/book/${vanitySlug}</a></p>
+<p>Share it in your email signature, on social media, or anywhere clients can find you.</p>`
+      : `<p>Set up your Book Me link from your dashboard to get a shareable URL for your profile.</p>`
     return {
       subject: 'Welcome to signpost!',
       htmlBody: `<p>Thanks for joining signpost! Your interpreter profile is live.</p>
@@ -57,7 +62,7 @@ function getEmailContent(
 <p>Your profile is live in the directory. Requesters will find you when you match their search filters (language, specialization, location, certification) or when a Deaf/DB/HH client includes you on their preferred interpreter list.</p>
 <p>When you receive a new request, you'll be notified via in-app notification, email, and/or SMS depending on your preferences. You can review the request details and respond with your rate, decline, or ask questions. <a href="https://signpost.community/interpreter/dashboard/profile?tab=account-settings" style="color: #00e5ff; text-decoration: none;">Update your notification preferences</a></p>
 <p>You control your rates and terms. Set your standard rate, minimum hours, and cancellation policy from your dashboard. You can also create custom rates for specific jobs.</p>
-<p>Your &ldquo;Book Me on signpost&rdquo; link is ready to share. Add it to your email signature, website, or social media. Anyone who clicks it goes straight to your profile with a Request button. Find it in your dashboard.</p>
+${bookMeSection}
 <p>This is free for interpreters. When requesters book you via signpost, they pay a simple flat platform fee (currently $15 per booking) to help support this site. They never pay an additional percentage added to your rates, or any hidden fees. It's that simple.</p>
 <p>Keep your profile up to date. The more complete your profile (photo, intro video, credentials, specializations, bio), the easier it is for the right clients to find you.</p>
 <p>Questions? Reach us anytime at hello@signpost.community.</p>`,
@@ -93,6 +98,17 @@ function getEmailContent(
       htmlBody: `<p>${adderName} has added you to their preferred interpreter list on signpost. This means they trust you and want you for their future bookings. When ${adderName} or someone booking on their behalf sends a request, you will be among the first interpreters contacted. Thank you for being a trusted interpreter to this client.</p>`,
       ctaText: 'View My Dashboard',
       ctaUrl: 'https://signpost.community/interpreter/dashboard',
+    }
+  }
+
+  if (type === 'new_message') {
+    const senderName = (metadata.sender_name as string) || 'Someone'
+    const conversationUrl = (metadata.conversation_url as string) || (params.ctaUrl as string) || 'https://signpost.community'
+    return {
+      subject: `New message from ${senderName} on signpost`,
+      htmlBody: `<p>${senderName} sent you a message on signpost.</p>`,
+      ctaText: 'Read and Reply',
+      ctaUrl: conversationUrl,
     }
   }
 

@@ -12,6 +12,7 @@ import {
 import { SPECIALIZATION_CATEGORIES, SPECIALIZED_SKILLS } from '@/lib/constants/specializations'
 import { getVideoEmbedUrl, isValidVideoUrl } from '@/lib/videoUtils'
 import LocationPicker from '@/components/shared/LocationPicker'
+import { generateSlug, validateSlug } from '@/lib/slugUtils'
 
 // ── Shared styles ────────────────────────────────────────────────────────────
 
@@ -152,6 +153,7 @@ interface ProfileData {
   religious_affiliation?: boolean | null
   religious_details?: string[] | null
   gender_identity?: string | null
+  vanity_slug?: string | null
 }
 
 interface NotificationPreferences {
@@ -314,6 +316,63 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const [pronouns, setPronouns] = useState(fallback(p.pronouns, 'pronouns', ''))
   const [genderIdentity, setGenderIdentity] = useState(fallback(p.gender_identity, 'genderIdentity', ''))
 
+  // ── Book Me slug state ──────────────────────────────────────────────
+  const [vanitySlug, setVanitySlug] = useState(p.vanity_slug || '')
+  const [editingSlug, setEditingSlug] = useState(false)
+  const [slugDraft, setSlugDraft] = useState(p.vanity_slug || '')
+  const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle')
+  const [slugError, setSlugError] = useState<string | null>(null)
+  const slugCheckTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [slugSaving, setSlugSaving] = useState(false)
+
+  function checkSlugAvailability(slug: string) {
+    if (slugCheckTimer.current) clearTimeout(slugCheckTimer.current)
+    const validation = validateSlug(slug)
+    if (!validation.valid) {
+      setSlugStatus('invalid')
+      setSlugError(validation.error || 'Invalid')
+      return
+    }
+    setSlugStatus('checking')
+    setSlugError(null)
+    slugCheckTimer.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/check-slug?slug=${encodeURIComponent(slug)}`)
+        const data = await res.json()
+        if (data.available) {
+          setSlugStatus('available')
+          setSlugError(null)
+        } else {
+          setSlugStatus(data.reason === 'taken' ? 'taken' : 'invalid')
+          setSlugError(data.reason === 'taken' ? 'Already taken' : data.reason === 'reserved' ? 'This URL is reserved' : 'Invalid')
+        }
+      } catch {
+        setSlugStatus('invalid')
+        setSlugError('Could not check availability')
+      }
+    }, 500)
+  }
+
+  async function saveSlug() {
+    if (slugStatus !== 'available' && slugDraft !== vanitySlug) return
+    setSlugSaving(true)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setSlugSaving(false); return }
+    const { error } = await supabase
+      .from('interpreter_profiles')
+      .update({ vanity_slug: slugDraft, updated_at: new Date().toISOString() })
+      .eq('user_id', user.id)
+    setSlugSaving(false)
+    if (error) {
+      setToast({ message: `Error saving slug: ${error.message}`, type: 'error' })
+    } else {
+      setVanitySlug(slugDraft)
+      setEditingSlug(false)
+      setToast({ message: 'Book Me link saved.', type: 'success' })
+    }
+  }
+
   // ── Languages state ────────────────────────────────────────────────────
   const [signLangs, setSignLangs] = useState<string[]>(fallback(p.sign_languages, 'signLanguages', [] as string[]))
   const [spokenLangs, setSpokenLangs] = useState<string[]>(fallback(p.spoken_languages, 'spokenLanguages', [] as string[]))
@@ -377,7 +436,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       // Now try interpreter_profiles
       const { data, error, status, statusText } = await supabase
         .from('interpreter_profiles')
-        .select('id, name, first_name, last_name, email, pronouns, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, bio_specializations, bio_extra, sign_languages, spoken_languages, specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms, notification_preferences, notification_phone, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity')
+        .select('id, name, first_name, last_name, email, pronouns, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, bio_specializations, bio_extra, sign_languages, spoken_languages, specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms, notification_preferences, notification_phone, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, vanity_slug')
         .eq('user_id', user.id)
         .maybeSingle()
       console.log('PROFILE CLIENT-SIDE LOAD:', JSON.stringify({ data, error, status, statusText, userId: user.id }, null, 2))
@@ -412,6 +471,10 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       if (d.default_payment_terms != null) setDefaultPaymentTerms(d.default_payment_terms)
       if (d.notification_preferences != null) setNotifPrefs(d.notification_preferences)
       if (d.notification_phone != null) setNotifPhone(d.notification_phone)
+      if ((d as ProfileData).vanity_slug != null) {
+        setVanitySlug((d as ProfileData).vanity_slug || '')
+        setSlugDraft((d as ProfileData).vanity_slug || '')
+      }
     })()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -697,6 +760,133 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                 }}>{uploadMsg.text}</div>
               )}
             </div>
+          </div>
+
+          {/* ── Book Me Link ─────────────────────────────────────── */}
+          <div style={sectionTitleStyle}>Your Book Me Link</div>
+          <div style={{
+            background: 'var(--surface2)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)', padding: '20px 24px', marginBottom: 24,
+          }}>
+            {vanitySlug && !editingSlug ? (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                  <span style={{
+                    fontSize: '1rem', fontWeight: 600, color: 'var(--accent)',
+                    fontFamily: "'DM Sans', sans-serif", wordBreak: 'break-all',
+                  }}>
+                    signpost.community/book/{vanitySlug}
+                  </span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`https://signpost.community/book/${vanitySlug}`)
+                      setToast({ message: 'Copied to clipboard!', type: 'success' })
+                    }}
+                    style={{
+                      background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.3)',
+                      color: 'var(--accent)', borderRadius: 8, padding: '6px 14px',
+                      fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}
+                  >
+                    Copy
+                  </button>
+                  <button
+                    onClick={() => { setEditingSlug(true); setSlugDraft(vanitySlug); setSlugStatus('idle') }}
+                    style={{
+                      background: 'none', border: '1px solid var(--border)',
+                      color: 'var(--muted)', borderRadius: 8, padding: '6px 14px',
+                      fontSize: '0.82rem', cursor: 'pointer',
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}
+                  >
+                    Edit
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                {!vanitySlug && <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: 12 }}>You don&apos;t have a Book Me link yet.</p>}
+                <div style={{
+                  display: 'flex', alignItems: 'center', borderRadius: 'var(--radius-sm)',
+                  overflow: 'hidden', border: '1px solid var(--border)', marginBottom: 8,
+                }}>
+                  <div style={{
+                    background: 'var(--surface)', padding: '11px 12px', fontSize: '0.85rem',
+                    color: 'var(--muted)', whiteSpace: 'nowrap', borderRight: '1px solid var(--border)',
+                    flexShrink: 0, fontFamily: "'DM Sans', sans-serif",
+                  }}>
+                    signpost.community/book/
+                  </div>
+                  <input
+                    type="text"
+                    value={slugDraft}
+                    placeholder={generateSlug(firstName, lastName) || 'your-name'}
+                    onChange={e => {
+                      const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '')
+                      setSlugDraft(val)
+                      if (val.length >= 3) {
+                        checkSlugAvailability(val)
+                      } else if (val.length > 0) {
+                        setSlugStatus('invalid')
+                        setSlugError('Must be at least 3 characters')
+                      } else {
+                        setSlugStatus('idle')
+                      }
+                    }}
+                    style={{
+                      flex: 1, background: 'var(--card-bg)', border: 'none', padding: '11px 14px',
+                      color: 'var(--text)', fontSize: '0.9rem', outline: 'none',
+                      fontFamily: "'DM Sans', sans-serif", minWidth: 0,
+                    }}
+                  />
+                </div>
+                {slugDraft && slugStatus !== 'idle' && (
+                  <div style={{
+                    fontSize: '0.78rem', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4,
+                    color: slugStatus === 'available' ? '#34d399'
+                      : slugStatus === 'checking' ? 'var(--muted)'
+                      : 'var(--accent3)',
+                  }}>
+                    {slugStatus === 'checking' && 'Checking...'}
+                    {slugStatus === 'available' && <><span style={{ fontWeight: 600 }}>&#10003;</span> Available</>}
+                    {slugStatus === 'taken' && <><span style={{ fontWeight: 600 }}>&#10005;</span> {slugError}</>}
+                    {slugStatus === 'invalid' && <><span style={{ fontWeight: 600 }}>&#10005;</span> {slugError}</>}
+                  </div>
+                )}
+                {editingSlug && (
+                  <p style={{ fontSize: '0.78rem', color: 'var(--accent3)', marginBottom: 8, lineHeight: 1.5 }}>
+                    Changing your link means your old link will stop working. Update it anywhere you&apos;ve shared it.
+                  </p>
+                )}
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    onClick={saveSlug}
+                    disabled={slugSaving || (slugStatus !== 'available' && slugDraft !== vanitySlug)}
+                    className="btn-primary"
+                    style={{
+                      fontSize: '0.82rem', padding: '8px 18px',
+                      opacity: (slugSaving || (slugStatus !== 'available' && slugDraft !== vanitySlug)) ? 0.5 : 1,
+                    }}
+                  >
+                    {slugSaving ? 'Saving...' : 'Save'}
+                  </button>
+                  {editingSlug && (
+                    <button
+                      onClick={() => { setEditingSlug(false); setSlugDraft(vanitySlug); setSlugStatus('idle') }}
+                      style={{
+                        background: 'none', border: '1px solid var(--border)',
+                        color: 'var(--muted)', borderRadius: 8, padding: '6px 14px',
+                        fontSize: '0.82rem', cursor: 'pointer',
+                        fontFamily: "'DM Sans', sans-serif",
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           <div style={sectionTitleStyle}>Personal Information</div>
