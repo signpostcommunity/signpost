@@ -63,9 +63,9 @@ const NAV: NavGroup[] = [
         badgeKey: 'requesters',
       },
       {
-        label: 'Share My List',
-        href: '/dhh/dashboard/share',
-        icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="18" cy="5" r="3" stroke="currentColor" strokeWidth="1.6"/><circle cx="6" cy="12" r="3" stroke="currentColor" strokeWidth="1.6"/><circle cx="18" cy="19" r="3" stroke="currentColor" strokeWidth="1.6"/><path d="M8.7 10.7l6.6-3.4M8.7 13.3l6.6 3.4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/></svg>,
+        label: 'Trusted Deaf Circle',
+        href: '/dhh/dashboard/circle',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.3"/><circle cx="5.5" cy="7" r="1.5" stroke="currentColor" strokeWidth="1.1"/><circle cx="10.5" cy="7" r="1.5" stroke="currentColor" strokeWidth="1.1"/><path d="M4 11c0-1 .7-1.8 1.5-1.8S7 10 7 11M9 11c0-1 .7-1.8 1.5-1.8S12 10 12 11" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>,
       },
       {
         label: 'Browse Interpreter Directory',
