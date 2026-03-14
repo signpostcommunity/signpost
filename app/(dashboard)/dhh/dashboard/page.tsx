@@ -45,6 +45,15 @@ export default function DeafDashboardPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // Resolve deaf_profiles.id for this auth user (may differ from auth.uid())
+    const { data: deafProfile } = await supabase
+      .from('deaf_profiles')
+      .select('id')
+      .or(`user_id.eq.${user.id},id.eq.${user.id}`)
+      .maybeSingle();
+
+    const deafUserId = deafProfile?.id || user.id;
+
     const { data, error } = await supabase
       .from('deaf_roster')
       .select(`
@@ -65,7 +74,7 @@ export default function DeafDashboardPage() {
           certifications:interpreter_certifications(name)
         )
       `)
-      .eq('deaf_user_id', user.id);
+      .eq('deaf_user_id', deafUserId);
 
     if (error) {
       console.error('[deaf-dashboard] roster fetch error:', error.message);

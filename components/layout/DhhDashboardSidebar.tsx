@@ -26,7 +26,7 @@ const NAV: NavGroup[] = [
       {
         label: 'My Preferred Interpreters',
         href: '/dhh/dashboard',
-        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="2" rx="1" fill="currentColor" opacity=".7"/><rect x="2" y="7" width="12" height="2" rx="1" fill="currentColor" opacity=".7"/><rect x="2" y="11" width="8" height="2" rx="1" fill="currentColor" opacity=".7"/></svg>,
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 14s-5.5-3.5-5.5-7A3.5 3.5 0 0 1 8 4.5 3.5 3.5 0 0 1 13.5 7C13.5 10.5 8 14 8 14z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
         badgeKey: 'roster',
       },
       {
@@ -162,7 +162,7 @@ function SidebarContent({ userName, userInitials, badges }: {
             {group.items.map(item => {
               const active = item.href === '/dhh/dashboard'
                 ? pathname === item.href
-                : pathname.startsWith(item.href)
+                : pathname === item.href || pathname.startsWith(item.href + '/')
               const badgeCount = item.badgeKey ? (badges[item.badgeKey] ?? 0) : 0
               const showRedDot = item.redDot && ((badges.notifications ?? 0) + (badges.inbox ?? 0)) > 0
               return (
@@ -248,10 +248,19 @@ export default function DhhDashboardSidebar({ userName = 'User', userInitials = 
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
+      // Resolve deaf_profiles.id for this auth user (may differ from auth.uid())
+      const { data: deafProfile } = await supabase
+        .from('deaf_profiles')
+        .select('id')
+        .or(`user_id.eq.${user.id},id.eq.${user.id}`)
+        .maybeSingle()
+
+      const deafUserId = deafProfile?.id || user.id
+
       const { count: rosterCount } = await supabase
         .from('deaf_roster')
         .select('id', { count: 'exact', head: true })
-        .eq('deaf_user_id', user.id)
+        .eq('deaf_user_id', deafUserId)
         .in('tier', ['preferred', 'approved'])
 
       // Unread notifications count (in_app only)
