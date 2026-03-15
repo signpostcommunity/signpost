@@ -68,11 +68,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Booking is not completed' }, { status: 400 })
     }
 
-    // Check if already rated
+    // Check if already rated (per interpreter per booking)
     const { data: existingRating } = await admin
       .from('interpreter_ratings')
       .select('id')
       .eq('booking_id', bookingId)
+      .eq('interpreter_id', interpreterId)
       .maybeSingle()
 
     if (existingRating) {

@@ -2,19 +2,23 @@
 
 export const dynamic = 'force-dynamic'
 
-// TODO: bookings table needs dhh_consumer_id column (nullable, FK -> deaf_profiles.id)
-// Query will be: bookings where dhh_consumer_id matches current deaf user's profile
-// Until that column exists, Section B ("Requests Made on Your Behalf") uses hardcoded mock data.
-//
-// TODO: deaf_roster needs a `dnb` boolean column (Do Not Book flag)
-// Query will be: deaf_roster where deaf_user_id = current user AND dnb = true
-// Until that column exists, the DNB check logic is built but uses an empty set.
-
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { BetaBanner, PageHeader, SectionLabel, DemoBadge, GhostButton, Avatar, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 
 /* ── Types ── */
+
+interface Recipient {
+  id: string
+  interpreter_id: string
+  status: string
+  interpreter: {
+    name: string
+    first_name?: string | null
+    last_name?: string | null
+    photo_url?: string | null
+  } | null
+}
 
 interface Booking {
   id: string
@@ -27,24 +31,22 @@ interface Booking {
   location: string | null
   format: string | null
   status: string
+  request_type: string | null
+  interpreter_count: number | null
   is_seed: boolean | null
   cancellation_reason: string | null
   sub_search_initiated: boolean | null
+  created_at: string
+  recipients: Recipient[]
 }
 
 interface MockBooking extends Booking {
-  interpreter_name: string
-  interpreter_languages: string
-  interpreter_specialization: string
-  interpreter_initials: string
-  interpreter_gradient: string
   requester_display: string
   comm_prefs_summary: string
   replacement_info?: {
     message: string
     interpreters: { name: string; languages: string; specs: string; status: 'awaiting' | 'available' }[]
   }
-  is_cancelled_original_interpreter?: string
 }
 
 /* ── Helpers ── */
@@ -102,7 +104,7 @@ function CancelledBadge({ reason }: { reason: string | null }) {
   )
 }
 
-function PendingBadge() {
+function OpenBadge() {
   return (
     <span style={{
       fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px',
@@ -111,7 +113,7 @@ function PendingBadge() {
       border: '1px solid rgba(249,115,22,0.25)',
       fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
     }}>
-      Pending
+      Open
     </span>
   )
 }
@@ -124,8 +126,6 @@ function MessageRequesterButton({ requesterName, onToast, disabled, tooltip }: {
   disabled?: boolean
   tooltip?: string
 }) {
-  // TODO: Wire to messages table — create a message from D/HH user to requester
-  // This is critical for scenarios like the D/HH person seeing a DNB interpreter confirmed
   const [hover, setHover] = useState(false)
 
   return (
@@ -273,6 +273,9 @@ function DetailModal({ booking, onClose, onToast }: {
   const iconStyle: React.CSSProperties = { color: 'var(--muted)', flexShrink: 0, marginTop: 2 }
   const sectionStyle: React.CSSProperties = { padding: '16px 0', borderBottom: '1px solid var(--border)' }
 
+  // Get confirmed interpreters from recipients
+  const confirmedRecipients = booking.recipients.filter(r => r.status === 'confirmed')
+
   return (
     <div role="presentation" style={overlayStyle} onClick={onClose}>
       <div className="modal-dialog" style={{
@@ -286,13 +289,13 @@ function DetailModal({ booking, onClose, onToast }: {
             <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>
               {booking.title || 'Booking'}
             </h3>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem', flexShrink: 0 }}>✕</button>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem', flexShrink: 0 }}>&#10005;</button>
           </div>
           {isCancelled
             ? <CancelledBadge reason={booking.cancellation_reason} />
-            : booking.status === 'confirmed' || booking.status === 'filled'
+            : booking.status === 'filled'
               ? <ConfirmedBadge />
-              : <PendingBadge />
+              : <OpenBadge />
           }
         </div>
 
@@ -331,23 +334,26 @@ function DetailModal({ booking, onClose, onToast }: {
             </div>
           </div>
 
-          {/* Interpreter Assigned */}
-          {booking.interpreter_name && (
+          {/* Interpreters Assigned */}
+          {confirmedRecipients.length > 0 && (
             <div style={sectionStyle}>
-              <div style={sectionLabelStyle}>Interpreter Assigned</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <Avatar initials={booking.interpreter_initials} gradient={booking.interpreter_gradient} size={36} />
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>
-                    {booking.interpreter_name}
-                    {booking.is_cancelled_original_interpreter && (
-                      <span style={{ color: 'var(--muted)', fontWeight: 400, fontStyle: 'italic' }}> (cancelled)</span>
-                    )}
-                  </div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
-                    {booking.interpreter_languages} · {booking.interpreter_specialization}
-                  </div>
-                </div>
+              <div style={sectionLabelStyle}>Interpreter{confirmedRecipients.length > 1 ? 's' : ''} Assigned</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {confirmedRecipients.map(r => {
+                  const interp = r.interpreter
+                  const interpName = interp?.name || 'Interpreter'
+                  const initials = interp?.first_name
+                    ? `${interp.first_name[0]}${interp.last_name?.[0] || ''}`.toUpperCase()
+                    : interpName[0]?.toUpperCase() || 'I'
+                  return (
+                    <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <Avatar initials={initials} gradient="linear-gradient(135deg,#9d87ff,#00e5ff)" size={36} />
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>{interpName}</div>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}
@@ -391,9 +397,10 @@ function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast }: 
 }) {
   const isCancelled = booking.status === 'cancelled'
   const isSelfRequest = !booking.requester_display
-  // DNB check: compare interpreter name against DNB set
-  // TODO: When real data exists, compare interpreter_id instead of name
-  const isDnb = dnbInterpreterIds.has(booking.interpreter_name)
+
+  // DNB check: compare confirmed interpreter IDs against DNB set
+  const confirmedRecipients = booking.recipients.filter(r => r.status === 'confirmed')
+  const hasDnb = confirmedRecipients.some(r => dnbInterpreterIds.has(r.interpreter_id))
 
   return (
     <div style={{
@@ -402,7 +409,7 @@ function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast }: 
       opacity: isCancelled && !booking.sub_search_initiated ? 0.75 : 1,
     }}>
       {/* DNB warning */}
-      {isDnb && !isCancelled && (
+      {hasDnb && !isCancelled && (
         <DnbWarningBanner requesterName={booking.requester_name || 'Requester'} onToast={onToast} />
       )}
 
@@ -422,12 +429,12 @@ function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast }: 
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-          <DemoBadge />
+          {booking.is_seed && <DemoBadge />}
           {isCancelled
             ? <CancelledBadge reason={booking.cancellation_reason} />
-            : booking.status === 'confirmed' || booking.status === 'filled'
+            : booking.status === 'filled'
               ? <ConfirmedBadge />
-              : <PendingBadge />
+              : <OpenBadge />
           }
         </div>
       </div>
@@ -440,22 +447,26 @@ function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast }: 
         <span>{booking.format === 'remote' ? 'Remote' : 'On-site'}</span>
       </div>
 
-      {/* Interpreter row (if assigned) */}
-      {booking.interpreter_name && (
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 12,
-          padding: '10px 0', borderTop: '1px solid var(--border)',
-        }}>
-          <Avatar initials={booking.interpreter_initials} gradient={booking.interpreter_gradient} size={32} />
-          <div style={{ fontSize: '0.84rem' }}>
-            <span style={{ fontWeight: 600, color: booking.is_cancelled_original_interpreter ? 'var(--muted)' : 'var(--text)' }}>
-              {booking.interpreter_name}
-              {booking.is_cancelled_original_interpreter && (
-                <span style={{ fontWeight: 400, fontStyle: 'italic' }}> (cancelled)</span>
-              )}
-            </span>
-            <span style={{ color: 'var(--muted)' }}> · {booking.interpreter_languages} · {booking.interpreter_specialization}</span>
-          </div>
+      {/* Interpreter rows (from recipients) */}
+      {confirmedRecipients.length > 0 && (
+        <div style={{ padding: '10px 0', borderTop: '1px solid var(--border)' }}>
+          {confirmedRecipients.map(r => {
+            const interp = r.interpreter
+            const interpName = interp?.name || 'Interpreter'
+            const initials = interp?.first_name
+              ? `${interp.first_name[0]}${interp.last_name?.[0] || ''}`.toUpperCase()
+              : interpName[0]?.toUpperCase() || 'I'
+            return (
+              <div key={r.id} style={{
+                display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6,
+              }}>
+                <Avatar initials={initials} gradient="linear-gradient(135deg,#7b61ff,#00e5ff)" size={32} />
+                <div style={{ fontSize: '0.84rem' }}>
+                  <span style={{ fontWeight: 600, color: 'var(--text)' }}>{interpName}</span>
+                </div>
+              </div>
+            )
+          })}
         </div>
       )}
 
@@ -506,29 +517,6 @@ function EmptyState() {
 
 /* ── Mock Data ── */
 
-const MOCK_SELF_BOOKING: MockBooking = {
-  id: 'mock-self-1',
-  title: 'Weekly ASL Practice Session',
-  requester_name: null,
-  requester_display: '',
-  specialization: 'Education',
-  date: '2026-03-12',
-  time_start: '10:00',
-  time_end: '11:30',
-  location: 'Seattle Community Center, Room 204',
-  format: 'in_person',
-  status: 'confirmed',
-  is_seed: true,
-  cancellation_reason: null,
-  sub_search_initiated: null,
-  interpreter_name: 'Marcus Kim',
-  interpreter_languages: 'ASL',
-  interpreter_specialization: 'Education',
-  interpreter_initials: 'MK',
-  interpreter_gradient: 'linear-gradient(135deg,#00e5ff,#7b61ff)',
-  comm_prefs_summary: 'Black ASL preferred. Prefers interpreter positioned directly across.',
-}
-
 const MOCK_ON_BEHALF_CONFIRMED: MockBooking = {
   id: 'mock-behalf-1',
   title: 'Cardiology Appointment',
@@ -540,16 +528,27 @@ const MOCK_ON_BEHALF_CONFIRMED: MockBooking = {
   time_end: '16:00',
   location: 'Seattle Medical Center, Floor 3',
   format: 'in_person',
-  status: 'confirmed',
+  status: 'filled',
+  request_type: 'professional',
+  interpreter_count: 1,
   is_seed: true,
   cancellation_reason: null,
   sub_search_initiated: null,
-  interpreter_name: 'Sofia Reyes',
-  interpreter_languages: 'ASL',
-  interpreter_specialization: 'Medical',
-  interpreter_initials: 'SR',
-  interpreter_gradient: 'linear-gradient(135deg,#ff6b85,#ff9a56)',
+  created_at: '2026-03-01T00:00:00Z',
   comm_prefs_summary: 'Black ASL preferred. Prefers interpreter positioned directly across.',
+  recipients: [
+    {
+      id: 'mock-r-1',
+      interpreter_id: 'mock-interp-1',
+      status: 'confirmed',
+      interpreter: {
+        name: 'Sofia Reyes',
+        first_name: 'Sofia',
+        last_name: 'Reyes',
+        photo_url: null,
+      },
+    },
+  ],
 }
 
 const MOCK_ON_BEHALF_CANCELLED: MockBooking = {
@@ -564,16 +563,26 @@ const MOCK_ON_BEHALF_CANCELLED: MockBooking = {
   location: 'Remote (Zoom)',
   format: 'remote',
   status: 'cancelled',
+  request_type: 'professional',
+  interpreter_count: 1,
   is_seed: true,
   cancellation_reason: 'Illness',
   sub_search_initiated: true,
-  interpreter_name: 'Sofia Reyes',
-  interpreter_languages: 'ASL',
-  interpreter_specialization: 'Medical, Legal',
-  interpreter_initials: 'SR',
-  interpreter_gradient: 'linear-gradient(135deg,#ff6b85,#ff9a56)',
-  is_cancelled_original_interpreter: 'Sofia Reyes',
+  created_at: '2026-02-18T00:00:00Z',
   comm_prefs_summary: 'Black ASL preferred. Prefers interpreter positioned directly across.',
+  recipients: [
+    {
+      id: 'mock-r-2',
+      interpreter_id: 'mock-interp-2',
+      status: 'confirmed',
+      interpreter: {
+        name: 'Sofia Reyes',
+        first_name: 'Sofia',
+        last_name: 'Reyes',
+        photo_url: null,
+      },
+    },
+  ],
   replacement_info: {
     message: 'Your requester is looking for a replacement interpreter. The request has been forwarded to 2 interpreters.',
     interpreters: [
@@ -603,45 +612,78 @@ export default function DhhBookingsPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setLoading(false); return }
 
-    // Section A: bookings where requester_id = current user (self-requested)
-    const { data: selfData, error: selfErr } = await supabase
-      .from('bookings')
-      .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, status, is_seed, cancellation_reason, sub_search_initiated')
-      .eq('requester_id', user.id)
-      .order('date', { ascending: false })
-
-    if (selfErr) {
-      console.error('[dhh-bookings] self-bookings fetch failed:', selfErr.message)
+    // Fetch bookings where this user is a DHH client (via booking_dhh_clients)
+    // or where they are the requester
+    try {
+      const res = await fetch('/api/dhh/request')
+      const data = await res.json()
+      if (data.bookings) {
+        const realSelfBookings: MockBooking[] = data.bookings
+          .filter((b: BookingWithRecipients) => b.request_type === 'personal')
+          .map((b: BookingWithRecipients) => ({
+            ...b,
+            requester_display: '',
+            comm_prefs_summary: '',
+          }))
+        if (realSelfBookings.length === 0) {
+          // Show a mock self-booking
+          setSelfBookings([{
+            id: 'mock-self-1',
+            title: 'Weekly ASL Practice Session',
+            requester_name: null,
+            requester_display: '',
+            specialization: 'Education',
+            date: '2026-03-12',
+            time_start: '10:00',
+            time_end: '11:30',
+            location: 'Seattle Community Center, Room 204',
+            format: 'in_person',
+            status: 'filled',
+            request_type: 'personal',
+            interpreter_count: 1,
+            is_seed: true,
+            cancellation_reason: null,
+            sub_search_initiated: null,
+            created_at: '2026-03-08T00:00:00Z',
+            comm_prefs_summary: 'Black ASL preferred. Prefers interpreter positioned directly across.',
+            recipients: [
+              {
+                id: 'mock-r-self',
+                interpreter_id: 'mock-interp-mk',
+                status: 'confirmed',
+                interpreter: {
+                  name: 'Marcus Kim',
+                  first_name: 'Marcus',
+                  last_name: 'Kim',
+                  photo_url: null,
+                },
+              },
+            ],
+          }])
+        } else {
+          setSelfBookings(realSelfBookings)
+        }
+      }
+    } catch (err) {
+      console.error('[dhh-bookings] fetch failed:', err)
     }
 
-    const realSelfBookings: MockBooking[] = (selfData || []).map(b => ({
-      ...b,
-      interpreter_name: '',
-      interpreter_languages: '',
-      interpreter_specialization: '',
-      interpreter_initials: '',
-      interpreter_gradient: 'linear-gradient(135deg,#7b61ff,#00e5ff)',
-      requester_display: '',
-      comm_prefs_summary: '',
-    }))
+    // DNB list: query deaf_roster for interpreters flagged as DNB tier
+    const { data: deafProfile } = await supabase
+      .from('deaf_profiles')
+      .select('id')
+      .or(`user_id.eq.${user.id},id.eq.${user.id}`)
+      .maybeSingle()
 
-    // If no self bookings, show mock
-    if (realSelfBookings.length === 0) {
-      setSelfBookings([MOCK_SELF_BOOKING])
-    } else {
-      setSelfBookings(realSelfBookings)
-    }
+    const deafUserId = deafProfile?.id || user.id
 
-    // DNB list: query deaf_roster for interpreters flagged as DNB
-    // TODO: deaf_roster needs `dnb` boolean column. Until then, this returns empty.
-    // When the column exists, uncomment and use:
-    // const { data: dnbData } = await supabase
-    //   .from('deaf_roster')
-    //   .select('interpreter_id')
-    //   .eq('deaf_user_id', user.id)
-    //   .eq('dnb', true)
-    // const dnbIds = new Set((dnbData || []).map(d => d.interpreter_id))
-    const dnbIds = new Set<string>()
+    const { data: dnbData } = await supabase
+      .from('deaf_roster')
+      .select('interpreter_id')
+      .eq('deaf_user_id', deafUserId)
+      .eq('tier', 'dnb')
+
+    const dnbIds = new Set((dnbData || []).map(d => d.interpreter_id))
     setDnbInterpreterIds(dnbIds)
 
     setLoading(false)
@@ -722,4 +764,24 @@ export default function DhhBookingsPage() {
       <DashMobileStyles />
     </div>
   )
+}
+
+// Type used for fetch parsing
+interface BookingWithRecipients {
+  id: string
+  title: string | null
+  date: string
+  time_start: string
+  time_end: string
+  location: string | null
+  format: string | null
+  status: string
+  request_type: string | null
+  interpreter_count: number | null
+  is_seed: boolean | null
+  cancellation_reason: string | null
+  sub_search_initiated: boolean | null
+  created_at: string
+  recipients: Recipient[]
+  [key: string]: unknown
 }

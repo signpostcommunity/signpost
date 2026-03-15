@@ -4,89 +4,134 @@
  * RequestTracker — visual status stepper for interpreter bookings.
  * Shows Deaf users where their request stands, like package tracking.
  *
- * Steps: Request sent → Interpreter responded → Booking confirmed → Completed (rate)
- * Terminal states: Declined, Cancelled
+ * Steps: Request sent → Interpreters responding → Booking confirmed → Rate your interpreter
+ * Terminal states: All declined, Cancelled
+ *
+ * Updated to work with booking_recipients (multiple interpreters per booking).
  */
+
+interface Recipient {
+  id: string
+  interpreter_id: string
+  status: string
+  wave_number?: number
+  sent_at?: string | null
+  viewed_at?: string | null
+  responded_at?: string | null
+  confirmed_at?: string | null
+  declined_at?: string | null
+  withdrawn_at?: string | null
+  response_rate?: number | null
+  response_notes?: string | null
+  decline_reason?: string | null
+  interpreter?: {
+    name: string
+    first_name?: string | null
+    last_name?: string | null
+    photo_url?: string | null
+  } | null
+}
 
 interface TrackerBooking {
   id: string
   status: string
   date: string
+  interpreter_count?: number | null
+  interpreters_confirmed?: number | null
   created_at: string
+  cancellation_reason?: string | null
   cancelled_at?: string | null
-  interpreter_id?: string | null
 }
 
 interface RequestTrackerProps {
   booking: TrackerBooking
+  recipients: Recipient[]
   compact?: boolean
   hasRating?: boolean
 }
 
 type StepState = 'completed' | 'current' | 'future'
-type TerminalState = 'declined' | 'cancelled' | null
+type TerminalState = 'all_declined' | 'cancelled' | null
 
 interface Step {
   label: string
   state: StepState
-  timestamp?: string | null
+  sublabel?: string | null
 }
 
-function getSteps(booking: TrackerBooking, hasRating: boolean): { steps: Step[]; terminal: TerminalState } {
+function getSteps(booking: TrackerBooking, recipients: Recipient[], hasRating: boolean): { steps: Step[]; terminal: TerminalState } {
   const status = booking.status
   const bookingDate = new Date(booking.date + 'T23:59:59')
   const isPast = bookingDate < new Date()
+  const interpCount = booking.interpreter_count || 1
+  const confirmedCount = recipients.filter(r => r.status === 'confirmed').length
 
-  // Terminal states
-  if (status === 'declined') {
-    return {
-      steps: [
-        { label: 'Request sent', state: 'completed', timestamp: booking.created_at },
-        { label: 'Declined', state: 'current' },
-      ],
-      terminal: 'declined',
-    }
-  }
-
+  // Terminal: cancelled
   if (status === 'cancelled') {
     return {
       steps: [
-        { label: 'Request sent', state: 'completed', timestamp: booking.created_at },
-        { label: 'Cancelled', state: 'current', timestamp: booking.cancelled_at },
+        { label: 'Request sent', state: 'completed' },
+        { label: 'Cancelled', state: 'current', sublabel: booking.cancellation_reason || null },
       ],
       terminal: 'cancelled',
     }
   }
 
-  const allSteps = [
-    'Request sent',
-    'Interpreter responded',
-    'Booking confirmed',
-    hasRating ? 'Feedback submitted' : 'Rate your interpreter',
-  ]
+  // Terminal: all recipients declined, booking still open
+  const activeRecipients = recipients.filter(r => r.status !== 'withdrawn')
+  const allDeclined = activeRecipients.length > 0 && activeRecipients.every(r => r.status === 'declined')
+  if (allDeclined && status === 'open') {
+    return {
+      steps: [
+        { label: 'Request sent', state: 'completed' },
+        { label: 'All unavailable', state: 'current', sublabel: 'All interpreters declined' },
+      ],
+      terminal: 'all_declined',
+    }
+  }
+
+  // Normal flow
+  const respondedOrBetter = recipients.filter(r =>
+    ['viewed', 'responded', 'confirmed'].includes(r.status)
+  )
+  const hasResponses = respondedOrBetter.length > 0
+  const isFilled = status === 'filled'
+  const isCompleted = status === 'completed' || (isFilled && isPast)
+
+  const respondSublabel = hasResponses
+    ? `${respondedOrBetter.length} of ${activeRecipients.length} responded`
+    : null
+
+  const confirmSublabel = confirmedCount > 0
+    ? (confirmedCount >= interpCount
+      ? 'All interpreters confirmed'
+      : `${confirmedCount} of ${interpCount} confirmed`)
+    : null
 
   let currentIndex: number
-
-  if (status === 'completed' || (status === 'confirmed' && isPast)) {
+  if (isCompleted) {
     currentIndex = 3
-  } else if (status === 'confirmed') {
+  } else if (isFilled) {
     currentIndex = 2
-  } else if (status === 'pending') {
-    currentIndex = 0
+  } else if (hasResponses) {
+    currentIndex = 1
   } else {
     currentIndex = 0
   }
 
-  const steps: Step[] = allSteps.map((label, i) => {
+  const allSteps = [
+    { label: 'Request sent', sublabel: null },
+    { label: 'Interpreters responding', sublabel: respondSublabel },
+    { label: 'Booking confirmed', sublabel: confirmSublabel },
+    { label: hasRating ? 'Feedback submitted' : 'Rate your interpreter', sublabel: null },
+  ]
+
+  const steps: Step[] = allSteps.map((s, i) => {
     let state: StepState
     if (i < currentIndex) state = 'completed'
     else if (i === currentIndex) state = 'current'
     else state = 'future'
-
-    let timestamp: string | null = null
-    if (i === 0) timestamp = booking.created_at
-
-    return { label, state, timestamp }
+    return { ...s, state }
   })
 
   return { steps, terminal: null }
@@ -125,11 +170,10 @@ function StarIcon({ size }: { size: number }) {
   )
 }
 
-export default function RequestTracker({ booking, compact = false, hasRating = false }: RequestTrackerProps) {
-  const { steps, terminal } = getSteps(booking, hasRating)
+export default function RequestTracker({ booking, recipients, compact = false, hasRating = false }: RequestTrackerProps) {
+  const { steps, terminal } = getSteps(booking, recipients, hasRating)
   const circleSize = compact ? 20 : 28
   const iconSize = compact ? 10 : 14
-  const fontSize = compact ? '0.65rem' : '0.75rem'
   const gap = compact ? 0 : 4
 
   const isTerminal = terminal !== null
@@ -216,24 +260,39 @@ export default function RequestTracker({ booking, compact = false, hasRating = f
               </div>
 
               {/* Label */}
-              <span style={{
-                fontSize: compact ? '0.65rem' : '0.69rem',
-                color: isError
-                  ? '#ff6b85'
-                  : step.state === 'future'
-                  ? 'var(--muted)'
-                  : isGreenCheck
-                  ? '#34d399'
-                  : 'var(--text)',
-                fontWeight: step.state === 'current' ? 600 : 400,
-                textAlign: 'center',
-                lineHeight: 1.3,
-                maxWidth: compact ? 72 : 88,
-                wordWrap: 'break-word',
-                overflowWrap: 'break-word',
-              }}>
-                {step.label}
-              </span>
+              {!compact && (
+                <div style={{ textAlign: 'center' }}>
+                  <span style={{
+                    fontSize: '0.69rem',
+                    color: isError
+                      ? '#ff6b85'
+                      : step.state === 'future'
+                      ? 'var(--muted)'
+                      : isGreenCheck
+                      ? '#34d399'
+                      : 'var(--text)',
+                    fontWeight: step.state === 'current' ? 600 : 400,
+                    lineHeight: 1.3,
+                    maxWidth: 88,
+                    wordWrap: 'break-word',
+                    overflowWrap: 'break-word',
+                    display: 'block',
+                  }}>
+                    {step.label}
+                  </span>
+                  {step.sublabel && (
+                    <span style={{
+                      fontSize: '0.62rem',
+                      color: isError ? '#ff6b85' : 'var(--muted)',
+                      lineHeight: 1.3,
+                      display: 'block',
+                      marginTop: 2,
+                    }}>
+                      {step.sublabel}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Connecting line */}

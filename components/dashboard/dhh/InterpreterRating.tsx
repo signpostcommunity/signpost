@@ -95,6 +95,7 @@ export default function InterpreterRating({ bookingId, interpreterId, interprete
         .from('interpreter_ratings')
         .select('id')
         .eq('booking_id', bookingId)
+        .eq('interpreter_id', interpreterId)
         .maybeSingle()
 
       if (data) {
@@ -103,7 +104,7 @@ export default function InterpreterRating({ bookingId, interpreterId, interprete
     } catch {
       // ignore
     }
-  }, [bookingId])
+  }, [bookingId, interpreterId])
 
   useEffect(() => {
     checkExistingRating()

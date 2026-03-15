@@ -9,7 +9,30 @@ import RequestTracker from '@/components/dashboard/dhh/RequestTracker'
 import InterpreterRating from '@/components/dashboard/dhh/InterpreterRating'
 import { createClient } from '@/lib/supabase/client'
 
-interface BookingWithInterpreter {
+interface Recipient {
+  id: string
+  booking_id: string
+  interpreter_id: string
+  status: string
+  wave_number?: number
+  sent_at?: string | null
+  viewed_at?: string | null
+  responded_at?: string | null
+  confirmed_at?: string | null
+  declined_at?: string | null
+  withdrawn_at?: string | null
+  response_rate?: number | null
+  response_notes?: string | null
+  decline_reason?: string | null
+  interpreter: {
+    name: string
+    first_name?: string | null
+    last_name?: string | null
+    photo_url?: string | null
+  } | null
+}
+
+interface BookingWithRecipients {
   id: string
   title: string | null
   date: string
@@ -24,18 +47,12 @@ interface BookingWithInterpreter {
   event_category: string | null
   description: string | null
   notes: string | null
+  interpreter_count: number | null
+  interpreters_confirmed?: number | null
   cancellation_reason: string | null
   cancelled_at?: string | null
   created_at: string
-  interpreter_id: string
-  requester_id?: string | null
-  dhh_client_id?: string | null
-  interpreter: {
-    name: string
-    first_name: string | null
-    last_name: string | null
-    photo_url: string | null
-  } | null
+  recipients: Recipient[]
 }
 
 function formatDate(dateStr: string): string {
@@ -72,36 +89,148 @@ function FormatBadge({ format }: { format: string | null }) {
   )
 }
 
-function isBookingCompleted(booking: BookingWithInterpreter): boolean {
+function isBookingCompleted(booking: BookingWithRecipients): boolean {
   if (booking.status === 'completed') return true
-  if (booking.status === 'confirmed' || booking.status === 'filled') {
+  if (booking.status === 'filled') {
     return new Date(booking.date + 'T23:59:59') < new Date()
   }
   return false
 }
 
-function RequestCard({ booking, onExpand, expanded, ratedBookings, onRated }: {
-  booking: BookingWithInterpreter
+/* Recipient status pill */
+function StatusPill({ status, rate }: { status: string; rate?: number | null }) {
+  const configs: Record<string, { bg: string; color: string; label: string; dot: string }> = {
+    sent: { bg: 'rgba(184,191,207,0.1)', color: 'var(--muted)', label: 'Awaiting response', dot: '#6b7280' },
+    viewed: { bg: 'rgba(96,165,250,0.1)', color: '#60a5fa', label: 'Viewed', dot: '#60a5fa' },
+    responded: { bg: 'rgba(0,229,255,0.1)', color: '#00e5ff', label: rate ? `Available — $${rate}/hr` : 'Available', dot: '#00e5ff' },
+    confirmed: { bg: 'rgba(52,211,153,0.1)', color: '#34d399', label: 'Confirmed', dot: '#34d399' },
+    declined: { bg: 'rgba(255,107,133,0.08)', color: '#ff8099', label: 'Unavailable', dot: '#ff6b85' },
+    withdrawn: { bg: 'rgba(184,191,207,0.06)', color: 'var(--muted)', label: 'Withdrawn', dot: '#6b7280' },
+  }
+  const c = configs[status] || configs.sent
+  const isWithdrawn = status === 'withdrawn'
+
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      fontSize: '0.74rem', fontWeight: 500, padding: '3px 10px',
+      borderRadius: 100, background: c.bg, color: c.color,
+      textDecoration: isWithdrawn ? 'line-through' : undefined,
+    }}>
+      <span style={{
+        width: 6, height: 6, borderRadius: '50%',
+        background: c.dot, flexShrink: 0,
+      }} />
+      {c.label}
+    </span>
+  )
+}
+
+/* Interpreter status list */
+function InterpreterStatusList({ recipients, interpCount }: { recipients: Recipient[]; interpCount: number }) {
+  const confirmedCount = recipients.filter(r => r.status === 'confirmed').length
+  const allConfirmed = confirmedCount >= interpCount && interpCount > 0
+
+  return (
+    <div style={{ marginBottom: 14, marginTop: 8 }}>
+      <div style={{
+        fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em',
+        textTransform: 'uppercase' as const, color: 'var(--muted)', marginBottom: 8,
+      }}>
+        Interpreter Status
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {recipients.map(r => {
+          const interp = r.interpreter
+          const interpName = interp?.name || 'Interpreter'
+          const initials = interp?.first_name
+            ? `${interp.first_name[0]}${interp.last_name?.[0] || ''}`.toUpperCase()
+            : interpName[0]?.toUpperCase() || 'I'
+
+          return (
+            <div key={r.id} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              gap: 10, padding: '6px 10px',
+              background: 'rgba(255,255,255,0.02)', borderRadius: 8,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {interp?.photo_url ? (
+                  <img src={interp.photo_url} alt="" style={{
+                    width: 24, height: 24, borderRadius: '50%', objectFit: 'cover',
+                  }} />
+                ) : (
+                  <div style={{
+                    width: 24, height: 24, borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.55rem', color: '#fff',
+                  }}>
+                    {initials}
+                  </div>
+                )}
+                <span style={{ fontSize: '0.82rem', fontWeight: 500 }}>{interpName}</span>
+              </div>
+              <StatusPill status={r.status} rate={r.response_rate} />
+            </div>
+          )
+        })}
+      </div>
+      {interpCount > 1 && (
+        <div style={{
+          fontSize: '0.75rem', marginTop: 8,
+          color: allConfirmed ? '#34d399' : 'var(--muted)',
+          fontWeight: allConfirmed ? 600 : 400,
+        }}>
+          {allConfirmed
+            ? 'All interpreters confirmed'
+            : `${confirmedCount} of ${interpCount} interpreter${interpCount !== 1 ? 's' : ''} confirmed`
+          }
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* Chevron icon */
+function ChevronIcon({ expanded }: { expanded: boolean }) {
+  return (
+    <svg
+      width="18" height="18" viewBox="0 0 24 24" fill="none"
+      stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      style={{
+        transition: 'transform 0.2s',
+        transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+        flexShrink: 0,
+      }}
+    >
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  )
+}
+
+function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated }: {
+  booking: BookingWithRecipients
   onExpand: () => void
   expanded: boolean
-  ratedBookings: Set<string>
-  onRated: (bookingId: string) => void
+  ratedInterpreters: Set<string>
+  onRated: (key: string) => void
 }) {
-  const interp = booking.interpreter
-  const interpName = interp?.name || 'Interpreter'
-  const interpInitials = interp?.first_name
-    ? `${interp.first_name[0]}${interp.last_name?.[0] || ''}`.toUpperCase()
-    : interpName[0]?.toUpperCase() || 'I'
-
+  const isDismissed = booking.status === 'cancelled'
+  const allDeclined = booking.status === 'open' &&
+    booking.recipients.length > 0 &&
+    booking.recipients.filter(r => r.status !== 'withdrawn').every(r => r.status === 'declined')
   const completed = isBookingCompleted(booking)
-  const hasRating = ratedBookings.has(booking.id)
-  const isDismissed = booking.status === 'cancelled' || booking.status === 'declined'
+  const confirmedRecipients = booking.recipients.filter(r => r.status === 'confirmed')
+
+  // Check if ALL confirmed interpreters on this booking have been rated
+  const allRated = confirmedRecipients.length > 0 &&
+    confirmedRecipients.every(r => ratedInterpreters.has(`${booking.id}:${r.interpreter_id}`))
 
   return (
     <div style={{
       background: 'var(--card-bg)', border: '1px solid var(--border)',
-      borderRadius: 'var(--radius)', marginBottom: 12, overflow: 'hidden',
-      opacity: isDismissed ? 0.6 : 1,
+      borderRadius: 'var(--radius)', overflow: 'hidden',
+      opacity: isDismissed || allDeclined ? 0.6 : 1,
     }}>
       {/* Card header — clickable */}
       <button
@@ -127,7 +256,16 @@ function RequestCard({ booking, onExpand, expanded, ratedBookings, onRated }: {
                 borderRadius: 100, background: 'rgba(255,107,133,0.15)',
                 color: '#ff6b85',
               }}>
-                {booking.status === 'cancelled' ? 'Cancelled' : 'Declined'}
+                Cancelled
+              </span>
+            )}
+            {allDeclined && (
+              <span style={{
+                fontSize: '0.68rem', fontWeight: 600, padding: '2px 8px',
+                borderRadius: 100, background: 'rgba(255,107,133,0.15)',
+                color: '#ff6b85',
+              }}>
+                All Unavailable
               </span>
             )}
           </div>
@@ -136,26 +274,16 @@ function RequestCard({ booking, onExpand, expanded, ratedBookings, onRated }: {
             <span>{formatTime(booking.time_start, booking.time_end)}</span>
             <FormatBadge format={booking.format} />
           </div>
-        </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-          {interp?.photo_url ? (
-            <img
-              src={interp.photo_url}
-              alt=""
-              style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
-            />
-          ) : (
-            <div style={{
-              width: 32, height: 32, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.7rem', color: '#fff',
-            }}>
-              {interpInitials}
+          {/* Compact tracker in collapsed view */}
+          {!expanded && (
+            <div style={{ marginTop: 8 }}>
+              <RequestTracker booking={booking} recipients={booking.recipients} compact hasRating={allRated} />
             </div>
           )}
         </div>
+
+        <ChevronIcon expanded={expanded} />
       </button>
 
       {/* Expanded details */}
@@ -165,27 +293,15 @@ function RequestCard({ booking, onExpand, expanded, ratedBookings, onRated }: {
         }}>
           <div style={{ paddingTop: 16 }}>
             {/* Full tracker */}
-            <RequestTracker booking={booking} hasRating={hasRating} />
+            <RequestTracker booking={booking} recipients={booking.recipients} hasRating={allRated} />
 
-            {/* Interpreter */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, marginTop: 8 }}>
-              {interp?.photo_url ? (
-                <img src={interp.photo_url} alt="" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} />
-              ) : (
-                <div style={{
-                  width: 36, height: 36, borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.75rem', color: '#fff',
-                }}>
-                  {interpInitials}
-                </div>
-              )}
-              <div>
-                <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>{interpName}</div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>Interpreter</div>
-              </div>
-            </div>
+            {/* Interpreter status list */}
+            {booking.recipients.length > 0 && (
+              <InterpreterStatusList
+                recipients={booking.recipients}
+                interpCount={booking.interpreter_count || 1}
+              />
+            )}
 
             {/* Location */}
             <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: 8 }}>
@@ -217,15 +333,21 @@ function RequestCard({ booking, onExpand, expanded, ratedBookings, onRated }: {
               </div>
             )}
 
-            {/* Rating UI — shows when booking is completed */}
-            {completed && booking.interpreter_id && (
-              <InterpreterRating
-                bookingId={booking.id}
-                interpreterId={booking.interpreter_id}
-                interpreterName={interpName}
-                onRated={() => onRated(booking.id)}
-              />
-            )}
+            {/* Rating UI — one form per confirmed interpreter */}
+            {completed && confirmedRecipients.map(r => {
+              const interpName = r.interpreter?.name || 'Interpreter'
+              const key = `${booking.id}:${r.interpreter_id}`
+              if (ratedInterpreters.has(key)) return null
+              return (
+                <InterpreterRating
+                  key={r.interpreter_id}
+                  bookingId={booking.id}
+                  interpreterId={r.interpreter_id}
+                  interpreterName={interpName}
+                  onRated={() => onRated(key)}
+                />
+              )
+            })}
           </div>
         </div>
       )}
@@ -236,10 +358,10 @@ function RequestCard({ booking, onExpand, expanded, ratedBookings, onRated }: {
 type Tab = 'professional' | 'personal'
 
 export default function DhhRequestsListPage() {
-  const [bookings, setBookings] = useState<BookingWithInterpreter[]>([])
+  const [bookings, setBookings] = useState<BookingWithRecipients[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [ratedBookings, setRatedBookings] = useState<Set<string>>(new Set())
+  const [ratedInterpreters, setRatedInterpreters] = useState<Set<string>>(new Set())
   const [activeTab, setActiveTab] = useState<Tab>('professional')
 
   const fetchRequests = useCallback(async () => {
@@ -255,16 +377,16 @@ export default function DhhRequestsListPage() {
     setLoading(false)
   }, [])
 
-  // Fetch which bookings have already been rated
+  // Fetch which (booking, interpreter) pairs have already been rated
   const fetchRatings = useCallback(async () => {
     try {
       const supabase = createClient()
       const { data } = await supabase
         .from('interpreter_ratings')
-        .select('booking_id')
+        .select('booking_id, interpreter_id')
 
       if (data) {
-        setRatedBookings(new Set(data.map(r => r.booking_id)))
+        setRatedInterpreters(new Set(data.map(r => `${r.booking_id}:${r.interpreter_id}`)))
       }
     } catch {
       // ignore
@@ -276,12 +398,12 @@ export default function DhhRequestsListPage() {
     fetchRatings()
   }, [fetchRequests, fetchRatings])
 
-  function handleRated(bookingId: string) {
-    setRatedBookings(prev => new Set(prev).add(bookingId))
+  function handleRated(key: string) {
+    setRatedInterpreters(prev => new Set(prev).add(key))
   }
 
   // Filter bookings by tab
-  const professionalBookings = bookings.filter(b => b.request_type === 'professional' || (!b.request_type && !b.requester_id))
+  const professionalBookings = bookings.filter(b => b.request_type === 'professional' || (!b.request_type && !b.recipients?.length))
   const personalBookings = bookings.filter(b => b.request_type === 'personal')
   const activeBookings = activeTab === 'professional' ? professionalBookings : personalBookings
 
@@ -344,16 +466,18 @@ export default function DhhRequestsListPage() {
           )}
         </div>
       ) : (
-        activeBookings.map(b => (
-          <RequestCard
-            key={b.id}
-            booking={b}
-            expanded={expandedId === b.id}
-            onExpand={() => setExpandedId(expandedId === b.id ? null : b.id)}
-            ratedBookings={ratedBookings}
-            onRated={handleRated}
-          />
-        ))
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {activeBookings.map(b => (
+            <RequestCard
+              key={b.id}
+              booking={b}
+              expanded={expandedId === b.id}
+              onExpand={() => setExpandedId(expandedId === b.id ? null : b.id)}
+              ratedInterpreters={ratedInterpreters}
+              onRated={handleRated}
+            />
+          ))}
+        </div>
       )}
 
       <DashMobileStyles />

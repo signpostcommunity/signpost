@@ -230,14 +230,18 @@ export async function GET() {
       return NextResponse.json({ error: 'Failed to fetch requests' }, { status: 500 })
     }
 
-    // Get interpreter info for each booking via booking_recipients
+    // Get full recipient data for each booking via booking_recipients
     const { data: recipients } = await admin
       .from('booking_recipients')
-      .select('booking_id, interpreter_id, status')
+      .select(`
+        id, booking_id, interpreter_id, status, wave_number,
+        sent_at, viewed_at, responded_at, confirmed_at, declined_at, withdrawn_at,
+        response_rate, response_notes, decline_reason
+      `)
       .in('booking_id', allBookingIds)
 
     // Build per-booking recipient lookup
-    const recipientsByBooking: Record<string, { interpreter_id: string; status: string }[]> = {}
+    const recipientsByBooking: Record<string, NonNullable<typeof recipients>> = {}
     for (const r of recipients || []) {
       if (!recipientsByBooking[r.booking_id]) recipientsByBooking[r.booking_id] = []
       recipientsByBooking[r.booking_id].push(r)
@@ -267,12 +271,13 @@ export async function GET() {
     }
 
     const enriched = (bookings || []).map(b => {
-      const bookingRecipients = recipientsByBooking[b.id] || []
-      const firstRecipient = bookingRecipients[0]
+      const bookingRecipients = (recipientsByBooking[b.id] || []).map(r => ({
+        ...r,
+        interpreter: interpreterMap[r.interpreter_id] || null,
+      }))
       return {
         ...b,
-        interpreter_id: firstRecipient?.interpreter_id || null,
-        interpreter: firstRecipient ? interpreterMap[firstRecipient.interpreter_id] || null : null,
+        recipients: bookingRecipients,
       }
     })
 
