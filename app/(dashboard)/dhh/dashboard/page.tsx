@@ -43,7 +43,7 @@ export default function DeafDashboardPage() {
   const fetchRoster = useCallback(async () => {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
 
     // Resolve deaf_profiles.id for this auth user (may differ from auth.uid())
     const { data: deafProfile } = await supabase
@@ -54,46 +54,71 @@ export default function DeafDashboardPage() {
 
     const deafUserId = deafProfile?.id || user.id;
 
-    const { data, error } = await supabase
+    // Step 1: Fetch roster rows (no nested embeds — avoids PostgREST issues)
+    const { data: rosterRows, error: rosterError } = await supabase
       .from('deaf_roster')
-      .select(`
-        id,
-        interpreter_id,
-        tier,
-        approve_work,
-        approve_personal,
-        notes,
-        interpreter_profiles (
-          id,
-          name,
-          first_name,
-          last_name,
-          color,
-          sign_languages:interpreter_sign_languages(language),
-          specializations:interpreter_specializations(specialization),
-          certifications:interpreter_certifications(name)
-        )
-      `)
+      .select('id, interpreter_id, tier, approve_work, approve_personal, notes')
       .eq('deaf_user_id', deafUserId);
 
-    if (error) {
-      console.error('[deaf-dashboard] roster fetch error:', error.message);
+    if (rosterError) {
+      console.error('[deaf-dashboard] roster fetch error:', rosterError.message);
       setLoading(false);
       return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mapped: RosterInterpreter[] = (data || []).map((row: any) => {
-      const ip = row.interpreter_profiles;
+    if (!rosterRows || rosterRows.length === 0) {
+      setRoster([]);
+      setLoading(false);
+      return;
+    }
+
+    // Step 2: Fetch interpreter profiles for the IDs on the roster
+    const interpreterIds = rosterRows.map(r => r.interpreter_id);
+
+    const { data: interpreters } = await supabase
+      .from('interpreter_profiles')
+      .select('id, name, first_name, last_name, color')
+      .in('id', interpreterIds);
+
+    // Step 3: Fetch certs and specializations for these interpreters
+    const { data: certs } = await supabase
+      .from('interpreter_certifications')
+      .select('interpreter_id, name')
+      .in('interpreter_id', interpreterIds);
+
+    const { data: specs } = await supabase
+      .from('interpreter_specializations')
+      .select('interpreter_id, specialization')
+      .in('interpreter_id', interpreterIds);
+
+    // Build lookup maps
+    const interpMap: Record<string, { name: string; first_name: string | null; last_name: string | null; color: string | null }> = {};
+    for (const ip of interpreters || []) {
+      interpMap[ip.id] = ip;
+    }
+
+    const certsMap: Record<string, string[]> = {};
+    for (const c of certs || []) {
+      if (!certsMap[c.interpreter_id]) certsMap[c.interpreter_id] = [];
+      certsMap[c.interpreter_id].push(c.name);
+    }
+
+    const specsMap: Record<string, string[]> = {};
+    for (const s of specs || []) {
+      if (!specsMap[s.interpreter_id]) specsMap[s.interpreter_id] = [];
+      specsMap[s.interpreter_id].push(s.specialization);
+    }
+
+    // Step 4: Map roster rows to display objects
+    const mapped: RosterInterpreter[] = rosterRows.map(row => {
+      const ip = interpMap[row.interpreter_id];
       const fullName = ip?.first_name
         ? `${ip.first_name} ${ip.last_name || ''}`.trim()
         : ip?.name || 'Unknown';
       const parts = fullName.split(' ');
       const initials = parts.map((p: string) => p[0]).join('').slice(0, 2).toUpperCase();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const certs = (ip?.certifications || []).map((c: any) => c.name).join(', ') || 'Certified Interpreter';
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const domains = (ip?.specializations || []).map((s: any) => s.specialization).join(', ') || 'General';
+      const certStr = (certsMap[row.interpreter_id] || []).join(', ') || 'Certified Interpreter';
+      const domainStr = (specsMap[row.interpreter_id] || []).join(', ') || 'General';
 
       return {
         roster_id: row.id,
@@ -105,8 +130,8 @@ export default function DeafDashboardPage() {
         name: fullName,
         initials,
         color: ip?.color || 'linear-gradient(135deg, #7b61ff, #00e5ff)',
-        certs,
-        domains,
+        certs: certStr,
+        domains: domainStr,
       };
     });
 
