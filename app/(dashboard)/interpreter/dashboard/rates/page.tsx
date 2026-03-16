@@ -27,13 +27,7 @@ const TRAVEL_OPTIONS = ['Mileage', 'Parking', 'Tolls', 'Ferry', 'Public Transit'
 const DEFAULT_PROFILES: RateProfile[] = [
   {
     id: 'rp-1', name: 'Standard Rate', color: '#00e5ff', isDefault: true,
-    hourlyRate: '95.00', currency: 'USD — US Dollar', minBooking: '2 hours',
-    cancellationPolicy: '48 hours notice required', lateFee: '100% of booking fee',
-    notes: '', travel: ['Mileage', 'Parking', 'Tolls'],
-  },
-  {
-    id: 'rp-2', name: 'Community Rate', color: '#34d399', isDefault: false,
-    hourlyRate: '65.00', currency: 'USD — US Dollar', minBooking: '1 hour',
+    hourlyRate: '', currency: 'USD — US Dollar', minBooking: 'No minimum',
     cancellationPolicy: '48 hours notice required', lateFee: 'No fee',
     notes: '', travel: [],
   },
@@ -112,9 +106,7 @@ export default function RatesPage() {
     console.log('RATES SEED - seeding defaults for interpreter_id:', profile.id)
 
     const defaults = [
-      { interpreter_id: profile.id, label: 'Standard Rate', color: '#a78bfa', is_default: true, hourly_rate: 95, currency: 'USD', min_booking: 120, cancellation_policy: '48 hours notice required', late_cancel_fee: 100, travel_expenses: ['Mileage', 'Parking', 'Tolls'], additional_terms: null },
-      { interpreter_id: profile.id, label: 'Community Rate', color: '#34d399', is_default: false, hourly_rate: 65, currency: 'USD', min_booking: 60, cancellation_policy: '48 hours notice required', late_cancel_fee: null, travel_expenses: [], additional_terms: null },
-      { interpreter_id: profile.id, label: 'Multi-Day Rate', color: '#00e5ff', is_default: false, hourly_rate: 750, currency: 'USD', min_booking: 960, cancellation_policy: '2 weeks notice required', late_cancel_fee: null, travel_expenses: ['Mileage', 'Parking', 'Tolls', 'Airfare', 'Lodging', 'Per diem / Meals'], additional_terms: null },
+      { interpreter_id: profile.id, label: 'Standard Rate', color: '#00e5ff', is_default: true, hourly_rate: null, currency: 'USD', min_booking: null, cancellation_policy: '48 hours notice required', late_cancel_fee: null, travel_expenses: [], additional_terms: null },
     ]
     const { data: seeded, error: seedError } = await supabase
       .from('interpreter_rate_profiles')
@@ -334,10 +326,15 @@ export default function RatesPage() {
                 )}
                 {!profile.isDefault && (
                   <button
-                    onClick={e => { e.stopPropagation(); removeProfile(profile.id) }}
+                    onClick={e => {
+                      e.stopPropagation()
+                      if (window.confirm('Delete this rate profile? This cannot be undone.')) {
+                        removeProfile(profile.id)
+                      }
+                    }}
                     style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--muted)', fontSize: '0.75rem', padding: '4px 10px', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}
                   >
-                    Remove
+                    Delete
                   </button>
                 )}
                 <span style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>{isOpen ? '▲' : '▼'}</span>
@@ -486,19 +483,25 @@ export default function RatesPage() {
       })}
 
       {/* Add profile */}
-      <button
-        onClick={addProfile}
-        style={{
-          width: '100%', padding: 14, background: 'transparent',
-          border: '1.5px dashed var(--border)', borderRadius: 'var(--radius)',
-          color: 'var(--muted)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.9rem',
-          cursor: 'pointer', transition: 'all 0.2s',
-        }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
-      >
-        + Add Rate Profile
-      </button>
+      {profiles.length >= 10 ? (
+        <div style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '0.82rem', padding: '14px 0' }}>
+          Maximum of 10 rate profiles
+        </div>
+      ) : (
+        <button
+          onClick={addProfile}
+          style={{
+            width: '100%', padding: 14, background: 'transparent',
+            border: '1.5px dashed var(--border)', borderRadius: 'var(--radius)',
+            color: 'var(--muted)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.9rem',
+            cursor: 'pointer', transition: 'all 0.2s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
+          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
+        >
+          + Add Rate Profile
+        </button>
+      )}
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
