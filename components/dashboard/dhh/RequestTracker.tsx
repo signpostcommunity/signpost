@@ -259,40 +259,38 @@ export default function RequestTracker({ booking, recipients, compact = false, h
                 ) : null}
               </div>
 
-              {/* Label */}
-              {!compact && (
-                <div style={{ textAlign: 'center' }}>
+              {/* Label — always visible, smaller in compact mode */}
+              <div style={{ textAlign: 'center' }}>
+                <span style={{
+                  fontSize: compact ? '0.62rem' : '0.69rem',
+                  color: isError
+                    ? '#ff6b85'
+                    : step.state === 'future'
+                    ? 'var(--muted)'
+                    : isGreenCheck
+                    ? '#34d399'
+                    : 'var(--text)',
+                  fontWeight: step.state === 'current' ? 600 : 400,
+                  lineHeight: 1.3,
+                  maxWidth: compact ? 64 : 88,
+                  wordWrap: 'break-word',
+                  overflowWrap: 'break-word',
+                  display: 'block',
+                }}>
+                  {step.label}
+                </span>
+                {step.sublabel && !compact && (
                   <span style={{
-                    fontSize: '0.69rem',
-                    color: isError
-                      ? '#ff6b85'
-                      : step.state === 'future'
-                      ? 'var(--muted)'
-                      : isGreenCheck
-                      ? '#34d399'
-                      : 'var(--text)',
-                    fontWeight: step.state === 'current' ? 600 : 400,
+                    fontSize: '0.62rem',
+                    color: isError ? '#ff6b85' : 'var(--muted)',
                     lineHeight: 1.3,
-                    maxWidth: 88,
-                    wordWrap: 'break-word',
-                    overflowWrap: 'break-word',
                     display: 'block',
+                    marginTop: 2,
                   }}>
-                    {step.label}
+                    {step.sublabel}
                   </span>
-                  {step.sublabel && (
-                    <span style={{
-                      fontSize: '0.62rem',
-                      color: isError ? '#ff6b85' : 'var(--muted)',
-                      lineHeight: 1.3,
-                      display: 'block',
-                      marginTop: 2,
-                    }}>
-                      {step.sublabel}
-                    </span>
-                  )}
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             {/* Connecting line */}
