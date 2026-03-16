@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { BetaBanner, PageHeader, SectionLabel, StatusBadge, DemoBadge, GhostButton, Avatar, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import { sendNotification } from '@/lib/notifications'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
+import BookingFilterBar, { filterByDateRange } from '@/components/dashboard/shared/BookingFilterBar'
 
 /* ── Types ── */
 
@@ -1540,6 +1541,8 @@ export default function ConfirmedPage() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
   const [viewing, setViewing] = useState<string | null>(null)
   const [cancelling, setCancelling] = useState<string | null>(null)
   const [forwarding, setForwarding] = useState<string | null>(null)
@@ -1692,16 +1695,18 @@ export default function ConfirmedPage() {
   const searchFilter = (b: Booking) =>
     !search || [b.title, b.requester_name, b.specialization, b.location].join(' ').toLowerCase().includes(search.toLowerCase())
 
-  const upcomingConfirmed = bookings
+  const dateFiltered = filterByDateRange(bookings, dateFrom, dateTo)
+
+  const upcomingConfirmed = dateFiltered
     .filter(b => b.status === 'confirmed' && b.date >= today)
     .filter(searchFilter)
 
-  const pastCompleted = bookings
+  const pastCompleted = dateFiltered
     .filter(b => b.status === 'completed' && b.date < today)
     .filter(searchFilter)
     .sort((a, b) => b.date.localeCompare(a.date)) // most recent first
 
-  const cancelled = bookings
+  const cancelled = dateFiltered
     .filter(b => b.status === 'cancelled')
     .filter(searchFilter)
 
@@ -1712,23 +1717,11 @@ export default function ConfirmedPage() {
       {hasSeedData && <BetaBanner />}
       <PageHeader title="Confirmed Bookings" subtitle="All your accepted and confirmed bookings." />
 
-      {/* Search */}
-      <div style={{ display: 'flex', gap: 10, marginBottom: 28, flexWrap: 'wrap', alignItems: 'center' }}>
-        <input
-          type="text"
-          placeholder="Search by client, location, type..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          style={{
-            flex: 1, minWidth: 200,
-            background: 'var(--surface2)', border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-sm)', padding: '9px 14px',
-            color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem', outline: 'none',
-          }}
-          onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
-          onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
-        />
-      </div>
+      <BookingFilterBar
+        search={search} onSearchChange={setSearch}
+        dateFrom={dateFrom} onDateFromChange={setDateFrom}
+        dateTo={dateTo} onDateToChange={setDateTo}
+      />
 
       {loading ? (
         <div style={{ padding: '40px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem' }}>

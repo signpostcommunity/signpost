@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { BetaBanner, PageHeader, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
 import { sendNotification } from '@/lib/notifications'
+import BookingFilterBar, { filterBySearch, filterByDateRange, sortSoonestFirst } from '@/components/dashboard/shared/BookingFilterBar'
 
 /* ── Types ── */
 
@@ -531,6 +532,9 @@ export default function InquiriesPage() {
   const [viewing, setViewing] = useState<string | null>(null)
   const [declining, setDeclining] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
 
   const fetchBookings = useCallback(async () => {
     const supabase = createClient()
@@ -631,16 +635,29 @@ export default function InquiriesPage() {
 
   const hasSeedData = bookings.some(b => b.is_seed)
 
+  const filteredBookings = sortSoonestFirst(
+    filterByDateRange(
+      filterBySearch(bookings, search, ['title', 'requester_name', 'specialization', 'location', 'notes']),
+      dateFrom, dateTo
+    )
+  )
+
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       {hasSeedData && <BetaBanner />}
       <PageHeader title="Inquiries" subtitle="Booking requests awaiting your response." />
 
+      <BookingFilterBar
+        search={search} onSearchChange={setSearch}
+        dateFrom={dateFrom} onDateFromChange={setDateFrom}
+        dateTo={dateTo} onDateToChange={setDateTo}
+      />
+
       {loading ? (
         <div style={{ padding: '40px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem' }}>
           Loading…
         </div>
-      ) : bookings.length === 0 ? (
+      ) : filteredBookings.length === 0 ? (
         <div style={{
           background: 'var(--card-bg)', border: '1px solid var(--border)',
           borderRadius: 'var(--radius)', padding: '32px 24px',
@@ -649,7 +666,7 @@ export default function InquiriesPage() {
           No pending inquiries. They&apos;ll appear here when clients reach out.
         </div>
       ) : (
-        bookings.map(inq => (
+        filteredBookings.map(inq => (
           <div key={inq.id} style={{
             background: 'var(--card-bg)', border: '1px solid var(--border)',
             borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 12,

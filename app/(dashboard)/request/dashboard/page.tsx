@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import BookingFilterBar, { filterBySearch, filterByDateRange, sortSoonestFirst } from '@/components/dashboard/shared/BookingFilterBar';
 
 type RequestStatus = 'pending' | 'confirmed' | 'completed' | 'declined';
 
@@ -285,10 +286,19 @@ export default function RequesterDashboardPage() {
   const [detailRequest, setDetailRequest] = useState<Request | null>(null);
   const [showNewRequest, setShowNewRequest] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   const showToast = useCallback((msg: string) => setToast(msg), []);
 
-  const filtered = activeTab === 'all' ? requests : requests.filter(r => r.status === activeTab);
+  const tabFiltered = activeTab === 'all' ? requests : requests.filter(r => r.status === activeTab);
+  const filtered = sortSoonestFirst(
+    filterByDateRange(
+      filterBySearch(tabFiltered, search, ['interpreter', 'type', 'format']),
+      dateFrom, dateTo
+    )
+  );
 
   const handleCancelRequest = useCallback((id: string) => {
     setRequests(prev => prev.map(r => r.id === id ? { ...r, status: 'declined' as RequestStatus } : r));
@@ -325,6 +335,12 @@ export default function RequesterDashboardPage() {
           }}>{t}</button>
         ))}
       </div>
+
+      <BookingFilterBar
+        search={search} onSearchChange={setSearch}
+        dateFrom={dateFrom} onDateFromChange={setDateFrom}
+        dateTo={dateTo} onDateToChange={setDateTo}
+      />
 
       {/* Requests */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
