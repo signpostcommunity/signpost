@@ -862,118 +862,43 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
             </div>
           </div>
 
-          {/* ── Book Me Link ─────────────────────────────────────── */}
-          <div style={sectionTitleStyle}>Your Book Me Link</div>
+          {/* ── Book Me on signpost ─────────────────────────────── */}
+          <div style={sectionTitleStyle}>Book me on signpost</div>
+          <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: 20, marginTop: -12, lineHeight: 1.5 }}>
+            Add this badge to your email signature, website, or LinkedIn to make it easy to book you directly.
+          </p>
           <div style={{
             background: 'var(--surface2)', border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-sm)', padding: '20px 24px', marginBottom: 24,
+            borderRadius: 'var(--radius-sm)', padding: '24px', marginBottom: 24,
           }}>
-            {vanitySlug && !editingSlug ? (
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                  <span style={{
-                    fontSize: '1rem', fontWeight: 600, color: 'var(--accent)',
-                    fontFamily: "'DM Sans', sans-serif", wordBreak: 'break-all',
-                  }}>
-                    signpost.community/book/{vanitySlug}
-                  </span>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(`https://signpost.community/book/${vanitySlug}`)
-                      setToast({ message: 'Copied to clipboard!', type: 'success' })
-                    }}
-                    style={{
-                      background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.3)',
-                      color: 'var(--accent)', borderRadius: 8, padding: '6px 14px',
-                      fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
-                      fontFamily: "'DM Sans', sans-serif",
-                    }}
-                  >
-                    Copy
-                  </button>
-                  <button
-                    onClick={() => { setEditingSlug(true); setSlugDraft(vanitySlug); setSlugStatus('idle') }}
-                    style={{
-                      background: 'none', border: '1px solid var(--border)',
-                      color: 'var(--muted)', borderRadius: 8, padding: '6px 14px',
-                      fontSize: '0.82rem', cursor: 'pointer',
-                      fontFamily: "'DM Sans', sans-serif",
-                    }}
-                  >
-                    Edit
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div>
-                {!vanitySlug && <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: 12 }}>You don&apos;t have a Book Me link yet.</p>}
-                <div style={{
-                  display: 'flex', alignItems: 'center', borderRadius: 'var(--radius-sm)',
-                  overflow: 'hidden', border: '1px solid var(--border)', marginBottom: 8,
-                }}>
-                  <div style={{
-                    background: 'var(--surface)', padding: '11px 12px', fontSize: '0.85rem',
-                    color: 'var(--muted)', whiteSpace: 'nowrap', borderRight: '1px solid var(--border)',
-                    flexShrink: 0, fontFamily: "'DM Sans', sans-serif",
-                  }}>
-                    signpost.community/book/
-                  </div>
-                  <input
-                    type="text"
-                    value={slugDraft}
-                    placeholder={generateSlug(firstName, lastName) || 'your-name'}
-                    onChange={e => {
-                      const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '')
-                      setSlugDraft(val)
-                      if (val.length >= 3) {
-                        checkSlugAvailability(val)
-                      } else if (val.length > 0) {
-                        setSlugStatus('invalid')
-                        setSlugError('Must be at least 3 characters')
-                      } else {
-                        setSlugStatus('idle')
-                      }
-                    }}
-                    style={{
-                      flex: 1, background: 'var(--card-bg)', border: 'none', padding: '11px 14px',
-                      color: 'var(--text)', fontSize: '0.9rem', outline: 'none',
-                      fontFamily: "'DM Sans', sans-serif", minWidth: 0,
-                    }}
-                  />
-                </div>
-                {slugDraft && slugStatus !== 'idle' && (
-                  <div style={{
-                    fontSize: '0.78rem', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4,
-                    color: slugStatus === 'available' ? '#34d399'
-                      : slugStatus === 'checking' ? 'var(--muted)'
-                      : 'var(--accent3)',
-                  }}>
-                    {slugStatus === 'checking' && 'Checking...'}
-                    {slugStatus === 'available' && <><span style={{ fontWeight: 600 }}>&#10003;</span> Available</>}
-                    {slugStatus === 'taken' && <><span style={{ fontWeight: 600 }}>&#10005;</span> {slugError}</>}
-                    {slugStatus === 'invalid' && <><span style={{ fontWeight: 600 }}>&#10005;</span> {slugError}</>}
-                  </div>
-                )}
-                {editingSlug && (
-                  <p style={{ fontSize: '0.78rem', color: 'var(--accent3)', marginBottom: 8, lineHeight: 1.5 }}>
-                    Changing your link means your old link will stop working. Update it anywhere you&apos;ve shared it.
-                  </p>
-                )}
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button
-                    onClick={saveSlug}
-                    disabled={slugSaving || (slugStatus !== 'available' && slugDraft !== vanitySlug)}
-                    className="btn-primary"
-                    style={{
-                      fontSize: '0.82rem', padding: '8px 18px',
-                      opacity: (slugSaving || (slugStatus !== 'available' && slugDraft !== vanitySlug)) ? 0.5 : 1,
-                    }}
-                  >
-                    {slugSaving ? 'Saving...' : 'Save'}
-                  </button>
-                  {editingSlug && (
+            {/* ── Your link ── */}
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Your link</div>
+              {vanitySlug && !editingSlug ? (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                    <span style={{
+                      fontSize: '1rem', fontWeight: 600, color: 'var(--accent)',
+                      fontFamily: "'DM Sans', sans-serif", wordBreak: 'break-all',
+                    }}>
+                      signpost.community/book/{vanitySlug}
+                    </span>
                     <button
-                      onClick={() => { setEditingSlug(false); setSlugDraft(vanitySlug); setSlugStatus('idle') }}
+                      onClick={() => {
+                        navigator.clipboard.writeText(`https://signpost.community/book/${vanitySlug}`)
+                        setToast({ message: 'Copied to clipboard!', type: 'success' })
+                      }}
+                      style={{
+                        background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.3)',
+                        color: 'var(--accent)', borderRadius: 8, padding: '6px 14px',
+                        fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
+                        fontFamily: "'DM Sans', sans-serif",
+                      }}
+                    >
+                      Copy
+                    </button>
+                    <button
+                      onClick={() => { setEditingSlug(true); setSlugDraft(vanitySlug); setSlugStatus('idle') }}
                       style={{
                         background: 'none', border: '1px solid var(--border)',
                         color: 'var(--muted)', borderRadius: 8, padding: '6px 14px',
@@ -981,11 +906,191 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                         fontFamily: "'DM Sans', sans-serif",
                       }}
                     >
-                      Cancel
+                      Edit
                     </button>
-                  )}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div>
+                  {!vanitySlug && <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: 12 }}>You don&apos;t have a Book Me link yet.</p>}
+                  <div style={{
+                    display: 'flex', alignItems: 'center', borderRadius: 'var(--radius-sm)',
+                    overflow: 'hidden', border: '1px solid var(--border)', marginBottom: 8,
+                  }}>
+                    <div style={{
+                      background: 'var(--surface)', padding: '11px 12px', fontSize: '0.85rem',
+                      color: 'var(--muted)', whiteSpace: 'nowrap', borderRight: '1px solid var(--border)',
+                      flexShrink: 0, fontFamily: "'DM Sans', sans-serif",
+                    }}>
+                      signpost.community/book/
+                    </div>
+                    <input
+                      type="text"
+                      value={slugDraft}
+                      placeholder={generateSlug(firstName, lastName) || 'your-name'}
+                      onChange={e => {
+                        const val = e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '')
+                        setSlugDraft(val)
+                        if (val.length >= 3) {
+                          checkSlugAvailability(val)
+                        } else if (val.length > 0) {
+                          setSlugStatus('invalid')
+                          setSlugError('Must be at least 3 characters')
+                        } else {
+                          setSlugStatus('idle')
+                        }
+                      }}
+                      style={{
+                        flex: 1, background: 'var(--card-bg)', border: 'none', padding: '11px 14px',
+                        color: 'var(--text)', fontSize: '0.9rem', outline: 'none',
+                        fontFamily: "'DM Sans', sans-serif", minWidth: 0,
+                      }}
+                    />
+                  </div>
+                  {slugDraft && slugStatus !== 'idle' && (
+                    <div style={{
+                      fontSize: '0.78rem', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4,
+                      color: slugStatus === 'available' ? '#34d399'
+                        : slugStatus === 'checking' ? 'var(--muted)'
+                        : 'var(--accent3)',
+                    }}>
+                      {slugStatus === 'checking' && 'Checking...'}
+                      {slugStatus === 'available' && <><span style={{ fontWeight: 600 }}>&#10003;</span> Available</>}
+                      {slugStatus === 'taken' && <><span style={{ fontWeight: 600 }}>&#10005;</span> {slugError}</>}
+                      {slugStatus === 'invalid' && <><span style={{ fontWeight: 600 }}>&#10005;</span> {slugError}</>}
+                    </div>
+                  )}
+                  {editingSlug && (
+                    <p style={{ fontSize: '0.78rem', color: 'var(--accent3)', marginBottom: 8, lineHeight: 1.5 }}>
+                      Changing your link means your old link will stop working. Update it anywhere you&apos;ve shared it.
+                    </p>
+                  )}
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      onClick={saveSlug}
+                      disabled={slugSaving || (slugStatus !== 'available' && slugDraft !== vanitySlug)}
+                      className="btn-primary"
+                      style={{
+                        fontSize: '0.82rem', padding: '8px 18px',
+                        opacity: (slugSaving || (slugStatus !== 'available' && slugDraft !== vanitySlug)) ? 0.5 : 1,
+                      }}
+                    >
+                      {slugSaving ? 'Saving...' : 'Save'}
+                    </button>
+                    {editingSlug && (
+                      <button
+                        onClick={() => { setEditingSlug(false); setSlugDraft(vanitySlug); setSlugStatus('idle') }}
+                        style={{
+                          background: 'none', border: '1px solid var(--border)',
+                          color: 'var(--muted)', borderRadius: 8, padding: '6px 14px',
+                          fontSize: '0.82rem', cursor: 'pointer',
+                          fontFamily: "'DM Sans', sans-serif",
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* ── Badge preview ── */}
+            {vanitySlug && (
+              <>
+                <div style={{ borderTop: '1px solid var(--border)', paddingTop: 24, marginBottom: 16 }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>Badge preview</div>
+                  <div style={{
+                    background: 'var(--card-bg)', border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-sm)', padding: '20px', maxWidth: 320,
+                    display: 'flex', alignItems: 'center', gap: 14,
+                  }}>
+                    {photoUrl ? (
+                      <img src={photoUrl} alt="" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                    ) : (
+                      <div style={{
+                        width: 48, height: 48, borderRadius: '50%', flexShrink: 0,
+                        background: 'linear-gradient(135deg, var(--accent), var(--accent2))',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 700, fontSize: '1rem', color: '#000',
+                      }}>{initials}</div>
+                    )}
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)', marginBottom: 2 }}>
+                        {displayName || 'Your Name'}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: 6 }}>
+                        Sign Language Interpreter
+                      </div>
+                      <div style={{
+                        display: 'inline-block', background: 'linear-gradient(135deg, var(--accent), #00b8d4)',
+                        color: '#000', fontSize: '0.7rem', fontWeight: 700,
+                        padding: '4px 10px', borderRadius: 6, whiteSpace: 'nowrap',
+                      }}>
+                        Book me on signpost
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── Actions ── */}
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
+                  <button
+                    className="btn-primary"
+                    onClick={() => {
+                      const html = `<a href="https://signpost.community/book/${vanitySlug}" style="display:inline-flex;align-items:center;gap:10px;padding:10px 16px;background:#0d1220;border:1px solid #1e2433;border-radius:10px;text-decoration:none;font-family:sans-serif"><img src="${photoUrl || ''}" alt="${displayName}" style="width:36px;height:36px;border-radius:50%;object-fit:cover" /><span><strong style="color:#f0f2f8;font-size:13px">${displayName}</strong><br/><span style="color:#00e5ff;font-size:11px;font-weight:700">Book me on signpost</span></span></a>`
+                      navigator.clipboard.writeText(html)
+                      setToast({ message: 'Badge HTML copied!', type: 'success' })
+                    }}
+                    style={{ fontSize: '0.82rem', padding: '8px 16px' }}
+                  >
+                    Copy badge for email
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`https://signpost.community/book/${vanitySlug}`)
+                      setToast({ message: 'Link copied!', type: 'success' })
+                    }}
+                    style={{
+                      background: 'none', border: '1px solid var(--border)',
+                      color: 'var(--muted)', borderRadius: 8, padding: '8px 16px',
+                      fontSize: '0.82rem', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                    }}
+                  >
+                    Copy link
+                  </button>
+                </div>
+
+                {/* ── How to add your badge ── */}
+                <details style={{ borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+                  <summary style={{
+                    cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600,
+                    color: 'var(--accent)', listStyle: 'none', display: 'flex', alignItems: 'center', gap: 6,
+                    fontFamily: "'DM Sans', sans-serif",
+                  }}>
+                    <span style={{ transition: 'transform 0.15s', display: 'inline-block' }}>&#9654;</span>
+                    How to add your badge
+                  </summary>
+                  <div style={{ marginTop: 14, fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.7 }}>
+                    <div style={{ marginBottom: 14 }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>Email signature (Gmail)</div>
+                      Settings &rarr; See all settings &rarr; General &rarr; Signature &rarr; Click the image icon &rarr; Paste your badge image URL &rarr; Link the image to your Book Me URL.
+                    </div>
+                    <div style={{ marginBottom: 14 }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>Email signature (Outlook)</div>
+                      Settings &rarr; View all Outlook settings &rarr; Mail &rarr; Compose and reply &rarr; Email signature &rarr; Insert an image or paste the badge HTML.
+                    </div>
+                    <div style={{ marginBottom: 14 }}>
+                      <div style={{ fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>Website</div>
+                      Copy the badge HTML using &ldquo;Copy badge for email&rdquo; above and paste it into your site&apos;s HTML where you want it to appear.
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>LinkedIn</div>
+                      Edit your profile &rarr; Contact info &rarr; Add your Book Me link as a website. You can also add it to your About section or featured links.
+                    </div>
+                  </div>
+                </details>
+              </>
             )}
           </div>
 
