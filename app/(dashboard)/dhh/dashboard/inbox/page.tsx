@@ -56,11 +56,20 @@ export default function DhhInboxPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setLoading(false); return }
 
+    // Only show notifications relevant to the Deaf portal — exclude interpreter-specific types
+    const INTERPRETER_ONLY_TYPES = [
+      'profile_approved', 'profile_denied', 'new_request', 'rate_response',
+      'invoice_paid', 'team_invite', 'sub_search_update',
+      'added_to_preferred_list', 'added_to_preferred_list_by_interpreter',
+      'added_to_preferred_list_by_org', 'added_to_preferred_list_by_dhh',
+    ]
+
     const { data, error } = await supabase
       .from('notifications')
       .select('id, type, subject, body, status, created_at')
       .eq('recipient_user_id', user.id)
       .eq('channel', 'in_app')
+      .not('type', 'in', `(${INTERPRETER_ONLY_TYPES.join(',')})`)
       .order('created_at', { ascending: false })
 
     if (!error) setNotifications(data || [])

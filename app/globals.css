@@ -242,7 +242,10 @@ img {
   .hamburger {
     display: flex !important;
   }
-  /* Dashboard header: hide nav links on mobile */
+  /* Dashboard: hide entire top bar on mobile (sidebar mobile bar replaces it) */
+  .dash-top-bar {
+    display: none !important;
+  }
   .dash-header-links {
     display: none !important;
   }

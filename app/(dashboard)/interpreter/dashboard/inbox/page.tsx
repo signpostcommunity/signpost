@@ -175,11 +175,22 @@ export default function InboxPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
+    // Only show notifications relevant to the Interpreter portal
+    const INTERPRETER_TYPES = [
+      'welcome', 'profile_approved', 'profile_denied', 'new_request',
+      'booking_confirmed', 'rate_response', 'booking_cancelled',
+      'cancelled_by_requester', 'cancelled_by_you', 'sub_search_update',
+      'booking_reminder', 'new_message', 'invoice_paid', 'team_invite',
+      'added_to_preferred_list', 'added_to_preferred_list_by_interpreter',
+      'added_to_preferred_list_by_org', 'added_to_preferred_list_by_dhh',
+    ]
+
     const { data, error } = await supabase
       .from('notifications')
       .select('id, type, subject, body, status, created_at')
       .eq('recipient_user_id', user.id)
       .eq('channel', 'in_app')
+      .in('type', INTERPRETER_TYPES)
       .order('created_at', { ascending: false })
 
     if (error) {

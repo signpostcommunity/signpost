@@ -528,6 +528,10 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
           setAddToListOpen(false);
           showToast(`${i.name} added to your list`);
         }}
+        onDuplicate={() => {
+          setAddToListOpen(false);
+          showToast(`${i.name} is already on your list`);
+        }}
       />
 
       {/* Send Message modal */}

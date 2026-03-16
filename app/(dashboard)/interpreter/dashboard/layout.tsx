@@ -18,6 +18,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
     if (data?.first_name) {
       userName = `${data.first_name} ${data.last_name || ''}`.trim()
       userInitials = `${data.first_name[0] || ''}${data.last_name?.[0] || ''}`.toUpperCase()
+    } else {
+      // Fallback to auth user_metadata (e.g. Google OAuth full_name)
+      const meta = user.user_metadata
+      const metaName = meta?.full_name || meta?.name || ''
+      if (metaName) {
+        userName = metaName
+        const parts = metaName.split(' ')
+        userInitials = `${parts[0]?.[0] || ''}${parts[parts.length - 1]?.[0] || ''}`.toUpperCase()
+      }
     }
     if (data?.photo_url) {
       userPhotoUrl = data.photo_url

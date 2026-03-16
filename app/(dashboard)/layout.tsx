@@ -23,8 +23,9 @@ export default async function DashboardRootLayout({ children }: { children: Reac
   return (
     <>
       <div id="site-content" className="site-content" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-        {/* Dashboard top bar */}
+        {/* Dashboard top bar — hidden on mobile where sidebar mobile bar takes over */}
         <header
+          className="dash-top-bar"
           style={{
             position: 'sticky',
             top: 0,

@@ -506,6 +506,7 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
         interpreter={addToListModal.interpreter}
         userRole={userRole}
         onSuccess={(name) => showToast(`${name} added to your list`)}
+        onDuplicate={(name) => showToast(`${name} is already on your list`)}
       />
 
       {/* Toast */}

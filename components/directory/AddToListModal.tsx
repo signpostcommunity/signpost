@@ -24,6 +24,8 @@ interface AddToListModalProps {
   interpreter: Interpreter | null;
   userRole: 'deaf' | 'requester' | 'interpreter' | null;
   onSuccess?: (interpreterName: string) => void;
+  /** Called when interpreter is already on the list (duplicate) */
+  onDuplicate?: (interpreterName: string) => void;
   /** Edit mode: pass existing row ID to UPDATE instead of INSERT */
   editRowId?: string | null;
   /** Pre-populate tier in edit mode */
@@ -191,6 +193,7 @@ export default function AddToListModal({
   interpreter,
   userRole,
   onSuccess,
+  onDuplicate,
   editRowId,
   editTier,
   editNotes,
@@ -443,6 +446,12 @@ export default function AddToListModal({
           });
 
           if (insertErr.code === '23505') {
+            // Duplicate — close modal and show toast instead of inline error
+            if (onDuplicate) {
+              onDuplicate(interpreter.name);
+              onClose();
+              return;
+            }
             setError('This interpreter is already on your list.');
           } else if (insertErr.code === '42501') {
             setError('Permission denied. RLS policy may be missing for deaf_roster.');

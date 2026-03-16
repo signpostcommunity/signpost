@@ -325,11 +325,12 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
           <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--accent)', display: 'block', borderRadius: 1 }} />
           <span aria-hidden="true" style={{ width: 22, height: 2, background: 'var(--accent)', display: 'block', borderRadius: 1 }} />
         </button>
-        {/* Center: name + role */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.88rem' }}>{userName}</span>
-          <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>Interpreter</span>
-        </div>
+        {/* Center: signpost wordmark */}
+        <Link href="/" style={{ textDecoration: 'none' }}>
+          <div className="wordmark" style={{ fontSize: '1.1rem' }}>
+            sign<span>post</span>
+          </div>
+        </Link>
         {/* Red dot indicator for unread items */}
         {((badges.notifications ?? 0) + (badges.inbox ?? 0)) > 0 && (
           <span aria-label="Unread items" style={{
