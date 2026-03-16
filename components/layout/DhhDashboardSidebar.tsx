@@ -139,7 +139,7 @@ function SidebarContent({ userName, userInitials, badges }: {
       {/* Header */}
       <Link
         href="/dhh/dashboard/preferences"
-        style={{ display: 'block', padding: '24px 20px 20px', borderBottom: '1px solid var(--border)', textDecoration: 'none', color: 'inherit', transition: 'background 0.15s' }}
+        style={{ display: 'block', padding: '24px 20px 16px', borderBottom: '1px solid var(--border)', textDecoration: 'none', color: 'inherit', transition: 'background 0.15s' }}
         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(157,135,255,0.04)' }}
         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
       >

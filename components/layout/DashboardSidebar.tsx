@@ -102,7 +102,7 @@ function SidebarContent({ userName, userInitials, photoUrl, badges }: {
   return (
     <>
       {/* Header */}
-      <div style={{ padding: '24px 20px 20px', borderBottom: '1px solid var(--border)' }}>
+      <div style={{ padding: '24px 20px 16px', borderBottom: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {photoUrl ? (
             <img src={photoUrl} alt={userName} style={{

@@ -108,7 +108,7 @@ export default function RoleSwitcher({ currentRole }: { currentRole: string }) {
   const currentRoleInfo = ROLES.find(r => r.key === currentRole)
 
   return (
-    <div ref={ref} style={{ padding: '10px 16px 6px', borderBottom: '1px solid var(--border)' }}>
+    <div ref={ref} style={{ padding: '14px 16px 8px', borderBottom: '1px solid var(--border)' }}>
       {/* Label */}
       <div style={{
         fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
