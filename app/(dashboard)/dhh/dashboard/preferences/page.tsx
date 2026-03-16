@@ -422,6 +422,11 @@ export default function DhhPreferencesPage() {
               storagePath="deaf"
             />
           )}
+
+          <p style={{ fontSize: '0.76rem', color: 'var(--muted)', marginTop: 14, lineHeight: 1.5, opacity: 0.85 }}>
+            To give interpreters context about a specific appointment, add a video from the appointment card in{' '}
+            <a href="/dhh/dashboard/requests" style={{ color: '#9d87ff', textDecoration: 'underline' }}>My Requests</a>.
+          </p>
         </div>
 
         {/* ── Communication Preferences Section ── */}

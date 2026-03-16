@@ -9,6 +9,8 @@ import RequestTracker from '@/components/dashboard/dhh/RequestTracker'
 import InterpreterRating from '@/components/dashboard/dhh/InterpreterRating'
 import { createClient } from '@/lib/supabase/client'
 import BookingFilterBar, { filterBySearch, filterByDateRange, groupByTimeCategory, timeCategoryHeaderStyle } from '@/components/dashboard/shared/BookingFilterBar'
+import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
+import { getVideoEmbedUrl } from '@/lib/videoUtils'
 
 interface Recipient {
   id: string
@@ -54,6 +56,8 @@ interface BookingWithRecipients {
   cancelled_at?: string | null
   created_at: string
   requester_name?: string | null
+  context_video_url?: string | null
+  context_video_visible_before_accept?: boolean | null
   recipients: Recipient[]
 }
 
@@ -226,14 +230,239 @@ function InterpreterMiniCard({ recipient }: { recipient: Recipient }) {
   )
 }
 
+/* ── Appointment Video Section (expanded card, on-my-behalf only) ── */
+
+function AppointmentVideoSection({ booking }: { booking: BookingWithRecipients }) {
+  const [videoUrl, setVideoUrl] = useState(booking.context_video_url || '')
+  const [shareBeforeAccept, setShareBeforeAccept] = useState(
+    booking.context_video_visible_before_accept !== false
+  )
+  const [saving, setSaving] = useState(false)
+  const [removing, setRemoving] = useState(false)
+
+  async function saveVideo(url: string) {
+    setSaving(true)
+    try {
+      await fetch('/api/dhh/context-video', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingId: booking.id,
+          contextVideoUrl: url,
+          contextVideoVisibleBeforeAccept: shareBeforeAccept,
+        }),
+      })
+      setVideoUrl(url)
+    } catch (err) {
+      console.error('[context-video] save failed:', err)
+    }
+    setSaving(false)
+  }
+
+  async function removeVideo() {
+    setRemoving(true)
+    try {
+      await fetch('/api/dhh/context-video', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingId: booking.id,
+          contextVideoUrl: null,
+        }),
+      })
+      setVideoUrl('')
+    } catch (err) {
+      console.error('[context-video] remove failed:', err)
+    }
+    setRemoving(false)
+  }
+
+  async function updateSharePref(before: boolean) {
+    setShareBeforeAccept(before)
+    try {
+      await fetch('/api/dhh/context-video', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingId: booking.id,
+          contextVideoVisibleBeforeAccept: before,
+        }),
+      })
+    } catch (err) {
+      console.error('[context-video] pref update failed:', err)
+    }
+  }
+
+  const sectionLabelStyle: React.CSSProperties = {
+    fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
+    letterSpacing: '0.1em', textTransform: 'uppercase',
+    color: 'var(--muted)', marginBottom: 8,
+  }
+
+  const mutedSmall: React.CSSProperties = {
+    fontFamily: "'DM Sans', sans-serif", fontSize: '0.78rem',
+    color: 'var(--muted)', lineHeight: 1.5,
+  }
+
+  return (
+    <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+      <div style={sectionLabelStyle}>
+        {videoUrl ? 'Appointment Video' : 'Appointment Video (Optional)'}
+      </div>
+
+      {!videoUrl ? (
+        <>
+          <p style={{ ...mutedSmall, marginBottom: 12, marginTop: 0 }}>
+            Give your interpreter context about this specific appointment.
+            Only the interpreter(s) assigned to this booking can see this video.
+          </p>
+
+          <InlineVideoCapture
+            onVideoSaved={(url) => saveVideo(url)}
+            accentColor="#9d87ff"
+            storageBucket="videos"
+            storagePath="context-videos"
+          />
+
+          {/* Sharing toggle */}
+          <div style={{ marginTop: 14 }}>
+            <div style={{ ...mutedSmall, marginBottom: 8, fontWeight: 600 }}>
+              Share this video with interpreters:
+            </div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginBottom: 6 }}>
+              <input
+                type="radio"
+                name={`share-pref-${booking.id}`}
+                checked={shareBeforeAccept}
+                onChange={() => updateSharePref(true)}
+                style={{ accentColor: '#9d87ff' }}
+              />
+              <span style={mutedSmall}>Before they confirm (helps them decide if they&apos;re a match)</span>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+              <input
+                type="radio"
+                name={`share-pref-${booking.id}`}
+                checked={!shareBeforeAccept}
+                onChange={() => updateSharePref(false)}
+                style={{ accentColor: '#9d87ff' }}
+              />
+              <span style={mutedSmall}>After they confirm (share only with your confirmed interpreter)</span>
+            </label>
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Video player */}
+          {(() => {
+            const embedUrl = getVideoEmbedUrl(videoUrl)
+            if (!embedUrl) return null
+            return embedUrl.includes('supabase.co/storage') ? (
+              <video
+                controls
+                width="100%"
+                src={embedUrl}
+                style={{ borderRadius: 10, border: '1px solid var(--border)', maxHeight: 260, background: '#000', marginBottom: 12 }}
+              />
+            ) : (
+              <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, borderRadius: 10, overflow: 'hidden', marginBottom: 12 }}>
+                <iframe
+                  src={embedUrl}
+                  title="Appointment context video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+                />
+              </div>
+            )
+          })()}
+
+          {/* Re-record / Remove buttons */}
+          <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
+            <button
+              onClick={() => setVideoUrl('')}
+              disabled={saving}
+              style={{
+                background: 'none', border: '1px solid rgba(157,135,255,0.4)',
+                borderRadius: 'var(--radius-sm)', padding: '7px 16px',
+                fontSize: '0.82rem', fontWeight: 600, color: '#9d87ff',
+                cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+              }}
+            >
+              Re-record
+            </button>
+            <button
+              onClick={removeVideo}
+              disabled={removing}
+              style={{
+                background: 'none', border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-sm)', padding: '7px 16px',
+                fontSize: '0.82rem', color: 'var(--muted)',
+                cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+              }}
+            >
+              {removing ? 'Removing...' : 'Remove video'}
+            </button>
+          </div>
+
+          {/* Sharing toggle */}
+          <div style={{ marginBottom: 10 }}>
+            <div style={{ ...mutedSmall, marginBottom: 8, fontWeight: 600 }}>
+              Share this video with interpreters:
+            </div>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginBottom: 6 }}>
+              <input
+                type="radio"
+                name={`share-pref-${booking.id}`}
+                checked={shareBeforeAccept}
+                onChange={() => updateSharePref(true)}
+                style={{ accentColor: '#9d87ff' }}
+              />
+              <span style={mutedSmall}>Before they confirm (helps them decide if they&apos;re a match)</span>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+              <input
+                type="radio"
+                name={`share-pref-${booking.id}`}
+                checked={!shareBeforeAccept}
+                onChange={() => updateSharePref(false)}
+                style={{ accentColor: '#9d87ff' }}
+              />
+              <span style={mutedSmall}>After they confirm (share only with your confirmed interpreter)</span>
+            </label>
+          </div>
+
+          <p style={{ ...mutedSmall, marginTop: 4, marginBottom: 0 }}>
+            Only the interpreter(s) assigned to this booking can see this video.
+          </p>
+        </>
+      )}
+
+      {/* Cross-link to profile Intro Video */}
+      <p style={{
+        fontFamily: "'DM Sans', sans-serif", fontSize: '0.76rem',
+        color: 'var(--muted)', marginTop: 14, marginBottom: 0,
+        lineHeight: 1.5, opacity: 0.85,
+      }}>
+        This video is for context about this specific appointment.
+        To add a general introduction attached to all your requests, go to{' '}
+        <Link href="/dhh/dashboard/preferences" style={{ color: '#9d87ff', textDecoration: 'underline' }}>
+          your Profile
+        </Link>.
+      </p>
+    </div>
+  )
+}
+
 /* ── Request Card ── */
 
-function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated }: {
+function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, isOnMyBehalf }: {
   booking: BookingWithRecipients
   onExpand: () => void
   expanded: boolean
   ratedInterpreters: Set<string>
   onRated: (key: string) => void
+  isOnMyBehalf?: boolean
 }) {
   const isDismissed = booking.status === 'cancelled'
   const allDeclined = booking.status === 'open' &&
@@ -486,6 +715,11 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated }
                     </div>
                   </div>
                 )}
+
+                {/* Appointment Video — only for "Requests made on my behalf" */}
+                {isOnMyBehalf && (
+                  <AppointmentVideoSection booking={booking} />
+                )}
               </div>
 
               {/* RIGHT: Interpreters Contacted */}
@@ -672,6 +906,7 @@ export default function DhhRequestsListPage() {
                   onExpand={() => setExpandedId(expandedId === b.id ? null : b.id)}
                   ratedInterpreters={ratedInterpreters}
                   onRated={handleRated}
+                  isOnMyBehalf={activeTab === 'professional'}
                 />
               ))}
             </div>
