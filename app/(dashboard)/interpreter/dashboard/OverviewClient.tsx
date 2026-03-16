@@ -148,9 +148,9 @@ function StatCard({ num, label, href }: { num: number; label: string; href: stri
   )
 }
 
-/* ── Book Me Badge Section ── */
+/* ── Book Me Badge Actions (buttons + collapsible guide, used inside combined card) ── */
 
-function BookMeBadgeSection({ interpreterProfileId, displayName, onToast }: {
+function BookMeBadgeActions({ interpreterProfileId, displayName, onToast }: {
   interpreterProfileId: string; displayName: string; onToast: (m: string) => void
 }) {
   const [guideOpen, setGuideOpen] = useState(false)
@@ -174,32 +174,7 @@ function BookMeBadgeSection({ interpreterProfileId, displayName, onToast }: {
   }
 
   return (
-    <div style={{
-      background: 'var(--card-bg)', border: '1px solid var(--border)',
-      borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 24,
-    }}>
-      <div style={{
-        fontFamily: "'Syne', sans-serif", fontSize: '0.7rem', fontWeight: 700,
-        letterSpacing: '0.12em', textTransform: 'uppercase',
-        color: 'var(--accent)', marginBottom: 16,
-      }}>
-        Book Me Badge
-      </div>
-
-      {/* Badge preview */}
-      <div style={{
-        background: '#1a1a24', padding: '24px 32px',
-        marginBottom: 16, display: 'flex', justifyContent: 'center',
-        maxWidth: 540,
-      }}>
-        <img
-          src={`/api/badge/${interpreterProfileId}`}
-          alt={`Book ${displayName} on signpost`}
-          width={500}
-          style={{ borderRadius: '16px', maxWidth: '100%', height: 'auto' }}
-        />
-      </div>
-
+    <>
       {/* Buttons */}
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
         <button
@@ -271,7 +246,7 @@ function BookMeBadgeSection({ interpreterProfileId, displayName, onToast }: {
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }
 
@@ -455,7 +430,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         <StatCard num={daysAvailable} label="Days Available This Week" href="/interpreter/dashboard/availability" />
       </div>
 
-      {/* Book Me Link Card */}
+      {/* Book Me Badges — single combined section */}
       <div style={{
         background: 'var(--card-bg)', border: '1px solid var(--border)',
         borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 24,
@@ -463,51 +438,75 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         <div style={{
           fontFamily: "'Syne', sans-serif", fontSize: '0.7rem', fontWeight: 700,
           letterSpacing: '0.12em', textTransform: 'uppercase',
-          color: 'var(--accent)', marginBottom: 12,
+          color: 'var(--accent)', marginBottom: 8,
         }}>
-          Your Book Me Link
+          Book Me Badges
         </div>
-        {vanitySlug ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-            <span style={{
-              fontSize: '1rem', fontWeight: 600, color: 'var(--accent)',
-              fontFamily: "'DM Sans', sans-serif", wordBreak: 'break-all',
-            }}>
-              signpost.community/book/{vanitySlug}
-            </span>
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText(`https://signpost.community/book/${vanitySlug}`)
-                showToast('Copied to clipboard!')
-              }}
-              style={{
-                background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.3)',
-                color: 'var(--accent)', borderRadius: 8, padding: '6px 14px',
-                fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
-                fontFamily: "'DM Sans', sans-serif",
-              }}
-            >
-              Copy link
-            </button>
+        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 20, lineHeight: 1.55 }}>
+          Add this badge to your email signature, website, or LinkedIn to make it easy to book you directly. When someone clicks the badge, it takes them straight to your signpost profile where they can send a job request directly to you.
+        </p>
+
+        {/* Badge preview */}
+        {interpreterProfileId && !hasDraftProfile && (
+          <div style={{
+            background: '#1a1a24', padding: '24px 32px',
+            marginBottom: 20, display: 'flex', justifyContent: 'center',
+            maxWidth: 540,
+          }}>
+            <img
+              src={`/api/badge/${interpreterProfileId}`}
+              alt={`Book ${[firstName, lastName].filter(Boolean).join(' ') || 'Interpreter'} on signpost`}
+              width={500}
+              style={{ borderRadius: '16px', maxWidth: '100%', height: 'auto' }}
+            />
           </div>
-        ) : (
-          <Link
-            href="/interpreter/dashboard/profile"
-            style={{ color: 'var(--accent)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}
-          >
-            Set up your Book Me link →
-          </Link>
+        )}
+
+        {/* Your link */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Your link</div>
+          {vanitySlug ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+              <span style={{
+                fontSize: '1rem', fontWeight: 600, color: 'var(--accent)',
+                fontFamily: "'DM Sans', sans-serif", wordBreak: 'break-all',
+              }}>
+                signpost.community/book/{vanitySlug}
+              </span>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(`https://signpost.community/book/${vanitySlug}`)
+                  showToast('Copied to clipboard!')
+                }}
+                style={{
+                  background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.3)',
+                  color: 'var(--accent)', borderRadius: 8, padding: '6px 14px',
+                  fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
+                  fontFamily: "'DM Sans', sans-serif",
+                }}
+              >
+                Copy link
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/interpreter/dashboard/profile"
+              style={{ color: 'var(--accent)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}
+            >
+              Set up your Book Me link →
+            </Link>
+          )}
+        </div>
+
+        {/* Action buttons */}
+        {interpreterProfileId && !hasDraftProfile && (
+          <BookMeBadgeActions
+            interpreterProfileId={interpreterProfileId}
+            displayName={[firstName, lastName].filter(Boolean).join(' ') || 'Interpreter'}
+            onToast={showToast}
+          />
         )}
       </div>
-
-      {/* Book Me Badge */}
-      {interpreterProfileId && !hasDraftProfile && (
-        <BookMeBadgeSection
-          interpreterProfileId={interpreterProfileId}
-          displayName={[firstName, lastName].filter(Boolean).join(' ') || 'Interpreter'}
-          onToast={showToast}
-        />
-      )}
 
       {!hasDraftProfile && !loading && (
         <>
