@@ -183,7 +183,7 @@ export default function InterpreterRating({ bookingId, interpreterId, interprete
         color: 'var(--text)',
         margin: '0 0 20px 0',
       }}>
-        How was your experience?
+        How was your experience with {interpreterName}?
       </h3>
 
       {/* Question 1: Met needs */}

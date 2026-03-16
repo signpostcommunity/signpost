@@ -98,11 +98,12 @@ function isBookingCompleted(booking: BookingWithRecipients): boolean {
 }
 
 /* Recipient status pill */
-function StatusPill({ status, rate }: { status: string; rate?: number | null }) {
+function StatusPill({ status, rate, showRate = true }: { status: string; rate?: number | null; showRate?: boolean }) {
+  const displayRate = showRate ? rate : null
   const configs: Record<string, { bg: string; color: string; label: string; dot: string }> = {
     sent: { bg: 'rgba(184,191,207,0.1)', color: 'var(--muted)', label: 'Awaiting response', dot: '#6b7280' },
     viewed: { bg: 'rgba(96,165,250,0.1)', color: '#60a5fa', label: 'Viewed', dot: '#60a5fa' },
-    responded: { bg: 'rgba(0,229,255,0.1)', color: '#00e5ff', label: rate ? `Available — $${rate}/hr` : 'Available', dot: '#00e5ff' },
+    responded: { bg: 'rgba(0,229,255,0.1)', color: '#00e5ff', label: displayRate ? `Available — $${displayRate}/hr` : 'Available', dot: '#00e5ff' },
     confirmed: { bg: 'rgba(52,211,153,0.1)', color: '#34d399', label: 'Confirmed', dot: '#34d399' },
     declined: { bg: 'rgba(255,107,133,0.08)', color: '#ff8099', label: 'Unavailable', dot: '#ff6b85' },
     withdrawn: { bg: 'rgba(184,191,207,0.06)', color: 'var(--muted)', label: 'Withdrawn', dot: '#6b7280' },
@@ -127,7 +128,7 @@ function StatusPill({ status, rate }: { status: string; rate?: number | null }) 
 }
 
 /* Interpreter status list */
-function InterpreterStatusList({ recipients, interpCount }: { recipients: Recipient[]; interpCount: number }) {
+function InterpreterStatusList({ recipients, interpCount, showRate = true }: { recipients: Recipient[]; interpCount: number; showRate?: boolean }) {
   const confirmedCount = recipients.filter(r => r.status === 'confirmed').length
   const allConfirmed = confirmedCount >= interpCount && interpCount > 0
 
@@ -170,7 +171,7 @@ function InterpreterStatusList({ recipients, interpCount }: { recipients: Recipi
                 )}
                 <span style={{ fontSize: '0.82rem', fontWeight: 500 }}>{interpName}</span>
               </div>
-              <StatusPill status={r.status} rate={r.response_rate} />
+              <StatusPill status={r.status} rate={r.response_rate} showRate={showRate} />
             </div>
           )
         })}
@@ -300,6 +301,7 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated }
               <InterpreterStatusList
                 recipients={booking.recipients}
                 interpCount={booking.interpreter_count || 1}
+                showRate={booking.request_type !== 'professional'}
               />
             )}
 
