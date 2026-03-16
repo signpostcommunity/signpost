@@ -95,7 +95,7 @@ export default function DeafDashboardPage() {
 
       const { data: interpreters, error: interpError } = await supabase
         .from('interpreter_profiles')
-        .select('id, name, first_name, last_name, color')
+        .select('id, name, first_name, last_name, avatar_color')
         .in('id', interpreterIds);
 
       console.log('[PREF DEBUG] profiles:', interpreters?.length, 'error:', interpError?.message);
@@ -112,7 +112,7 @@ export default function DeafDashboardPage() {
         .in('interpreter_id', interpreterIds);
 
       // Build lookup maps
-      const interpMap: Record<string, { name: string; first_name: string | null; last_name: string | null; color: string | null }> = {};
+      const interpMap: Record<string, { name: string; first_name: string | null; last_name: string | null; avatar_color: string | null }> = {};
       for (const ip of interpreters || []) {
         interpMap[ip.id] = ip;
       }
@@ -149,7 +149,7 @@ export default function DeafDashboardPage() {
           notes: row.notes,
           name: fullName,
           initials,
-          color: ip?.color || 'linear-gradient(135deg, #7b61ff, #00e5ff)',
+          color: ip?.avatar_color || 'linear-gradient(135deg, #7b61ff, #00e5ff)',
           certs: certStr,
           domains: domainStr,
         };
