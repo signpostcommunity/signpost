@@ -291,7 +291,7 @@ export default function FeedbackClient({ feedback }: { feedback: FeedbackItem[] 
 
   return (
     <div style={{ padding: '32px 40px', maxWidth: 1200 }}>
-      <h1 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.6rem', fontWeight: 700, marginBottom: 8 }}>
+      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 700, marginBottom: 8 }}>
         Beta Feedback
       </h1>
       <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: 24 }}>

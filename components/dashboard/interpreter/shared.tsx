@@ -52,7 +52,7 @@ export function DemoBadge() {
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div style={{ marginBottom: 28 }}>
-      <h1 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.6rem', margin: '0 0 6px' }}>
+      <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.6rem', margin: '0 0 6px' }}>
         {title}
       </h1>
       {subtitle && <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>{subtitle}</p>}

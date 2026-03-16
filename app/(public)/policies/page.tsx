@@ -46,7 +46,7 @@ export default function PoliciesPage() {
     <div style={{ padding: '60px 40px 100px', maxWidth: 760, margin: '0 auto' }}>
       <div style={sectionLabel}>Legal</div>
       <h1 style={{
-        fontFamily: "'DM Sans', sans-serif",
+        fontFamily: "'Syne', sans-serif",
         fontWeight: 700,
         fontSize: '2rem',
         marginBottom: 8,

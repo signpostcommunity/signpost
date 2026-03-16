@@ -150,7 +150,7 @@ export default function TrustedDeafCirclePage() {
     <div className="dash-page-content" style={{ padding: '40px 48px', maxWidth: 900 }}>
       {/* Title */}
       <h1 style={{
-        fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.6rem',
+        fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.6rem',
         margin: '0 0 20px', color: 'var(--text)',
       }}>
         Your trusted Deaf circle

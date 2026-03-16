@@ -61,7 +61,7 @@ export default async function BookPage({ params }: Props) {
           textAlign: 'center', maxWidth: 480,
         }}>
           <h1 style={{
-            fontFamily: "'DM Sans', sans-serif", fontSize: '1.5rem',
+            fontFamily: "'Syne', sans-serif", fontSize: '1.5rem',
             fontWeight: 700, marginBottom: 12,
           }}>
             This interpreter profile wasn&apos;t found.

@@ -145,7 +145,7 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
                 {/* Name */}
                 <h1
                   style={{
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: "'Syne', sans-serif",
                     fontSize: 'clamp(1.4rem, 3vw, 2rem)',
                     fontWeight: 700,
                     letterSpacing: '-0.03em',

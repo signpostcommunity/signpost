@@ -478,7 +478,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
           {vanitySlug ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
               <span style={{
-                fontSize: '1rem', fontWeight: 600, color: 'var(--accent)',
+                fontSize: '0.88rem', fontWeight: 600, color: 'var(--accent)',
                 fontFamily: "'DM Sans', sans-serif", wordBreak: 'break-all',
               }}>
                 signpost.community/book/{vanitySlug}

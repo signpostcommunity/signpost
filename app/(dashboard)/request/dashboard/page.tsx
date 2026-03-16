@@ -314,7 +314,7 @@ export default function RequesterDashboardPage() {
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '32px 32px 64px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 4 }}>My Requests</h1>
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 4 }}>My Requests</h1>
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem' }}>Track and manage your interpreter requests</p>
         </div>
         <button onClick={() => setShowNewRequest(true)} className="btn-primary" style={{ padding: '9px 18px', fontSize: '0.88rem', cursor: 'pointer' }}>

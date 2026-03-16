@@ -447,7 +447,7 @@ export default function VisionPage() {
       <div style={{ background: '#1a1a24', paddingTop: 48 }}>
         <div style={{ padding: '0 40px' }}>
           <h1 style={{
-            fontFamily: "'DM Sans', sans-serif", fontSize: 'clamp(1.4rem, 2.5vw, 1.8rem)',
+            fontFamily: "'Syne', sans-serif", fontSize: 'clamp(1.4rem, 2.5vw, 1.8rem)',
             fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.3,
             color: 'var(--text)', marginBottom: 32,
           }}>
