@@ -219,7 +219,6 @@ export default function DhhPreferencesPage() {
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
-      <BetaBanner />
       <PageHeader title="Preferences & Profile" subtitle="Manage your profile and communication preferences." />
 
       <div style={{ maxWidth: 640 }}>

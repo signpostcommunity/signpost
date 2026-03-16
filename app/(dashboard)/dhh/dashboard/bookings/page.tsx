@@ -736,7 +736,7 @@ export default function DhhBookingsPage() {
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
-      <BetaBanner />
+
       <PageHeader title="My Bookings" subtitle="Appointments scheduled for you, requested by you or on your behalf." />
 
       {loading ? (

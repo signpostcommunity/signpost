@@ -170,7 +170,6 @@ export default function DhhRequestPage() {
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
-      <BetaBanner />
       <PageHeader
         title="New Interpreter Request"
         subtitle="Request an interpreter for a personal appointment. This is free — no platform fee for Deaf/DB/HH users."

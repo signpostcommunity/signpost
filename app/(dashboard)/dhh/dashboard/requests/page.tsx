@@ -420,7 +420,6 @@ export default function DhhRequestsListPage() {
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
-      <BetaBanner />
       <PageHeader title="My Requests" subtitle="Track interpreter requests and bookings." />
 
       {/* Tab bar */}
