@@ -1,6 +1,7 @@
 import Nav from '@/components/layout/Nav';
 import Footer from '@/components/layout/Footer';
 import BetaFeedbackPanel from '@/components/beta/BetaFeedbackPanel';
+import AslTourButton from '@/components/ui/AslTourButton';
 import { createClient } from '@/lib/supabase/server';
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
@@ -15,6 +16,7 @@ export default async function PublicLayout({ children }: { children: React.React
         <Footer />
       </div>
       {process.env.NEXT_PUBLIC_BETA_MODE === 'true' && <BetaFeedbackPanel />}
+      <AslTourButton />
     </>
   );
 }
