@@ -137,12 +137,7 @@ function SidebarContent({ userName, userInitials, badges }: {
   return (
     <>
       {/* Header */}
-      <Link
-        href="/dhh/dashboard/preferences"
-        style={{ display: 'block', padding: '24px 20px 16px', borderBottom: '1px solid var(--border)', textDecoration: 'none', color: 'inherit', transition: 'background 0.15s' }}
-        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(157,135,255,0.04)' }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
-      >
+      <div style={{ padding: '24px 20px 16px', borderBottom: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{
             width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
@@ -153,11 +148,11 @@ function SidebarContent({ userName, userInitials, badges }: {
             {userInitials}
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.92rem' }}>{userName}</div>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.92rem' }}>{userName}</div>
             <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 2 }}>Deaf Individual</div>
           </div>
         </div>
-      </Link>
+      </div>
 
       {/* Role switcher */}
       <RoleSwitcher currentRole="deaf" />
