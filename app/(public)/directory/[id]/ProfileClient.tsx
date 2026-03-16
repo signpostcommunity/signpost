@@ -448,7 +448,7 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
 
             <SidebarCard title="Languages">
               <div style={{ marginBottom: '12px' }}>
-                <div style={{ fontSize: '0.68rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' }}>
                   Sign Languages
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
@@ -458,7 +458,7 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
                 </div>
               </div>
               <div>
-                <div style={{ fontSize: '0.68rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '6px' }}>
                   Spoken Languages
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
@@ -713,7 +713,7 @@ function OverviewTab({ interpreter: i }: { interpreter: Interpreter }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: '24px' }} className="specs-grid">
               {categories.map(([cat, subs]) => (
                 <div key={cat} style={{ marginBottom: '20px' }}>
-                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#00e5ff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontFamily: "'DM Sans', sans-serif" }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#00e5ff', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px', fontFamily: "'DM Sans', sans-serif" }}>
                     {cat}
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -728,7 +728,7 @@ function OverviewTab({ interpreter: i }: { interpreter: Interpreter }) {
               <style>{`.specs-grid { grid-template-columns: 1fr !important; } @media (min-width: 768px) { .specs-grid { grid-template-columns: repeat(2, 1fr) !important; } }`}</style>
               {i.specializedSkills && i.specializedSkills.length > 0 && (
                 <div>
-                  <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#a891ff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px', fontFamily: "'DM Sans', sans-serif" }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#a891ff', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '10px', fontFamily: "'DM Sans', sans-serif" }}>
                     Specialized Skills
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
@@ -858,7 +858,7 @@ function AvailabilityTab() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '24px' }}>
-      <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '16px' }}>
+      <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '16px' }}>
         {title}
       </h2>
       {children}

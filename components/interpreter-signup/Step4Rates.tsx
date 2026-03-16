@@ -105,8 +105,8 @@ function RateProfileCard({
           {isDefault && (
             <span style={{
               borderRadius: 100, padding: '3px 10px',
-              fontSize: '0.68rem', fontWeight: 700,
-              fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.06em',
+              fontSize: '0.7rem', fontWeight: 700,
+              fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.1em',
               textTransform: 'uppercase',
               background: 'rgba(0,229,255,0.1)',
               border: '1px solid rgba(0,229,255,0.25)',

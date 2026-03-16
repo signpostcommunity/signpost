@@ -58,7 +58,7 @@ function LangPicker({
       <div style={{
         fontFamily: "'DM Sans', sans-serif",
         fontSize: '0.68rem', fontWeight: 700,
-        letterSpacing: '0.12em', textTransform: 'uppercase' as const,
+        letterSpacing: '0.1em', textTransform: 'uppercase' as const,
         color: 'var(--muted)', marginBottom: 10,
       }}>
         Most common
@@ -85,7 +85,7 @@ function LangPicker({
         <div style={{
           fontFamily: "'DM Sans', sans-serif",
           fontSize: '0.68rem', fontWeight: 700,
-          letterSpacing: '0.12em', textTransform: 'uppercase' as const,
+          letterSpacing: '0.1em', textTransform: 'uppercase' as const,
           color: 'var(--muted)', marginBottom: 6,
         }}>
           More languages by region

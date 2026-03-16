@@ -37,8 +37,8 @@ export function BetaBanner() {
 export function DemoBadge() {
   return (
     <span style={{
-      fontSize: '0.62rem', fontWeight: 700, fontFamily: "'DM Sans', sans-serif",
-      letterSpacing: '0.08em', textTransform: 'uppercase',
+      fontSize: '0.7rem', fontWeight: 700, fontFamily: "'DM Sans', sans-serif",
+      letterSpacing: '0.1em', textTransform: 'uppercase',
       background: 'rgba(255,107,43,0.15)', border: '1px solid rgba(255,107,43,0.4)',
       color: '#ff7e45', borderRadius: 100, padding: '2px 8px',
     }}>
@@ -65,7 +65,7 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <h3 style={{
-      fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.68rem',
+      fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem',
       letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)',
       margin: '28px 0 14px',
     }}>

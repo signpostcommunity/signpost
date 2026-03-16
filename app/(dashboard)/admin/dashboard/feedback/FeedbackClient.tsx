@@ -62,7 +62,7 @@ function FeedbackCard({ f }: { f: FeedbackItem }) {
 
       {f.survey_answers && Object.keys(f.survey_answers).length > 0 && (
         <div style={{ marginTop: 4 }}>
-          <div style={{ fontSize: '0.72rem', color: 'var(--muted)', fontWeight: 600, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <div style={{ fontSize: '0.7rem', color: 'var(--muted)', fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
             Survey Answers
           </div>
           <div style={{ padding: 10, borderRadius: 6, background: 'var(--surface)', fontSize: '0.82rem' }}>
@@ -244,7 +244,7 @@ function FlatView({ feedback }: { feedback: FeedbackItem[] }) {
 
           {f.survey_answers && Object.keys(f.survey_answers).length > 0 && (
             <div style={{ marginTop: 8 }}>
-              <div style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 600, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <div style={{ fontSize: '0.7rem', color: 'var(--muted)', fontWeight: 700, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
                 Survey Answers
               </div>
               <div style={{ padding: 12, borderRadius: 8, background: 'var(--surface2)', fontSize: '0.82rem' }}>

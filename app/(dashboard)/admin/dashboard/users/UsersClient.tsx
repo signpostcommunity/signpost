@@ -201,8 +201,8 @@ export default function UsersClient({ users, currentUserId }: { users: User[]; c
                   <th key={h} style={{
                     padding: '12px 16px', textAlign: 'left',
                     fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
-                    fontSize: '0.72rem', textTransform: 'uppercase',
-                    letterSpacing: '0.05em', color: 'var(--muted)',
+                    fontSize: '0.7rem', textTransform: 'uppercase',
+                    letterSpacing: '0.1em', color: 'var(--muted)',
                   }}>
                     {h}
                   </th>

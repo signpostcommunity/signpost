@@ -961,9 +961,9 @@ export default function AddToListModal({
               style={{
                 fontFamily: "'DM Sans', sans-serif",
                 fontWeight: 700,
-                fontSize: '0.72rem',
+                fontSize: '0.7rem',
                 textTransform: 'uppercase',
-                letterSpacing: '0.08em',
+                letterSpacing: '0.1em',
                 color: 'var(--muted, #b0b8d0)',
                 marginBottom: '8px',
               }}

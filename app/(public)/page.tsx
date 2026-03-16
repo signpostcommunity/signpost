@@ -186,9 +186,9 @@ export default function HomePage() {
               <div
                 style={{
                   fontFamily: 'var(--font-syne)',
-                  fontSize: '0.68rem',
+                  fontSize: '0.7rem',
                   fontWeight: 700,
-                  letterSpacing: '0.12em',
+                  letterSpacing: '0.1em',
                   textTransform: 'uppercase',
                   color: 'var(--accent)',
                   marginBottom: 10,

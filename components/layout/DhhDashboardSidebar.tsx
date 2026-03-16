@@ -154,7 +154,7 @@ function SidebarContent({ userName, userInitials, badges }: {
             <div style={{
               padding: '14px 20px 6px',
               fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
-              fontSize: '0.62rem', letterSpacing: '0.12em',
+              fontSize: '0.7rem', letterSpacing: '0.1em',
               textTransform: 'uppercase', color: 'var(--muted)',
             }}>
               {group.section}

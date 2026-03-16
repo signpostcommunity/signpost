@@ -100,7 +100,7 @@ export default function AdminOverviewClient({
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = `${ORANGE}66` }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)' }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.7rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
               {card.icon}
               {card.label}
             </div>
@@ -133,7 +133,7 @@ export default function AdminOverviewClient({
                     <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 2 }}>
                       <span style={{
                         display: 'inline-block', padding: '1px 8px', borderRadius: 999,
-                        fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase',
+                        fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em',
                         background: u.role === 'interpreter' ? 'rgba(0,229,255,0.1)' : u.role === 'deaf' ? 'rgba(157,135,255,0.1)' : 'rgba(255,107,43,0.1)',
                         color: u.role === 'interpreter' ? 'var(--accent)' : u.role === 'deaf' ? 'var(--accent2)' : ORANGE,
                       }}>

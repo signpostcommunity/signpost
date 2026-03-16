@@ -17,7 +17,7 @@ export function SectionTitle({ children }: { children: ReactNode }) {
     <div style={{
       fontFamily: "'DM Sans', sans-serif",
       fontSize: '0.7rem', fontWeight: 700,
-      letterSpacing: '0.12em', textTransform: 'uppercase',
+      letterSpacing: '0.1em', textTransform: 'uppercase',
       color: 'var(--accent)', marginBottom: 20,
     }}>
       {children}

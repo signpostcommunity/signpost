@@ -201,7 +201,7 @@ export default function RequestSignupClient() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '0.85rem' }}>
               {[['Account type', form.role || '—'], ['Name', form.name], ['Email', form.email], ['Country', form.country || '—'], ...(form.orgName ? [['Organization', form.orgName]] : [])].map(([label, value]) => (
                 <div key={label}>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase' as const, letterSpacing: '0.08em', marginBottom: '2px' }}>{label}</div>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase' as const, letterSpacing: '0.1em', marginBottom: '2px' }}>{label}</div>
                   <div style={{ color: 'var(--text)', fontWeight: 500 }}>{value}</div>
                 </div>
               ))}

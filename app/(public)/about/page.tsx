@@ -158,7 +158,7 @@ export default function AboutPage() {
               }}>
                 <div style={{
                   fontFamily: 'var(--font-syne)', fontSize: '0.7rem', fontWeight: 700,
-                  letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)',
+                  letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)',
                   whiteSpace: 'nowrap',
                 }}>
                   The people behind it
@@ -219,7 +219,7 @@ export default function AboutPage() {
             <div style={{ marginBottom: 56 }}>
               <div style={{
                 fontFamily: 'var(--font-syne)', fontSize: '0.7rem', fontWeight: 700,
-                letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 20,
+                letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 20,
               }}>
                 Who signpost serves
               </div>
@@ -339,7 +339,7 @@ export default function AboutPage() {
               }}>
                 <div style={{
                   fontFamily: 'var(--font-syne)', fontSize: '0.7rem', fontWeight: 700,
-                  letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)',
+                  letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)',
                   whiteSpace: 'nowrap',
                 }}>
                   Community Partners
@@ -510,8 +510,8 @@ export default function AboutPage() {
                 <div className="contact-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
                   <div>
                     <label htmlFor="contact-name" style={{
-                      display: 'block', fontFamily: 'var(--font-syne)', fontSize: '0.75rem',
-                      fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                      display: 'block', fontFamily: 'var(--font-syne)', fontSize: '0.7rem',
+                      fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
                       color: 'var(--muted)', marginBottom: 8,
                     }}>
                       Name
@@ -531,8 +531,8 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <label htmlFor="contact-email" style={{
-                      display: 'block', fontFamily: 'var(--font-syne)', fontSize: '0.75rem',
-                      fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                      display: 'block', fontFamily: 'var(--font-syne)', fontSize: '0.7rem',
+                      fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
                       color: 'var(--muted)', marginBottom: 8,
                     }}>
                       Email
@@ -555,7 +555,7 @@ export default function AboutPage() {
                 <div style={{ marginBottom: 20 }}>
                   <label htmlFor="contact-subject" style={{
                     display: 'block', fontFamily: 'var(--font-syne)', fontSize: '0.75rem',
-                    fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                    fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
                     color: 'var(--muted)', marginBottom: 8,
                   }}>
                     Subject
@@ -586,7 +586,7 @@ export default function AboutPage() {
                 <div style={{ marginBottom: 28 }}>
                   <label htmlFor="contact-message" style={{
                     display: 'block', fontFamily: 'var(--font-syne)', fontSize: '0.75rem',
-                    fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                    fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
                     color: 'var(--muted)', marginBottom: 8,
                   }}>
                     Message

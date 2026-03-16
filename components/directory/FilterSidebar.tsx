@@ -371,7 +371,7 @@ export default function FilterSidebar({ filters, onChange }: Props) {
                   style={{
                     background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0',
                     fontFamily: "'DM Sans', sans-serif", fontSize: '0.65rem', fontWeight: 700,
-                    letterSpacing: '0.08em', textTransform: 'uppercase',
+                    letterSpacing: '0.1em', textTransform: 'uppercase',
                     color: selectedCount > 0 ? 'var(--accent)' : 'var(--muted)',
                     display: 'flex', alignItems: 'center', gap: '6px', width: '100%',
                   }}
@@ -395,7 +395,7 @@ export default function FilterSidebar({ filters, onChange }: Props) {
         <div style={{ marginTop: '12px', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
           <div style={{
             fontFamily: "'DM Sans', sans-serif", fontSize: '0.65rem', fontWeight: 700,
-            letterSpacing: '0.08em', textTransform: 'uppercase', color: '#a891ff',
+            letterSpacing: '0.1em', textTransform: 'uppercase', color: '#a891ff',
             marginBottom: '6px',
           }}>
             Specialized Skills

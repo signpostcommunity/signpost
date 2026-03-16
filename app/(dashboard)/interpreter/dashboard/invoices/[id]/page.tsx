@@ -269,7 +269,7 @@ export default function InvoiceViewPage() {
         {/* From / Bill To */}
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px', gap: '40px' }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '11px', textTransform: 'uppercase' as const, letterSpacing: '1px', color: '#999', marginBottom: '6px', fontWeight: 600 }}>
+            <div style={{ fontSize: '0.7rem', textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#999', marginBottom: '6px', fontWeight: 700 }}>
               From
             </div>
             <div style={{ fontSize: '15px', fontWeight: 600, color: '#1a1a1a' }}>
@@ -280,7 +280,7 @@ export default function InvoiceViewPage() {
             </div>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '11px', textTransform: 'uppercase' as const, letterSpacing: '1px', color: '#999', marginBottom: '6px', fontWeight: 600 }}>
+            <div style={{ fontSize: '0.7rem', textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#999', marginBottom: '6px', fontWeight: 700 }}>
               Bill To
             </div>
             <div style={{ fontSize: '15px', fontWeight: 600, color: '#1a1a1a' }}>
@@ -302,7 +302,7 @@ export default function InvoiceViewPage() {
             marginBottom: '32px',
           }}
         >
-          <div style={{ fontSize: '11px', textTransform: 'uppercase' as const, letterSpacing: '1px', color: '#999', marginBottom: '12px', fontWeight: 600 }}>
+          <div style={{ fontSize: '0.7rem', textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#999', marginBottom: '12px', fontWeight: 700 }}>
             Job Details
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
@@ -412,7 +412,7 @@ export default function InvoiceViewPage() {
 
         {/* Payment Terms */}
         <div style={{ marginBottom: '24px' }}>
-          <div style={{ fontSize: '11px', textTransform: 'uppercase' as const, letterSpacing: '1px', color: '#999', marginBottom: '6px', fontWeight: 600 }}>
+          <div style={{ fontSize: '0.7rem', textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#999', marginBottom: '6px', fontWeight: 700 }}>
             Payment Terms
           </div>
           <div style={{ fontSize: '14px', color: '#1a1a1a' }}>
@@ -424,7 +424,7 @@ export default function InvoiceViewPage() {
 
         {/* Payment Methods */}
         <div style={{ marginBottom: '40px' }}>
-          <div style={{ fontSize: '11px', textTransform: 'uppercase' as const, letterSpacing: '1px', color: '#999', marginBottom: '10px', fontWeight: 600 }}>
+          <div style={{ fontSize: '0.7rem', textTransform: 'uppercase' as const, letterSpacing: '0.1em', color: '#999', marginBottom: '10px', fontWeight: 700 }}>
             Payment Methods
           </div>
           {paymentMethods.length > 0 ? (

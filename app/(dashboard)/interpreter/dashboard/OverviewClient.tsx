@@ -447,7 +447,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       }}>
         <div style={{
           fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
-          letterSpacing: '0.12em', textTransform: 'uppercase',
+          letterSpacing: '0.1em', textTransform: 'uppercase',
           color: 'var(--accent)', marginBottom: 8,
         }}>
           Book Me Badges
@@ -474,7 +474,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
 
         {/* Your link */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Your link</div>
+          <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Your link</div>
           {vanitySlug ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
               <span style={{

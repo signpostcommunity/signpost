@@ -90,7 +90,7 @@ export default function Step5Skills({ onBack, onContinue }: {
                     width: '100%', padding: '12px 16px',
                     background: 'none', border: 'none', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    fontFamily: "'DM Sans', sans-serif", fontSize: '0.72rem', fontWeight: 700,
+                    fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
                     letterSpacing: '0.1em', textTransform: 'uppercase',
                     color: selectedCount > 0 ? 'var(--accent)' : 'var(--muted)',
                   }}

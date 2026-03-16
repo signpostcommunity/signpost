@@ -31,7 +31,7 @@ function SectionLabel({ children, color }: { children: React.ReactNode; color: s
     }}>
       <div style={{
         fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
-        letterSpacing: '0.12em', textTransform: 'uppercase', color,
+        letterSpacing: '0.1em', textTransform: 'uppercase', color,
         whiteSpace: 'nowrap',
       }}>
         {children}

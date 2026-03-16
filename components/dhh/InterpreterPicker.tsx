@@ -246,12 +246,12 @@ export default function InterpreterPicker({
 
               {/* Tier badge */}
               <span style={{
-                fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px',
+                fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px',
                 borderRadius: 100, whiteSpace: 'nowrap',
                 background: interp.tier === 'preferred' ? 'rgba(157,135,255,0.12)' : interp.tier === 'directory' ? 'rgba(255,255,255,0.06)' : 'rgba(0,229,255,0.1)',
                 color: interp.tier === 'preferred' ? '#9d87ff' : interp.tier === 'directory' ? 'var(--muted)' : 'var(--accent)',
                 border: `1px solid ${interp.tier === 'preferred' ? 'rgba(157,135,255,0.3)' : interp.tier === 'directory' ? 'var(--border)' : 'rgba(0,229,255,0.25)'}`,
-                fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em',
+                fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.1em',
                 textTransform: 'uppercase',
               }}>
                 {interp.tier === 'preferred' ? 'Preferred' : interp.tier === 'directory' ? 'Directory' : 'Approved'}

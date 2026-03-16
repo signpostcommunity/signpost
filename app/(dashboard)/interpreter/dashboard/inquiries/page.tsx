@@ -76,9 +76,9 @@ const fieldInputStyle: React.CSSProperties = {
 }
 
 const fieldLabelStyle: React.CSSProperties = {
-  display: 'block', fontSize: '0.75rem', color: 'var(--muted)',
+  display: 'block', fontSize: '0.7rem', color: 'var(--muted)',
   fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
-  letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6,
+  letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6,
 }
 
 function focusBorder(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
@@ -279,7 +279,7 @@ function DetailModal({ booking, onClose }: {
   const isRemote = booking.format === 'remote'
 
   const sectionLabelStyle: React.CSSProperties = {
-    fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.07em',
+    fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em',
     textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10,
   }
   const detailRowStyle: React.CSSProperties = {

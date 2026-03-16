@@ -284,9 +284,9 @@ export default function TrustedDeafCirclePage() {
               {pendingReceived.length > 0 && (
                 <div style={{ marginBottom: 20 }}>
                   <h3 style={{
-                    fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.85rem',
+                    fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem',
                     color: 'var(--muted)', margin: '0 0 10px', textTransform: 'uppercase',
-                    letterSpacing: '0.06em',
+                    letterSpacing: '0.1em',
                   }}>
                     Received
                   </h3>
@@ -358,9 +358,9 @@ export default function TrustedDeafCirclePage() {
               {pendingSent.length > 0 && (
                 <div>
                   <h3 style={{
-                    fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.85rem',
+                    fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem',
                     color: 'var(--muted)', margin: '0 0 10px', textTransform: 'uppercase',
-                    letterSpacing: '0.06em',
+                    letterSpacing: '0.1em',
                   }}>
                     Sent
                   </h3>

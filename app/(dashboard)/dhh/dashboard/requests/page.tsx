@@ -136,7 +136,7 @@ function InterpreterStatusList({ recipients, interpCount, showRate = true }: { r
   return (
     <div style={{ marginBottom: 14, marginTop: 8 }}>
       <div style={{
-        fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.06em',
+        fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em',
         textTransform: 'uppercase' as const, color: 'var(--muted)', marginBottom: 8,
       }}>
         Interpreter Status
