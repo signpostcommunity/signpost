@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { BetaBanner, PageHeader, SectionLabel, StatusBadge, DemoBadge, GhostButton, Avatar, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import { sendNotification } from '@/lib/notifications'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
-import BookingFilterBar, { filterByDateRange } from '@/components/dashboard/shared/BookingFilterBar'
+import BookingFilterBar, { filterByDateRange, groupByTimeCategory, timeCategoryHeaderStyle } from '@/components/dashboard/shared/BookingFilterBar'
 
 /* ── Types ── */
 
@@ -1740,19 +1740,24 @@ export default function ConfirmedPage() {
               No upcoming confirmed bookings.
             </div>
           ) : (
-            upcomingConfirmed.map(b => (
-              <BookingCard
-                key={b.id}
-                booking={b}
-                onViewDetails={() => setViewing(b.id)}
-                onCancel={() => setCancelling(b.id)}
-                onForwardToTeam={() => setForwarding(b.id)}
-                onToast={showToast}
-                isUpcoming
-                invoiceInfo={invoiceMap[b.id] || null}
-                showInvoiceBtn={invoicingPref === 'signpost'}
-                onSubmitInvoice={() => setInvoicing(b.id)}
-              />
+            groupByTimeCategory(upcomingConfirmed).map((group, gi) => (
+              <div key={group.label}>
+                <div style={{ ...timeCategoryHeaderStyle, marginTop: gi === 0 ? 0 : 32 }}>{group.label}</div>
+                {group.items.map(b => (
+                  <BookingCard
+                    key={b.id}
+                    booking={b}
+                    onViewDetails={() => setViewing(b.id)}
+                    onCancel={() => setCancelling(b.id)}
+                    onForwardToTeam={() => setForwarding(b.id)}
+                    onToast={showToast}
+                    isUpcoming
+                    invoiceInfo={invoiceMap[b.id] || null}
+                    showInvoiceBtn={invoicingPref === 'signpost'}
+                    onSubmitInvoice={() => setInvoicing(b.id)}
+                  />
+                ))}
+              </div>
             ))
           )}
 
