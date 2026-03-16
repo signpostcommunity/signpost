@@ -17,6 +17,8 @@ interface Connection {
   other_user_id: string | null
   other_name: string
   is_inviter: boolean
+  other_location?: string
+  other_preferred_count?: number
 }
 
 interface RosterInterpreter {
@@ -137,7 +139,17 @@ export default function TrustedDeafCirclePage() {
   }
 
   const accepted = connections.filter(c => c.status === 'accepted')
-  const pendingSent = connections.filter(c => c.status === 'pending' && c.is_inviter)
+  // Deduplicate pending sent by email (keep most recent)
+  const pendingSentRaw = connections.filter(c => c.status === 'pending' && c.is_inviter)
+  const pendingSent = Object.values(
+    pendingSentRaw.reduce<Record<string, Connection>>((acc, c) => {
+      const key = c.invitee_email?.toLowerCase() || c.id
+      if (!acc[key] || new Date(c.created_at) > new Date(acc[key].created_at)) {
+        acc[key] = c
+      }
+      return acc
+    }, {})
+  )
   const pendingReceived = connections.filter(c => c.status === 'pending' && !c.is_inviter)
 
   const TIER_BADGE: Record<string, { label: string; bg: string; border: string; color: string }> = {
@@ -148,119 +160,158 @@ export default function TrustedDeafCirclePage() {
 
   return (
     <div className="dash-page-content" style={{ padding: '40px 48px', maxWidth: 900 }}>
-      {/* Title */}
-      <h1 style={{
-        fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.6rem',
-        margin: '0 0 20px', color: 'var(--text)',
-      }}>
-        Your trusted Deaf circle
-      </h1>
-
-      {/* Use case examples */}
-      <div style={{
-        borderLeft: '3px solid rgba(157,135,255,0.4)',
-        padding: '16px 20px',
-        marginBottom: 16,
-        background: 'rgba(157,135,255,0.04)',
-        borderRadius: '0 8px 8px 0',
-      }}>
-        <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.7, margin: '0 0 6px' }}>
-          Traveling for work, but don&apos;t know any strong interpreters there? See who your friends trust.
-        </p>
-        <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.7, margin: '0 0 6px' }}>
-          Giving a big presentation and wondering which voice interpreters your friends recommend?
-        </p>
-        <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.7, margin: 0 }}>
-          New to an area and need to find interpreters fast? Your circle has you covered.
-        </p>
+      {/* Title row with invite button */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 8 }}>
+        <h1 style={{
+          fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.7rem',
+          margin: 0, color: 'var(--text)',
+        }}>
+          Your trusted Deaf circle
+        </h1>
+        <button
+          onClick={() => setShowInviteModal(true)}
+          style={{
+            background: '#7b61ff',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 100,
+            padding: '9px 22px',
+            fontSize: '0.84rem',
+            fontWeight: 600,
+            fontFamily: "'DM Sans', sans-serif",
+            cursor: 'pointer',
+            transition: 'opacity 0.15s',
+            whiteSpace: 'nowrap',
+            flexShrink: 0,
+          }}
+          onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+          onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+        >
+          + Invite someone to your circle
+        </button>
       </div>
 
       {/* Subtitle */}
       <p style={{
-        color: 'var(--muted)', fontSize: '0.92rem', lineHeight: 1.6,
-        margin: '0 0 32px',
+        color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.6,
+        margin: '0 0 24px',
       }}>
-        Deaf-to-Deaf: privately share your interpreter lists with friends. Help each other find the interpreters you will love...and avoid the ones you won&apos;t.
+        Privately share interpreter lists with friends. Help each other find the interpreters you&apos;ll love — and avoid the ones you won&apos;t.
       </p>
 
-      {/* Invite button */}
-      <button
-        onClick={() => setShowInviteModal(true)}
-        style={{
-          background: '#9d87ff',
-          color: '#fff',
-          border: 'none',
-          borderRadius: 'var(--radius-sm)',
-          padding: '10px 24px',
-          fontSize: '0.9rem',
-          fontWeight: 600,
-          fontFamily: "'DM Sans', sans-serif",
-          cursor: 'pointer',
-          marginBottom: 36,
-          transition: 'opacity 0.15s',
-        }}
-        onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
-        onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-      >
-        Invite someone to your Deaf circle
-      </button>
+      {/* Scenario cards — 3-column grid */}
+      <div className="circle-scenario-grid" style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: 12,
+        marginBottom: 36,
+      }}>
+        {[
+          "Traveling for work, but don\u2019t know any strong interpreters there? See who your friends trust.",
+          "Giving a big presentation and wondering which voice interpreters your friends recommend?",
+          "New to an area and need to find interpreters fast? Your circle has you covered.",
+        ].map((text, idx) => (
+          <div key={idx} style={{
+            background: '#16161f',
+            borderLeft: '3px solid #7b61ff',
+            borderRadius: '0 8px 8px 0',
+            padding: '16px 20px',
+            fontSize: '0.875rem',
+            color: '#b0b8c8',
+            lineHeight: 1.6,
+          }}>
+            {text}
+          </div>
+        ))}
+      </div>
 
       {loading ? (
         <p style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>Loading...</p>
       ) : (
         <>
-          {/* Your circle (accepted) */}
+          {/* YOUR CIRCLE section */}
           <section style={{ marginBottom: 40 }}>
             <h2 style={{
-              fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem',
-              margin: '0 0 16px', color: 'var(--text)',
+              fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem',
+              color: 'var(--muted)', margin: '0 0 14px', textTransform: 'uppercase',
+              letterSpacing: '0.1em',
             }}>
-              Your circle
+              YOUR CIRCLE {accepted.length > 0 && `(${accepted.length})`}
             </h2>
             {accepted.length === 0 ? (
-              <p style={{ color: 'var(--muted)', fontSize: '0.88rem' }}>
-                No connections yet. Invite a friend to get started.
-              </p>
+              <div style={{
+                background: 'var(--card-bg)', border: '1px solid var(--border)',
+                borderRadius: 12, padding: '32px 24px', textAlign: 'center',
+              }}>
+                <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: '0 0 16px' }}>
+                  No connections yet. Invite a friend to get started.
+                </p>
+                <button
+                  onClick={() => setShowInviteModal(true)}
+                  style={{
+                    background: '#7b61ff', color: '#fff', border: 'none',
+                    borderRadius: 100, padding: '9px 22px', fontSize: '0.84rem',
+                    fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                  }}
+                >
+                  + Invite someone
+                </button>
+              </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div className="circle-cards-grid" style={{
+                display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16,
+              }}>
                 {accepted.map(c => (
                   <div key={c.id} style={{
-                    background: 'var(--surface)',
+                    background: 'var(--card-bg)',
                     border: '1px solid var(--border)',
-                    borderRadius: 'var(--radius-sm)',
-                    padding: '16px 20px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 12,
+                    borderRadius: 12,
+                    padding: 20,
                   }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
                       <div style={{
-                        width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
-                        background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
+                        width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
+                        background: 'linear-gradient(135deg, #9d87ff, #7b61ff)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.75rem', color: '#fff',
+                        fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.82rem', color: '#fff',
                       }}>
                         {c.other_name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()}
                       </div>
-                      <span style={{ fontWeight: 600, fontSize: '0.92rem' }}>{c.other_name}</span>
+                      <div>
+                        <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '1rem', color: 'var(--text)' }}>
+                          {c.other_name}
+                        </div>
+                        {c.other_location && (
+                          <div style={{ fontSize: '0.81rem', color: 'var(--muted)', marginTop: 2 }}>
+                            {c.other_location}
+                          </div>
+                        )}
+                        {c.other_preferred_count != null && (
+                          <div style={{ fontSize: '0.81rem', color: 'var(--muted)', marginTop: 2 }}>
+                            {c.other_preferred_count} preferred interpreter{c.other_preferred_count !== 1 ? 's' : ''}
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <button
                       onClick={() => c.other_user_id && handleViewList(c.other_user_id, c.other_name)}
                       disabled={!c.other_user_id}
                       style={{
-                        background: 'rgba(157,135,255,0.1)',
-                        border: '1px solid rgba(157,135,255,0.3)',
-                        borderRadius: 'var(--radius-sm)',
-                        padding: '7px 16px',
+                        background: 'none',
+                        border: '1px solid rgba(123,97,255,0.35)',
+                        borderRadius: 8,
+                        padding: '8px 16px',
                         fontSize: '0.82rem',
                         fontWeight: 600,
                         color: '#9d87ff',
                         cursor: c.other_user_id ? 'pointer' : 'not-allowed',
                         fontFamily: "'DM Sans', sans-serif",
-                        transition: 'opacity 0.15s',
+                        transition: 'background 0.15s, border-color 0.15s',
                         opacity: c.other_user_id ? 1 : 0.5,
+                        width: '100%',
                       }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(123,97,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(123,97,255,0.5)' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'none'; e.currentTarget.style.borderColor = 'rgba(123,97,255,0.35)' }}
                     >
                       View their list
                     </button>
@@ -270,63 +321,57 @@ export default function TrustedDeafCirclePage() {
             )}
           </section>
 
-          {/* Pending invites */}
+          {/* PENDING INVITES section */}
           {(pendingSent.length > 0 || pendingReceived.length > 0) && (
             <section>
               <h2 style={{
-                fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem',
-                margin: '0 0 16px', color: 'var(--text)',
+                fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem',
+                color: 'var(--muted)', margin: '0 0 14px', textTransform: 'uppercase',
+                letterSpacing: '0.1em',
               }}>
-                Pending invites
+                PENDING INVITES
               </h2>
 
               {/* Received */}
               {pendingReceived.length > 0 && (
-                <div style={{ marginBottom: 20 }}>
+                <div style={{ marginBottom: 16 }}>
                   <h3 style={{
-                    fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem',
-                    color: 'var(--muted)', margin: '0 0 10px', textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
+                    fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.78rem',
+                    color: 'var(--muted)', margin: '0 0 8px',
                   }}>
                     Received
                   </h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {pendingReceived.map(c => (
                       <div key={c.id} style={{
-                        background: 'var(--surface)',
+                        background: 'var(--card-bg)',
                         border: '1px solid var(--border)',
-                        borderRadius: 'var(--radius-sm)',
-                        padding: '16px 20px',
+                        borderRadius: 10,
+                        padding: '14px 20px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         gap: 12,
                         flexWrap: 'wrap',
                       }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                           <div style={{
-                            width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+                            width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
                             background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.75rem', color: '#fff',
+                            fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.68rem', color: '#fff',
                           }}>
                             {c.other_name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()}
                           </div>
-                          <span style={{ fontWeight: 600, fontSize: '0.92rem' }}>{c.other_name}</span>
+                          <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{c.other_name}</span>
                         </div>
                         <div style={{ display: 'flex', gap: 8 }}>
                           <button
                             onClick={() => handleRespond(c.id, 'accept')}
                             style={{
-                              background: '#9d87ff',
-                              color: '#fff',
-                              border: 'none',
-                              borderRadius: 'var(--radius-sm)',
-                              padding: '7px 18px',
-                              fontSize: '0.82rem',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              fontFamily: "'DM Sans', sans-serif",
+                              background: '#7b61ff', color: '#fff', border: 'none',
+                              borderRadius: 8, padding: '7px 18px', fontSize: '0.82rem',
+                              fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
                             }}
                           >
                             Accept
@@ -334,15 +379,10 @@ export default function TrustedDeafCirclePage() {
                           <button
                             onClick={() => handleRespond(c.id, 'decline')}
                             style={{
-                              background: 'transparent',
-                              color: 'var(--muted)',
-                              border: '1px solid var(--border)',
-                              borderRadius: 'var(--radius-sm)',
-                              padding: '7px 18px',
-                              fontSize: '0.82rem',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              fontFamily: "'DM Sans', sans-serif",
+                              background: 'transparent', color: 'var(--muted)',
+                              border: '1px solid var(--border)', borderRadius: 8,
+                              padding: '7px 18px', fontSize: '0.82rem', fontWeight: 600,
+                              cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
                             }}
                           >
                             Decline
@@ -358,35 +398,63 @@ export default function TrustedDeafCirclePage() {
               {pendingSent.length > 0 && (
                 <div>
                   <h3 style={{
-                    fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem',
-                    color: 'var(--muted)', margin: '0 0 10px', textTransform: 'uppercase',
-                    letterSpacing: '0.1em',
+                    fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.78rem',
+                    color: 'var(--muted)', margin: '0 0 8px',
                   }}>
                     Sent
                   </h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {pendingSent.map(c => (
                       <div key={c.id} style={{
-                        background: 'var(--surface)',
+                        background: 'var(--card-bg)',
                         border: '1px solid var(--border)',
-                        borderRadius: 'var(--radius-sm)',
-                        padding: '16px 20px',
+                        borderRadius: 10,
+                        padding: '12px 20px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         gap: 12,
                       }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <span style={{ fontWeight: 600, fontSize: '0.92rem' }}>{c.invitee_email}</span>
-                        </div>
-                        <span style={{
-                          fontSize: '0.78rem', color: 'var(--muted)',
-                          background: 'rgba(184,191,207,0.1)',
-                          padding: '4px 12px',
-                          borderRadius: 12,
-                        }}>
-                          Pending
+                        <span style={{ fontWeight: 500, fontSize: '0.88rem', color: 'var(--text)' }}>
+                          {c.invitee_email}
                         </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <span style={{
+                            fontSize: '0.75rem', color: 'var(--muted)',
+                            border: '1px solid var(--border)',
+                            padding: '3px 10px', borderRadius: 100,
+                          }}>
+                            Pending
+                          </span>
+                          <button
+                            onClick={() => {
+                              // Re-send invite by calling the same invite endpoint
+                              fetch('/api/dhh/circle/invite', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ email: c.invitee_email }),
+                              }).then(() => showToast('Invite resent'))
+                                .catch(() => showToast('Failed to resend'))
+                            }}
+                            style={{
+                              background: 'none', border: 'none', color: '#9d87ff',
+                              fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
+                              fontFamily: "'DM Sans', sans-serif", padding: 0,
+                            }}
+                          >
+                            Resend
+                          </button>
+                          <button
+                            onClick={() => handleRespond(c.id, 'decline')}
+                            style={{
+                              background: 'none', border: 'none', color: 'var(--muted)',
+                              fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
+                              fontFamily: "'DM Sans', sans-serif", padding: 0,
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -432,6 +500,14 @@ export default function TrustedDeafCirclePage() {
           {toast}
         </div>
       )}
+
+      <style>{`
+        @media (max-width: 768px) {
+          .circle-scenario-grid { grid-template-columns: 1fr !important; }
+          .circle-cards-grid { grid-template-columns: 1fr !important; }
+          .dash-page-content { padding: 24px 16px !important; }
+        }
+      `}</style>
     </div>
   )
 }

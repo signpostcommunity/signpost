@@ -33,30 +33,47 @@ export async function GET() {
       if (c.invitee_id) userIds.add(c.invitee_id)
     }
 
-    // Look up names from deaf_profiles
-    let nameMap: Record<string, { name: string; email: string }> = {}
+    // Look up names + location from deaf_profiles
+    let profileMap: Record<string, { name: string; email: string; location: string }> = {}
     if (userIds.size > 0) {
       const { data: profiles } = await admin
         .from('deaf_profiles')
-        .select('user_id, first_name, last_name, name, email')
+        .select('user_id, first_name, last_name, name, email, city, state')
         .in('user_id', Array.from(userIds))
 
       for (const p of profiles || []) {
         const displayName = p.first_name
           ? `${p.first_name} ${p.last_name || ''}`.trim()
           : p.name || 'User'
-        nameMap[p.user_id] = { name: displayName, email: p.email || '' }
+        const location = [p.city, p.state].filter(Boolean).join(', ')
+        profileMap[p.user_id] = { name: displayName, email: p.email || '', location }
       }
     }
 
-    // Enrich connections with names
+    // Count preferred interpreters per user from deaf_roster
+    const preferredCounts: Record<string, number> = {}
+    if (userIds.size > 0) {
+      const { data: rosterCounts } = await admin
+        .from('deaf_roster')
+        .select('deaf_user_id, tier')
+        .in('deaf_user_id', Array.from(userIds))
+        .eq('tier', 'preferred')
+
+      for (const r of rosterCounts || []) {
+        preferredCounts[r.deaf_user_id] = (preferredCounts[r.deaf_user_id] || 0) + 1
+      }
+    }
+
+    // Enrich connections with names, location, preferred count
     const enriched = (connections || []).map(c => {
       const otherUserId = c.inviter_id === user.id ? c.invitee_id : c.inviter_id
-      const otherProfile = otherUserId ? nameMap[otherUserId] : null
+      const otherProfile = otherUserId ? profileMap[otherUserId] : null
       return {
         ...c,
         other_user_id: otherUserId,
         other_name: otherProfile?.name || c.invitee_email,
+        other_location: otherProfile?.location || null,
+        other_preferred_count: otherUserId ? (preferredCounts[otherUserId] || 0) : null,
         is_inviter: c.inviter_id === user.id,
       }
     })
