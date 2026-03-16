@@ -24,10 +24,19 @@ const NAV: NavGroup[] = [
     section: 'Overview',
     items: [
       {
-        label: 'My Interpreters',
+        label: 'Dashboard',
         href: '/dhh/dashboard',
-        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 14s-5.5-3.5-5.5-7A3.5 3.5 0 0 1 8 4.5 3.5 3.5 0 0 1 13.5 7C13.5 10.5 8 14 8 14z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
-        badgeKey: 'roster',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8.5l6-5.5 6 5.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/><path d="M3.5 7.5V13a1 1 0 001 1h7a1 1 0 001-1V7.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+      },
+    ],
+  },
+  {
+    section: 'Requests',
+    items: [
+      {
+        label: 'My Requests',
+        href: '/dhh/dashboard/requests',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M5 6h6M5 8.5h6M5 11h4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>,
       },
       {
         label: 'New Request',
@@ -35,16 +44,27 @@ const NAV: NavGroup[] = [
         icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
       },
       {
-        label: 'My Requests',
-        href: '/dhh/dashboard/requests',
-        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M5 6h6M5 8.5h6M5 11h4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>,
-      },
-      {
         label: 'Messages & Notifications',
         href: '/dhh/dashboard/inbox',
         icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M2 5l6 4.5L14 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
         badgeKey: 'inbox',
         redDot: true,
+      },
+    ],
+  },
+  {
+    section: 'My Interpreters',
+    items: [
+      {
+        label: 'My Interpreters',
+        href: '/dhh/dashboard/interpreters',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 14s-5.5-3.5-5.5-7A3.5 3.5 0 0 1 8 4.5 3.5 3.5 0 0 1 13.5 7C13.5 10.5 8 14 8 14z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+        badgeKey: 'roster',
+      },
+      {
+        label: 'Trusted Deaf Circle',
+        href: '/dhh/dashboard/circle',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.3"/><circle cx="5.5" cy="7" r="1.5" stroke="currentColor" strokeWidth="1.1"/><circle cx="10.5" cy="7" r="1.5" stroke="currentColor" strokeWidth="1.1"/><path d="M4 11c0-1 .7-1.8 1.5-1.8S7 10 7 11M9 11c0-1 .7-1.8 1.5-1.8S12 10 12 11" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>,
       },
     ],
   },
@@ -61,11 +81,6 @@ const NAV: NavGroup[] = [
         href: '/dhh/dashboard/requesters',
         icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="5.5" cy="5" r="2" stroke="currentColor" strokeWidth="1.3"/><circle cx="10.5" cy="5" r="2" stroke="currentColor" strokeWidth="1.3"/><path d="M1 14c0-2.76 2.02-5 4.5-5M8.5 14c0-2.76 2.02-5 4.5-5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
         badgeKey: 'requesters',
-      },
-      {
-        label: 'Trusted Deaf Circle',
-        href: '/dhh/dashboard/circle',
-        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.3"/><circle cx="5.5" cy="7" r="1.5" stroke="currentColor" strokeWidth="1.1"/><circle cx="10.5" cy="7" r="1.5" stroke="currentColor" strokeWidth="1.1"/><path d="M4 11c0-1 .7-1.8 1.5-1.8S7 10 7 11M9 11c0-1 .7-1.8 1.5-1.8S12 10 12 11" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>,
       },
       {
         label: 'Browse Interpreter Directory',
