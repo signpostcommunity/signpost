@@ -37,7 +37,7 @@ export async function seedInterpreterData(interpreterProfileId: string): Promise
       // Open inquiries (recipient status: sent)
       {
         requester_id: null,
-        title: 'Staff Meeting Interpretation',
+        title: 'Staff Meeting',
         requester_name: 'Lakewood Community College — HR Dept',
         specialization: 'Academic / Education',
         date: daysFromNow(3),
@@ -55,7 +55,7 @@ export async function seedInterpreterData(interpreterProfileId: string): Promise
       },
       {
         requester_id: null,
-        title: 'Therapy Session — Ongoing Client',
+        title: 'Therapy Session',
         requester_name: 'Dr. Anika Patel, PsyD',
         specialization: 'Mental Health',
         date: daysFromNow(5),
@@ -92,7 +92,7 @@ export async function seedInterpreterData(interpreterProfileId: string): Promise
       // Completed (past) bookings
       {
         requester_id: null,
-        title: 'Annual Employee Benefits Meeting',
+        title: 'Benefits Meeting',
         requester_name: 'Lakewood Community College — HR Dept',
         specialization: 'Workplace & Professional',
         date: '2026-02-28',
@@ -147,7 +147,7 @@ export async function seedInterpreterData(interpreterProfileId: string): Promise
       },
       {
         requester_id: null,
-        title: 'Workplace Safety Training',
+        title: 'Safety Training',
         requester_name: 'Pacific Northwest Construction — Safety Office',
         specialization: 'Technical / IT',
         date: daysFromNow(4),
@@ -165,7 +165,7 @@ export async function seedInterpreterData(interpreterProfileId: string): Promise
       },
       {
         requester_id: null,
-        title: 'Deaf Community Leadership Meeting',
+        title: 'Community Leadership',
         requester_name: 'Washington State Deaf Association',
         specialization: 'Conference / Events',
         date: daysFromNow(6),
@@ -243,7 +243,7 @@ export async function seedInterpreterData(interpreterProfileId: string): Promise
       {
         interpreter_id: interpreterProfileId,
         sender_id: null,
-        booking_id: bookingIdByTitle['Therapy Session — Ongoing Client'] || null,
+        booking_id: bookingIdByTitle['Therapy Session'] || null,
         sender_name: 'Dr. Anika Patel, PsyD',
         subject: 'Re: Therapy Session Scheduling',
         preview: 'Thanks for confirming. Just a heads up — the client may want to discuss a difficult family situation...',

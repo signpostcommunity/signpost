@@ -8,6 +8,7 @@ import { BetaBanner, PageHeader, DashMobileStyles } from '@/components/dashboard
 import RequestTracker from '@/components/dashboard/dhh/RequestTracker'
 import InterpreterRating from '@/components/dashboard/dhh/InterpreterRating'
 import { createClient } from '@/lib/supabase/client'
+import BookingFilterBar, { filterBySearch, filterByDateRange, sortSoonestFirst } from '@/components/dashboard/shared/BookingFilterBar'
 
 interface Recipient {
   id: string
@@ -364,6 +365,9 @@ export default function DhhRequestsListPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [ratedInterpreters, setRatedInterpreters] = useState<Set<string>>(new Set())
   const [activeTab, setActiveTab] = useState<Tab>('professional')
+  const [search, setSearch] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
 
   const fetchRequests = useCallback(async () => {
     try {
@@ -403,10 +407,16 @@ export default function DhhRequestsListPage() {
     setRatedInterpreters(prev => new Set(prev).add(key))
   }
 
-  // Filter bookings by tab
+  // Filter bookings by tab, then apply search + date filters + sort soonest-first
   const professionalBookings = bookings.filter(b => b.request_type === 'professional' || (!b.request_type && !b.recipients?.length))
   const personalBookings = bookings.filter(b => b.request_type === 'personal')
-  const activeBookings = activeTab === 'professional' ? professionalBookings : personalBookings
+  const tabBookings = activeTab === 'professional' ? professionalBookings : personalBookings
+  const activeBookings = sortSoonestFirst(
+    filterByDateRange(
+      filterBySearch(tabBookings, search, ['title', 'location', 'description', 'notes']),
+      dateFrom, dateTo
+    )
+  )
 
   const tabStyle = (tab: Tab): React.CSSProperties => ({
     background: 'none', border: 'none', cursor: 'pointer',
@@ -433,6 +443,12 @@ export default function DhhRequestsListPage() {
           My personal requests
         </button>
       </div>
+
+      <BookingFilterBar
+        search={search} onSearchChange={setSearch}
+        dateFrom={dateFrom} onDateFromChange={setDateFrom}
+        dateTo={dateTo} onDateToChange={setDateTo}
+      />
 
       {loading ? (
         <div style={{ padding: '40px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem' }}>

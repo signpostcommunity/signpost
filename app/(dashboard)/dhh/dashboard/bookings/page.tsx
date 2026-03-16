@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { BetaBanner, PageHeader, SectionLabel, DemoBadge, GhostButton, Avatar, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import VideoRecorder from '@/components/ui/VideoRecorder'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
+import BookingFilterBar, { filterBySearch, filterByDateRange, sortSoonestFirst } from '@/components/dashboard/shared/BookingFilterBar'
 
 /* ── Types ── */
 
@@ -645,6 +646,9 @@ export default function DhhBookingsPage() {
   const [toast, setToast] = useState<string | null>(null)
   const [contextVideoBookingId, setContextVideoBookingId] = useState<string | null>(null)
   const [videoRecorderOpen, setVideoRecorderOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
 
   function showToast(msg: string) {
     setToast(msg)
@@ -735,6 +739,9 @@ export default function DhhBookingsPage() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
+  const searchFields: (keyof MockBooking)[] = ['title', 'requester_name', 'location', 'specialization']
+  const filteredSelf = sortSoonestFirst(filterByDateRange(filterBySearch(selfBookings, search, searchFields), dateFrom, dateTo))
+  const filteredOnBehalf = sortSoonestFirst(filterByDateRange(filterBySearch(onBehalfBookings, search, searchFields), dateFrom, dateTo))
   const allBookings = [...selfBookings, ...onBehalfBookings]
   const viewingBooking = allBookings.find(b => b.id === viewing)
 
@@ -742,6 +749,12 @@ export default function DhhBookingsPage() {
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
 
       <PageHeader title="My Bookings" subtitle="Appointments scheduled for you, requested by you or on your behalf." />
+
+      <BookingFilterBar
+        search={search} onSearchChange={setSearch}
+        dateFrom={dateFrom} onDateFromChange={setDateFrom}
+        dateTo={dateTo} onDateToChange={setDateTo}
+      />
 
       {loading ? (
         <div style={{ padding: '40px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem' }}>
@@ -751,10 +764,10 @@ export default function DhhBookingsPage() {
         <>
           {/* Section A: Requests Made by You */}
           <SectionLabel>Requests Made by You</SectionLabel>
-          {selfBookings.length === 0 ? (
+          {filteredSelf.length === 0 ? (
             <EmptyState />
           ) : (
-            selfBookings.map(b => (
+            filteredSelf.map(b => (
               <DhhBookingCard
                 key={b.id}
                 booking={b}
@@ -771,10 +784,10 @@ export default function DhhBookingsPage() {
 
           {/* Section B: Requests Made on Your Behalf */}
           <SectionLabel>Requests Made on Your Behalf</SectionLabel>
-          {onBehalfBookings.length === 0 ? (
+          {filteredOnBehalf.length === 0 ? (
             <EmptyState />
           ) : (
-            onBehalfBookings.map(b => (
+            filteredOnBehalf.map(b => (
               <DhhBookingCard
                 key={b.id}
                 booking={b}
