@@ -6,8 +6,8 @@ import {
   StepWrapper, FormSection, SectionTitle, FormField, FieldLabel,
   FormNav,
 } from './FormFields'
-import { getVideoEmbedUrl, isValidVideoUrl } from '@/lib/videoUtils'
-import VideoRecorder from '@/components/ui/VideoRecorder'
+import { getVideoEmbedUrl } from '@/lib/videoUtils'
+import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
 
 const inputStyle: React.CSSProperties = {
   background: 'var(--surface2)',
@@ -37,7 +37,7 @@ export default function Step4BioVideo({ onBack, onContinue }: {
 }) {
   const { formData, updateField, saveDraft } = useForm()
   const [videoUrlError, setVideoUrlError] = useState<string | null>(null)
-  const [videoRecorderOpen, setVideoRecorderOpen] = useState(false)
+  // videoRecorderOpen removed — using inline capture
 
   return (
     <StepWrapper>
@@ -108,9 +108,9 @@ export default function Step4BioVideo({ onBack, onContinue }: {
 
       {/* Introduction Video */}
       <FormSection>
-        <SectionTitle>Introduction Video</SectionTitle>
+        <SectionTitle>INTRO VIDEO</SectionTitle>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
-          Record, upload, or paste a link to a short video introduction. This is the first thing Deaf clients will see.
+          Record a short intro video so clients can see your signing style before they request you.
         </p>
 
         {formData.videoUrl ? (
@@ -129,7 +129,7 @@ export default function Step4BioVideo({ onBack, onContinue }: {
             <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
               <button
                 type="button"
-                onClick={() => setVideoRecorderOpen(true)}
+                onClick={() => updateField('videoUrl', '')}
                 style={{
                   background: 'none', border: '1px solid rgba(0,229,255,0.4)',
                   borderRadius: 8, padding: '8px 16px', color: 'var(--accent)',
@@ -152,31 +152,14 @@ export default function Step4BioVideo({ onBack, onContinue }: {
             </div>
           </div>
         ) : (
-          <button
-            type="button"
-            onClick={() => setVideoRecorderOpen(true)}
-            style={{
-              background: 'none', border: '1px dashed rgba(0,229,255,0.4)',
-              borderRadius: 'var(--radius-sm)', padding: '24px 20px',
-              color: 'var(--accent)', fontFamily: "'DM Sans', sans-serif",
-              fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer',
-              width: '100%',
+          <InlineVideoCapture
+            onVideoSaved={(url) => {
+              updateField('videoUrl', url)
             }}
-          >
-            + Record or add a video
-          </button>
+            accentColor="#00e5ff"
+            storageBucket="interpreter-videos"
+          />
         )}
-
-        <VideoRecorder
-          isOpen={videoRecorderOpen}
-          onClose={() => setVideoRecorderOpen(false)}
-          onVideoSaved={(url) => {
-            updateField('videoUrl', url)
-            setVideoRecorderOpen(false)
-          }}
-          accentColor="#00e5ff"
-          storageBucket="interpreter-videos"
-        />
       </FormSection>
 
       {/* Video Description */}

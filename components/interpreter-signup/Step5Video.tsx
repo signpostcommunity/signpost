@@ -7,7 +7,7 @@ import {
   StepWrapper, FormSection, SectionTitle, FormField, FieldLabel,
   UrlInput, TextareaInput, FormNav,
 } from './FormFields'
-import VideoRecorder from '@/components/ui/VideoRecorder'
+import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
 
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024 // 5MB
 const MAX_VIDEO_SIZE = 200 * 1024 * 1024 // 200MB
@@ -34,7 +34,7 @@ export default function Step5Video({ onBack, onContinue }: {
   const videoInputRef = useRef<HTMLInputElement>(null)
   const [videoUploading, setVideoUploading] = useState(false)
   const [videoError, setVideoError] = useState('')
-  const [videoRecorderOpen, setVideoRecorderOpen] = useState(false)
+  // videoRecorderOpen removed — using inline capture
 
   async function getUserId() {
     const { data: { user } } = await supabase.auth.getUser()
@@ -196,9 +196,9 @@ export default function Step5Video({ onBack, onContinue }: {
 
       {/* Introduction Video */}
       <FormSection>
-        <SectionTitle>Introduction Video</SectionTitle>
+        <SectionTitle>INTRO VIDEO</SectionTitle>
         <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: 20 }}>
-          Record, upload, or paste a link to a short video (about 90 seconds) of yourself. This is the first thing Deaf clients will see. Show them your signing style, your languages, and your personality.
+          Record a short intro video so clients can see your signing style before they request you.
         </p>
 
         {formData.videoUrl ? (
@@ -218,7 +218,7 @@ export default function Step5Video({ onBack, onContinue }: {
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
               <button
                 type="button"
-                onClick={() => setVideoRecorderOpen(true)}
+                onClick={() => updateField('videoUrl', '')}
                 style={{
                   background: 'none', border: '1px solid rgba(0,229,255,0.4)',
                   borderRadius: 8, padding: '8px 16px', color: 'var(--accent)',
@@ -241,31 +241,14 @@ export default function Step5Video({ onBack, onContinue }: {
             </div>
           </div>
         ) : (
-          <button
-            type="button"
-            onClick={() => setVideoRecorderOpen(true)}
-            style={{
-              background: 'none', border: '1px dashed rgba(0,229,255,0.4)',
-              borderRadius: 'var(--radius)', padding: '36px 20px',
-              color: 'var(--accent)', fontFamily: "'DM Sans', sans-serif",
-              fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer',
-              width: '100%',
+          <InlineVideoCapture
+            onVideoSaved={(url) => {
+              updateField('videoUrl', url)
             }}
-          >
-            + Record or add a video
-          </button>
+            accentColor="#00e5ff"
+            storageBucket="interpreter-videos"
+          />
         )}
-
-        <VideoRecorder
-          isOpen={videoRecorderOpen}
-          onClose={() => setVideoRecorderOpen(false)}
-          onVideoSaved={(url) => {
-            updateField('videoUrl', url)
-            setVideoRecorderOpen(false)
-          }}
-          accentColor="#00e5ff"
-          storageBucket="interpreter-videos"
-        />
       </FormSection>
 
       {/* Video Description */}

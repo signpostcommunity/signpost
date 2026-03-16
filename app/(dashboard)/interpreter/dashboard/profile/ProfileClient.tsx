@@ -11,7 +11,7 @@ import {
 } from '@/lib/data/languages'
 import { SPECIALIZATION_CATEGORIES, SPECIALIZED_SKILLS } from '@/lib/constants/specializations'
 import { getVideoEmbedUrl, isValidVideoUrl } from '@/lib/videoUtils'
-import VideoRecorder from '@/components/ui/VideoRecorder'
+import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
 import LocationPicker from '@/components/shared/LocationPicker'
 import { generateSlug, validateSlug } from '@/lib/slugUtils'
 
@@ -404,7 +404,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
     sort_order: number
   }
   const [interpreterVideos, setInterpreterVideos] = useState<InterpreterVideo[]>([])
-  const [videoRecorderOpen, setVideoRecorderOpen] = useState(false)
+  // videoRecorderOpen removed — using inline capture
   const [newVideoLanguage, setNewVideoLanguage] = useState('')
   const [newVideoLabel, setNewVideoLabel] = useState('')
   const [pendingVideoUrl, setPendingVideoUrl] = useState('')
@@ -1408,9 +1408,9 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
             </div>
           </div>
 
-          <div style={sectionTitleStyle}>Introduction Videos</div>
+          <div style={sectionTitleStyle}>INTRO VIDEO</div>
           <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
-            Record or add videos for each language you interpret. Deaf clients see these on your profile.
+            Record a short intro video so clients can see your signing style before they request you.
           </p>
 
           {/* Existing videos */}
@@ -1523,37 +1523,20 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
             </div>
           )}
 
-          {/* Add video button */}
+          {/* Add video — inline capture */}
           {!showVideoForm && (
-            <button
-              onClick={() => setVideoRecorderOpen(true)}
-              style={{
-                background: 'none', border: '1px dashed rgba(0,229,255,0.4)',
-                borderRadius: 'var(--radius-sm)', padding: '12px 20px',
-                color: 'var(--accent)', fontFamily: "'DM Sans', sans-serif",
-                fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer',
-                width: '100%', transition: 'all 0.15s',
+            <InlineVideoCapture
+              onVideoSaved={(url, source) => {
+                setPendingVideoUrl(url)
+                setPendingVideoSource(source)
+                setShowVideoForm(true)
+                if (signLangs.length > 0) setNewVideoLanguage(signLangs[0])
               }}
-            >
-              + Add a video
-            </button>
+              accentColor="#00e5ff"
+              storageBucket="interpreter-videos"
+              storagePath={p.id ? `${p.id}` : undefined}
+            />
           )}
-
-          <VideoRecorder
-            isOpen={videoRecorderOpen}
-            onClose={() => setVideoRecorderOpen(false)}
-            onVideoSaved={(url, source) => {
-              setPendingVideoUrl(url)
-              setPendingVideoSource(source)
-              setVideoRecorderOpen(false)
-              setShowVideoForm(true)
-              // Default to first sign language
-              if (signLangs.length > 0) setNewVideoLanguage(signLangs[0])
-            }}
-            accentColor="#00e5ff"
-            storageBucket="interpreter-videos"
-            storagePath={p.id ? `${p.id}` : undefined}
-          />
 
           <SaveButton saving={saving} onClick={() => {
             saveFields({ bio, bio_specializations: bioSpecializations, bio_extra: bioExtra })

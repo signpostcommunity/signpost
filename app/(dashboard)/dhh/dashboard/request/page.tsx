@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import InterpreterPicker from '@/components/dhh/InterpreterPicker'
 import CommPrefsDisplay from '@/components/dhh/CommPrefsDisplay'
 import { PageHeader, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
-import VideoRecorder from '@/components/ui/VideoRecorder'
+import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
 
 const TIMEZONES = [
@@ -81,7 +81,7 @@ export default function DhhRequestPage() {
   const [description, setDescription] = useState('')
   const [contextVideoUrl, setContextVideoUrl] = useState('')
   const [contextVideoVisible, setContextVideoVisible] = useState(true)
-  const [videoRecorderOpen, setVideoRecorderOpen] = useState(false)
+  // videoRecorderOpen state removed — inline capture is always visible
 
   useEffect(() => {
     async function init() {
@@ -347,7 +347,12 @@ export default function DhhRequestPage() {
 
         {/* Section 5: Context Video */}
         <div style={{ marginBottom: 32 }}>
-          <h3 style={sectionHeadingStyle}>Add a video for context (optional)</h3>
+          <div style={{
+            fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em',
+            textTransform: 'uppercase', color: '#9d87ff', marginBottom: 8,
+          }}>
+            ADD A VIDEO FOR CONTEXT (OPTIONAL)
+          </div>
           <p style={{ fontSize: '0.84rem', color: 'var(--muted)', marginBottom: 14, lineHeight: 1.55 }}>
             Sign your request details instead of typing them.
           </p>
@@ -365,33 +370,30 @@ export default function DhhRequestPage() {
                     style={{ borderRadius: 12, border: 'none', marginBottom: 12 }} />
                 )
               })()}
-              <button
-                type="button"
-                onClick={() => setContextVideoUrl('')}
-                style={{
-                  background: 'none', border: '1px solid var(--border)',
-                  borderRadius: 'var(--radius-sm)', padding: '7px 16px',
-                  fontSize: '0.82rem', color: 'var(--muted)',
-                  cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
-                }}
-              >
-                Remove video
-              </button>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => setContextVideoUrl('')}
+                  style={{
+                    background: 'none', border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-sm)', padding: '7px 16px',
+                    fontSize: '0.82rem', color: 'var(--muted)',
+                    cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                  }}
+                >
+                  Remove video
+                </button>
+              </div>
             </div>
           ) : (
-            <button
-              type="button"
-              onClick={() => setVideoRecorderOpen(true)}
-              style={{
-                background: 'none', border: '1px dashed rgba(157,135,255,0.4)',
-                borderRadius: 'var(--radius-sm)', padding: '16px',
-                color: '#9d87ff', fontFamily: "'DM Sans', sans-serif",
-                fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
-                width: '100%',
+            <InlineVideoCapture
+              onVideoSaved={(url) => {
+                setContextVideoUrl(url)
               }}
-            >
-              Record or add a video
-            </button>
+              accentColor="#7b61ff"
+              storageBucket="videos"
+              storagePath="context"
+            />
           )}
 
           {contextVideoUrl && (
@@ -427,18 +429,6 @@ export default function DhhRequestPage() {
               </button>
             </div>
           )}
-
-          <VideoRecorder
-            isOpen={videoRecorderOpen}
-            onClose={() => setVideoRecorderOpen(false)}
-            onVideoSaved={(url) => {
-              setContextVideoUrl(url)
-              setVideoRecorderOpen(false)
-            }}
-            accentColor="#7b61ff"
-            storageBucket="videos"
-            storagePath="context"
-          />
         </div>
 
         {/* Section 6: Communication Preferences */}
