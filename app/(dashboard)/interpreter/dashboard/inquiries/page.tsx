@@ -568,7 +568,7 @@ export default function InquiriesPage() {
       if (bookingIds.length > 0) {
         const { data: bookingsData, error: bookingsErr } = await supabase
           .from('bookings')
-          .select('id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed, created_at, request_type, dhh_client_id, context_video_url')
+          .select('id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed, created_at, request_type, context_video_url')
           .in('id', bookingIds)
 
         if (bookingsErr) {
@@ -594,18 +594,20 @@ export default function InquiriesPage() {
           } as unknown as Booking
         })
 
-      // For personal requests, fetch D/HH client names
+      // For personal requests, fetch D/HH client names via booking_dhh_clients join table
       const personalBookings = mapped.filter(b => b.request_type === 'personal')
       if (personalBookings.length > 0) {
-        const dhhClientIds = personalBookings
-          .map(b => (b as unknown as Record<string, unknown>).dhh_client_id as string)
-          .filter(Boolean)
-        if (dhhClientIds.length > 0) {
-          const uniqueIds = [...new Set(dhhClientIds)]
+        const personalIds = personalBookings.map(b => b.id)
+        const { data: dhhLinks } = await supabase
+          .from('booking_dhh_clients')
+          .select('booking_id, dhh_user_id')
+          .in('booking_id', personalIds)
+        if (dhhLinks && dhhLinks.length > 0) {
+          const dhhClientIds = [...new Set(dhhLinks.map(l => l.dhh_user_id))]
           const { data: deafProfiles } = await supabase
             .from('deaf_profiles')
             .select('user_id, first_name, last_name, profile_video_url')
-            .in('user_id', uniqueIds)
+            .in('user_id', dhhClientIds)
           if (deafProfiles) {
             const nameMap: Record<string, string> = {}
             const videoMap: Record<string, string> = {}
@@ -613,8 +615,13 @@ export default function InquiriesPage() {
               nameMap[dp.user_id] = [dp.first_name, dp.last_name].filter(Boolean).join(' ')
               if (dp.profile_video_url) videoMap[dp.user_id] = dp.profile_video_url
             }
+            // Map booking_id → dhh_user_id for lookup
+            const bookingDhhMap: Record<string, string> = {}
+            for (const l of dhhLinks) {
+              bookingDhhMap[l.booking_id] = l.dhh_user_id
+            }
             for (const b of mapped) {
-              const clientId = (b as unknown as Record<string, unknown>).dhh_client_id as string
+              const clientId = bookingDhhMap[b.id]
               if (b.request_type === 'personal' && clientId) {
                 if (nameMap[clientId]) b.dhh_client_name = nameMap[clientId]
                 if (videoMap[clientId]) b.profile_video_url = videoMap[clientId]
