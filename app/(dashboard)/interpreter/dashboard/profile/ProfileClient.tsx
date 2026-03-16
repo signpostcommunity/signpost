@@ -862,17 +862,54 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
             </div>
           </div>
 
-          {/* ── Book Me on signpost ─────────────────────────────── */}
-          <div style={sectionTitleStyle}>Book me on signpost</div>
+          {/* ── Book Me Badges ─────────────────────────────── */}
+          <div style={sectionTitleStyle}>Book Me Badges</div>
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: 20, marginTop: -12, lineHeight: 1.5 }}>
-            Add this badge to your email signature, website, or LinkedIn to make it easy to book you directly.
+            Add this badge to your email signature, website, or LinkedIn to make it easy to book you directly. When someone clicks the badge, it takes them straight to your signpost profile where they can send a job request directly to you.
           </p>
           <div style={{
             background: 'var(--surface2)', border: '1px solid var(--border)',
             borderRadius: 'var(--radius-sm)', padding: '24px', marginBottom: 24,
           }}>
+            {/* ── Badge preview ── */}
+            {vanitySlug && (
+              <div style={{ marginBottom: 24 }}>
+                <div style={{
+                  background: 'var(--card-bg)', border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-sm)', padding: '20px', maxWidth: 320,
+                  display: 'flex', alignItems: 'center', gap: 14,
+                }}>
+                  {photoUrl ? (
+                    <img src={photoUrl} alt="" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                  ) : (
+                    <div style={{
+                      width: 48, height: 48, borderRadius: '50%', flexShrink: 0,
+                      background: 'linear-gradient(135deg, var(--accent), var(--accent2))',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontWeight: 700, fontSize: '1rem', color: '#000',
+                    }}>{initials}</div>
+                  )}
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)', marginBottom: 2 }}>
+                      {displayName || 'Your Name'}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: 6 }}>
+                      Sign Language Interpreter
+                    </div>
+                    <div style={{
+                      display: 'inline-block', background: 'linear-gradient(135deg, var(--accent), #00b8d4)',
+                      color: '#000', fontSize: '0.7rem', fontWeight: 700,
+                      padding: '4px 10px', borderRadius: 6, whiteSpace: 'nowrap',
+                    }}>
+                      Book me on signpost
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* ── Your link ── */}
-            <div style={{ marginBottom: 24 }}>
+            <div style={{ marginBottom: vanitySlug ? 24 : 0 }}>
               <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Your link</div>
               {vanitySlug && !editingSlug ? (
                 <div>
@@ -895,7 +932,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                         fontFamily: "'DM Sans', sans-serif",
                       }}
                     >
-                      Copy
+                      Copy link
                     </button>
                     <button
                       onClick={() => { setEditingSlug(true); setSlugDraft(vanitySlug); setSlugStatus('idle') }}
@@ -995,45 +1032,9 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
               )}
             </div>
 
-            {/* ── Badge preview ── */}
+            {/* ── Actions ── */}
             {vanitySlug && (
               <>
-                <div style={{ borderTop: '1px solid var(--border)', paddingTop: 24, marginBottom: 16 }}>
-                  <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12 }}>Badge preview</div>
-                  <div style={{
-                    background: 'var(--card-bg)', border: '1px solid var(--border)',
-                    borderRadius: 'var(--radius-sm)', padding: '20px', maxWidth: 320,
-                    display: 'flex', alignItems: 'center', gap: 14,
-                  }}>
-                    {photoUrl ? (
-                      <img src={photoUrl} alt="" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-                    ) : (
-                      <div style={{
-                        width: 48, height: 48, borderRadius: '50%', flexShrink: 0,
-                        background: 'linear-gradient(135deg, var(--accent), var(--accent2))',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontWeight: 700, fontSize: '1rem', color: '#000',
-                      }}>{initials}</div>
-                    )}
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)', marginBottom: 2 }}>
-                        {displayName || 'Your Name'}
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: 6 }}>
-                        Sign Language Interpreter
-                      </div>
-                      <div style={{
-                        display: 'inline-block', background: 'linear-gradient(135deg, var(--accent), #00b8d4)',
-                        color: '#000', fontSize: '0.7rem', fontWeight: 700,
-                        padding: '4px 10px', borderRadius: 6, whiteSpace: 'nowrap',
-                      }}>
-                        Book me on signpost
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* ── Actions ── */}
                 <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
                   <button
                     className="btn-primary"
@@ -1049,7 +1050,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                   <button
                     onClick={() => {
                       navigator.clipboard.writeText(`https://signpost.community/book/${vanitySlug}`)
-                      setToast({ message: 'Link copied!', type: 'success' })
+                      setToast({ message: 'Image link copied!', type: 'success' })
                     }}
                     style={{
                       background: 'none', border: '1px solid var(--border)',
@@ -1057,7 +1058,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                       fontSize: '0.82rem', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
                     }}
                   >
-                    Copy link
+                    Copy badge image link
                   </button>
                 </div>
 
