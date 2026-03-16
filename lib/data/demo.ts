@@ -22,7 +22,7 @@ export const DEMO_INQUIRIES = [
   },
   {
     id: 'demo-inq-2',
-    title: 'Weekly Therapy Sessions',
+    title: 'Therapy Sessions',
     from: 'Maria Chen',
     category: 'Mental Health',
     receivedDate: 'Mar 2, 2026',
@@ -41,7 +41,7 @@ export const DEMO_INQUIRIES = [
 export const DEMO_CONFIRMED = [
   {
     id: 'demo-conf-1',
-    title: 'Legal Consultation — Family Law',
+    title: 'Legal Consultation',
     client: 'Alex Rivera',
     category: 'Legal',
     date: 'Mar 15, 2026',
@@ -55,7 +55,7 @@ export const DEMO_CONFIRMED = [
   },
   {
     id: 'demo-conf-2',
-    title: 'IEP Meeting — Lincoln Elementary',
+    title: 'IEP Meeting',
     client: 'Jordan Lee',
     category: 'Education',
     date: 'Mar 18, 2026',
@@ -83,7 +83,7 @@ export const DEMO_CONFIRMED = [
   },
   {
     id: 'demo-conf-4',
-    title: 'Conference Keynote — UN Symposium',
+    title: 'UN Symposium',
     client: 'UN Office',
     category: 'Conference',
     date: 'Apr 3–5, 2026',

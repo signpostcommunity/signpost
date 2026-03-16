@@ -422,13 +422,25 @@ function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast, on
         <ReplacementAlertBanner />
       )}
 
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+      {/* Header — date-first */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
         <div>
-          <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif" }}>
+          <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <span>{formatDate(booking.date)} &middot; {formatTime(booking.time_start, booking.time_end)}</span>
+            <span style={{
+              fontSize: '0.7rem', fontWeight: 600, padding: '2px 8px',
+              borderRadius: 100,
+              ...(booking.format === 'remote'
+                ? { background: 'rgba(123,97,255,0.15)', color: '#7b61ff', border: '1px solid rgba(123,97,255,0.25)' }
+                : { background: 'rgba(0,229,255,0.15)', color: '#00e5ff', border: '1px solid rgba(0,229,255,0.25)' }),
+            }}>
+              {booking.format === 'remote' ? 'Remote' : 'In-person'}
+            </span>
+          </div>
+          <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: 3 }}>
             {booking.title || 'Booking'}
           </div>
-          <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>
+          <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 2 }}>
             {booking.requester_display || 'You requested this directly'} · {booking.specialization || 'General'}
           </div>
         </div>
@@ -441,14 +453,6 @@ function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast, on
               : <OpenBadge />
           }
         </div>
-      </div>
-
-      {/* Meta row */}
-      <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--muted)', padding: '10px 0', borderTop: '1px solid var(--border)' }}>
-        <span>{formatDate(booking.date)}</span>
-        <span>{formatTime(booking.time_start, booking.time_end)}</span>
-        <span>{booking.format === 'remote' ? 'Remote' : booking.location || 'TBD'}</span>
-        <span>{booking.format === 'remote' ? 'Remote' : 'On-site'}</span>
       </div>
 
       {/* Interpreter rows (from recipients) */}
@@ -591,7 +595,7 @@ const MOCK_ON_BEHALF_CONFIRMED: MockBooking = {
 
 const MOCK_ON_BEHALF_CANCELLED: MockBooking = {
   id: 'mock-behalf-2',
-  title: 'Legal Consultation — Family Law',
+  title: 'Legal Consultation',
   requester_name: 'Alex Rivera',
   requester_display: 'Alex Rivera',
   specialization: 'Legal',
@@ -669,7 +673,7 @@ export default function DhhBookingsPage() {
           // Show a mock self-booking
           setSelfBookings([{
             id: 'mock-self-1',
-            title: 'Weekly ASL Practice Session',
+            title: 'ASL Practice',
             requester_name: null,
             requester_display: '',
             specialization: 'Education',

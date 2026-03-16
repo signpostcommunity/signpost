@@ -4,7 +4,7 @@
  * RequestTracker — visual status stepper for interpreter bookings.
  * Shows Deaf users where their request stands, like package tracking.
  *
- * Steps: Request sent → Interpreters responding → Booking confirmed → Rate your interpreter
+ * Steps: Sent → Responding → Confirmed → Rate
  * Terminal states: All declined, Cancelled
  *
  * Updated to work with booking_recipients (multiple interpreters per booking).
@@ -70,7 +70,7 @@ function getSteps(booking: TrackerBooking, recipients: Recipient[], hasRating: b
   if (status === 'cancelled') {
     return {
       steps: [
-        { label: 'Request sent', state: 'completed' },
+        { label: 'Sent', state: 'completed' },
         { label: 'Cancelled', state: 'current', sublabel: booking.cancellation_reason || null },
       ],
       terminal: 'cancelled',
@@ -83,7 +83,7 @@ function getSteps(booking: TrackerBooking, recipients: Recipient[], hasRating: b
   if (allDeclined && status === 'open') {
     return {
       steps: [
-        { label: 'Request sent', state: 'completed' },
+        { label: 'Sent', state: 'completed' },
         { label: 'All unavailable', state: 'current', sublabel: 'All interpreters declined' },
       ],
       terminal: 'all_declined',
@@ -120,10 +120,10 @@ function getSteps(booking: TrackerBooking, recipients: Recipient[], hasRating: b
   }
 
   const allSteps = [
-    { label: 'Request sent', sublabel: null },
-    { label: 'Interpreters responding', sublabel: respondSublabel },
-    { label: 'Booking confirmed', sublabel: confirmSublabel },
-    { label: hasRating ? 'Feedback submitted' : 'Rate your interpreter', sublabel: null },
+    { label: 'Sent', sublabel: null },
+    { label: 'Responding', sublabel: respondSublabel },
+    { label: 'Confirmed', sublabel: confirmSublabel },
+    { label: hasRating ? 'Rated' : 'Rate', sublabel: null },
   ]
 
   const steps: Step[] = allSteps.map((s, i) => {

@@ -246,11 +246,12 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated }
       >
         <div style={{ flex: 1 }}>
           <div style={{
-            fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif",
-            color: 'var(--text)', marginBottom: 6,
-            display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
+            fontWeight: 700, fontSize: '1.05rem',
+            color: 'var(--text)', marginBottom: 4,
+            display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
           }}>
-            {booking.title || 'Interpreter Request'}
+            <span>{formatDate(booking.date)} &middot; {formatTime(booking.time_start, booking.time_end)}</span>
+            <FormatBadge format={booking.format} />
             {isDismissed && (
               <span style={{
                 fontSize: '0.68rem', fontWeight: 600, padding: '2px 8px',
@@ -270,10 +271,8 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated }
               </span>
             )}
           </div>
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', fontSize: '0.8rem', color: 'var(--muted)' }}>
-            <span>{formatDate(booking.date)}</span>
-            <span>{formatTime(booking.time_start, booking.time_end)}</span>
-            <FormatBadge format={booking.format} />
+          <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
+            {booking.title || 'Interpreter Request'}
           </div>
 
           {/* Compact tracker in collapsed view */}

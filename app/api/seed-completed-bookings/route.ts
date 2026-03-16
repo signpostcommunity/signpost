@@ -5,13 +5,13 @@ import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 
 const COMPLETED_SEED_TITLES = [
-  'Annual Employee Benefits Meeting',
-  'Physical Therapy Session',
+  'Benefits Meeting',
+  'PT Session',
 ]
 
 const COMPLETED_SEED_BOOKINGS = [
   {
-    title: 'Annual Employee Benefits Meeting',
+    title: 'Benefits Meeting',
     requester_name: 'Lakewood Community College — HR Dept',
     specialization: 'Workplace & Professional',
     date: '2026-02-28',
@@ -27,7 +27,7 @@ const COMPLETED_SEED_BOOKINGS = [
     is_seed: true,
   },
   {
-    title: 'Physical Therapy Session',
+    title: 'PT Session',
     requester_name: 'Dr. Sarah Kim, PT — Bayside Physical Therapy',
     specialization: 'Medical & Wellness',
     date: '2026-03-03',
