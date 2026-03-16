@@ -3,7 +3,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import InterpreterPicker from '@/components/dhh/InterpreterPicker'
 import CommPrefsDisplay from '@/components/dhh/CommPrefsDisplay'
@@ -57,6 +57,8 @@ const fieldGroupStyle: React.CSSProperties = { marginBottom: 18 }
 
 export default function DhhRequestPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const interpreterParam = searchParams.get('interpreter')
   const [userId, setUserId] = useState<string | null>(null)
   const [commPrefs, setCommPrefs] = useState<Record<string, unknown> | null>(null)
   const [loading, setLoading] = useState(true)
@@ -73,7 +75,7 @@ export default function DhhRequestPage() {
   const [timeEnd, setTimeEnd] = useState('')
   const [timezone, setTimezone] = useState('America/Los_Angeles')
   const [interpreterCount, setInterpreterCount] = useState(1)
-  const [selectedInterpreters, setSelectedInterpreters] = useState<string[]>([])
+  const [selectedInterpreters, setSelectedInterpreters] = useState<string[]>(interpreterParam ? [interpreterParam] : [])
   const [description, setDescription] = useState('')
 
   useEffect(() => {

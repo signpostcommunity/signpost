@@ -27,6 +27,8 @@ interface Booking {
   status: string
   is_seed: boolean | null
   created_at: string
+  request_type: string | null
+  dhh_client_name: string | null
 }
 
 /* ── Helpers ── */
@@ -500,7 +502,7 @@ export default function InquiriesPage() {
         status,
         sent_at,
         booking:bookings(
-          id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed, created_at
+          id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed, created_at, request_type, dhh_client_id
         )
       `)
       .eq('interpreter_id', profile.id)
@@ -518,8 +520,37 @@ export default function InquiriesPage() {
             ...b,
             recipient_id: r.id as string,
             recipient_status: r.status as string,
+            dhh_client_name: null,
           } as unknown as Booking
         })
+
+      // For personal requests, fetch D/HH client names
+      const personalBookings = mapped.filter(b => b.request_type === 'personal')
+      if (personalBookings.length > 0) {
+        const dhhClientIds = personalBookings
+          .map(b => (b as unknown as Record<string, unknown>).dhh_client_id as string)
+          .filter(Boolean)
+        if (dhhClientIds.length > 0) {
+          const uniqueIds = [...new Set(dhhClientIds)]
+          const { data: deafProfiles } = await supabase
+            .from('deaf_profiles')
+            .select('user_id, first_name, last_name')
+            .in('user_id', uniqueIds)
+          if (deafProfiles) {
+            const nameMap: Record<string, string> = {}
+            for (const dp of deafProfiles) {
+              nameMap[dp.user_id] = [dp.first_name, dp.last_name].filter(Boolean).join(' ')
+            }
+            for (const b of mapped) {
+              const clientId = (b as unknown as Record<string, unknown>).dhh_client_id as string
+              if (b.request_type === 'personal' && clientId && nameMap[clientId]) {
+                b.dhh_client_name = nameMap[clientId]
+              }
+            }
+          }
+        }
+      }
+
       setBookings(mapped)
     }
     setLoading(false)
@@ -574,6 +605,9 @@ export default function InquiriesPage() {
                 <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif" }}>{inq.title || 'Booking Request'}</div>
                 <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>
                   From: {inq.requester_name || 'Unknown'} · {inq.specialization || 'General'}
+                  {inq.request_type === 'personal' && inq.dhh_client_name && (
+                    <span> · Client: {inq.dhh_client_name}</span>
+                  )}
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>

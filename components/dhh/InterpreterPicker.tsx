@@ -86,11 +86,32 @@ export default function InterpreterPicker({
         return a.name.localeCompare(b.name)
       })
 
+      // If there are pre-selected IDs not in the roster (e.g. from directory ?interpreter= param), fetch those too
+      const rosterIds = new Set(mapped.map(m => m.id))
+      const extraIds = selectedIds.filter(id => !rosterIds.has(id))
+      if (extraIds.length > 0) {
+        const { data: extraProfiles } = await supabase
+          .from('interpreter_profiles')
+          .select('id, name, first_name, last_name, photo_url')
+          .in('id', extraIds)
+        if (extraProfiles) {
+          for (const p of extraProfiles) {
+            const displayName = p.first_name
+              ? `${p.first_name} ${p.last_name || ''}`.trim()
+              : p.name || 'Interpreter'
+            const initials = p.first_name
+              ? `${p.first_name[0]}${p.last_name?.[0] || ''}`.toUpperCase()
+              : (p.name || 'I')[0].toUpperCase()
+            mapped.push({ id: p.id, name: displayName, photo_url: p.photo_url, tier: 'directory', initials })
+          }
+        }
+      }
+
       setInterpreters(mapped)
       setLoading(false)
     }
     fetch()
-  }, [userId])
+  }, [userId, selectedIds])
 
   function toggle(id: string) {
     if (selectedIds.includes(id)) {
@@ -227,13 +248,13 @@ export default function InterpreterPicker({
               <span style={{
                 fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px',
                 borderRadius: 100, whiteSpace: 'nowrap',
-                background: interp.tier === 'preferred' ? 'rgba(157,135,255,0.12)' : 'rgba(0,229,255,0.1)',
-                color: interp.tier === 'preferred' ? '#9d87ff' : 'var(--accent)',
-                border: `1px solid ${interp.tier === 'preferred' ? 'rgba(157,135,255,0.3)' : 'rgba(0,229,255,0.25)'}`,
+                background: interp.tier === 'preferred' ? 'rgba(157,135,255,0.12)' : interp.tier === 'directory' ? 'rgba(255,255,255,0.06)' : 'rgba(0,229,255,0.1)',
+                color: interp.tier === 'preferred' ? '#9d87ff' : interp.tier === 'directory' ? 'var(--muted)' : 'var(--accent)',
+                border: `1px solid ${interp.tier === 'preferred' ? 'rgba(157,135,255,0.3)' : interp.tier === 'directory' ? 'var(--border)' : 'rgba(0,229,255,0.25)'}`,
                 fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
                 textTransform: 'uppercase',
               }}>
-                {interp.tier === 'preferred' ? 'Preferred' : 'Approved'}
+                {interp.tier === 'preferred' ? 'Preferred' : interp.tier === 'directory' ? 'Directory' : 'Approved'}
               </span>
             </label>
           )

@@ -682,13 +682,32 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
-      <PageHeader
-        title="My Profile"
-        subtitle={hasProfile
-          ? "This is what requesters see when they view your listing. Keep it current."
-          : "Complete your profile below to get listed in the directory."
-        }
-      />
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
+        <PageHeader
+          title="My Profile"
+          subtitle={hasProfile
+            ? "This is what requesters see when they view your listing. Keep it current."
+            : "Complete your profile below to get listed in the directory."
+          }
+        />
+        {p.id && (
+          <a
+            href={`/directory/${p.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '8px 16px', borderRadius: 'var(--radius-sm)',
+              border: '1px solid rgba(0,229,255,0.3)', background: 'none',
+              color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600,
+              textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0,
+              fontFamily: "'DM Sans', sans-serif", transition: 'border-color 0.15s',
+            }}
+          >
+            Preview Profile
+          </a>
+        )}
+      </div>
 
       {/* Profile header card */}
       <div style={{

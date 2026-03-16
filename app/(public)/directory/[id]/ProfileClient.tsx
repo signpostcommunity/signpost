@@ -264,7 +264,7 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
               }}
             >
               <Link
-                href="/request"
+                href={userRole === 'deaf' ? `/dhh/dashboard/request?interpreter=${i.id}` : '/request'}
                 className="btn-primary"
                 style={{
                   display: 'block',

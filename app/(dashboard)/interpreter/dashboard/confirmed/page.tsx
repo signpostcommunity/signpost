@@ -546,8 +546,33 @@ interface Attachment {
   url: string
 }
 
-function DetailModal({ booking, onClose }: { booking: Booking; onClose: () => void }) {
+function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Booking; onClose: () => void; currentInterpreterId: string | null }) {
   const isRemote = booking.format === 'remote'
+  const [teamNames, setTeamNames] = useState<string[]>([])
+
+  useEffect(() => {
+    if (!currentInterpreterId || !booking.id) return
+    ;(async () => {
+      const supabase = createClient()
+      // Fetch other confirmed recipients for this booking (separate query to avoid RLS inner join issue)
+      const { data: recipients } = await supabase
+        .from('booking_recipients')
+        .select('interpreter_id')
+        .eq('booking_id', booking.id)
+        .eq('status', 'confirmed')
+        .neq('interpreter_id', currentInterpreterId)
+      if (!recipients || recipients.length === 0) return
+      const ids = recipients.map(r => r.interpreter_id)
+      // Fetch interpreter names in a second query
+      const { data: profiles } = await supabase
+        .from('interpreter_profiles')
+        .select('first_name, last_name')
+        .in('id', ids)
+      if (profiles) {
+        setTeamNames(profiles.map(p => [p.first_name, p.last_name].filter(Boolean).join(' ')).filter(Boolean))
+      }
+    })()
+  }, [booking.id, currentInterpreterId])
 
   const sectionLabelStyle: React.CSSProperties = {
     fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.1em',
@@ -752,6 +777,22 @@ function DetailModal({ booking, onClose }: { booking: Booking; onClose: () => vo
               <div><span style={{ fontWeight: 600 }}>{booking.requester_name || 'Requester'}</span></div>
             </div>
           </div>
+
+          {/* 3b. Team — other confirmed interpreters */}
+          {teamNames.length > 0 && (
+            <div style={sectionStyle}>
+              <div style={sectionLabelStyle}>Team</div>
+              <div style={detailRowStyle}>
+                <svg style={iconStyle} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <circle cx="5" cy="4.5" r="2" stroke="currentColor" strokeWidth="1.2"/>
+                  <circle cx="9.5" cy="4.5" r="2" stroke="currentColor" strokeWidth="1.2"/>
+                  <path d="M1 12c0-2.5 1.8-3.5 4-3.5s4 1 4 3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                  <path d="M9.5 8.5c1.5 0 3 .8 3 2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                </svg>
+                <div><span style={{ fontWeight: 600 }}>{teamNames.join(', ')}</span></div>
+              </div>
+            </div>
+          )}
 
           {/* 4. Deaf/Hard of Hearing Client — NOT the requester */}
           <div style={sectionStyle}>
@@ -1732,6 +1773,7 @@ export default function ConfirmedPage() {
         <DetailModal
           booking={bookings.find(b => b.id === viewing)!}
           onClose={() => setViewing(null)}
+          currentInterpreterId={interpreterId}
         />
       )}
 
