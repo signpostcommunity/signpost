@@ -488,7 +488,7 @@ export default function BetaFeedbackPanel() {
                 <path d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '1.1rem', marginBottom: 8, color: '#e0e0e0' }}>
+            <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem', marginBottom: 8, color: '#e0e0e0' }}>
               Thank you!
             </h3>
             <p style={{ fontSize: '0.85rem', color: '#b0b0b0', lineHeight: 1.6 }}>

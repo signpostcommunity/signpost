@@ -101,7 +101,7 @@ function InvoiceStatusBadge({ invoice }: { invoice: Invoice }) {
     <span style={{
       fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px',
       borderRadius: 100, background: s.bg, color: s.color,
-      fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em', whiteSpace: 'nowrap',
+      fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em', whiteSpace: 'nowrap',
       textDecoration: s.strike ? 'line-through' : 'none',
     }}>
       {s.label}
@@ -175,7 +175,7 @@ Thank you`
         borderRadius: 'var(--radius)', padding: '28px 32px',
         width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto',
       }} onClick={e => e.stopPropagation()}>
-        <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '1.2rem', margin: '0 0 20px' }}>
+        <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.2rem', margin: '0 0 20px' }}>
           Send Payment Reminder
         </h2>
 
@@ -452,7 +452,7 @@ export default function InvoicesPage() {
                 }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif" }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'DM Sans', sans-serif" }}>
                         {b.title || 'Booking'}
                       </div>
                       <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>
@@ -464,7 +464,7 @@ export default function InvoicesPage() {
                       borderRadius: 100, whiteSpace: 'nowrap',
                       background: 'rgba(52,211,153,0.1)', color: '#34d399',
                       border: '1px solid rgba(52,211,153,0.3)',
-                      fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
+                      fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em',
                     }}>
                       Completed
                     </span>
@@ -551,7 +551,7 @@ export default function InvoicesPage() {
                 {/* Header row */}
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif" }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'DM Sans', sans-serif" }}>
                       {inv.invoice_number}
                     </div>
                     <div style={{ color: 'var(--muted)', fontSize: '0.8rem', marginTop: 3 }}>

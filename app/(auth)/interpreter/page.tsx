@@ -34,7 +34,7 @@ export default function InterpreterPage() {
       <div style={{ marginBottom: '20px' }}>
         <span
           style={{
-            fontFamily: 'var(--font-syne)',
+            fontFamily: "'DM Sans', sans-serif",
             fontSize: '0.72rem',
             fontWeight: 700,
             letterSpacing: '0.12em',
@@ -130,7 +130,7 @@ export default function InterpreterPage() {
 
           <h2
             style={{
-              fontFamily: 'var(--font-syne)',
+              fontFamily: "'DM Sans', sans-serif",
               fontSize: '1.2rem',
               fontWeight: 700,
               marginBottom: '16px',
@@ -202,7 +202,7 @@ export default function InterpreterPage() {
 
           <h2
             style={{
-              fontFamily: 'var(--font-syne)',
+              fontFamily: "'DM Sans', sans-serif",
               fontSize: '1.2rem',
               fontWeight: 700,
               marginBottom: '16px',

@@ -47,7 +47,7 @@ function DeleteModal({ user, onConfirm, onCancel, deleting }: {
             <path d="M10 11v6M14 11v6" stroke="var(--accent3)" strokeWidth="1.5" strokeLinecap="round"/>
           </svg>
         </div>
-        <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.1rem', fontWeight: 700, textAlign: 'center', marginBottom: 12 }}>
+        <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.1rem', fontWeight: 700, textAlign: 'center', marginBottom: 12 }}>
           Delete User
         </h3>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, textAlign: 'center', marginBottom: 24 }}>
@@ -152,7 +152,7 @@ export default function UsersClient({ users, currentUserId }: { users: User[]; c
 
   return (
     <div className="admin-users-content" style={{ padding: '32px 40px', maxWidth: 1200 }}>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 700, marginBottom: 8 }}>
+      <h1 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.6rem', fontWeight: 700, marginBottom: 8 }}>
         Users
       </h1>
       <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: 24 }}>
@@ -200,7 +200,7 @@ export default function UsersClient({ users, currentUserId }: { users: User[]; c
                 {['Name', 'Email', 'Role', 'Status', 'Signup Date', 'Actions'].map(h => (
                   <th key={h} style={{
                     padding: '12px 16px', textAlign: 'left',
-                    fontFamily: "'Syne', sans-serif", fontWeight: 700,
+                    fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
                     fontSize: '0.72rem', textTransform: 'uppercase',
                     letterSpacing: '0.05em', color: 'var(--muted)',
                   }}>

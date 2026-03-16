@@ -121,7 +121,7 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
           {/* Name */}
           <div
             style={{
-              fontFamily: 'var(--font-syne)',
+              fontFamily: "'DM Sans', sans-serif",
               fontWeight: 700,
               fontSize: '1rem',
               lineHeight: 1.2,

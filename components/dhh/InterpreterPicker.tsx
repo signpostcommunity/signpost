@@ -234,7 +234,7 @@ export default function InterpreterPicker({
                   width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
                   background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.78rem', color: '#fff',
+                  fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.78rem', color: '#fff',
                 }}>
                   {interp.initials}
                 </div>
@@ -251,7 +251,7 @@ export default function InterpreterPicker({
                 background: interp.tier === 'preferred' ? 'rgba(157,135,255,0.12)' : interp.tier === 'directory' ? 'rgba(255,255,255,0.06)' : 'rgba(0,229,255,0.1)',
                 color: interp.tier === 'preferred' ? '#9d87ff' : interp.tier === 'directory' ? 'var(--muted)' : 'var(--accent)',
                 border: `1px solid ${interp.tier === 'preferred' ? 'rgba(157,135,255,0.3)' : interp.tier === 'directory' ? 'var(--border)' : 'rgba(0,229,255,0.25)'}`,
-                fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
+                fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em',
                 textTransform: 'uppercase',
               }}>
                 {interp.tier === 'preferred' ? 'Preferred' : interp.tier === 'directory' ? 'Directory' : 'Approved'}

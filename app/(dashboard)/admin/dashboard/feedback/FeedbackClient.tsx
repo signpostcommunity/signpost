@@ -130,7 +130,7 @@ function GroupedView({ feedback }: { feedback: FeedbackItem[] }) {
                   width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
                   background: 'linear-gradient(135deg, #7b61ff, #00e5ff)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.75rem', color: '#fff',
+                  fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.75rem', color: '#fff',
                 }}>
                   {(group.name[0] || '?').toUpperCase()}
                 </div>
@@ -291,7 +291,7 @@ export default function FeedbackClient({ feedback }: { feedback: FeedbackItem[] 
 
   return (
     <div style={{ padding: '32px 40px', maxWidth: 1200 }}>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 700, marginBottom: 8 }}>
+      <h1 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.6rem', fontWeight: 700, marginBottom: 8 }}>
         Beta Feedback
       </h1>
       <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: 24 }}>

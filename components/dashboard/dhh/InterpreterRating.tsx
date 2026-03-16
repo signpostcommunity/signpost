@@ -177,7 +177,7 @@ export default function InterpreterRating({ bookingId, interpreterId, interprete
       marginTop: 12,
     }}>
       <h3 style={{
-        fontFamily: "'Syne', sans-serif",
+        fontFamily: "'DM Sans', sans-serif",
         fontWeight: 700,
         fontSize: '1rem',
         color: 'var(--text)',

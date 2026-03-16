@@ -83,7 +83,7 @@ export default function DeafSignupPage() {
         >
           D/DB/HH Portal
         </div>
-        <h1 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.8rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '8px' }}>
+        <h1 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.8rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '8px' }}>
           Create Account
         </h1>
         <p style={{ color: 'var(--muted)', marginBottom: '12px', fontSize: '0.9rem' }}>

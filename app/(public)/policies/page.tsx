@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 }
 
 const sectionLabel: React.CSSProperties = {
-  fontFamily: "'Syne', sans-serif",
+  fontFamily: "'DM Sans', sans-serif",
   fontSize: '0.7rem',
   fontWeight: 700,
   letterSpacing: '0.1em',
@@ -17,8 +17,8 @@ const sectionLabel: React.CSSProperties = {
 }
 
 const heading: React.CSSProperties = {
-  fontFamily: "'Syne', sans-serif",
-  fontWeight: 800,
+  fontFamily: "'DM Sans', sans-serif",
+  fontWeight: 700,
   fontSize: '1.35rem',
   marginBottom: 16,
   color: 'var(--text)',
@@ -46,8 +46,8 @@ export default function PoliciesPage() {
     <div style={{ padding: '60px 40px 100px', maxWidth: 760, margin: '0 auto' }}>
       <div style={sectionLabel}>Legal</div>
       <h1 style={{
-        fontFamily: "'Syne', sans-serif",
-        fontWeight: 800,
+        fontFamily: "'DM Sans', sans-serif",
+        fontWeight: 700,
         fontSize: '2rem',
         marginBottom: 8,
         color: 'var(--text)',

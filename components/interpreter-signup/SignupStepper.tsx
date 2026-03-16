@@ -27,8 +27,8 @@ export default function SignupStepper() {
       {/* Form header */}
       <div style={{ marginBottom: 48 }}>
         <h1 style={{
-          fontFamily: "'Syne', sans-serif",
-          fontSize: 'clamp(1.5rem, 5vw, 2.4rem)', fontWeight: 800,
+          fontFamily: "'DM Sans', sans-serif",
+          fontSize: 'clamp(1.5rem, 5vw, 2.4rem)', fontWeight: 700,
           letterSpacing: '-0.04em', marginBottom: 8,
         }}>
           Create Your Profile

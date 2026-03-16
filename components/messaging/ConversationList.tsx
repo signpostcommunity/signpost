@@ -53,7 +53,7 @@ function Avatar({ name, photo, size = 40 }: { name: string; photo: string | null
       width: size, height: size, borderRadius: '50%', flexShrink: 0,
       background: getGradient(name),
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontFamily: "'Syne', sans-serif", fontWeight: 700,
+      fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
       fontSize: size <= 36 ? '0.75rem' : '0.88rem', color: '#fff',
     }}>
       {getInitials(name)}

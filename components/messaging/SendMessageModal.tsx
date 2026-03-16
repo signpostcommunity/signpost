@@ -156,13 +156,13 @@ export default function SendMessageModal({ recipientId, recipientName, recipient
               width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
               background: getGradient(recipientName),
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.88rem', color: '#fff',
+              fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.88rem', color: '#fff',
             }}>
               {getInitials(recipientName)}
             </div>
           )}
           <h2 style={{
-            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.05rem',
+            fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.05rem',
             margin: 0, color: 'var(--text)', flex: 1,
           }}>
             Message {recipientName}

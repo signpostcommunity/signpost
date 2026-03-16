@@ -111,7 +111,7 @@ export default function RoleSwitcher({ currentRole }: { currentRole: string }) {
     <div ref={ref} style={{ padding: '10px 16px 6px', borderBottom: '1px solid var(--border)' }}>
       {/* Label */}
       <div style={{
-        fontFamily: "'Syne', sans-serif", fontWeight: 700,
+        fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
         fontSize: '0.58rem', letterSpacing: '0.12em',
         textTransform: 'uppercase', color: 'var(--muted)',
         marginBottom: 6,

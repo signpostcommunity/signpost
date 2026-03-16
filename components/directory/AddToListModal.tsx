@@ -575,7 +575,7 @@ export default function AddToListModal({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontFamily: "'Syne', sans-serif",
+              fontFamily: "'DM Sans', sans-serif",
               fontWeight: 700,
               fontSize: '1rem',
               color: '#fff',
@@ -587,7 +587,7 @@ export default function AddToListModal({
           <div>
             <div
               style={{
-                fontFamily: "'Syne', sans-serif",
+                fontFamily: "'DM Sans', sans-serif",
                 fontWeight: 700,
                 fontSize: '1.1rem',
                 marginBottom: '3px',
@@ -620,7 +620,7 @@ export default function AddToListModal({
             <div>
               <div
                 style={{
-                  fontFamily: "'Syne', sans-serif",
+                  fontFamily: "'DM Sans', sans-serif",
                   fontWeight: 700,
                   fontSize: '0.72rem',
                   textTransform: 'uppercase',
@@ -790,7 +790,7 @@ export default function AddToListModal({
             <div>
               <div
                 style={{
-                  fontFamily: "'Syne', sans-serif",
+                  fontFamily: "'DM Sans', sans-serif",
                   fontWeight: 700,
                   fontSize: '0.72rem',
                   textTransform: 'uppercase',
@@ -959,7 +959,7 @@ export default function AddToListModal({
           <div>
             <div
               style={{
-                fontFamily: "'Syne', sans-serif",
+                fontFamily: "'DM Sans', sans-serif",
                 fontWeight: 700,
                 fontSize: '0.72rem',
                 textTransform: 'uppercase',

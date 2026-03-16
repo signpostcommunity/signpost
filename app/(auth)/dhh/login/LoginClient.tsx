@@ -28,7 +28,7 @@ export default function DeafLoginPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 73px)', padding: '40px 24px' }}>
       <div style={{ maxWidth: 420, width: '100%' }}>
-        <h1 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.8rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '8px' }}>D/DB/HH Sign In</h1>
+        <h1 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.8rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '8px' }}>D/DB/HH Sign In</h1>
         <p style={{ color: 'var(--muted)', marginBottom: '32px', fontSize: '0.9rem' }}>
           Welcome back.{' '}
           <Link href="/dhh/signup" style={{ color: 'var(--accent2)', textDecoration: 'none' }}>Create an account</Link>

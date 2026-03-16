@@ -237,7 +237,7 @@ function CancelModal({ booking, onClose, onCancelled }: {
         {step === 1 && (
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.05rem' }}>Cancel this booking</div>
+              <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.05rem' }}>Cancel this booking</div>
               <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
             </div>
             <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 20px' }}>
@@ -315,7 +315,7 @@ function CancelModal({ booking, onClose, onCancelled }: {
         {step === 2 && (
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.05rem' }}>Help find a replacement?</div>
+              <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.05rem' }}>Help find a replacement?</div>
               <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
             </div>
             <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 8px' }}>
@@ -436,7 +436,7 @@ function ForwardToTeamModal({ booking, interpreterId, onClose, onForwarded }: {
     <div role="presentation" style={overlayStyle} onClick={onClose}>
       <div className="modal-dialog" style={modalStyle} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.05rem' }}>Forward to Team</div>
+          <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.05rem' }}>Forward to Team</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
         </div>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 16px' }}>
@@ -581,7 +581,7 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
   const sectionLabelStyle: React.CSSProperties = {
     fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.1em',
     textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10,
-    fontFamily: "'Syne', sans-serif",
+    fontFamily: "'DM Sans', sans-serif",
   }
   const detailRowStyle: React.CSSProperties = {
     display: 'flex', alignItems: 'flex-start', gap: 10,
@@ -654,7 +654,7 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
         {/* Header: Title + Status Badge */}
         <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>{booking.title || 'Booking'}</h3>
+            <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>{booking.title || 'Booking'}</h3>
             <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem', flexShrink: 0 }}>✕</button>
           </div>
           {booking.status === 'cancelled' ? (
@@ -663,7 +663,7 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
               fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20,
               background: 'rgba(255,107,133,0.1)', color: '#ff6b85',
               border: '1px solid rgba(255,107,133,0.3)',
-              fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
+              fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em',
             }}>
               Cancelled{booking.cancellation_reason ? ` — ${booking.cancellation_reason}` : ''}
             </span>
@@ -673,7 +673,7 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
               fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20,
               background: 'rgba(52,211,153,0.1)', color: '#34d399',
               border: '1px solid rgba(52,211,153,0.3)',
-              fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
+              fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em',
             }}>
               Completed
             </span>
@@ -1204,7 +1204,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
         {/* Header */}
         <div style={{ padding: '24px 28px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem', margin: '0 0 6px' }}>Submit Invoice</h3>
+            <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem', margin: '0 0 6px' }}>Submit Invoice</h3>
             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
               <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>{invoiceNumber}</span>
               <span style={{
@@ -1221,7 +1221,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
         <div style={{ padding: '0 28px 16px', overflowY: 'auto', maxHeight: '64vh' }}>
           {/* Job details (read-only) */}
           <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>Job Details</div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>Job Details</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6 }}>
               <div style={{ fontWeight: 600 }}>{booking.title || 'Booking'}</div>
               <div style={{ color: 'var(--muted)' }}>{formatDate(booking.date)} · {formatTime(booking.time_start, booking.time_end)}</div>
@@ -1231,7 +1231,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
 
           {/* Billing recipient */}
           <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>Bill To</div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>Bill To</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div>
                 <label style={labelSt}>Requester Name</label>
@@ -1250,7 +1250,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
 
           {/* Time & Rate */}
           <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>Time &amp; Rate</div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>Time &amp; Rate</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
               <div>
                 <label style={labelSt}>Start Time</label>
@@ -1281,7 +1281,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
 
           {/* Additional Costs */}
           <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>Additional Costs</div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>Additional Costs</div>
             {additionalCosts.map((cost, i) => (
               <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'flex-end' }}>
                 <div style={{ flex: 1 }}>
@@ -1350,7 +1350,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
 
           {/* Payment Terms */}
           <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>Payment Terms</div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>Payment Terms</div>
             <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
               <select value={paymentTerms} onChange={e => setPaymentTerms(e.target.value)} style={{ ...inputSt, maxWidth: 200 }}
                 onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
@@ -1367,7 +1367,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
 
           {/* Payment Methods */}
           <div style={{ padding: '16px 0' }}>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>Payment Methods</div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.67rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>Payment Methods</div>
             {paymentMethods.length > 0 ? (
               <div style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.8 }}>
                 {paymentMethods.map((pm, i) => (
@@ -1417,7 +1417,7 @@ function CancelledBadge({ reason }: { reason: string | null }) {
       borderRadius: 100, whiteSpace: 'nowrap',
       background: 'rgba(255,107,133,0.1)', color: '#ff6b85',
       border: '1px solid rgba(255,107,133,0.3)',
-      fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
+      fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em',
     }}>
       Cancelled{reason ? ` — ${reason}` : ''}
     </span>
@@ -1431,7 +1431,7 @@ function CompletedBadge() {
       borderRadius: 100, whiteSpace: 'nowrap',
       background: 'rgba(52,211,153,0.1)', color: '#34d399',
       border: '1px solid rgba(52,211,153,0.3)',
-      fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
+      fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em',
     }}>
       Completed
     </span>
@@ -1487,7 +1487,7 @@ function BookingCard({ booking, onViewDetails, onCancel, onForwardToTeam, onToas
     }}>
       <div className="dash-card-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
         <div>
-          <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif" }}>{booking.title || 'Booking'}</div>
+          <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'DM Sans', sans-serif" }}>{booking.title || 'Booking'}</div>
           <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>{booking.requester_name || 'Client'} · {booking.specialization || 'General'}</div>
         </div>
         <div className="dash-card-badges" style={{ display: 'flex', gap: 8, flexShrink: 0, alignItems: 'center' }}>

@@ -165,7 +165,7 @@ function InterpreterStatusList({ recipients, interpCount, showRate = true }: { r
                     width: 24, height: 24, borderRadius: '50%',
                     background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.55rem', color: '#fff',
+                    fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.55rem', color: '#fff',
                   }}>
                     {initials}
                   </div>
@@ -419,7 +419,7 @@ export default function DhhRequestsListPage() {
 
   const tabStyle = (tab: Tab): React.CSSProperties => ({
     background: 'none', border: 'none', cursor: 'pointer',
-    padding: '10px 20px', fontFamily: "'Syne', sans-serif", fontWeight: 700,
+    padding: '10px 20px', fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
     fontSize: '0.88rem',
     color: activeTab === tab ? 'var(--accent)' : 'var(--muted)',
     borderBottom: activeTab === tab ? '2px solid var(--accent)' : '2px solid transparent',
@@ -472,7 +472,7 @@ export default function DhhRequestsListPage() {
                   background: 'linear-gradient(135deg, #9d87ff, #7b61ff)',
                   borderRadius: 'var(--radius-sm)', color: '#fff',
                   textDecoration: 'none', fontSize: '0.88rem', fontWeight: 700,
-                  fontFamily: "'Syne', sans-serif",
+                  fontFamily: "'DM Sans', sans-serif",
                 }}
               >
                 New Request

@@ -368,7 +368,7 @@ export default function VideoRecorder({
           borderBottom: '1px solid var(--border)',
         }}>
           <div style={{
-            fontFamily: "'Syne', sans-serif", fontWeight: 700,
+            fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
             fontSize: '1rem', color: 'var(--text)',
           }}>
             Add a video

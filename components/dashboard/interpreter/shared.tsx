@@ -37,7 +37,7 @@ export function BetaBanner() {
 export function DemoBadge() {
   return (
     <span style={{
-      fontSize: '0.62rem', fontWeight: 700, fontFamily: "'Syne', sans-serif",
+      fontSize: '0.62rem', fontWeight: 700, fontFamily: "'DM Sans', sans-serif",
       letterSpacing: '0.08em', textTransform: 'uppercase',
       background: 'rgba(255,107,43,0.15)', border: '1px solid rgba(255,107,43,0.4)',
       color: '#ff7e45', borderRadius: 100, padding: '2px 8px',
@@ -52,7 +52,7 @@ export function DemoBadge() {
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div style={{ marginBottom: 28 }}>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '1.6rem', margin: '0 0 6px' }}>
+      <h1 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.6rem', margin: '0 0 6px' }}>
         {title}
       </h1>
       {subtitle && <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>{subtitle}</p>}
@@ -65,7 +65,7 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <h3 style={{
-      fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.68rem',
+      fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.68rem',
       letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)',
       margin: '28px 0 14px',
     }}>
@@ -89,7 +89,7 @@ export function StatusBadge({ status }: { status: 'new' | 'responded' | 'confirm
     <span style={{
       fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px',
       borderRadius: 100, background: s.bg, color: s.color,
-      fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em', whiteSpace: 'nowrap',
+      fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em', whiteSpace: 'nowrap',
     }}>
       {s.label}
     </span>
@@ -104,7 +104,7 @@ export function Avatar({ initials, gradient, size = 40 }: { initials: string; gr
       width: size, height: size, borderRadius: '50%', flexShrink: 0,
       background: gradient,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontFamily: "'Syne', sans-serif", fontWeight: 700,
+      fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
       fontSize: size <= 36 ? '0.75rem' : '0.88rem', color: '#fff',
     }}>
       {initials}
@@ -144,7 +144,7 @@ export function RequestCard({
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
           <Avatar initials={avatar} gradient={avatarGradient} size={36} />
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif" }}>{title}</div>
+            <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'DM Sans', sans-serif" }}>{title}</div>
             <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>
               {from && `From: ${from}`}{category && ` · ${category}`}{receivedDate && ` · ${receivedDate}`}
             </div>

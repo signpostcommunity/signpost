@@ -56,7 +56,7 @@ function Avatar({ name, size = 40 }: { name: string | null; size?: number }) {
       width: size, height: size, borderRadius: '50%', flexShrink: 0,
       background: getGradient(name),
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontFamily: "'Syne', sans-serif", fontWeight: 700,
+      fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
       fontSize: size <= 36 ? '0.75rem' : '0.88rem', color: '#fff',
     }}>
       {getInitials(name)}
@@ -301,7 +301,7 @@ export default function InboxPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
           <Avatar name={active.sender_name} size={40} />
           <div>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem' }}>{active.sender_name || 'Unknown'}</div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem' }}>{active.sender_name || 'Unknown'}</div>
             <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 2 }}>{active.subject || '(no subject)'}</div>
           </div>
           {active.is_seed && <DemoBadge />}
@@ -391,7 +391,7 @@ export default function InboxPage() {
           onClick={() => setActiveTab('messages')}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            padding: '10px 20px', fontFamily: "'Syne', sans-serif", fontWeight: 700,
+            padding: '10px 20px', fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
             fontSize: '0.88rem',
             color: activeTab === 'messages' ? 'var(--accent)' : 'var(--muted)',
             borderBottom: activeTab === 'messages' ? '2px solid var(--accent)' : '2px solid transparent',
@@ -404,7 +404,7 @@ export default function InboxPage() {
           onClick={() => setActiveTab('notifications')}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            padding: '10px 20px', fontFamily: "'Syne', sans-serif", fontWeight: 700,
+            padding: '10px 20px', fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
             fontSize: '0.88rem',
             color: activeTab === 'notifications' ? 'var(--accent)' : 'var(--muted)',
             borderBottom: activeTab === 'notifications' ? '2px solid var(--accent)' : '2px solid transparent',
@@ -442,7 +442,7 @@ export default function InboxPage() {
                   padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10,
                   borderBottom: '1px solid var(--border)',
                 }}>
-                  <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
+                  <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
                     Conversations
                   </h2>
                 </div>
@@ -466,7 +466,7 @@ export default function InboxPage() {
                     padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10,
                     borderBottom: '1px solid var(--border)',
                   }}>
-                    <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
+                    <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
                       Inquiries
                     </h2>
                     {unreadMsgCount > 0 && (
@@ -519,7 +519,7 @@ export default function InboxPage() {
                 padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10,
                 borderBottom: '1px solid var(--border)',
               }}>
-                <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
+                <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
                   Notifications
                 </h2>
                 {unreadNotifCount > 0 && (

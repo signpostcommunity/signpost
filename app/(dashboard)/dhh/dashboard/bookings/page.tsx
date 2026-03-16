@@ -87,7 +87,7 @@ function ConfirmedBadge() {
       borderRadius: 100, whiteSpace: 'nowrap',
       background: 'rgba(52,211,153,0.1)', color: '#34d399',
       border: '1px solid rgba(52,211,153,0.3)',
-      fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
+      fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em',
     }}>
       Confirmed
     </span>
@@ -101,7 +101,7 @@ function CancelledBadge({ reason }: { reason: string | null }) {
       borderRadius: 100, whiteSpace: 'nowrap',
       background: 'rgba(255,107,133,0.1)', color: '#ff6b85',
       border: '1px solid rgba(255,107,133,0.3)',
-      fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
+      fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em',
     }}>
       Cancelled{reason ? ` — ${reason}` : ''}
     </span>
@@ -115,7 +115,7 @@ function OpenBadge() {
       borderRadius: 100, whiteSpace: 'nowrap',
       background: 'rgba(255,165,0,0.12)', color: '#f97316',
       border: '1px solid rgba(249,115,22,0.25)',
-      fontFamily: "'Syne', sans-serif", letterSpacing: '0.04em',
+      fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em',
     }}>
       Open
     </span>
@@ -290,7 +290,7 @@ function DetailModal({ booking, onClose, onToast }: {
         {/* Header */}
         <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>
+            <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>
               {booking.title || 'Booking'}
             </h3>
             <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem', flexShrink: 0 }}>&#10005;</button>

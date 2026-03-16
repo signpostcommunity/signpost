@@ -41,7 +41,7 @@ const labelStyle: React.CSSProperties = {
 const fieldGroupStyle: React.CSSProperties = { marginBottom: 18 }
 
 const sectionHeadingStyle: React.CSSProperties = {
-  fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem',
+  fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem',
   marginBottom: 16, paddingBottom: 10,
   borderBottom: '1px solid var(--border)',
 }
@@ -239,7 +239,7 @@ export default function DhhPreferencesPage() {
                 width: 64, height: 64, borderRadius: '50%', flexShrink: 0,
                 background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: '#fff',
+                fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: '#fff',
               }}>
                 {(firstName?.[0] || '').toUpperCase()}{(lastName?.[0] || '').toUpperCase()}
               </div>
@@ -568,7 +568,7 @@ export default function DhhPreferencesPage() {
             background: saving ? 'var(--surface2)' : 'linear-gradient(135deg, #9d87ff, #7b61ff)',
             border: 'none', borderRadius: 'var(--radius-sm)',
             color: '#fff', fontSize: '0.92rem', fontWeight: 700,
-            fontFamily: "'Syne', sans-serif", cursor: saving ? 'not-allowed' : 'pointer',
+            fontFamily: "'DM Sans', sans-serif", cursor: saving ? 'not-allowed' : 'pointer',
             transition: 'all 0.2s', opacity: saving ? 0.6 : 1,
           }}
         >

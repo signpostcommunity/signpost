@@ -56,7 +56,7 @@ function LangPicker({
     <div>
       {/* Most common label */}
       <div style={{
-        fontFamily: "'Syne', sans-serif",
+        fontFamily: "'DM Sans', sans-serif",
         fontSize: '0.68rem', fontWeight: 700,
         letterSpacing: '0.12em', textTransform: 'uppercase' as const,
         color: 'var(--muted)', marginBottom: 10,
@@ -83,7 +83,7 @@ function LangPicker({
       {/* More languages by region */}
       <div style={{ marginTop: 12 }}>
         <div style={{
-          fontFamily: "'Syne', sans-serif",
+          fontFamily: "'DM Sans', sans-serif",
           fontSize: '0.68rem', fontWeight: 700,
           letterSpacing: '0.12em', textTransform: 'uppercase' as const,
           color: 'var(--muted)', marginBottom: 6,

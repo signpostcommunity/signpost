@@ -233,7 +233,7 @@ export default function DeafDashboardPage() {
           background: 'var(--surface)', border: '1px dashed var(--border)',
           borderRadius: 'var(--radius)',
         }}>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem', marginBottom: 10 }}>
+          <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem', marginBottom: 10 }}>
             You haven&apos;t added any interpreters yet.
           </div>
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: 20, maxWidth: 400, margin: '0 auto 20px' }}>
@@ -424,7 +424,7 @@ export default function DeafDashboardPage() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 4 }}>
         <div>
-          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 0 }}>
+          <h1 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 0 }}>
             My Interpreter List
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem' }}>
@@ -472,7 +472,7 @@ export default function DeafDashboardPage() {
       {/* Preferred section */}
       <div style={{ marginBottom: 36 }}>
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem', marginBottom: 2 }}>
+          <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem', marginBottom: 2 }}>
             &#9733; Preferred Interpreters
           </div>
           <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
@@ -492,7 +492,7 @@ export default function DeafDashboardPage() {
       {/* Secondary Tier section */}
       <div style={{ marginBottom: 36 }}>
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem', marginBottom: 2 }}>
+          <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem', marginBottom: 2 }}>
             &#10003; Secondary Tier Interpreters
           </div>
           <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
@@ -512,7 +512,7 @@ export default function DeafDashboardPage() {
       {/* DNB section */}
       <div style={{ marginBottom: 36 }}>
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem', marginBottom: 2, color: '#ff8099' }}>
+          <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem', marginBottom: 2, color: '#ff8099' }}>
             &#10005; Do Not Book
           </div>
           <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>

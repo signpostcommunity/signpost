@@ -157,7 +157,7 @@ export default function FilterSidebar({ filters, onChange }: Props) {
       >
         <span
           style={{
-            fontFamily: 'var(--font-syne)',
+            fontFamily: "'DM Sans', sans-serif",
             fontSize: '0.75rem',
             fontWeight: 700,
             letterSpacing: '0.1em',
@@ -370,7 +370,7 @@ export default function FilterSidebar({ filters, onChange }: Props) {
                   }}
                   style={{
                     background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0',
-                    fontFamily: 'var(--font-syne)', fontSize: '0.65rem', fontWeight: 700,
+                    fontFamily: "'DM Sans', sans-serif", fontSize: '0.65rem', fontWeight: 700,
                     letterSpacing: '0.08em', textTransform: 'uppercase',
                     color: selectedCount > 0 ? 'var(--accent)' : 'var(--muted)',
                     display: 'flex', alignItems: 'center', gap: '6px', width: '100%',
@@ -394,7 +394,7 @@ export default function FilterSidebar({ filters, onChange }: Props) {
         {/* Specialized Skills */}
         <div style={{ marginTop: '12px', paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
           <div style={{
-            fontFamily: 'var(--font-syne)', fontSize: '0.65rem', fontWeight: 700,
+            fontFamily: "'DM Sans', sans-serif", fontSize: '0.65rem', fontWeight: 700,
             letterSpacing: '0.08em', textTransform: 'uppercase', color: '#a891ff',
             marginBottom: '6px',
           }}>
@@ -595,7 +595,7 @@ function CollapsibleSection({ label, children }: { label: string; children: Reac
           background: 'none',
           border: 'none',
           cursor: 'pointer',
-          fontFamily: 'var(--font-syne)',
+          fontFamily: "'DM Sans', sans-serif",
           fontSize: '0.7rem',
           fontWeight: 700,
           letterSpacing: '0.1em',

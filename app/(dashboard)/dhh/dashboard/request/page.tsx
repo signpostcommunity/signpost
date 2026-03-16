@@ -28,7 +28,7 @@ const PERSONAL_EVENT_TYPES = [
 ]
 
 const sectionHeadingStyle: React.CSSProperties = {
-  fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem',
+  fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem',
   marginBottom: 16, paddingBottom: 10,
   borderBottom: '1px solid var(--border)',
 }
@@ -458,7 +458,7 @@ export default function DhhRequestPage() {
             background: submitting ? 'var(--surface2)' : 'linear-gradient(135deg, #9d87ff, #7b61ff)',
             border: 'none', borderRadius: 'var(--radius-sm)',
             color: '#fff', fontSize: '1rem', fontWeight: 700,
-            fontFamily: "'Syne', sans-serif", cursor: submitting ? 'not-allowed' : 'pointer',
+            fontFamily: "'DM Sans', sans-serif", cursor: submitting ? 'not-allowed' : 'pointer',
             transition: 'all 0.2s', opacity: submitting ? 0.6 : 1,
           }}
         >

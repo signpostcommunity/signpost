@@ -39,7 +39,7 @@ const labelStyle: React.CSSProperties = {
 }
 
 const sectionTitleStyle: React.CSSProperties = {
-  fontFamily: "'Syne', sans-serif",
+  fontFamily: "'DM Sans', sans-serif",
   fontSize: '0.7rem',
   fontWeight: 700,
   letterSpacing: '0.12em',
@@ -795,7 +795,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
         background: 'var(--card-bg)', border: '1px solid var(--border)',
         borderRadius: 'var(--radius)', padding: '24px 28px', marginBottom: 28,
       }}>
-        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '1.3rem' }}>{displayName}</div>
+        <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.3rem' }}>{displayName}</div>
         {(p.city || p.state) && (
           <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: 4 }}>
             {[p.city, p.state].filter(Boolean).join(', ')}
@@ -826,7 +826,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                 width: 72, height: 72, borderRadius: '50%', flexShrink: 0,
                 background: 'linear-gradient(135deg,#7b61ff,#00e5ff)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.4rem', color: '#fff',
+                fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.4rem', color: '#fff',
               }}>{initials}</div>
             )}
             <div>
@@ -1257,7 +1257,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
             Select all sign languages in which you have professional-level fluency.
           </p>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>
+          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>
             Most common
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 6, marginBottom: 12 }}>
@@ -1265,7 +1265,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
               <Chip key={lang} label={lang} selected={signLangs.includes(lang)} onToggle={() => toggleInList(signLangs, lang, setSignLangs)} />
             ))}
           </div>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 6 }}>
+          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 6 }}>
             More languages by region
           </div>
           <select
@@ -1301,7 +1301,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
             Select all spoken languages in which you have professional-level fluency.
           </p>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>
+          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>
             Most common
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 6, marginBottom: 12 }}>
@@ -1309,7 +1309,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
               <Chip key={lang} label={lang} selected={spokenLangs.includes(lang)} onToggle={() => toggleInList(spokenLangs, lang, setSpokenLangs)} />
             ))}
           </div>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 6 }}>
+          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 6 }}>
             More languages by region
           </div>
           <select
@@ -1972,7 +1972,7 @@ function SkillsTab({ specs, setSpecs, specializedSkills, setSpecializedSkills, s
                   width: '100%', padding: '12px 16px',
                   background: 'none', border: 'none', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  fontFamily: "'Syne', sans-serif", fontSize: '0.72rem', fontWeight: 700,
+                  fontFamily: "'DM Sans', sans-serif", fontSize: '0.72rem', fontWeight: 700,
                   letterSpacing: '0.1em', textTransform: 'uppercase',
                   color: selectedCount > 0 ? 'var(--accent)' : 'var(--muted)',
                 }}
@@ -2430,7 +2430,7 @@ function SettingsTab({
         {NOTIF_SECTIONS.map(section => (
           <div key={section.section} style={{ marginBottom: 20 }}>
             <div style={{
-              fontFamily: "'Syne', sans-serif", fontSize: '0.65rem', fontWeight: 700,
+              fontFamily: "'DM Sans', sans-serif", fontSize: '0.65rem', fontWeight: 700,
               letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)',
               marginBottom: 10, paddingBottom: 6, borderBottom: '1px solid var(--border)',
             }}>

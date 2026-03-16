@@ -124,7 +124,7 @@ export default function FlagProfileModal({ isOpen, onClose, interpreterProfileId
             </svg>
           </div>
           <h2 id="flag-modal-title" style={{
-            fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '1.1rem',
+            fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem',
             margin: 0,
           }}>
             Flag this profile

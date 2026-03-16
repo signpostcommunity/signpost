@@ -133,12 +133,12 @@ function SidebarContent({ userName, userInitials, badges }: {
             width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
             background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.85rem', color: '#fff',
+            fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.85rem', color: '#fff',
           }}>
             {userInitials}
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.92rem' }}>{userName}</div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.92rem' }}>{userName}</div>
             <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 2 }}>Deaf Individual</div>
           </div>
         </div>
@@ -153,7 +153,7 @@ function SidebarContent({ userName, userInitials, badges }: {
           <div key={group.section}>
             <div style={{
               padding: '14px 20px 6px',
-              fontFamily: "'Syne', sans-serif", fontWeight: 700,
+              fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
               fontSize: '0.62rem', letterSpacing: '0.12em',
               textTransform: 'uppercase', color: 'var(--muted)',
             }}>

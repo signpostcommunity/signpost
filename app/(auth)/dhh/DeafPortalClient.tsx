@@ -175,7 +175,7 @@ export default function DeafPortalClient() {
               </svg>
             </div>
             <div>
-              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem' }}>New to signpost?</div>
+              <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem' }}>New to signpost?</div>
             </div>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8, margin: 0, padding: 0 }}>
               <li style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--muted)', fontSize: '0.83rem' }}>
@@ -221,7 +221,7 @@ export default function DeafPortalClient() {
               </svg>
             </div>
             <div>
-              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem' }}>Already have a profile?</div>
+              <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem' }}>Already have a profile?</div>
             </div>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8, margin: 0, padding: 0 }}>
               <li style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--muted)', fontSize: '0.83rem' }}>
@@ -256,7 +256,7 @@ export default function DeafPortalClient() {
           >
             {activeForm === 'login' ? (
               <>
-                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.2rem', marginBottom: 20 }}>Sign in</div>
+                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.2rem', marginBottom: 20 }}>Sign in</div>
                 <GoogleSignInButton role="deaf" />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '4px 0' }}>
                   <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
@@ -298,7 +298,7 @@ export default function DeafPortalClient() {
               </>
             ) : (
               <>
-                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.2rem', marginBottom: 20 }}>Create your free profile</div>
+                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.2rem', marginBottom: 20 }}>Create your free profile</div>
                 <GoogleSignInButton role="deaf" label="Sign up with Google" />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '4px 0' }}>
                   <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />

@@ -86,7 +86,7 @@ export default function RequestSignupClient() {
 
       {step === 1 && (
         <div>
-          <h1 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '6px' }}>Who are you?</h1>
+          <h1 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '6px' }}>Who are you?</h1>
           <p style={{ color: 'var(--muted)', marginBottom: '28px', fontSize: '0.9rem' }}>Select the option that best describes you.</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {roleOptions.map((opt) => (
@@ -106,7 +106,7 @@ export default function RequestSignupClient() {
                   transition: 'border-color 0.15s',
                 }}
               >
-                <div style={{ fontWeight: 600, color: 'var(--text)', marginBottom: '4px', fontFamily: 'var(--font-syne)' }}>{opt.label}</div>
+                <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: '4px', fontFamily: "'DM Sans', sans-serif" }}>{opt.label}</div>
                 <div style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.5 }}>{opt.desc}</div>
               </button>
             ))}
@@ -116,7 +116,7 @@ export default function RequestSignupClient() {
 
       {step === 2 && (
         <div>
-          <h2 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '6px' }}>Create your account</h2>
+          <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '6px' }}>Create your account</h2>
           <p style={{ color: 'var(--muted)', marginBottom: '28px', fontSize: '0.9rem' }}>You'll use these to sign in.</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <InputField label="Full Name" value={form.name} onChange={(v) => update('name', v)} placeholder="Your name" />
@@ -155,7 +155,7 @@ export default function RequestSignupClient() {
 
       {step === 3 && (
         <div>
-          <h2 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '6px' }}>About your request</h2>
+          <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '6px' }}>About your request</h2>
           <p style={{ color: 'var(--muted)', marginBottom: '28px', fontSize: '0.9rem' }}>Tell us a bit about your interpreting needs.</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <InputField label="Phone (optional)" value={form.phone} onChange={(v) => update('phone', v)} placeholder="+1 555 000 0000" />
@@ -179,10 +179,10 @@ export default function RequestSignupClient() {
 
       {step === 4 && (
         <div>
-          <h2 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '6px' }}>Find Interpreters</h2>
+          <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '6px' }}>Find Interpreters</h2>
           <p style={{ color: 'var(--muted)', marginBottom: '28px', fontSize: '0.9rem' }}>After signing up, you'll be able to browse and request interpreters from the directory.</p>
           <div style={{ padding: '24px', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '12px' }}>
-            <div style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, marginBottom: '12px' }}>What you can do after signing up:</div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, marginBottom: '12px' }}>What you can do after signing up:</div>
             {['Browse the global interpreter directory', 'Filter by language, specialization, and region', 'View interpreter profiles and rates', 'Send booking requests directly', 'Manage requests from your dashboard'].map((item) => (
               <div key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '8px', fontSize: '0.88rem', color: 'var(--muted)' }}>
                 <span style={{ color: 'var(--accent)', marginTop: '1px' }}>✓</span>
@@ -195,7 +195,7 @@ export default function RequestSignupClient() {
 
       {step === 5 && (
         <div>
-          <h2 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '6px' }}>You're all set!</h2>
+          <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '6px' }}>You're all set!</h2>
           <p style={{ color: 'var(--muted)', marginBottom: '28px', fontSize: '0.9rem' }}>Review your information and create your account.</p>
           <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '20px', marginBottom: '24px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '0.85rem' }}>

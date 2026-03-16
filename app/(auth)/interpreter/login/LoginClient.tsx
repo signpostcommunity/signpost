@@ -49,9 +49,9 @@ export default function InterpreterLoginPage() {
       <div style={{ maxWidth: 420, width: '100%' }}>
         <h1
           style={{
-            fontFamily: 'var(--font-syne)',
+            fontFamily: "'DM Sans', sans-serif",
             fontSize: '1.8rem',
-            fontWeight: 800,
+            fontWeight: 700,
             letterSpacing: '-0.03em',
             marginBottom: '8px',
           }}

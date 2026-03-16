@@ -29,13 +29,13 @@ function RequestPortalContent() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <Link href="/request/signup" style={{ display: 'block', padding: '28px', background: 'var(--surface)', border: '1px solid rgba(0,229,255,0.3)', borderRadius: 'var(--radius)', textDecoration: 'none' }}>
-            <div style={{ fontFamily: 'var(--font-syne)', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' as const, color: 'var(--accent)', marginBottom: '8px' }}>New account</div>
-            <div style={{ fontFamily: 'var(--font-syne)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '6px' }}>Create your free account &rarr;</div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' as const, color: 'var(--accent)', marginBottom: '8px' }}>New account</div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '6px' }}>Create your free account &rarr;</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6 }}>For individuals, organizations, and institutions that need sign language interpreters.</div>
           </Link>
           <Link href="/request/login" style={{ display: 'block', padding: '28px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', textDecoration: 'none' }}>
-            <div style={{ fontFamily: 'var(--font-syne)', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' as const, color: 'var(--muted)', marginBottom: '8px' }}>Existing account</div>
-            <div style={{ fontFamily: 'var(--font-syne)', fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '6px' }}>Sign in to your dashboard &rarr;</div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' as const, color: 'var(--muted)', marginBottom: '8px' }}>Existing account</div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '6px' }}>Sign in to your dashboard &rarr;</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6 }}>Manage your requests, messages, and bookings.</div>
           </Link>
         </div>

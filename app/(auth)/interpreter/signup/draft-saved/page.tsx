@@ -23,7 +23,7 @@ export default function DraftSavedPage() {
         </div>
 
         <h1 style={{
-          fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '2rem',
+          fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '2rem',
           letterSpacing: '-0.03em', marginBottom: 12,
         }}>
           Draft saved

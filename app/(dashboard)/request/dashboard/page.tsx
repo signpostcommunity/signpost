@@ -67,17 +67,17 @@ function DetailModal({ request, onClose, onCancel }: {
       <div className="modal-dialog" style={modalBoxStyle} onClick={e => e.stopPropagation()}>
         <button onClick={onClose} style={{ position: 'absolute', top: 14, right: 14, background: 'none', border: 'none', color: 'var(--muted)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
 
-        <h2 style={{ fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: '1.25rem', marginBottom: 20 }}>Request Details</h2>
+        <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.25rem', marginBottom: 20 }}>Request Details</h2>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
           <div style={{
             width: 44, height: 44, borderRadius: '50%',
             background: 'linear-gradient(135deg, var(--accent), var(--accent2))',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: '1rem', color: '#000',
+            fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem', color: '#000',
           }}>{request.interpreter.split(' ').map(n => n[0]).join('')}</div>
           <div>
-            <div style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: '1.05rem' }}>{request.interpreter}</div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.05rem' }}>{request.interpreter}</div>
             <span style={{
               display: 'inline-flex', alignItems: 'center',
               background: ss.bg, border: `1px solid ${ss.border}`,
@@ -167,7 +167,7 @@ function NewRequestModal({ onClose, onSubmit }: { onClose: () => void; onSubmit:
       <div className="modal-dialog" style={{ ...modalBoxStyle, maxWidth: 560 }} onClick={e => e.stopPropagation()}>
         <button onClick={onClose} style={{ position: 'absolute', top: 14, right: 14, background: 'none', border: 'none', color: 'var(--muted)', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
 
-        <h2 style={{ fontFamily: 'var(--font-syne)', fontWeight: 800, fontSize: '1.25rem', marginBottom: 4 }}>New Interpreter Request</h2>
+        <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.25rem', marginBottom: 4 }}>New Interpreter Request</h2>
         <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginBottom: 20 }}>Step {step} of {totalSteps}</p>
 
         {/* Progress bar */}
@@ -314,7 +314,7 @@ export default function RequesterDashboardPage() {
     <div style={{ maxWidth: 960, margin: '0 auto', padding: '32px 32px 64px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 4 }}>My Requests</h1>
+          <h1 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 4 }}>My Requests</h1>
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem' }}>Track and manage your interpreter requests</p>
         </div>
         <button onClick={() => setShowNewRequest(true)} className="btn-primary" style={{ padding: '9px 18px', fontSize: '0.88rem', cursor: 'pointer' }}>
@@ -350,7 +350,7 @@ export default function RequesterDashboardPage() {
             <div key={req.id} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5, flexWrap: 'wrap' }}>
-                  <span style={{ fontFamily: 'var(--font-syne)', fontWeight: 700 }}>{req.interpreter}</span>
+                  <span style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700 }}>{req.interpreter}</span>
                   <span style={{ display: 'inline-flex', alignItems: 'center', background: ss.bg, border: `1px solid ${ss.border}`, borderRadius: 100, padding: '2px 10px', fontSize: '0.72rem', color: ss.color, fontWeight: 600, textTransform: 'capitalize' }}>{req.status}</span>
                 </div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--muted)', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
@@ -370,7 +370,7 @@ export default function RequesterDashboardPage() {
 
       {filtered.length === 0 && (
         <div style={{ textAlign: 'center', padding: 60, color: 'var(--muted)' }}>
-          <div style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, marginBottom: 8 }}>No requests found</div>
+          <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, marginBottom: 8 }}>No requests found</div>
           <Link href="/directory" style={{ color: 'var(--accent)', textDecoration: 'none', fontSize: '0.9rem' }}>Browse interpreters →</Link>
         </div>
       )}

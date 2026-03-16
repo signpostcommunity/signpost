@@ -66,7 +66,7 @@ export default function ConfirmModal({
           <h2
             id="confirm-modal-title"
             style={{
-              fontFamily: "'Syne', sans-serif", fontWeight: 800,
+              fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
               fontSize: '1.1rem', margin: 0,
             }}
           >

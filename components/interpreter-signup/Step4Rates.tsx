@@ -91,7 +91,7 @@ function RateProfileCard({
           }} />
           <div>
             <div style={{
-              fontFamily: "'Syne', sans-serif", fontWeight: 700,
+              fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
               fontSize: '0.95rem', marginBottom: 2,
             }}>
               {profile.name}
@@ -106,7 +106,7 @@ function RateProfileCard({
             <span style={{
               borderRadius: 100, padding: '3px 10px',
               fontSize: '0.68rem', fontWeight: 700,
-              fontFamily: "'Syne', sans-serif", letterSpacing: '0.06em',
+              fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.06em',
               textTransform: 'uppercase',
               background: 'rgba(0,229,255,0.1)',
               border: '1px solid rgba(0,229,255,0.25)',
@@ -378,7 +378,7 @@ export default function Step4Rates({ onBack, onContinue }: {
         borderRadius: 'var(--radius-sm)', padding: '18px 20px', marginBottom: 28,
       }}>
         <div style={{
-          fontFamily: "'Syne', sans-serif", fontSize: '0.7rem', fontWeight: 700,
+          fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
           letterSpacing: '0.1em', textTransform: 'uppercase',
           color: 'var(--muted)', marginBottom: 8,
         }}>
@@ -410,7 +410,7 @@ export default function Step4Rates({ onBack, onContinue }: {
         borderRadius: 'var(--radius-sm)', padding: '18px 20px', marginTop: 28,
       }}>
         <div style={{
-          fontFamily: "'Syne', sans-serif", fontSize: '0.7rem', fontWeight: 700,
+          fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
           letterSpacing: '0.1em', textTransform: 'uppercase',
           color: 'var(--accent)', marginBottom: 8,
         }}>

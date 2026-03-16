@@ -73,7 +73,7 @@ export default function InterpretersClient({ interpreters }: { interpreters: Int
                 {headers.map(h => (
                   <th key={h} style={{
                     padding: '12px 16px', textAlign: 'left',
-                    fontFamily: "'Syne', sans-serif", fontWeight: 700,
+                    fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
                     fontSize: '0.72rem', textTransform: 'uppercase',
                     letterSpacing: '0.05em', color: 'var(--muted)',
                   }}>
@@ -183,7 +183,7 @@ export default function InterpretersClient({ interpreters }: { interpreters: Int
 
   return (
     <div className="admin-interp-content" style={{ padding: '32px 40px', maxWidth: 1200 }}>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 700, marginBottom: 8 }}>
+      <h1 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.6rem', fontWeight: 700, marginBottom: 8 }}>
         Interpreters
       </h1>
       <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: 24 }}>
@@ -234,7 +234,7 @@ export default function InterpretersClient({ interpreters }: { interpreters: Int
       )}
 
       {/* All interpreters */}
-      <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1rem', fontWeight: 700, marginBottom: 12 }}>
+      <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1rem', fontWeight: 700, marginBottom: 12 }}>
         All Interpreters
       </h2>
       {renderTable(filteredRest, false)}

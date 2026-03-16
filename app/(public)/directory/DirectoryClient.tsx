@@ -342,7 +342,7 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
                 zIndex: 1,
               }}>
                 <span style={{
-                  fontFamily: 'var(--font-syne)',
+                  fontFamily: "'DM Sans', sans-serif",
                   fontSize: '1rem',
                   fontWeight: 700,
                   color: 'var(--text)',
@@ -432,9 +432,9 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
             </div>
             <h2
               style={{
-                fontFamily: 'var(--font-syne)',
+                fontFamily: "'DM Sans', sans-serif",
                 fontSize: '1.25rem',
-                fontWeight: 800,
+                fontWeight: 700,
                 letterSpacing: '-0.02em',
                 marginBottom: 10,
                 lineHeight: 1.3,

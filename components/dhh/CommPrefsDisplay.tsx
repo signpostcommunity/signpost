@@ -41,7 +41,7 @@ export default function CommPrefsDisplay({
       borderRadius: 'var(--radius-sm)', padding: '20px 24px',
     }}>
       <div style={{
-        fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.92rem',
+        fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.92rem',
         marginBottom: hasAny ? 16 : 8,
       }}>
         Communication Preferences

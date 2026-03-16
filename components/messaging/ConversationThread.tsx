@@ -78,7 +78,7 @@ function Avatar({ name, photo, size = 32 }: { name: string; photo: string | null
       width: size, height: size, borderRadius: '50%', flexShrink: 0,
       background: getGradient(name),
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontFamily: "'Syne', sans-serif", fontWeight: 700,
+      fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
       fontSize: size <= 32 ? '0.7rem' : '0.85rem', color: '#fff',
     }}>
       {getInitials(name)}
@@ -268,7 +268,7 @@ export default function ConversationThread({ conversationId, backHref }: { conve
         </button>
         <Avatar name={other.name} photo={other.photoUrl} size={36} />
         <div style={{ flex: 1 }}>
-          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.95rem' }}>
+          <span style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.95rem' }}>
             {other.name}
           </span>
           {data.conversation.subject && (

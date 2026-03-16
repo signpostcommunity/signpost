@@ -67,8 +67,8 @@ export default function BetaWelcomeModal() {
           <h2
             id="beta-welcome-title"
             style={{
-              fontFamily: "'Syne', sans-serif",
-              fontWeight: 800,
+              fontFamily: "'DM Sans', sans-serif",
+              fontWeight: 700,
               fontSize: '1.2rem',
               margin: '0 0 16px',
               lineHeight: 1.3,

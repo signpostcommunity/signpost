@@ -125,7 +125,7 @@ export default function DhhInboxPage() {
           onClick={() => setActiveTab('messages')}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            padding: '10px 20px', fontFamily: "'Syne', sans-serif", fontWeight: 700,
+            padding: '10px 20px', fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
             fontSize: '0.88rem',
             color: activeTab === 'messages' ? '#9d87ff' : 'var(--muted)',
             borderBottom: activeTab === 'messages' ? '2px solid #9d87ff' : '2px solid transparent',
@@ -138,7 +138,7 @@ export default function DhhInboxPage() {
           onClick={() => setActiveTab('notifications')}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            padding: '10px 20px', fontFamily: "'Syne', sans-serif", fontWeight: 700,
+            padding: '10px 20px', fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
             fontSize: '0.88rem',
             color: activeTab === 'notifications' ? '#9d87ff' : 'var(--muted)',
             borderBottom: activeTab === 'notifications' ? '2px solid #9d87ff' : '2px solid transparent',
@@ -172,7 +172,7 @@ export default function DhhInboxPage() {
                 padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10,
                 borderBottom: '1px solid var(--border)',
               }}>
-                <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
+                <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
                   Conversations
                 </h2>
               </div>
@@ -197,7 +197,7 @@ export default function DhhInboxPage() {
                 padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10,
                 borderBottom: '1px solid var(--border)',
               }}>
-                <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
+                <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
                   Notifications
                 </h2>
                 {unreadNotifCount > 0 && (

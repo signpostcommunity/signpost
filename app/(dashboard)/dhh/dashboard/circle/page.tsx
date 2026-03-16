@@ -150,7 +150,7 @@ export default function TrustedDeafCirclePage() {
     <div className="dash-page-content" style={{ padding: '40px 48px', maxWidth: 900 }}>
       {/* Title */}
       <h1 style={{
-        fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '1.6rem',
+        fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.6rem',
         margin: '0 0 20px', color: 'var(--text)',
       }}>
         Your trusted Deaf circle
@@ -212,7 +212,7 @@ export default function TrustedDeafCirclePage() {
           {/* Your circle (accepted) */}
           <section style={{ marginBottom: 40 }}>
             <h2 style={{
-              fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem',
+              fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem',
               margin: '0 0 16px', color: 'var(--text)',
             }}>
               Your circle
@@ -239,7 +239,7 @@ export default function TrustedDeafCirclePage() {
                         width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
                         background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.75rem', color: '#fff',
+                        fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.75rem', color: '#fff',
                       }}>
                         {c.other_name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()}
                       </div>
@@ -274,7 +274,7 @@ export default function TrustedDeafCirclePage() {
           {(pendingSent.length > 0 || pendingReceived.length > 0) && (
             <section>
               <h2 style={{
-                fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem',
+                fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem',
                 margin: '0 0 16px', color: 'var(--text)',
               }}>
                 Pending invites
@@ -308,7 +308,7 @@ export default function TrustedDeafCirclePage() {
                             width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
                             background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.75rem', color: '#fff',
+                            fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.75rem', color: '#fff',
                           }}>
                             {c.other_name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()}
                           </div>
@@ -480,7 +480,7 @@ function InviteModal({ email, setEmail, loading, error, onSubmit, onClose }: {
         }}
       >
         <h2 style={{
-          fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.15rem',
+          fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.15rem',
           margin: '0 0 8px', color: 'var(--text)',
         }}>
           Invite someone to your Deaf circle
@@ -578,7 +578,7 @@ function ViewListModal({ userName, roster, loading, tierBadge, onClose }: {
     return (
       <div style={{ marginBottom: 24 }}>
         <h3 style={{
-          fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.92rem',
+          fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.92rem',
           margin: '0 0 10px', color: 'var(--text)',
         }}>
           {title}
@@ -603,7 +603,7 @@ function ViewListModal({ userName, roster, loading, tierBadge, onClose }: {
                     width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
                     background: item.color || 'linear-gradient(135deg, #9d87ff, #00e5ff)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.7rem', color: '#fff',
+                    fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem', color: '#fff',
                   }}>
                     {item.initials}
                   </div>
@@ -671,7 +671,7 @@ function ViewListModal({ userName, roster, loading, tierBadge, onClose }: {
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <h2 style={{
-            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.15rem',
+            fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.15rem',
             margin: 0, color: 'var(--text)',
           }}>
             {userName}&apos;s interpreter list

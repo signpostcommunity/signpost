@@ -141,7 +141,7 @@ function StatCard({ num, label, href }: { num: number; label: string; href: stri
           flex: 1,
         }}
       >
-        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '2rem', letterSpacing: '-0.04em', color: 'var(--accent)' }}>{num}</div>
+        <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '2rem', letterSpacing: '-0.04em', color: 'var(--accent)' }}>{num}</div>
         <div style={{ color: 'var(--muted)', fontSize: '0.78rem', marginTop: 4 }}>{label}</div>
       </div>
     </Link>
@@ -446,7 +446,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 24,
       }}>
         <div style={{
-          fontFamily: "'Syne', sans-serif", fontSize: '0.7rem', fontWeight: 700,
+          fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
           letterSpacing: '0.12em', textTransform: 'uppercase',
           color: 'var(--accent)', marginBottom: 8,
         }}>
@@ -538,7 +538,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
               }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif" }}>{inq.title || 'Booking Request'}</div>
+                    <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'DM Sans', sans-serif" }}>{inq.title || 'Booking Request'}</div>
                     <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>
                       From: {inq.requester_name || 'Unknown'} · {inq.specialization || 'General'}
                     </div>
@@ -589,7 +589,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
               }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif" }}>{booking.title || 'Confirmed Booking'}</div>
+                    <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'DM Sans', sans-serif" }}>{booking.title || 'Confirmed Booking'}</div>
                     <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>{booking.requester_name || 'Client'} · {booking.specialization || 'General'}</div>
                   </div>
                   <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>

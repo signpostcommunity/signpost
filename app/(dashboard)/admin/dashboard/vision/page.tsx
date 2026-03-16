@@ -30,7 +30,7 @@ function SectionLabel({ children, color }: { children: React.ReactNode; color: s
       display: 'flex', alignItems: 'center', gap: 16, marginBottom: 24,
     }}>
       <div style={{
-        fontFamily: 'var(--font-syne)', fontSize: '0.7rem', fontWeight: 700,
+        fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
         letterSpacing: '0.12em', textTransform: 'uppercase', color,
         whiteSpace: 'nowrap',
       }}>
@@ -45,7 +45,7 @@ function FeatureBlock({ title, items, accent }: { title: string; items: string[]
   return (
     <div>
       <h3 style={{
-        fontFamily: 'var(--font-syne)', fontSize: '1.05rem', fontWeight: 700,
+        fontFamily: "'DM Sans', sans-serif", fontSize: '1.05rem', fontWeight: 700,
         color: accent, marginBottom: 12, letterSpacing: '-0.01em',
       }}>
         {title}
@@ -70,7 +70,7 @@ function WowFeature({ title, intro, bullets, callout, accent }: {
       border: '1px solid var(--border)', borderRadius: 'var(--radius)',
     }}>
       <h3 style={{
-        fontFamily: 'var(--font-syne)', fontSize: '1.05rem', fontWeight: 800,
+        fontFamily: "'DM Sans', sans-serif", fontSize: '1.05rem', fontWeight: 700,
         color: accent, marginBottom: 10, letterSpacing: '-0.02em',
       }}>
         {title}
@@ -101,8 +101,8 @@ function DeafPortalTab() {
   return (
     <div>
       <h2 style={{
-        fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.6rem, 3vw, 2.2rem)',
-        fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.25, marginBottom: 8,
+        fontFamily: "'DM Sans', sans-serif", fontSize: 'clamp(1.6rem, 3vw, 2.2rem)',
+        fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1.25, marginBottom: 8,
         color: 'var(--text)',
       }}>
         signpost: Deaf/DB/HH Portal
@@ -274,8 +274,8 @@ function InterpreterPortalTab() {
   return (
     <div>
       <h2 style={{
-        fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.6rem, 3vw, 2.2rem)',
-        fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.25, marginBottom: 8,
+        fontFamily: "'DM Sans', sans-serif", fontSize: 'clamp(1.6rem, 3vw, 2.2rem)',
+        fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1.25, marginBottom: 8,
         color: 'var(--text)',
       }}>
         signpost: Interpreter Portal
@@ -326,8 +326,8 @@ function RequesterPortalTab() {
   return (
     <div>
       <h2 style={{
-        fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.6rem, 3vw, 2.2rem)',
-        fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.25, marginBottom: 8,
+        fontFamily: "'DM Sans', sans-serif", fontSize: 'clamp(1.6rem, 3vw, 2.2rem)',
+        fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1.25, marginBottom: 8,
         color: 'var(--text)',
       }}>
         signpost: Requester Portal
@@ -413,8 +413,8 @@ function CommitmentsTab() {
   return (
     <div>
       <h2 style={{
-        fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.6rem, 3vw, 2.2rem)',
-        fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.25, marginBottom: 48,
+        fontFamily: "'DM Sans', sans-serif", fontSize: 'clamp(1.6rem, 3vw, 2.2rem)',
+        fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1.25, marginBottom: 48,
         color: 'var(--text)',
       }}>
         signpost: Our Commitments
@@ -447,8 +447,8 @@ export default function VisionPage() {
       <div style={{ background: '#1a1a24', paddingTop: 48 }}>
         <div style={{ padding: '0 40px' }}>
           <h1 style={{
-            fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.4rem, 2.5vw, 1.8rem)',
-            fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.3,
+            fontFamily: "'DM Sans', sans-serif", fontSize: 'clamp(1.4rem, 2.5vw, 1.8rem)',
+            fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.3,
             color: 'var(--text)', marginBottom: 32,
           }}>
             Product Vision
@@ -466,7 +466,7 @@ export default function VisionPage() {
                 aria-controls={`vision-panel-${tab.id}`}
                 onClick={() => setActiveTab(tab.id)}
                 style={{
-                  fontFamily: 'var(--font-syne)', fontSize: '0.82rem', fontWeight: 600,
+                  fontFamily: "'DM Sans', sans-serif", fontSize: '0.82rem', fontWeight: 700,
                   letterSpacing: '0.02em', padding: '12px 20px',
                   background: activeTab === tab.id ? '#000' : 'transparent',
                   color: activeTab === tab.id ? 'var(--text)' : 'var(--muted)',

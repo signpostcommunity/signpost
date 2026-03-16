@@ -196,7 +196,7 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
               width: 72, height: 72, borderRadius: '50%', flexShrink: 0,
               background: 'linear-gradient(135deg,#7b61ff,#00e5ff)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.4rem', color: '#fff',
+              fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.4rem', color: '#fff',
             }}>{initials}</div>
           )}
           <div>

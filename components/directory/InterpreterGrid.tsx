@@ -19,7 +19,7 @@ export default function InterpreterGrid({ interpreters, onVideoPreview, onAddToL
         }}
       >
         <div style={{ fontSize: '2rem', marginBottom: '16px' }}>🔍</div>
-        <div style={{ fontFamily: 'var(--font-syne)', fontWeight: 700, fontSize: '1.1rem', marginBottom: '8px' }}>
+        <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem', marginBottom: '8px' }}>
           No interpreters found
         </div>
         <div style={{ fontSize: '0.9rem' }}>Try adjusting your filters.</div>

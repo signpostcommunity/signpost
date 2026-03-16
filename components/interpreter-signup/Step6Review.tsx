@@ -422,7 +422,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         </div>
 
         <h2 style={{
-          fontFamily: "'Syne', sans-serif", fontWeight: 800, marginBottom: 8,
+          fontFamily: "'DM Sans', sans-serif", fontWeight: 700, marginBottom: 8,
         }}>
           Ready to Submit
         </h2>
@@ -439,7 +439,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
           textAlign: 'left', margin: '0 auto 24px', maxWidth: 480,
         }}>
           <div style={{
-            fontFamily: "'Syne', sans-serif", fontSize: '0.7rem', fontWeight: 700,
+            fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
             letterSpacing: '0.1em', textTransform: 'uppercase',
             color: 'var(--accent)', marginBottom: 14,
           }}>

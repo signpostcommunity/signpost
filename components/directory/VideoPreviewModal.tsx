@@ -90,7 +90,7 @@ export default function VideoPreviewModal({
         >
           <div
             style={{
-              fontFamily: "'Syne', sans-serif",
+              fontFamily: "'DM Sans', sans-serif",
               fontWeight: 700,
               fontSize: '1.05rem',
               color: 'var(--text, #f0f2f8)',

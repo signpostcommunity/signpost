@@ -236,7 +236,7 @@ export default function InvoiceViewPage() {
           <div>
             <span
               style={{
-                fontFamily: "'Syne', sans-serif",
+                fontFamily: "'DM Sans', sans-serif",
                 fontWeight: 700,
                 fontSize: '28px',
                 color: '#1a1a1a',

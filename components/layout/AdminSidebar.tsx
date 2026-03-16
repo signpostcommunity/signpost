@@ -121,12 +121,12 @@ function SidebarContent({ userName, userInitials }: { userName: string; userInit
             width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
             background: `linear-gradient(135deg, ${ORANGE}, #ff9a44)`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.85rem', color: '#fff',
+            fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.85rem', color: '#fff',
           }}>
             {userInitials}
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.92rem' }}>{userName}</div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.92rem' }}>{userName}</div>
             <div style={{ color: ORANGE, fontSize: '0.75rem', marginTop: 2, fontWeight: 600 }}>Admin</div>
           </div>
         </div>
@@ -141,7 +141,7 @@ function SidebarContent({ userName, userInitials }: { userName: string; userInit
           <div key={group.section}>
             <div style={{
               padding: '14px 20px 6px',
-              fontFamily: "'Syne', sans-serif", fontWeight: 700,
+              fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
               fontSize: '0.62rem', letterSpacing: '0.12em',
               textTransform: 'uppercase', color: 'var(--muted)',
             }}>
@@ -241,7 +241,7 @@ export default function AdminSidebar({ userName = 'Admin', userInitials = 'AD' }
         </button>
         {/* Center: name + role */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.88rem' }}>{userName}</span>
+          <span style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.88rem' }}>{userName}</span>
           <span style={{ fontSize: '0.72rem', color: ORANGE, fontWeight: 600 }}>Admin</span>
         </div>
         {/* Right: notification bell */}

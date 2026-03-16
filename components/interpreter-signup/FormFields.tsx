@@ -15,7 +15,7 @@ export function FormSection({ children, style }: { children: ReactNode; style?: 
 export function SectionTitle({ children }: { children: ReactNode }) {
   return (
     <div style={{
-      fontFamily: "'Syne', sans-serif",
+      fontFamily: "'DM Sans', sans-serif",
       fontSize: '0.7rem', fontWeight: 700,
       letterSpacing: '0.12em', textTransform: 'uppercase',
       color: 'var(--accent)', marginBottom: 20,

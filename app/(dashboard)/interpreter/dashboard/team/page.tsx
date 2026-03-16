@@ -32,7 +32,7 @@ const fieldInputStyle: React.CSSProperties = {
 
 const fieldLabelStyle: React.CSSProperties = {
   display: 'block', fontSize: '0.75rem', color: 'var(--muted)',
-  fontFamily: "'Syne', sans-serif", fontWeight: 700,
+  fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
   letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6,
 }
 
@@ -106,7 +106,7 @@ function InviteModal({ onClose, onSaved, interpreterId, interpreterFullName }: {
       <div className="modal-dialog" style={modalStyle}>
         <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
           <div style={{ fontSize: '2rem', marginBottom: 12 }}>✓</div>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent)', marginBottom: 8 }}>
+          <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent)', marginBottom: 8 }}>
             {firstName} has been added to your Preferred Team!
           </div>
           <button className="btn-primary" onClick={onClose} style={{ padding: '10px 28px' }}>Done</button>
@@ -119,7 +119,7 @@ function InviteModal({ onClose, onSaved, interpreterId, interpreterFullName }: {
     <div style={overlayStyle}>
       <div className="modal-dialog" style={modalStyle}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Invite to your preferred team</div>
+          <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Invite to your preferred team</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
         </div>
 
@@ -191,7 +191,7 @@ function TierSection({ title, accentColor, members, onMoveTier, onRemove, onEdit
   return (
     <div style={{ marginBottom: 32 }}>
       <div style={{
-        fontFamily: "'Syne', sans-serif", fontWeight: 700,
+        fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
         fontSize: '0.72rem', letterSpacing: '0.1em',
         textTransform: 'uppercase', color: accentColor,
         marginBottom: 12, paddingBottom: 8,
