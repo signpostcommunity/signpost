@@ -54,13 +54,12 @@ export function emailTemplate({
           <tr>
             <td style="padding: 32px 36px 24px; border-bottom: 1px solid #1e2433;">
               <span style="
-                font-family: 'Helvetica Neue', Arial, sans-serif;
-                font-weight: 800;
-                font-size: 22px;
-                letter-spacing: -0.5px;
+                font-family: 'Arial Black', 'Helvetica Neue', Arial, sans-serif;
+                font-weight: 900;
+                font-size: 24px;
+                letter-spacing: -0.8px;
+                line-height: 1;
               "><span style="color: #ffffff;">sign</span><span style="color: #00e5ff;">post</span></span>
-            </td>
-          </tr>
 
           <!-- Body -->
           <tr>

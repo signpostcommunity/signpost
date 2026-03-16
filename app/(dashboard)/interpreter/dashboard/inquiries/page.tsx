@@ -600,7 +600,7 @@ export default function InquiriesPage() {
             background: 'var(--card-bg)', border: '1px solid var(--border)',
             borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 12,
           }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+            <div className="dash-card-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
               <div>
                 <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif" }}>{inq.title || 'Booking Request'}</div>
                 <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>
@@ -610,7 +610,7 @@ export default function InquiriesPage() {
                   )}
                 </div>
               </div>
-              <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+              <div className="dash-card-badges" style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                 {inq.is_seed && <DemoBadge />}
                 <StatusBadge status="pending" />
               </div>

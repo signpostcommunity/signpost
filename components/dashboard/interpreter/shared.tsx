@@ -228,13 +228,16 @@ export function DashMobileStyles() {
       @media (max-width: 768px) {
         .dash-page-content { padding: 24px 20px !important; }
         .request-card { padding: 16px 16px !important; }
-        .request-card-header {
-          flex-direction: column-reverse !important;
+        .request-card-header,
+        .dash-card-header {
+          flex-direction: column !important;
           align-items: flex-start !important;
           gap: 10px !important;
         }
-        .request-card-badges {
+        .request-card-badges,
+        .dash-card-badges {
           margin-left: 0;
+          order: -1;
         }
         .request-card-details {
           padding: 12px 0 !important;

@@ -313,10 +313,10 @@ export default function RatesPage() {
           }}>
             {/* Header */}
             <div
-              onClick={() => !profile.isDefault && toggleOpen(profile.id)}
+              onClick={() => toggleOpen(profile.id)}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '18px 22px', cursor: profile.isDefault ? 'default' : 'pointer',
+                padding: '18px 22px', cursor: 'pointer',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -324,7 +324,7 @@ export default function RatesPage() {
                 <div>
                   <div style={{ fontWeight: 700, fontSize: '0.92rem' }}>{profile.name}</div>
                   <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 2 }}>
-                    {profile.isDefault ? 'Your default for most bookings' : 'Click to expand'}
+                    {profile.isDefault ? 'Your default for most bookings' : 'Click to expand/collapse'}
                   </div>
                 </div>
               </div>
@@ -333,16 +333,14 @@ export default function RatesPage() {
                   <span style={{ fontSize: '0.7rem', fontWeight: 700, background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.25)', color: 'var(--accent)', borderRadius: 6, padding: '2px 8px' }}>Default</span>
                 )}
                 {!profile.isDefault && (
-                  <>
-                    <button
-                      onClick={e => { e.stopPropagation(); removeProfile(profile.id) }}
-                      style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--muted)', fontSize: '0.75rem', padding: '4px 10px', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}
-                    >
-                      Remove
-                    </button>
-                    <span style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>{isOpen ? '▲' : '▼'}</span>
-                  </>
+                  <button
+                    onClick={e => { e.stopPropagation(); removeProfile(profile.id) }}
+                    style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--muted)', fontSize: '0.75rem', padding: '4px 10px', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}
+                  >
+                    Remove
+                  </button>
                 )}
+                <span style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>{isOpen ? '▲' : '▼'}</span>
               </div>
             </div>
 
