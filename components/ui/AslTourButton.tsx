@@ -149,8 +149,7 @@ export default function AslTourButton() {
             }}
           >
             signpost is building an ASL video tour of every page, presented by
-            our co-founder Regina McGinnis, a Deaf professional with 20 years of
-            experience.
+            a Deaf native signer from our team.
           </p>
 
           <p
