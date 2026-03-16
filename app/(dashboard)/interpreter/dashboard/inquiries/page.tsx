@@ -566,10 +566,14 @@ export default function InquiriesPage() {
 
       let bookingsMap: Record<string, Record<string, unknown>> = {}
       if (bookingIds.length > 0) {
-        const { data: bookingsData } = await supabase
+        const { data: bookingsData, error: bookingsErr } = await supabase
           .from('bookings')
-          .select('id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed, created_at, request_type, dhh_client_id, context_video_url, context_video_visible_before_accept')
+          .select('id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed, created_at, request_type, dhh_client_id, context_video_url')
           .in('id', bookingIds)
+
+        if (bookingsErr) {
+          console.error('[inquiries] bookings fetch error:', bookingsErr.message, bookingsErr.details)
+        }
 
         if (bookingsData) {
           for (const b of bookingsData) {

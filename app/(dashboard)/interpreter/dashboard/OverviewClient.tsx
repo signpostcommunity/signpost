@@ -304,10 +304,13 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       if (!pendingErr && pendingRecipients) {
         const pendingBookingIds = pendingRecipients.map(r => r.booking_id).filter(Boolean)
         if (pendingBookingIds.length > 0) {
-          const { data: pendingBookingsData } = await supabase
+          const { data: pendingBookingsData, error: pendingBookingsErr } = await supabase
             .from('bookings')
             .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed')
             .in('id', pendingBookingIds)
+          if (pendingBookingsErr) {
+            console.error('[overview] pending bookings fetch error:', pendingBookingsErr.message, pendingBookingsErr.details)
+          }
           if (pendingBookingsData) {
             setPendingBookings(pendingBookingsData as Booking[])
           }
@@ -330,10 +333,13 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         const confBookingIds = confirmedRecipients.map(r => r.booking_id).filter(Boolean)
         let confBookingsData: { id: string; date: string }[] = []
         if (confBookingIds.length > 0) {
-          const { data: bData } = await supabase
+          const { data: bData, error: confBookingsErr } = await supabase
             .from('bookings')
             .select('id, date')
             .in('id', confBookingIds)
+          if (confBookingsErr) {
+            console.error('[overview] confirmed bookings fetch error:', confBookingsErr.message, confBookingsErr.details)
+          }
           confBookingsData = (bData || []) as { id: string; date: string }[]
         }
         const thisMonthCount = confBookingsData.filter(b => b.date >= startOfMonth && b.date <= endOfMonth).length
@@ -345,13 +351,16 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       if (!confirmedErr && confirmedRecipients) {
         const upcomingBookingIds = confirmedRecipients.map(r => r.booking_id).filter(Boolean)
         if (upcomingBookingIds.length > 0) {
-          const { data: upcomingData } = await supabase
+          const { data: upcomingData, error: upcomingErr } = await supabase
             .from('bookings')
             .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed')
             .in('id', upcomingBookingIds)
             .gte('date', today)
             .order('date', { ascending: true })
             .limit(2)
+          if (upcomingErr) {
+            console.error('[overview] upcoming bookings fetch error:', upcomingErr.message, upcomingErr.details)
+          }
           if (upcomingData) {
             setConfirmedBookings(upcomingData as Booking[])
           }

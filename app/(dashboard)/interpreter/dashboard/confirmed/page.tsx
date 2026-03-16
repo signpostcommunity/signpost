@@ -1601,10 +1601,14 @@ export default function ConfirmedPage() {
 
       let bookingsMap: Record<string, Record<string, unknown>> = {}
       if (recipientBookingIds.length > 0) {
-        const { data: bookingsData } = await supabase
+        const { data: bookingsData, error: bookingsErr } = await supabase
           .from('bookings')
           .select('id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, description, notes, status, is_seed, cancellation_reason, sub_search_initiated, context_video_url')
           .in('id', recipientBookingIds)
+
+        if (bookingsErr) {
+          console.error('[confirmed] bookings fetch error:', bookingsErr.message, bookingsErr.details)
+        }
 
         if (bookingsData) {
           for (const b of bookingsData) {
