@@ -117,7 +117,7 @@ function OpenBadge() {
       border: '1px solid rgba(249,115,22,0.25)',
       fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em',
     }}>
-      Open
+      Still looking
     </span>
   )
 }

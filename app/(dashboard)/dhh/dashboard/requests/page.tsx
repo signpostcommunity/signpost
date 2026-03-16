@@ -53,12 +53,15 @@ interface BookingWithRecipients {
   cancellation_reason: string | null
   cancelled_at?: string | null
   created_at: string
+  requester_name?: string | null
   recipients: Recipient[]
 }
 
-function formatDate(dateStr: string): string {
+/* ── Helpers ── */
+
+function formatDateShort(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00')
-  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 }
 
 function formatTime(start: string, end: string): string {
@@ -71,21 +74,20 @@ function formatTime(start: string, end: string): string {
   return `${fmt(start)} – ${fmt(end)}`
 }
 
-function FormatBadge({ format }: { format: string | null }) {
-  if (!format) return null
-  const label = format === 'in_person' ? 'In-person' : 'Remote'
-  const colors = format === 'in_person'
-    ? { bg: 'rgba(0,229,255,0.15)', color: '#00e5ff', border: 'rgba(0,229,255,0.25)' }
-    : { bg: 'rgba(123,97,255,0.15)', color: '#7b61ff', border: 'rgba(123,97,255,0.25)' }
-  return (
-    <span style={{
-      fontSize: '0.7rem', fontWeight: 600, padding: '2px 8px',
-      borderRadius: 100, background: colors.bg,
-      color: colors.color, border: `1px solid ${colors.border}`,
-    }}>
-      {label}
-    </span>
-  )
+function getDisplayStatusLabel(status: string): string {
+  if (status === 'open') return 'Still looking'
+  if (status === 'filled') return 'Confirmed'
+  if (status === 'cancelled') return 'Cancelled'
+  if (status === 'completed') return 'Completed'
+  return status
+}
+
+function getStatusColors(status: string) {
+  if (status === 'open') return { bg: 'rgba(255,165,0,0.12)', border: 'rgba(255,165,0,0.3)', text: '#ffa500' }
+  if (status === 'filled') return { bg: 'rgba(52,211,153,0.1)', border: 'rgba(52,211,153,0.3)', text: '#34d399' }
+  if (status === 'completed') return { bg: 'rgba(0,229,255,0.1)', border: 'rgba(0,229,255,0.3)', text: '#00e5ff' }
+  if (status === 'cancelled') return { bg: 'rgba(255,77,109,0.1)', border: 'rgba(255,77,109,0.3)', text: '#ff8099' }
+  return { bg: 'rgba(255,255,255,0.06)', border: 'var(--border)', text: 'var(--muted)' }
 }
 
 function isBookingCompleted(booking: BookingWithRecipients): boolean {
@@ -96,102 +98,37 @@ function isBookingCompleted(booking: BookingWithRecipients): boolean {
   return false
 }
 
-/* Recipient status pill */
-function StatusPill({ status, rate, showRate = true }: { status: string; rate?: number | null; showRate?: boolean }) {
-  const displayRate = showRate ? rate : null
-  const configs: Record<string, { bg: string; color: string; label: string; dot: string }> = {
-    sent: { bg: 'rgba(184,191,207,0.1)', color: 'var(--muted)', label: 'Awaiting response', dot: '#6b7280' },
-    viewed: { bg: 'rgba(96,165,250,0.1)', color: '#60a5fa', label: 'Viewed', dot: '#60a5fa' },
-    responded: { bg: 'rgba(0,229,255,0.1)', color: '#00e5ff', label: displayRate ? `Available — $${displayRate}/hr` : 'Available', dot: '#00e5ff' },
-    confirmed: { bg: 'rgba(52,211,153,0.1)', color: '#34d399', label: 'Confirmed', dot: '#34d399' },
-    declined: { bg: 'rgba(255,107,133,0.08)', color: '#ff8099', label: 'Unavailable', dot: '#ff6b85' },
-    withdrawn: { bg: 'rgba(184,191,207,0.06)', color: 'var(--muted)', label: 'Withdrawn', dot: '#6b7280' },
-  }
-  const c = configs[status] || configs.sent
-  const isWithdrawn = status === 'withdrawn'
+/* ── SVG Icons (thin-line style) ── */
 
+function CalendarIcon() {
   return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 6,
-      fontSize: '0.74rem', fontWeight: 500, padding: '3px 10px',
-      borderRadius: 100, background: c.bg, color: c.color,
-      textDecoration: isWithdrawn ? 'line-through' : undefined,
-    }}>
-      <span style={{
-        width: 6, height: 6, borderRadius: '50%',
-        background: c.dot, flexShrink: 0,
-      }} />
-      {c.label}
-    </span>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
   )
 }
 
-/* Interpreter status list */
-function InterpreterStatusList({ recipients, interpCount, showRate = true }: { recipients: Recipient[]; interpCount: number; showRate?: boolean }) {
-  const confirmedCount = recipients.filter(r => r.status === 'confirmed').length
-  const allConfirmed = confirmedCount >= interpCount && interpCount > 0
-
+function ClockIcon() {
   return (
-    <div style={{ marginBottom: 14, marginTop: 8 }}>
-      <div style={{
-        fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em',
-        textTransform: 'uppercase' as const, color: 'var(--muted)', marginBottom: 8,
-      }}>
-        Interpreter Status
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        {recipients.map(r => {
-          const interp = r.interpreter
-          const interpName = interp?.name || 'Interpreter'
-          const initials = interp?.first_name
-            ? `${interp.first_name[0]}${interp.last_name?.[0] || ''}`.toUpperCase()
-            : interpName[0]?.toUpperCase() || 'I'
-
-          return (
-            <div key={r.id} style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              gap: 10, padding: '6px 10px',
-              background: 'rgba(255,255,255,0.02)', borderRadius: 8,
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                {interp?.photo_url ? (
-                  <img src={interp.photo_url} alt="" style={{
-                    width: 24, height: 24, borderRadius: '50%', objectFit: 'cover',
-                  }} />
-                ) : (
-                  <div style={{
-                    width: 24, height: 24, borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.55rem', color: '#fff',
-                  }}>
-                    {initials}
-                  </div>
-                )}
-                <span style={{ fontSize: '0.82rem', fontWeight: 500 }}>{interpName}</span>
-              </div>
-              <StatusPill status={r.status} rate={r.response_rate} showRate={showRate} />
-            </div>
-          )
-        })}
-      </div>
-      {interpCount > 1 && (
-        <div style={{
-          fontSize: '0.75rem', marginTop: 8,
-          color: allConfirmed ? '#34d399' : 'var(--muted)',
-          fontWeight: allConfirmed ? 600 : 400,
-        }}>
-          {allConfirmed
-            ? 'All interpreters confirmed'
-            : `${confirmedCount} of ${interpCount} interpreter${interpCount !== 1 ? 's' : ''} confirmed`
-          }
-        </div>
-      )}
-    </div>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
   )
 }
 
-/* Chevron icon */
+function PinIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  )
+}
+
 function ChevronIcon({ expanded }: { expanded: boolean }) {
   return (
     <svg
@@ -208,6 +145,89 @@ function ChevronIcon({ expanded }: { expanded: boolean }) {
   )
 }
 
+function CalendarAddIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+      <line x1="12" y1="14" x2="12" y2="20" />
+      <line x1="9" y1="17" x2="15" y2="17" />
+    </svg>
+  )
+}
+
+/* ── Interpreter mini-card for expanded grid ── */
+
+function InterpreterMiniCard({ recipient }: { recipient: Recipient }) {
+  const interp = recipient.interpreter
+  const name = interp?.first_name
+    ? `${interp.first_name} ${interp.last_name?.[0] || ''}.`
+    : interp?.name || 'Interpreter'
+  const initials = interp?.first_name
+    ? `${interp.first_name[0]}${interp.last_name?.[0] || ''}`.toUpperCase()
+    : (interp?.name?.[0] || 'I').toUpperCase()
+
+  const statusConfigs: Record<string, { bg: string; color: string; label: string }> = {
+    confirmed: { bg: 'rgba(52,211,153,0.1)', color: '#34d399', label: 'Confirmed' },
+    sent: { bg: 'rgba(184,191,207,0.08)', color: '#6b7280', label: 'Sent' },
+    viewed: { bg: 'rgba(96,165,250,0.1)', color: '#60a5fa', label: 'Viewed' },
+    responded: { bg: 'rgba(255,165,0,0.1)', color: '#ffa500', label: 'Pending' },
+    declined: { bg: 'rgba(255,107,133,0.08)', color: '#ff8099', label: 'Declined' },
+    withdrawn: { bg: 'rgba(184,191,207,0.06)', color: '#6b7280', label: 'Withdrawn' },
+  }
+  const sc = statusConfigs[recipient.status] || statusConfigs.sent
+
+  return (
+    <div style={{
+      background: 'rgba(255,255,255,0.02)',
+      border: '1px solid var(--border)',
+      borderRadius: 10,
+      padding: '10px 12px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 10,
+    }}>
+      {interp?.photo_url ? (
+        <img src={interp.photo_url} alt="" style={{
+          width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0,
+        }} />
+      ) : (
+        <div style={{
+          width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+          background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.6rem', color: '#fff',
+        }}>
+          {initials}
+        </div>
+      )}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <Link
+          href={`/directory/${recipient.interpreter_id}`}
+          style={{
+            fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.82rem',
+            color: 'var(--text)', textDecoration: 'none', display: 'block',
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}
+        >
+          {name}
+        </Link>
+        <span style={{
+          fontSize: '0.68rem', fontWeight: 600, color: sc.color,
+          background: sc.bg, borderRadius: 100, padding: '1px 7px',
+          display: 'inline-block', marginTop: 2,
+        }}>
+          {sc.label}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+/* ── Request Card ── */
+
 function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated }: {
   booking: BookingWithRecipients
   onExpand: () => void
@@ -221,6 +241,9 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated }
     booking.recipients.filter(r => r.status !== 'withdrawn').every(r => r.status === 'declined')
   const completed = isBookingCompleted(booking)
   const confirmedRecipients = booking.recipients.filter(r => r.status === 'confirmed')
+  const statusColors = getStatusColors(booking.status)
+  const formatLabel = booking.format === 'remote' ? 'Remote' : booking.format === 'in_person' ? 'In-person' : 'TBD'
+  const locationText = booking.format === 'remote' ? 'Remote' : booking.location || 'TBD'
 
   // Check if ALL confirmed interpreters on this booking have been rated
   const allRated = confirmedRecipients.length > 0 &&
@@ -228,110 +251,268 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated }
 
   return (
     <div style={{
-      background: 'var(--card-bg)', border: '1px solid var(--border)',
+      background: '#111118', border: '1px solid #1e2433',
       borderRadius: 'var(--radius)', overflow: 'hidden',
       opacity: isDismissed || allDeclined ? 0.6 : 1,
     }}>
-      {/* Card header — clickable */}
-      <button
-        onClick={onExpand}
-        aria-expanded={expanded}
-        style={{
-          width: '100%', padding: '18px 24px 14px', cursor: 'pointer',
-          background: 'none', border: 'none', textAlign: 'left',
-          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-          gap: 12,
-        }}
-      >
-        <div style={{ flex: 1 }}>
-          <div style={{
-            fontWeight: 700, fontSize: '1.05rem',
-            color: 'var(--text)', marginBottom: 4,
-            display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
+      {/* COLLAPSED VIEW */}
+      <div style={{ padding: '20px 24px' }}>
+        {/* Line 1: Title + Format badge + Status pill */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8,
+        }}>
+          <span style={{
+            fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem',
+            color: 'var(--text)', flex: 1, minWidth: 0,
           }}>
-            <span>{formatDate(booking.date)} &middot; {formatTime(booking.time_start, booking.time_end)}</span>
-            <FormatBadge format={booking.format} />
-            {isDismissed && (
-              <span style={{
-                fontSize: '0.68rem', fontWeight: 600, padding: '2px 8px',
-                borderRadius: 100, background: 'rgba(255,107,133,0.15)',
-                color: '#ff6b85',
-              }}>
-                Cancelled
-              </span>
-            )}
-            {allDeclined && (
-              <span style={{
-                fontSize: '0.68rem', fontWeight: 600, padding: '2px 8px',
-                borderRadius: 100, background: 'rgba(255,107,133,0.15)',
-                color: '#ff6b85',
-              }}>
-                All Unavailable
-              </span>
-            )}
-          </div>
-          <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
             {booking.title || 'Interpreter Request'}
-          </div>
-
-          {/* Compact tracker in collapsed view */}
-          {!expanded && (
-            <div style={{ marginTop: 8 }}>
-              <RequestTracker booking={booking} recipients={booking.recipients} compact hasRating={allRated} />
-            </div>
-          )}
+          </span>
+          {/* Format badge */}
+          <span style={{
+            fontSize: '0.7rem', fontWeight: 600, padding: '2px 10px',
+            borderRadius: 100, background: 'none',
+            color: 'var(--muted)', border: '1px solid #333',
+            whiteSpace: 'nowrap',
+          }}>
+            {formatLabel}
+          </span>
+          {/* Status pill */}
+          <span style={{
+            fontSize: '0.7rem', fontWeight: 600, padding: '2px 10px',
+            borderRadius: 100, background: statusColors.bg,
+            color: statusColors.text, border: `1px solid ${statusColors.border}`,
+            whiteSpace: 'nowrap',
+          }}>
+            {getDisplayStatusLabel(booking.status)}
+          </span>
         </div>
 
-        <ChevronIcon expanded={expanded} />
-      </button>
+        {/* Line 2: Date + Time + Location with icons */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap',
+          fontFamily: "'DM Sans', sans-serif", fontSize: '0.84rem', color: 'var(--muted)',
+          marginBottom: 8,
+        }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+            <CalendarIcon />
+            {formatDateShort(booking.date)}
+          </span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+            <ClockIcon />
+            {formatTime(booking.time_start, booking.time_end)}
+          </span>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>
+            <PinIcon />
+            {locationText}
+          </span>
+        </div>
 
-      {/* Expanded details */}
+        {/* Line 3: Progress tracker */}
+        <RequestTracker booking={booking} recipients={booking.recipients} compact hasRating={allRated} />
+
+        {/* Line 4 (conditional): Confirmed interpreter(s) */}
+        {confirmedRecipients.length > 0 && !expanded && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap',
+          }}>
+            {confirmedRecipients.map(r => {
+              const interp = r.interpreter
+              const name = interp?.first_name
+                ? `${interp.first_name} ${interp.last_name || ''}`.trim()
+                : interp?.name || 'Interpreter'
+              const initials = interp?.first_name
+                ? `${interp.first_name[0]}${interp.last_name?.[0] || ''}`.toUpperCase()
+                : (interp?.name?.[0] || 'I').toUpperCase()
+
+              return (
+                <span key={r.id} style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  fontSize: '0.8rem', color: '#34d399', fontWeight: 500,
+                }}>
+                  {interp?.photo_url ? (
+                    <img src={interp.photo_url} alt="" style={{
+                      width: 24, height: 24, borderRadius: '50%', objectFit: 'cover',
+                    }} />
+                  ) : (
+                    <div style={{
+                      width: 24, height: 24, borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.5rem', color: '#fff',
+                    }}>
+                      {initials}
+                    </div>
+                  )}
+                  Confirmed: {name}
+                  <span style={{
+                    width: 8, height: 8, borderRadius: '50%', background: '#34d399',
+                    display: 'inline-block',
+                  }} />
+                </span>
+              )
+            })}
+          </div>
+        )}
+
+        {/* Line 5: Action links */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 20, marginTop: 10,
+        }}>
+          <button
+            onClick={onExpand}
+            aria-expanded={expanded}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+              fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: '0.82rem',
+              color: '#00e5ff', display: 'inline-flex', alignItems: 'center', gap: 5,
+              textDecoration: 'none',
+            }}
+            onMouseOver={e => (e.currentTarget.style.textDecoration = 'underline')}
+            onMouseOut={e => (e.currentTarget.style.textDecoration = 'none')}
+          >
+            {expanded ? 'Hide details' : 'View details'}
+            <ChevronIcon expanded={expanded} />
+          </button>
+          <a
+            href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(booking.title || 'Interpreter Booking')}&dates=${booking.date.replace(/-/g, '')}T${booking.time_start.replace(/:/g, '')}00/${booking.date.replace(/-/g, '')}T${booking.time_end.replace(/:/g, '')}00&location=${encodeURIComponent(booking.location || '')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: '0.82rem',
+              color: '#00e5ff', textDecoration: 'none',
+              display: 'inline-flex', alignItems: 'center', gap: 5,
+            }}
+            onMouseOver={e => (e.currentTarget.style.textDecoration = 'underline')}
+            onMouseOut={e => (e.currentTarget.style.textDecoration = 'none')}
+          >
+            <CalendarAddIcon />
+            Add to calendar
+          </a>
+        </div>
+      </div>
+
+      {/* EXPANDED VIEW */}
       {expanded && (
         <div style={{
           padding: '0 24px 20px', borderTop: '1px solid var(--border)',
         }}>
-          <div style={{ paddingTop: 16 }}>
-            {/* Full tracker */}
+          <div style={{ paddingTop: 20 }}>
+            {/* Full tracker (non-compact) */}
             <RequestTracker booking={booking} recipients={booking.recipients} hasRating={allRated} />
 
-            {/* Interpreter status list */}
-            {booking.recipients.length > 0 && (
-              <InterpreterStatusList
-                recipients={booking.recipients}
-                interpCount={booking.interpreter_count || 1}
-                showRate={booking.request_type !== 'professional'}
-              />
-            )}
+            {/* Two-column layout */}
+            <div className="dhh-card-expanded-cols" style={{
+              display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginTop: 16,
+            }}>
+              {/* LEFT: Appointment Details */}
+              <div>
+                <div style={{
+                  fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
+                  color: 'var(--muted)', marginBottom: 12,
+                }}>
+                  Appointment Details
+                </div>
 
-            {/* Location */}
-            <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: 8 }}>
-              <span style={{ fontWeight: 600, color: 'var(--text)' }}>Location: </span>
-              {booking.format === 'remote' ? 'Remote' : booking.location || 'TBD'}
+                {/* Location */}
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
+                    Location
+                  </div>
+                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
+                    {booking.format === 'remote' ? (
+                      <span style={{ color: '#00e5ff' }}>Remote</span>
+                    ) : booking.location ? (
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.location)}`}
+                        target="_blank" rel="noopener noreferrer"
+                        style={{ color: '#00e5ff', textDecoration: 'none' }}
+                        onMouseOver={e => (e.currentTarget.style.textDecoration = 'underline')}
+                        onMouseOut={e => (e.currentTarget.style.textDecoration = 'none')}
+                      >
+                        {booking.location}
+                      </a>
+                    ) : 'TBD'}
+                  </div>
+                </div>
+
+                {/* Event */}
+                {(booking.event_category || booking.event_type) && (
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
+                      Event
+                    </div>
+                    <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
+                      {booking.event_category}{booking.event_type ? ` — ${booking.event_type}` : ''}
+                    </div>
+                  </div>
+                )}
+
+                {/* Requester */}
+                {booking.requester_name && (
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
+                      Requester
+                    </div>
+                    <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
+                      {booking.requester_name}
+                    </div>
+                  </div>
+                )}
+
+                {/* Notes */}
+                {(booking.description || booking.notes) && (
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
+                      Notes
+                    </div>
+                    <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.55 }}>
+                      {booking.description || booking.notes}
+                    </div>
+                  </div>
+                )}
+
+                {/* Cancellation reason */}
+                {booking.status === 'cancelled' && booking.cancellation_reason && (
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: '#ff6b85', marginBottom: 2 }}>
+                      Cancellation reason
+                    </div>
+                    <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem', color: '#ff6b85' }}>
+                      {booking.cancellation_reason}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* RIGHT: Interpreters Contacted */}
+              <div>
+                <div style={{
+                  fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
+                  color: 'var(--muted)', marginBottom: 12,
+                }}>
+                  Interpreters Contacted
+                </div>
+
+                {booking.recipients.length > 0 ? (
+                  <div className="dhh-interp-grid" style={{
+                    display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8,
+                  }}>
+                    {booking.recipients.map(r => (
+                      <InterpreterMiniCard key={r.id} recipient={r} />
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
+                    No interpreters contacted yet.
+                  </div>
+                )}
+              </div>
             </div>
-
-            {/* Event type */}
-            {booking.event_category && (
-              <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: 8 }}>
-                <span style={{ fontWeight: 600, color: 'var(--text)' }}>Event: </span>
-                {booking.event_category}{booking.event_type ? ` — ${booking.event_type}` : ''}
-              </div>
-            )}
-
-            {/* Notes */}
-            {(booking.description || booking.notes) && (
-              <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: 8, lineHeight: 1.55 }}>
-                <span style={{ fontWeight: 600, color: 'var(--text)' }}>Notes: </span>
-                {booking.description || booking.notes}
-              </div>
-            )}
-
-            {/* Cancellation reason */}
-            {booking.status === 'cancelled' && booking.cancellation_reason && (
-              <div style={{ fontSize: '0.85rem', color: '#ff6b85', marginBottom: 8 }}>
-                <span style={{ fontWeight: 600 }}>Cancellation reason: </span>
-                {booking.cancellation_reason}
-              </div>
-            )}
 
             {/* Rating UI — one form per confirmed interpreter */}
             {completed && confirmedRecipients.map(r => {
@@ -499,6 +680,18 @@ export default function DhhRequestsListPage() {
       )}
 
       <DashMobileStyles />
+
+      {/* Responsive styles for expanded card columns */}
+      <style>{`
+        @media (max-width: 768px) {
+          .dhh-card-expanded-cols {
+            grid-template-columns: 1fr !important;
+          }
+          .dhh-interp-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }

@@ -4,10 +4,11 @@
  * RequestTracker — visual status stepper for interpreter bookings.
  * Shows Deaf users where their request stands, like package tracking.
  *
- * Steps: Sent → Responding → Confirmed → Rate
+ * Steps: Sent → Still looking → Confirmed → Rate
  * Terminal states: All declined, Cancelled
  *
- * Updated to work with booking_recipients (multiple interpreters per booking).
+ * Design: outlined circles with checkmarks/radio dots, connecting lines.
+ * Green accent for confirmed step when all interpreters confirmed.
  */
 
 interface Recipient {
@@ -57,6 +58,7 @@ interface Step {
   label: string
   state: StepState
   sublabel?: string | null
+  isConfirmedAllGreen?: boolean
 }
 
 function getSteps(booking: TrackerBooking, recipients: Recipient[], hasRating: boolean): { steps: Step[]; terminal: TerminalState } {
@@ -119,10 +121,13 @@ function getSteps(booking: TrackerBooking, recipients: Recipient[], hasRating: b
     currentIndex = 0
   }
 
+  // Check if all needed interpreters are confirmed (for green accent)
+  const allConfirmed = confirmedCount >= interpCount && interpCount > 0
+
   const allSteps = [
     { label: 'Sent', sublabel: null },
-    { label: 'Responding', sublabel: respondSublabel },
-    { label: 'Confirmed', sublabel: confirmSublabel },
+    { label: 'Still looking', sublabel: respondSublabel },
+    { label: 'Confirmed', sublabel: confirmSublabel, isConfirmedAllGreen: allConfirmed },
     { label: hasRating ? 'Rated' : 'Rate', sublabel: null },
   ]
 
@@ -138,9 +143,9 @@ function getSteps(booking: TrackerBooking, recipients: Recipient[], hasRating: b
 }
 
 /* SVG icons */
-function CheckIcon({ size }: { size: number }) {
+function CheckIcon({ size, color = '#fff' }: { size: number; color?: string }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20 6L9 17l-5-5" />
     </svg>
   )
@@ -150,14 +155,6 @@ function XIcon({ size }: { size: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
       <path d="M18 6L6 18M6 6l12 12" />
-    </svg>
-  )
-}
-
-function GreenCheckIcon({ size }: { size: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 6L9 17l-5-5" />
     </svg>
   )
 }
@@ -172,13 +169,11 @@ function StarIcon({ size }: { size: number }) {
 
 export default function RequestTracker({ booking, recipients, compact = false, hasRating = false }: RequestTrackerProps) {
   const { steps, terminal } = getSteps(booking, recipients, hasRating)
-  const circleSize = compact ? 20 : 28
-  const iconSize = compact ? 10 : 14
-  const gap = compact ? 0 : 4
+  const circleSize = 20
+  const iconSize = 10
+  const gap = compact ? 2 : 4
 
   const isTerminal = terminal !== null
-  const isCompleted = !isTerminal && steps[steps.length - 1]?.state === 'current'
-  const shouldPulse = isCompleted && !hasRating
 
   return (
     <div
@@ -186,8 +181,8 @@ export default function RequestTracker({ booking, recipients, compact = false, h
         display: 'flex',
         alignItems: 'flex-start',
         width: '100%',
-        padding: compact ? '8px 0' : '16px 0',
-        minHeight: compact ? 40 : undefined,
+        padding: compact ? '6px 0' : '12px 0',
+        minHeight: compact ? 36 : undefined,
       }}
       role="group"
       aria-label="Request status tracker"
@@ -197,7 +192,60 @@ export default function RequestTracker({ booking, recipients, compact = false, h
         const isError = isTerminal && isLast
         const isRateStep = !isTerminal && isLast && step.state === 'current'
         const isGreenCheck = isRateStep && hasRating
-        const isConfirmedStep = !isTerminal && i === 2 && step.state === 'completed'
+        // Confirmed step with all interpreters confirmed uses green
+        const useGreen = step.isConfirmedAllGreen && (step.state === 'completed' || step.state === 'current')
+        const prevCompleted = i > 0 && steps[i - 1].state === 'completed'
+        const thisFuture = step.state === 'future'
+
+        // Determine circle style
+        let circleStyle: React.CSSProperties = {
+          width: circleSize,
+          height: circleSize,
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+          position: 'relative',
+        }
+
+        if (isError) {
+          // Error: filled red
+          circleStyle = { ...circleStyle, background: '#ff6b85' }
+        } else if (isGreenCheck) {
+          // Rated: green outlined with green check
+          circleStyle = { ...circleStyle, background: 'none', border: '1.5px solid #34d399' }
+        } else if (useGreen && step.state === 'completed') {
+          // Confirmed step completed with all confirmed: green outlined + green check
+          circleStyle = { ...circleStyle, background: 'none', border: '1.5px solid #34d399' }
+        } else if (useGreen && step.state === 'current') {
+          // Confirmed step current with all confirmed: green outlined + green dot
+          circleStyle = { ...circleStyle, background: 'none', border: '2px solid #34d399' }
+        } else if (step.state === 'completed') {
+          // Completed: outlined cyan with white check
+          circleStyle = { ...circleStyle, background: 'none', border: '1.5px solid #00e5ff' }
+        } else if (step.state === 'current') {
+          // Current/active: outlined cyan with cyan dot center (radio button style)
+          circleStyle = { ...circleStyle, background: 'none', border: '2px solid #00e5ff' }
+        } else {
+          // Future: outlined dark gray, empty
+          circleStyle = { ...circleStyle, background: 'none', border: '1.5px solid #444' }
+        }
+
+        // Determine line color
+        const lineCompleted = step.state !== 'future' && !thisFuture
+        const lineColor = (prevCompleted || step.state === 'completed' || step.state === 'current') && i > 0
+          ? (steps[i - 1].state === 'completed' ? '#00e5ff' : '#333')
+          : '#333'
+
+        // Label color
+        let labelColor = '#666'
+        if (isError) labelColor = '#ff6b85'
+        else if (isGreenCheck) labelColor = '#34d399'
+        else if (useGreen) labelColor = '#34d399'
+        else if (step.state === 'current') labelColor = '#fff'
+        else if (step.state === 'completed') labelColor = 'var(--muted)'
+        else labelColor = '#666'
 
         return (
           <div
@@ -215,64 +263,38 @@ export default function RequestTracker({ booking, recipients, compact = false, h
               flexDirection: 'column',
               alignItems: 'center',
               gap,
-              minWidth: compact ? 48 : 64,
-              maxWidth: compact ? 64 : 90,
+              minWidth: compact ? 44 : 56,
+              maxWidth: compact ? 60 : 80,
             }}>
-              <div
-                style={{
-                  width: circleSize,
-                  height: circleSize,
-                  borderRadius: '50%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                  ...(isError
-                    ? { background: '#ff6b85' }
-                    : isGreenCheck
-                    ? { background: 'rgba(52,211,153,0.15)', border: '2px solid #34d399' }
-                    : isConfirmedStep
-                    ? { background: '#34d399' }
-                    : step.state === 'completed'
-                    ? { background: '#00e5ff' }
-                    : step.state === 'current'
-                    ? {
-                        background: shouldPulse ? undefined : '#00e5ff',
-                        border: shouldPulse ? '2px solid #00e5ff' : undefined,
-                        animation: shouldPulse ? 'trackerPulse 2s ease-in-out infinite' : undefined,
-                      }
-                    : {
-                        background: '#16161f',
-                        border: '2px solid #1e2433',
-                      }),
-                }}
-                aria-label={`${step.label}: ${step.state}`}
-              >
+              <div style={circleStyle} aria-label={`${step.label}: ${step.state}`}>
                 {isError ? (
                   <XIcon size={iconSize} />
                 ) : isGreenCheck ? (
-                  <GreenCheckIcon size={iconSize} />
+                  <CheckIcon size={iconSize} color="#34d399" />
+                ) : useGreen && step.state === 'completed' ? (
+                  <CheckIcon size={iconSize} color="#34d399" />
+                ) : useGreen && step.state === 'current' ? (
+                  /* Green radio dot */
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399' }} />
                 ) : step.state === 'completed' ? (
-                  <CheckIcon size={iconSize} />
+                  <CheckIcon size={iconSize} color="#fff" />
+                ) : step.state === 'current' && !isRateStep ? (
+                  /* Cyan radio dot */
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#00e5ff' }} />
                 ) : isRateStep && !hasRating ? (
                   <StarIcon size={iconSize} />
                 ) : null}
               </div>
 
-              {/* Label — always visible, smaller in compact mode */}
+              {/* Label */}
               <div style={{ textAlign: 'center' }}>
                 <span style={{
+                  fontFamily: "'DM Sans', sans-serif",
                   fontSize: compact ? '0.62rem' : '0.69rem',
-                  color: isError
-                    ? '#ff6b85'
-                    : step.state === 'future'
-                    ? 'var(--muted)'
-                    : isGreenCheck
-                    ? '#34d399'
-                    : 'var(--text)',
-                  fontWeight: step.state === 'current' ? 600 : 400,
+                  fontWeight: step.state === 'current' ? 700 : 500,
+                  color: labelColor,
                   lineHeight: 1.3,
-                  maxWidth: compact ? 64 : 88,
+                  maxWidth: compact ? 60 : 80,
                   wordWrap: 'break-word',
                   overflowWrap: 'break-word',
                   display: 'block',
@@ -281,11 +303,11 @@ export default function RequestTracker({ booking, recipients, compact = false, h
                 </span>
                 {step.sublabel && !compact && (
                   <span style={{
-                    fontSize: '0.62rem',
-                    color: isError ? '#ff6b85' : 'var(--muted)',
+                    fontSize: '0.58rem',
+                    color: isError ? '#ff6b85' : '#666',
                     lineHeight: 1.3,
                     display: 'block',
-                    marginTop: 2,
+                    marginTop: 1,
                   }}>
                     {step.sublabel}
                   </span>
@@ -297,11 +319,11 @@ export default function RequestTracker({ booking, recipients, compact = false, h
             {!isLast && (
               <div style={{
                 flex: 1,
-                height: 2,
-                marginTop: circleSize / 2 - 1,
-                minWidth: 12,
-                background: '#1e2433',
-                borderRadius: 1,
+                height: 1,
+                marginTop: circleSize / 2,
+                minWidth: 8,
+                background: step.state === 'completed' ? '#00e5ff' : '#333',
+                borderRadius: 0,
               }} />
             )}
           </div>
