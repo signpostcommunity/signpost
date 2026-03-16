@@ -160,17 +160,17 @@ interface DeafSeed {
 
 const DEAF_SEEDS: DeafSeed[] = [
   {
-    email: 'deaf.marlee.seed@signpost.test',
-    firstName: 'Marlee',
-    lastName: 'Matlin (BETA)',
-    city: 'Los Angeles',
-    state: 'California',
+    email: 'deaf.jordan.seed@signpost.test',
+    firstName: 'Jordan',
+    lastName: 'Sample-Tester (BETA)',
+    city: 'Portland',
+    state: 'Oregon',
     country: 'United States',
   },
   {
-    email: 'deaf.nyle.seed@signpost.test',
-    firstName: 'Nyle',
-    lastName: 'DiMarco (BETA)',
+    email: 'deaf.alex.seed@signpost.test',
+    firstName: 'Alex',
+    lastName: 'Demo-Account (BETA)',
     city: 'Washington',
     state: 'District of Columbia',
     country: 'United States',
@@ -604,7 +604,7 @@ export async function GET() {
       ids: deafUserIds,
     }
 
-    // Trusted Circle connections: Molly ↔ Marlee, Molly ↔ Nyle
+    // Trusted Circle connections: Molly ↔ Jordan, Molly ↔ Alex
     let circleCreated = 0
 
     for (const [firstName, deafUserId] of Object.entries(deafUserIds)) {
@@ -633,8 +633,8 @@ export async function GET() {
 
     summary.trustedCircle = { created: circleCreated }
 
-    // Deaf roster entries for Marlee and Nyle
-    // Marlee's preferred interpreters: need to look up existing Betty White + Keanu Reeves IDs
+    // Deaf roster entries for Jordan and Alex
+    // Jordan's preferred interpreters: need to look up existing Betty White + Keanu Reeves IDs
     let rosterCreated = 0
 
     // Look up existing seed interpreters by name
@@ -648,14 +648,14 @@ export async function GET() {
       if (ip.first_name) existingInterpMap[ip.first_name] = ip.id
     }
 
-    // Marlee's preferred: Betty White, Keanu Reeves
-    const marleeId = deafUserIds['Marlee']
-    if (marleeId) {
-      const marleePreferred = [existingInterpMap['Betty'], existingInterpMap['Keanu']].filter(Boolean)
-      for (const interpId of marleePreferred) {
+    // Jordan's preferred: Betty White, Keanu Reeves
+    const jordanId = deafUserIds['Jordan']
+    if (jordanId) {
+      const jordanPreferred = [existingInterpMap['Betty'], existingInterpMap['Keanu']].filter(Boolean)
+      for (const interpId of jordanPreferred) {
         const { error: rosterErr } = await admin.from('deaf_roster').upsert(
           {
-            deaf_user_id: marleeId,
+            deaf_user_id: jordanId,
             interpreter_id: interpId,
             tier: 'preferred',
             approve_work: true,
@@ -663,19 +663,19 @@ export async function GET() {
           },
           { onConflict: 'deaf_user_id,interpreter_id' }
         )
-        if (rosterErr) console.error(`[seed-deaf-beta] roster Marlee:`, rosterErr.message)
+        if (rosterErr) console.error(`[seed-deaf-beta] roster Jordan:`, rosterErr.message)
         else rosterCreated++
       }
     }
 
-    // Nyle's preferred: Dwayne Johnson, Oprah Winfrey
-    const nyleId = deafUserIds['Nyle']
-    if (nyleId) {
-      const nylePreferred = [interpreterIds['Dwayne'], interpreterIds['Oprah']].filter(Boolean)
-      for (const interpId of nylePreferred) {
+    // Alex's preferred: Dwayne Johnson, Oprah Winfrey
+    const alexId = deafUserIds['Alex']
+    if (alexId) {
+      const alexPreferred = [interpreterIds['Dwayne'], interpreterIds['Oprah']].filter(Boolean)
+      for (const interpId of alexPreferred) {
         const { error: rosterErr } = await admin.from('deaf_roster').upsert(
           {
-            deaf_user_id: nyleId,
+            deaf_user_id: alexId,
             interpreter_id: interpId,
             tier: 'preferred',
             approve_work: true,
@@ -683,7 +683,7 @@ export async function GET() {
           },
           { onConflict: 'deaf_user_id,interpreter_id' }
         )
-        if (rosterErr) console.error(`[seed-deaf-beta] roster Nyle:`, rosterErr.message)
+        if (rosterErr) console.error(`[seed-deaf-beta] roster Alex:`, rosterErr.message)
         else rosterCreated++
       }
     }
