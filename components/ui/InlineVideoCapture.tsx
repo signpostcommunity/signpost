@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
+import Toast from '@/components/ui/Toast'
 
 interface InlineVideoCaptureProps {
   onVideoSaved: (url: string, source: 'recorded' | 'uploaded' | 'url') => void
@@ -52,6 +53,8 @@ export default function InlineVideoCapture({
   // Shared state
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [toast, setToast] = useState<string | null>(null)
+  const autoStoppedRef = useRef(false)
 
   const accentRgb = hexToRgb(accentColor)
 
@@ -142,11 +145,14 @@ export default function InlineVideoCapture({
     recorder.start(1000)
     setRecording(true)
 
+    autoStoppedRef.current = false
     timerRef.current = setInterval(() => {
       setElapsed(prev => {
         const next = prev + 1
         if (next >= MAX_RECORD_SECONDS) {
+          autoStoppedRef.current = true
           stopRecording()
+          setToast('Recording stopped \u2014 2 minute maximum reached')
         }
         return next
       })
@@ -180,8 +186,27 @@ export default function InlineVideoCapture({
       setUploadError(`File must be under 100MB. Yours is ${(file.size / 1024 / 1024).toFixed(1)}MB.`)
       return
     }
-    setUploadedFile(file)
-    setUploadedPreviewUrl(URL.createObjectURL(file))
+
+    // Check video duration
+    const tempVideo = document.createElement('video')
+    tempVideo.preload = 'metadata'
+    const objectUrl = URL.createObjectURL(file)
+    tempVideo.onloadedmetadata = () => {
+      URL.revokeObjectURL(objectUrl)
+      if (tempVideo.duration > MAX_RECORD_SECONDS) {
+        setUploadError(`Video must be 2 minutes or less. Your video is ${formatTime(Math.round(tempVideo.duration))}.`)
+        return
+      }
+      setUploadedFile(file)
+      setUploadedPreviewUrl(URL.createObjectURL(file))
+    }
+    tempVideo.onerror = () => {
+      URL.revokeObjectURL(objectUrl)
+      // Can't read metadata — allow it through, server can validate
+      setUploadedFile(file)
+      setUploadedPreviewUrl(URL.createObjectURL(file))
+    }
+    tempVideo.src = objectUrl
   }
 
   function handleFileDrop(e: React.DragEvent) {
@@ -384,7 +409,13 @@ export default function InlineVideoCapture({
                         width: 8, height: 8, borderRadius: '50%',
                         background: '#ff4444', animation: 'trackerPulse 1.5s infinite',
                       }} />
-                      <span style={{ color: '#fff', fontSize: '0.82rem', fontFamily: 'monospace' }}>
+                      <span style={{
+                        color: elapsed >= 105 ? '#ff9800' : '#fff',
+                        fontSize: '0.82rem',
+                        fontFamily: 'monospace',
+                        fontWeight: elapsed >= 105 ? 700 : 400,
+                        transition: 'color 0.3s',
+                      }}>
                         {formatTime(elapsed)} / {formatTime(MAX_RECORD_SECONDS)}
                       </span>
                     </div>
@@ -422,6 +453,13 @@ export default function InlineVideoCapture({
                     </button>
                   )}
                 </div>
+                <p style={{
+                  textAlign: 'center', margin: '10px 0 0',
+                  fontFamily: "'DM Sans', sans-serif", fontSize: '0.75rem',
+                  color: 'var(--muted)', fontStyle: 'italic',
+                }}>
+                  Maximum length: 2 minutes
+                </p>
               </>
             )}
 
@@ -516,6 +554,12 @@ export default function InlineVideoCapture({
                 </p>
                 <p style={{ color: 'var(--muted)', fontSize: '0.78rem', marginTop: 8, marginBottom: 0, opacity: 0.7 }}>
                   MP4, WebM, or MOV. Max 100MB.
+                </p>
+                <p style={{
+                  color: 'var(--muted)', fontSize: '0.75rem', marginTop: 6, marginBottom: 0,
+                  fontStyle: 'italic', opacity: 0.7,
+                }}>
+                  Maximum length: 2 minutes. Max file size: 100MB.
                 </p>
               </div>
             ) : (
@@ -642,6 +686,10 @@ export default function InlineVideoCapture({
           </div>
         )}
       </div>
+
+      {toast && (
+        <Toast message={toast} type="info" onClose={() => setToast(null)} duration={4000} />
+      )}
     </div>
   )
 }
