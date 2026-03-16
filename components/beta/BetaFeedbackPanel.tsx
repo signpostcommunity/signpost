@@ -140,18 +140,18 @@ const labelStyle: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: '0.11em',
   textTransform: 'uppercase',
-  color: '#888',
+  color: '#999',
   marginBottom: 6,
 };
 
 const textareaStyle: React.CSSProperties = {
   width: '100%',
-  background: '#ffffff',
-  border: '1px solid #ddd',
+  background: '#111118',
+  border: '1px solid #333',
   borderRadius: 8,
   padding: '9px 11px',
   fontSize: '0.81rem',
-  color: '#1a1a1a',
+  color: '#e0e0e0',
   resize: 'vertical',
   fontFamily: "'DM Sans', sans-serif",
   lineHeight: 1.5,
@@ -165,7 +165,7 @@ const radioLabelStyle: React.CSSProperties = {
   gap: 8,
   cursor: 'pointer',
   fontSize: '0.79rem',
-  color: '#1e1e1e',
+  color: '#b0b0b0',
   lineHeight: 1.45,
   padding: '4px 0',
 };
@@ -175,7 +175,7 @@ const checkboxLabelStyle: React.CSSProperties = {
 };
 
 const separatorStyle: React.CSSProperties = {
-  borderTop: '1px solid #e0ddd6',
+  borderTop: '1px solid #2a2a38',
   margin: '6px 0',
 };
 
@@ -416,8 +416,8 @@ export default function BetaFeedbackPanel() {
         right: 0,
         width: '320px',
         height: '100vh',
-        background: '#f5f4ef',
-        borderLeft: '1px solid #dedad2',
+        background: '#1a1a24',
+        borderLeft: '1px solid #2a2a38',
         zIndex: 999,
         display: 'flex',
         flexDirection: 'column',
@@ -430,11 +430,11 @@ export default function BetaFeedbackPanel() {
       <div
         style={{
           padding: '12px 14px',
-          borderBottom: '1px solid #dedad2',
+          borderBottom: '1px solid #2a2a38',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: '#f5f4ef',
+          background: '#1a1a24',
           position: 'sticky',
           top: 0,
           zIndex: 1,
@@ -455,7 +455,7 @@ export default function BetaFeedbackPanel() {
           >
             Beta Feedback
           </span>
-          <span style={{ fontSize: '0.7rem', color: '#999', fontWeight: 500 }}>signpost</span>
+          <span style={{ fontSize: '0.7rem', color: '#666', fontWeight: 500 }}>signpost</span>
         </div>
         <button
           onClick={() => setIsOpen(false)}
@@ -488,10 +488,10 @@ export default function BetaFeedbackPanel() {
                 <path d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '1.1rem', marginBottom: 8 }}>
+            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '1.1rem', marginBottom: 8, color: '#e0e0e0' }}>
               Thank you!
             </h3>
-            <p style={{ fontSize: '0.85rem', color: '#555', lineHeight: 1.6 }}>
+            <p style={{ fontSize: '0.85rem', color: '#b0b0b0', lineHeight: 1.6 }}>
               Your feedback has been submitted. It goes directly to Molly &amp; Regina and will shape how signpost works for interpreters everywhere.
             </p>
           </div>
@@ -520,7 +520,7 @@ export default function BetaFeedbackPanel() {
             <div style={separatorStyle} />
             <div>
               <label style={labelStyle}>1. Professional Needs</label>
-              <p style={{ fontSize: '0.77rem', color: '#555', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
+              <p style={{ fontSize: '0.77rem', color: '#999', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
                 Thinking about efficiency, visibility, customization, and control &mdash; how does signpost compare to agencies, other platforms, or other software you currently use to manage your interpreting work?
               </p>
               {PROFESSIONAL_NEEDS_OPTIONS.map(opt => (
@@ -541,7 +541,7 @@ export default function BetaFeedbackPanel() {
             <div style={separatorStyle} />
             <div>
               <label style={labelStyle}>2. Likelihood to Use</label>
-              <p style={{ fontSize: '0.77rem', color: '#555', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
+              <p style={{ fontSize: '0.77rem', color: '#999', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
                 How likely are you to use signpost as part of your interpreting work?
               </p>
               {LIKELIHOOD_OPTIONS.map(opt => (
@@ -557,7 +557,7 @@ export default function BetaFeedbackPanel() {
             <div style={separatorStyle} />
             <div>
               <label style={labelStyle}>3. Mobile</label>
-              <p style={{ fontSize: '0.77rem', color: '#555', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
+              <p style={{ fontSize: '0.77rem', color: '#999', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
                 Did you use signpost on your phone or tablet?
               </p>
               {YES_NO.map(opt => (
@@ -580,7 +580,7 @@ export default function BetaFeedbackPanel() {
             <div style={separatorStyle} />
             <div>
               <label style={labelStyle}>4. Star Ratings</label>
-              <p style={{ fontSize: '0.77rem', color: '#555', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
+              <p style={{ fontSize: '0.77rem', color: '#999', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
                 How would you feel about a star rating system for interpreters on signpost?
               </p>
               {STAR_RATING_FEEL_OPTIONS.map(opt => (
@@ -627,7 +627,7 @@ export default function BetaFeedbackPanel() {
             <div style={separatorStyle} />
             <div>
               <label style={labelStyle}>5. Invoicing</label>
-              <p style={{ fontSize: '0.77rem', color: '#555', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
+              <p style={{ fontSize: '0.77rem', color: '#999', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
                 Did you try the invoicing feature?
               </p>
               {YES_NO.map(opt => (
@@ -655,7 +655,7 @@ export default function BetaFeedbackPanel() {
             <div style={separatorStyle} />
             <div>
               <label style={labelStyle}>6. Premium Subscription</label>
-              <p style={{ fontSize: '0.77rem', color: '#555', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
+              <p style={{ fontSize: '0.77rem', color: '#999', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
                 signpost will always be free for interpreters to create a profile and receive job offers. If there were a paid premium tier offering features like full-service invoicing, getting paid directly through the site, tax and financial reports, and freelance job tracking &mdash; would you be interested?
               </p>
               {PREMIUM_INTEREST_OPTIONS.map(opt => (
@@ -683,7 +683,7 @@ export default function BetaFeedbackPanel() {
             <div style={separatorStyle} />
             <div>
               <label style={labelStyle}>7. Final Question</label>
-              <p style={{ fontSize: '0.77rem', color: '#555', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
+              <p style={{ fontSize: '0.77rem', color: '#999', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
                 What would your dream interpreter platform include that we haven&apos;t thought of?
               </p>
               <textarea value={dreamPlatform} onChange={e => setDreamPlatform(e.target.value)}
@@ -724,7 +724,7 @@ export default function BetaFeedbackPanel() {
           <>
             {/* Page prompt */}
             {config.prompt && (
-              <p style={{ fontSize: '0.82rem', lineHeight: 1.65, color: '#1e1e1e', margin: 0 }}>
+              <p style={{ fontSize: '0.82rem', lineHeight: 1.65, color: '#e0e0e0', margin: 0 }}>
                 {config.prompt}
               </p>
             )}
@@ -733,8 +733,8 @@ export default function BetaFeedbackPanel() {
             {config.scenario && (
               <div
                 style={{
-                  background: '#fff7f0', border: '1px solid #ffd0b0', borderRadius: 8,
-                  padding: '10px 12px', fontSize: '0.77rem', color: '#7a3600', lineHeight: 1.55,
+                  background: 'rgba(255,126,69,0.1)', border: '1px solid rgba(255,126,69,0.25)', borderRadius: 8,
+                  padding: '10px 12px', fontSize: '0.77rem', color: '#ffb088', lineHeight: 1.55,
                 }}
               >
                 <strong style={{ display: 'block', marginBottom: 4 }}>Try this! 👇</strong>
@@ -758,7 +758,7 @@ export default function BetaFeedbackPanel() {
             {config.question && (
               <div>
                 <label style={labelStyle}>Specific Question</label>
-                <p style={{ fontSize: '0.77rem', color: '#555', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
+                <p style={{ fontSize: '0.77rem', color: '#999', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
                   {config.question}
                 </p>
                 <textarea
@@ -780,8 +780,8 @@ export default function BetaFeedbackPanel() {
             {config.scenario2 && (
               <div
                 style={{
-                  background: '#fff7f0', border: '1px solid #ffd0b0', borderRadius: 8,
-                  padding: '10px 12px', fontSize: '0.77rem', color: '#7a3600', lineHeight: 1.55,
+                  background: 'rgba(255,126,69,0.1)', border: '1px solid rgba(255,126,69,0.25)', borderRadius: 8,
+                  padding: '10px 12px', fontSize: '0.77rem', color: '#ffb088', lineHeight: 1.55,
                 }}
               >
                 <strong style={{ display: 'block', marginBottom: 4 }}>Try this! 👇</strong>
@@ -793,7 +793,7 @@ export default function BetaFeedbackPanel() {
             {config.question2 && (
               <div>
                 <label style={labelStyle}>Specific Question</label>
-                <p style={{ fontSize: '0.77rem', color: '#555', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
+                <p style={{ fontSize: '0.77rem', color: '#999', margin: '0 0 8px', lineHeight: 1.5, fontStyle: 'italic' }}>
                   {config.question2}
                 </p>
               </div>
@@ -861,9 +861,9 @@ export default function BetaFeedbackPanel() {
       <div
         style={{
           padding: '10px 16px',
-          borderTop: '1px solid #dedad2',
+          borderTop: '1px solid #2a2a38',
           fontSize: '0.67rem',
-          color: '#bbb',
+          color: '#888',
           textAlign: 'center',
         }}
       >
@@ -882,7 +882,7 @@ export default function BetaFeedbackPanel() {
             height: auto !important;
             max-height: 70vh !important;
             border-left: none !important;
-            border-top: 1px solid #dedad2 !important;
+            border-top: 1px solid #2a2a38 !important;
             border-radius: 16px 16px 0 0 !important;
             box-shadow: 0 -4px 32px rgba(0,0,0,0.3) !important;
           }
