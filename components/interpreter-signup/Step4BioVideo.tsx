@@ -61,7 +61,7 @@ export default function Step4BioVideo({ onBack, onContinue }: {
             onBlur={handleBlur}
           />
           <div style={{ fontSize: '0.75rem', textAlign: 'right', marginTop: 4, color: formData.bio.length > 450 ? '#ff7e45' : 'var(--muted)' }}>
-            {formData.bio.length} / 500
+            {formData.bio.length} / 500 characters
           </div>
         </div>
 
@@ -80,7 +80,7 @@ export default function Step4BioVideo({ onBack, onContinue }: {
             onBlur={handleBlur}
           />
           <div style={{ fontSize: '0.75rem', textAlign: 'right', marginTop: 4, color: formData.bioSpecializations.length > 450 ? '#ff7e45' : 'var(--muted)' }}>
-            {formData.bioSpecializations.length} / 500
+            {formData.bioSpecializations.length} / 500 characters
           </div>
         </div>
 

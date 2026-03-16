@@ -223,7 +223,7 @@ export default function DeafDashboardPage() {
     return (
       <div style={{ maxWidth: 960, margin: '0 auto', padding: '60px 32px 64px' }}>
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 4 }}>
-          My Preferred Interpreter List
+          My Interpreter List
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: 40 }}>
           Your preferred, secondary tier, and do-not-book interpreters.
@@ -425,7 +425,7 @@ export default function DeafDashboardPage() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 4 }}>
         <div>
           <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 0 }}>
-            My Preferred Interpreter List
+            My Interpreter List
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem' }}>
             Your preferred, secondary tier, and do-not-book interpreters. Share your list with requesters so they always know who to contact.

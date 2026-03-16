@@ -24,7 +24,7 @@ const NAV: NavGroup[] = [
     section: 'Overview',
     items: [
       {
-        label: 'My Preferred Interpreters',
+        label: 'My Interpreters',
         href: '/dhh/dashboard',
         icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 14s-5.5-3.5-5.5-7A3.5 3.5 0 0 1 8 4.5 3.5 3.5 0 0 1 13.5 7C13.5 10.5 8 14 8 14z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
         badgeKey: 'roster',

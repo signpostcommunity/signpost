@@ -1170,7 +1170,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
               onFocus={handleFocus} onBlur={handleBlur}
             />
             <div style={{ fontSize: '0.75rem', textAlign: 'right', marginTop: 4, color: bio.length > 450 ? '#ff7e45' : 'var(--muted)' }}>
-              {bio.length} / 500
+              {bio.length} / 500 characters
             </div>
           </div>
 
@@ -1184,7 +1184,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
               onFocus={handleFocus} onBlur={handleBlur}
             />
             <div style={{ fontSize: '0.75rem', textAlign: 'right', marginTop: 4, color: bioSpecializations.length > 450 ? '#ff7e45' : 'var(--muted)' }}>
-              {bioSpecializations.length} / 500
+              {bioSpecializations.length} / 500 characters
             </div>
           </div>
 
@@ -1469,7 +1469,7 @@ function CredentialsTab({ saving, onSave, profileId, initialCerts, initialEducat
                 <input value={cert.name} onChange={e => updateCert(cert.id, 'name', e.target.value)} placeholder="e.g. NIC Advanced" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
               </div>
               <div>
-                <label style={labelStyle}>Year</label>
+                <label style={labelStyle}>Year earned</label>
                 <input value={cert.year} onChange={e => updateCert(cert.id, 'year', e.target.value)} placeholder="2018" maxLength={4} style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
               </div>
             </div>
@@ -1478,7 +1478,7 @@ function CredentialsTab({ saving, onSave, profileId, initialCerts, initialEducat
                 <label style={labelStyle}>Verification link</label>
                 <input type="url" value={cert.verificationLink} onChange={e => updateCert(cert.id, 'verificationLink', e.target.value)} placeholder="https://rid.org/verify/..." style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
                 <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 6, lineHeight: 1.4 }}>
-                  Link to your credential on Credly, the RID registry, or your certifying body&apos;s website.
+                  Paste a link to your certification on your certifying body&apos;s website. For RID members: myaccount.rid.org/Public/Search/Member.aspx
                 </div>
               </div>
               {certs.length > 1 && (
@@ -1507,6 +1507,9 @@ function CredentialsTab({ saving, onSave, profileId, initialCerts, initialEducat
 
       {/* Education */}
       <div style={{ ...sectionTitleStyle, marginTop: 36 }}>Education</div>
+      <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 12, lineHeight: 1.6 }}>
+        Include interpreting-specific education and training. General education is optional.
+      </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {education.map(edu => (
           <div key={edu.id} style={{
@@ -1955,7 +1958,7 @@ function SettingsTab({
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 28 }}>
           {([
-            { value: 'own', label: 'I use my own invoicing system', desc: 'No invoice tools will appear in signpost.' },
+            { value: 'own', label: 'I use my own invoicing system', desc: 'You handle invoicing entirely outside signpost. Our invoicing tool is optional. It is here if you want a simple way to track and send invoices, but it is not required.' },
             { value: 'signpost', label: "I'd like to submit invoices through signpost", desc: 'A "Submit Invoice" button will appear on confirmed bookings.' },
           ] as const).map(opt => (
             <label

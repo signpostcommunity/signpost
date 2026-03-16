@@ -91,7 +91,7 @@ export default function Step3Credentials({ onBack, onContinue }: {
                   />
                 </FormField>
                 <FormField>
-                  <FieldLabel>Year</FieldLabel>
+                  <FieldLabel>Year earned</FieldLabel>
                   <TextInput
                     placeholder="e.g. 2018"
                     value={cert.year}
@@ -115,7 +115,7 @@ export default function Step3Credentials({ onBack, onContinue }: {
                     onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
                   />
                   <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 6, lineHeight: 1.4 }}>
-                    Link to your credential on Credly, the RID registry, or your certifying body&apos;s website.
+                    Paste a link to your certification on your certifying body&apos;s website. For RID members: myaccount.rid.org/Public/Search/Member.aspx
                   </div>
                 </FormField>
                 <RemoveButton onClick={() => removeCert(cert.id)} />
@@ -131,6 +131,9 @@ export default function Step3Credentials({ onBack, onContinue }: {
       {/* Education */}
       <FormSection>
         <SectionTitle>Education</SectionTitle>
+        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16 }}>
+          Include interpreting-specific education and training. General education is optional.
+        </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {formData.education.map(edu => (
             <div key={edu.id} style={{

@@ -114,7 +114,7 @@ function DeafPortalTab() {
       <SectionLabel color={PURPLE}>Core Features</SectionLabel>
 
       <div className="vision-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32, marginBottom: 48 }}>
-        <FeatureBlock accent={PURPLE} title="My Preferred Interpreter List" items={[
+        <FeatureBlock accent={PURPLE} title="My Interpreter List" items={[
           'Organize interpreters into three tiers: <strong>Preferred</strong>, <strong>Secondary</strong>, and <strong>Do Not Book</strong>',
           'Set approval toggles per interpreter: work settings vs. personal/medical',
           'Add private notes on each interpreter (only you can see these)',
