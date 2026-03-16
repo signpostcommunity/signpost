@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
       title, date, timeStart, timeEnd, timezone,
       format, location, eventType, eventCategory,
       interpreterCount, description, interpreterIds,
+      contextVideoUrl, contextVideoVisibleBeforeAccept,
     } = body
 
     if (!title || !date || !timeStart || !timeEnd || !format || !interpreterIds?.length) {
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
     // Fetch the Deaf user's comm prefs and name
     const { data: deafProfile, error: deafError } = await admin
       .from('deaf_profiles')
-      .select('comm_prefs, first_name, last_name, name')
+      .select('comm_prefs, first_name, last_name, name, profile_video_url')
       .or(`user_id.eq.${user.id},id.eq.${user.id}`)
       .maybeSingle()
 
@@ -92,6 +93,8 @@ export async function POST(request: NextRequest) {
         notes: description || null,
         requester_name: dhhClientName,
         is_seed: false,
+        context_video_url: contextVideoUrl || null,
+        context_video_visible_before_accept: contextVideoVisibleBeforeAccept !== false,
       })
       .select('id')
       .single()
@@ -101,13 +104,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Failed to create booking: ${insertError.message}` }, { status: 500 })
     }
 
-    // Create booking_dhh_client entry
+    // Create booking_dhh_client entry (include profile_video_url in snapshot)
+    const commPrefsSnapshot = {
+      ...(commPrefs as Record<string, unknown> || {}),
+      profile_video_url: deafProfile?.profile_video_url || null,
+    }
     const { error: dhhClientErr } = await admin
       .from('booking_dhh_clients')
       .insert({
         booking_id: booking.id,
         dhh_user_id: user.id,
-        comm_prefs_snapshot: commPrefs,
+        comm_prefs_snapshot: commPrefsSnapshot,
         added_at: new Date().toISOString(),
       })
 
@@ -220,7 +227,8 @@ export async function GET() {
         status, request_type, event_type, event_category, interpreter_count,
         description, notes, is_seed,
         cancellation_reason, cancelled_by, cancelled_at, sub_search_initiated,
-        created_at, requester_name
+        created_at, requester_name,
+        context_video_url, context_video_visible_before_accept
       `)
       .in('id', allBookingIds)
       .order('date', { ascending: false })

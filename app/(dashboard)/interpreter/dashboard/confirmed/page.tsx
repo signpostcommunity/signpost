@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { BetaBanner, PageHeader, SectionLabel, StatusBadge, DemoBadge, GhostButton, Avatar, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import { sendNotification } from '@/lib/notifications'
+import { getVideoEmbedUrl } from '@/lib/videoUtils'
 
 /* ── Types ── */
 
@@ -30,6 +31,8 @@ interface Booking {
   cancellation_reason: string | null
   sub_search_initiated: boolean | null
   rate_profile_id: string | null
+  context_video_url: string | null
+  profile_video_url: string | null
 }
 
 interface InvoiceInfo {
@@ -845,6 +848,42 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
             )}
           </div>
 
+          {/* Profile video from D/HH client */}
+          {booking.profile_video_url && (() => {
+            const embedUrl = getVideoEmbedUrl(booking.profile_video_url!)
+            if (!embedUrl) return null
+            return (
+              <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
+                <div style={sectionLabelStyle}>Communication style video from {booking.requester_name || 'client'}</div>
+                {embedUrl.includes('supabase.co/storage') ? (
+                  <video controls width="100%" src={embedUrl} style={{ borderRadius: 8, maxHeight: 220, background: '#000' }} />
+                ) : (
+                  <iframe width="100%" height="220" src={embedUrl} title="Communication style video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
+                    style={{ borderRadius: 8, border: 'none' }} />
+                )}
+              </div>
+            )
+          })()}
+
+          {/* Context video — always visible on confirmed bookings */}
+          {booking.context_video_url && (() => {
+            const embedUrl = getVideoEmbedUrl(booking.context_video_url!)
+            if (!embedUrl) return null
+            return (
+              <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
+                <div style={sectionLabelStyle}>Context video from {booking.requester_name || 'client'}</div>
+                {embedUrl.includes('supabase.co/storage') ? (
+                  <video controls width="100%" src={embedUrl} style={{ borderRadius: 8, maxHeight: 220, background: '#000' }} />
+                ) : (
+                  <iframe width="100%" height="220" src={embedUrl} title="Context video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
+                    style={{ borderRadius: 8, border: 'none' }} />
+                )}
+              </div>
+            )
+          })()}
+
           {/* 6. Attachments & Materials */}
           {attachments.length > 0 && (
             <div style={{ padding: '16px 0' }}>
@@ -1551,7 +1590,7 @@ export default function ConfirmedPage() {
         status,
         rate_profile_id,
         booking:bookings(
-          id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, description, notes, status, is_seed, cancellation_reason, sub_search_initiated
+          id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, description, notes, status, is_seed, cancellation_reason, sub_search_initiated, context_video_url
         )
       `)
       .eq('interpreter_id', profile.id)

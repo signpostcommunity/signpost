@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { BetaBanner, PageHeader, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+import { getVideoEmbedUrl } from '@/lib/videoUtils'
 import { sendNotification } from '@/lib/notifications'
 
 /* ── Types ── */
@@ -29,6 +30,9 @@ interface Booking {
   created_at: string
   request_type: string | null
   dhh_client_name: string | null
+  context_video_url: string | null
+  context_video_visible_before_accept: boolean | null
+  profile_video_url: string | null
 }
 
 /* ── Helpers ── */
@@ -365,6 +369,53 @@ function DetailModal({ booking, onClose }: {
             </div>
           )}
 
+          {/* Profile video from D/HH client */}
+          {booking.profile_video_url && (() => {
+            const embedUrl = getVideoEmbedUrl(booking.profile_video_url!)
+            if (!embedUrl) return null
+            return (
+              <div style={sectionStyle}>
+                <div style={sectionLabelStyle}>Communication style video from {booking.requester_name || booking.dhh_client_name || 'client'}</div>
+                {embedUrl.includes('supabase.co/storage') ? (
+                  <video controls width="100%" src={embedUrl} style={{ borderRadius: 8, maxHeight: 220, background: '#000' }} />
+                ) : (
+                  <iframe width="100%" height="220" src={embedUrl} title="Communication style video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
+                    style={{ borderRadius: 8, border: 'none' }} />
+                )}
+              </div>
+            )
+          })()}
+
+          {/* Context video */}
+          {booking.context_video_url && (() => {
+            const visible = booking.context_video_visible_before_accept !== false
+            if (!visible) {
+              return (
+                <div style={sectionStyle}>
+                  <div style={sectionLabelStyle}>Context Video</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--muted)', fontStyle: 'italic' }}>
+                    This request includes a context video that will be available after you accept.
+                  </div>
+                </div>
+              )
+            }
+            const embedUrl = getVideoEmbedUrl(booking.context_video_url!)
+            if (!embedUrl) return null
+            return (
+              <div style={sectionStyle}>
+                <div style={sectionLabelStyle}>Context video from {booking.requester_name || booking.dhh_client_name || 'client'}</div>
+                {embedUrl.includes('supabase.co/storage') ? (
+                  <video controls width="100%" src={embedUrl} style={{ borderRadius: 8, maxHeight: 220, background: '#000' }} />
+                ) : (
+                  <iframe width="100%" height="220" src={embedUrl} title="Context video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
+                    style={{ borderRadius: 8, border: 'none' }} />
+                )}
+              </div>
+            )
+          })()}
+
           <div style={{ padding: '16px 0' }}>
             <div style={sectionLabelStyle}>Attachments &amp; Materials</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>None provided</div>
@@ -502,7 +553,7 @@ export default function InquiriesPage() {
         status,
         sent_at,
         booking:bookings(
-          id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed, created_at, request_type, dhh_client_id
+          id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed, created_at, request_type, dhh_client_id, context_video_url, context_video_visible_before_accept
         )
       `)
       .eq('interpreter_id', profile.id)
@@ -534,17 +585,20 @@ export default function InquiriesPage() {
           const uniqueIds = [...new Set(dhhClientIds)]
           const { data: deafProfiles } = await supabase
             .from('deaf_profiles')
-            .select('user_id, first_name, last_name')
+            .select('user_id, first_name, last_name, profile_video_url')
             .in('user_id', uniqueIds)
           if (deafProfiles) {
             const nameMap: Record<string, string> = {}
+            const videoMap: Record<string, string> = {}
             for (const dp of deafProfiles) {
               nameMap[dp.user_id] = [dp.first_name, dp.last_name].filter(Boolean).join(' ')
+              if (dp.profile_video_url) videoMap[dp.user_id] = dp.profile_video_url
             }
             for (const b of mapped) {
               const clientId = (b as unknown as Record<string, unknown>).dhh_client_id as string
-              if (b.request_type === 'personal' && clientId && nameMap[clientId]) {
-                b.dhh_client_name = nameMap[clientId]
+              if (b.request_type === 'personal' && clientId) {
+                if (nameMap[clientId]) b.dhh_client_name = nameMap[clientId]
+                if (videoMap[clientId]) b.profile_video_url = videoMap[clientId]
               }
             }
           }

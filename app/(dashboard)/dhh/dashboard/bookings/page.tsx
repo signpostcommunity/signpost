@@ -5,6 +5,8 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { BetaBanner, PageHeader, SectionLabel, DemoBadge, GhostButton, Avatar, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+import VideoRecorder from '@/components/ui/VideoRecorder'
+import { getVideoEmbedUrl } from '@/lib/videoUtils'
 
 /* ── Types ── */
 
@@ -38,6 +40,7 @@ interface Booking {
   sub_search_initiated: boolean | null
   created_at: string
   recipients: Recipient[]
+  context_video_url?: string | null
 }
 
 interface MockBooking extends Booking {
@@ -389,11 +392,12 @@ function DetailModal({ booking, onClose, onToast }: {
 
 /* ── Booking Card (D/HH read-only) ── */
 
-function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast }: {
+function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast, onAddContextVideo }: {
   booking: MockBooking
   dnbInterpreterIds: Set<string>
   onViewDetails: () => void
   onToast: (msg: string) => void
+  onAddContextVideo?: (bookingId: string) => void
 }) {
   const isCancelled = booking.status === 'cancelled'
   const isSelfRequest = !booking.requester_display
@@ -475,9 +479,43 @@ function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast }: 
         <ReplacementInfoBox info={booking.replacement_info} />
       )}
 
+      {/* Context video preview */}
+      {booking.context_video_url && (() => {
+        const embedUrl = getVideoEmbedUrl(booking.context_video_url!)
+        if (!embedUrl) return null
+        return (
+          <div style={{ padding: '10px 0', borderTop: '1px solid var(--border)' }}>
+            <div style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 8 }}>
+              Context Video
+            </div>
+            {embedUrl.includes('supabase.co/storage') ? (
+              <video controls width="100%" src={embedUrl} style={{ borderRadius: 8, maxHeight: 180, background: '#000' }} />
+            ) : (
+              <iframe width="100%" height="180" src={embedUrl} title="Context video"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
+                style={{ borderRadius: 8, border: 'none' }} />
+            )}
+          </div>
+        )
+      })()}
+
       {/* Actions */}
       <div className="dash-card-actions" style={{ display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
         <GhostButton onClick={onViewDetails}>View Details</GhostButton>
+        {!booking.context_video_url && !isCancelled && onAddContextVideo && (
+          <button
+            onClick={() => onAddContextVideo(booking.id)}
+            style={{
+              background: 'none', border: '1px solid rgba(123,97,255,0.4)',
+              borderRadius: 'var(--radius-sm)', padding: '8px 16px',
+              color: '#9d87ff', fontSize: '0.82rem', fontWeight: 600,
+              cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+              transition: 'all 0.15s',
+            }}
+          >
+            Add context video
+          </button>
+        )}
         {!isSelfRequest && (
           <MessageRequesterButton
             requesterName={booking.requester_name || 'Requester'}
@@ -601,6 +639,8 @@ export default function DhhBookingsPage() {
   const [loading, setLoading] = useState(true)
   const [viewing, setViewing] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
+  const [contextVideoBookingId, setContextVideoBookingId] = useState<string | null>(null)
+  const [videoRecorderOpen, setVideoRecorderOpen] = useState(false)
 
   function showToast(msg: string) {
     setToast(msg)
@@ -717,6 +757,10 @@ export default function DhhBookingsPage() {
                 dnbInterpreterIds={dnbInterpreterIds}
                 onViewDetails={() => setViewing(b.id)}
                 onToast={showToast}
+                onAddContextVideo={(bookingId) => {
+                  setContextVideoBookingId(bookingId)
+                  setVideoRecorderOpen(true)
+                }}
               />
             ))
           )}
@@ -733,6 +777,10 @@ export default function DhhBookingsPage() {
                 dnbInterpreterIds={dnbInterpreterIds}
                 onViewDetails={() => setViewing(b.id)}
                 onToast={showToast}
+                onAddContextVideo={(bookingId) => {
+                  setContextVideoBookingId(bookingId)
+                  setVideoRecorderOpen(true)
+                }}
               />
             ))
           )}
@@ -747,6 +795,39 @@ export default function DhhBookingsPage() {
           onToast={showToast}
         />
       )}
+
+      {/* Context Video Recorder */}
+      <VideoRecorder
+        isOpen={videoRecorderOpen}
+        onClose={() => { setVideoRecorderOpen(false); setContextVideoBookingId(null) }}
+        onVideoSaved={async (url) => {
+          setVideoRecorderOpen(false)
+          if (contextVideoBookingId) {
+            try {
+              await fetch('/api/dhh/context-video', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  bookingId: contextVideoBookingId,
+                  contextVideoUrl: url,
+                  contextVideoVisibleBeforeAccept: true,
+                }),
+              })
+              showToast('Context video added')
+              // Update local state
+              setSelfBookings(prev => prev.map(b =>
+                b.id === contextVideoBookingId ? { ...b, context_video_url: url } : b
+              ))
+            } catch {
+              showToast('Failed to save context video')
+            }
+          }
+          setContextVideoBookingId(null)
+        }}
+        accentColor="#7b61ff"
+        storageBucket="videos"
+        storagePath="context"
+      />
 
       {/* Toast */}
       {toast && (

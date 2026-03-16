@@ -7,6 +7,7 @@ import {
   StepWrapper, FormSection, SectionTitle, FormField, FieldLabel,
   UrlInput, TextareaInput, FormNav,
 } from './FormFields'
+import VideoRecorder from '@/components/ui/VideoRecorder'
 
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024 // 5MB
 const MAX_VIDEO_SIZE = 200 * 1024 * 1024 // 200MB
@@ -33,6 +34,7 @@ export default function Step5Video({ onBack, onContinue }: {
   const videoInputRef = useRef<HTMLInputElement>(null)
   const [videoUploading, setVideoUploading] = useState(false)
   const [videoError, setVideoError] = useState('')
+  const [videoRecorderOpen, setVideoRecorderOpen] = useState(false)
 
   async function getUserId() {
     const { data: { user } } = await supabase.auth.getUser()
@@ -196,93 +198,74 @@ export default function Step5Video({ onBack, onContinue }: {
       <FormSection>
         <SectionTitle>Introduction Video</SectionTitle>
         <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.6, marginBottom: 20 }}>
-          Upload a short video (about 90 seconds) of yourself. This can either be an introduction, or a (non-confidential) work sample. This is the first thing Deaf clients will see. Show them your signing style, your languages, and your personality. No production quality required, just authentic and clear.
+          Record, upload, or paste a link to a short video (about 90 seconds) of yourself. This is the first thing Deaf clients will see. Show them your signing style, your languages, and your personality.
         </p>
 
-        <input
-          ref={videoInputRef}
-          type="file"
-          accept="video/mp4,video/quicktime,video/webm"
-          onChange={handleVideoSelect}
-          style={{ display: 'none' }}
-        />
-
-        {/* Upload area */}
-        <div
-          onClick={() => !videoUploading && videoInputRef.current?.click()}
-          style={{
-            border: `2px dashed ${formData.videoUrl && !formData.videoUrl.startsWith('http') ? 'rgba(0,229,255,0.4)' : 'var(--border)'}`,
-            borderRadius: 'var(--radius)',
-            padding: 48,
-            textAlign: 'center',
-            cursor: videoUploading ? 'wait' : 'pointer',
-            transition: 'all 0.2s',
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'
-            e.currentTarget.style.background = 'rgba(0,229,255,0.02)'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.borderColor = formData.videoUrl ? 'rgba(0,229,255,0.4)' : 'var(--border)'
-            e.currentTarget.style.background = 'transparent'
-          }}
-        >
-          {videoUploading ? (
-            <div style={{ color: 'var(--accent)', fontSize: '0.88rem' }}>
-              Uploading video — this may take a moment...
+        {formData.videoUrl ? (
+          <div>
+            <div style={{
+              width: 48, height: 48, borderRadius: 12, margin: '0 auto 8px',
+              background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.25)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M5 13l4 4L19 7" stroke="#00e5ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </div>
-          ) : formData.videoUrl ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-              <div style={{
-                width: 48, height: 48, borderRadius: 12,
-                background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.25)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M5 13l4 4L19 7" stroke="#00e5ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-              <p style={{ color: 'var(--accent)', fontSize: '0.88rem', fontWeight: 600, margin: 0 }}>
-                Video uploaded
-              </p>
-              <p style={{ color: 'var(--muted)', fontSize: '0.82rem', margin: 0 }}>
-                Click to replace
-              </p>
+            <p style={{ color: 'var(--accent)', fontSize: '0.88rem', fontWeight: 600, textAlign: 'center', margin: '0 0 8px' }}>
+              Video added
+            </p>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+              <button
+                type="button"
+                onClick={() => setVideoRecorderOpen(true)}
+                style={{
+                  background: 'none', border: '1px solid rgba(0,229,255,0.4)',
+                  borderRadius: 8, padding: '8px 16px', color: 'var(--accent)',
+                  cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: '0.82rem',
+                }}
+              >
+                Replace video
+              </button>
+              <button
+                type="button"
+                onClick={() => updateField('videoUrl', '')}
+                style={{
+                  background: 'none', border: '1px solid var(--border)',
+                  borderRadius: 8, padding: '8px 16px', color: 'var(--muted)',
+                  cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: '0.82rem',
+                }}
+              >
+                Remove
+              </button>
             </div>
-          ) : (
-            <>
-              <div style={{ fontSize: '2.5rem', marginBottom: 12, opacity: 0.5 }}>
-                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                  <rect x="6" y="14" width="28" height="20" rx="3" stroke="currentColor" strokeWidth="1.5" />
-                  <path d="M14 20l6-6 6 6M20 14v14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M8 10h24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              </div>
-              <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>
-                <strong style={{ color: 'var(--accent)' }}>Click to upload or drag &amp; drop</strong>
-              </p>
-              <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginTop: 6, marginBottom: 0 }}>
-                MP4, MOV or WebM &middot; Max 200MB
-              </p>
-            </>
-          )}
-        </div>
-        {videoError && (
-          <p style={{ color: 'var(--accent3)', fontSize: '0.82rem', marginTop: 8 }}>
-            {videoError}
-          </p>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setVideoRecorderOpen(true)}
+            style={{
+              background: 'none', border: '1px dashed rgba(0,229,255,0.4)',
+              borderRadius: 'var(--radius)', padding: '36px 20px',
+              color: 'var(--accent)', fontFamily: "'DM Sans', sans-serif",
+              fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer',
+              width: '100%',
+            }}
+          >
+            + Record or add a video
+          </button>
         )}
 
-        <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginTop: 12 }}>
-          Or paste a link to an existing video:
-        </p>
-        <FormField style={{ marginTop: 8 }}>
-          <UrlInput
-            placeholder="https://youtube.com/... or https://vimeo.com/..."
-            value={formData.videoUrl}
-            onChange={e => updateField('videoUrl', e.target.value)}
-          />
-        </FormField>
+        <VideoRecorder
+          isOpen={videoRecorderOpen}
+          onClose={() => setVideoRecorderOpen(false)}
+          onVideoSaved={(url) => {
+            updateField('videoUrl', url)
+            setVideoRecorderOpen(false)
+          }}
+          accentColor="#00e5ff"
+          storageBucket="interpreter-videos"
+        />
       </FormSection>
 
       {/* Video Description */}

@@ -6,6 +6,8 @@ import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import LocationPicker from '@/components/shared/LocationPicker'
 import { BetaBanner, PageHeader, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+import VideoRecorder from '@/components/ui/VideoRecorder'
+import { getVideoEmbedUrl } from '@/lib/videoUtils'
 
 const SIGNING_STYLES = [
   'ASL',
@@ -62,6 +64,8 @@ export default function DhhPreferencesPage() {
   const [bio, setBio] = useState('')
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [profileVideoUrl, setProfileVideoUrl] = useState('')
+  const [videoRecorderOpen, setVideoRecorderOpen] = useState(false)
 
   // Comm prefs
   const [signingStyles, setSigningStyles] = useState<string[]>([])
@@ -94,6 +98,7 @@ export default function DhhPreferencesPage() {
         setCity(profile.city || '')
         setPhotoUrl(profile.photo_url || '')
         setBio(profile.bio || '')
+        setProfileVideoUrl(profile.profile_video_url || '')
 
         const cp = profile.comm_prefs as Record<string, unknown> | null
         if (cp) {
@@ -172,6 +177,7 @@ export default function DhhPreferencesPage() {
       city,
       photo_url: photoUrl,
       bio: bio.trim(),
+      profile_video_url: profileVideoUrl || null,
       comm_prefs: commPrefs,
       updated_at: new Date().toISOString(),
     }
@@ -350,6 +356,82 @@ export default function DhhPreferencesPage() {
               {bio.length}/280
             </div>
           </div>
+        </div>
+
+        {/* ── Communication Style Video Section ── */}
+        <div style={{ marginBottom: 40 }}>
+          <h3 style={sectionHeadingStyle}>Communication style video</h3>
+          <p style={{ fontSize: '0.84rem', color: 'var(--muted)', marginBottom: 16, lineHeight: 1.6 }}>
+            A short video of you signing helps interpreters understand your communication style before they accept a request.
+          </p>
+
+          {profileVideoUrl ? (
+            <div>
+              {(() => {
+                const embedUrl = getVideoEmbedUrl(profileVideoUrl)
+                if (!embedUrl) return null
+                return embedUrl.includes('supabase.co/storage') ? (
+                  <video controls width="100%" src={embedUrl} style={{ borderRadius: 12, border: '1px solid var(--border)', maxHeight: 300, background: '#000', marginBottom: 12 }} />
+                ) : (
+                  <iframe width="100%" height="280" src={embedUrl} title="Communication style video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
+                    style={{ borderRadius: 12, border: 'none', marginBottom: 12 }} />
+                )
+              })()}
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => setVideoRecorderOpen(true)}
+                  style={{
+                    background: 'none', border: '1px solid rgba(157,135,255,0.4)',
+                    borderRadius: 'var(--radius-sm)', padding: '7px 16px',
+                    fontSize: '0.82rem', fontWeight: 600, color: '#9d87ff',
+                    cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                  }}
+                >
+                  Replace video
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setProfileVideoUrl('')}
+                  style={{
+                    background: 'none', border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-sm)', padding: '7px 16px',
+                    fontSize: '0.82rem', color: 'var(--muted)',
+                    cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                  }}
+                >
+                  Remove video
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setVideoRecorderOpen(true)}
+              style={{
+                background: 'none', border: '1px dashed rgba(157,135,255,0.4)',
+                borderRadius: 'var(--radius-sm)', padding: '20px',
+                color: '#9d87ff', fontFamily: "'DM Sans', sans-serif",
+                fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer',
+                width: '100%',
+              }}
+            >
+              Record or add a video
+            </button>
+          )}
+
+          <VideoRecorder
+            isOpen={videoRecorderOpen}
+            onClose={() => setVideoRecorderOpen(false)}
+            onVideoSaved={(url) => {
+              setProfileVideoUrl(url)
+              setVideoRecorderOpen(false)
+            }}
+            accentColor="#7b61ff"
+            storageBucket="videos"
+            storagePath={`deaf`}
+          />
         </div>
 
         {/* ── Communication Preferences Section ── */}

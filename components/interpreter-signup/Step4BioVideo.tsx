@@ -7,6 +7,7 @@ import {
   FormNav,
 } from './FormFields'
 import { getVideoEmbedUrl, isValidVideoUrl } from '@/lib/videoUtils'
+import VideoRecorder from '@/components/ui/VideoRecorder'
 
 const inputStyle: React.CSSProperties = {
   background: 'var(--surface2)',
@@ -36,6 +37,7 @@ export default function Step4BioVideo({ onBack, onContinue }: {
 }) {
   const { formData, updateField, saveDraft } = useForm()
   const [videoUrlError, setVideoUrlError] = useState<string | null>(null)
+  const [videoRecorderOpen, setVideoRecorderOpen] = useState(false)
 
   return (
     <StepWrapper>
@@ -108,56 +110,73 @@ export default function Step4BioVideo({ onBack, onContinue }: {
       <FormSection>
         <SectionTitle>Introduction Video</SectionTitle>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
-          Paste a link to a short video introduction. This is the first thing Deaf clients will see.
+          Record, upload, or paste a link to a short video introduction. This is the first thing Deaf clients will see.
         </p>
-        <div style={{ marginBottom: 16 }}>
-          <FieldLabel>Video URL</FieldLabel>
-          <input
-            type="text"
-            value={formData.videoUrl}
-            onChange={e => { updateField('videoUrl', e.target.value); setVideoUrlError(null) }}
-            onBlur={() => {
-              if (formData.videoUrl.trim() && !isValidVideoUrl(formData.videoUrl)) {
-                setVideoUrlError('Please enter a YouTube or Vimeo link. Direct file upload coming soon.')
-              } else {
-                setVideoUrlError(null)
-              }
-            }}
-            placeholder="YouTube or Vimeo link (e.g. youtube.com/watch?v=...)"
-            style={{ ...inputStyle, borderColor: videoUrlError ? 'var(--accent3)' : undefined }}
-            onFocus={handleFocus}
-          />
-          {videoUrlError && (
-            <div style={{ color: 'var(--accent3)', fontSize: '0.78rem', marginTop: 6 }}>{videoUrlError}</div>
-          )}
-          <div style={{ color: 'var(--muted)', fontSize: '0.78rem', marginTop: 6 }}>Please enter a YouTube or Vimeo link. Direct file upload coming soon.</div>
-        </div>
 
-        {/* Live preview */}
-        {(() => {
-          const embedUrl = getVideoEmbedUrl(formData.videoUrl)
-          if (!embedUrl) return null
-          if (embedUrl.includes('supabase.co/storage')) {
-            return (
-              <div style={{ marginBottom: 20 }}>
-                <FieldLabel>Preview</FieldLabel>
+        {formData.videoUrl ? (
+          <div style={{ marginBottom: 16 }}>
+            {(() => {
+              const embedUrl = getVideoEmbedUrl(formData.videoUrl)
+              if (!embedUrl) return null
+              return embedUrl.includes('supabase.co/storage') ? (
                 <video controls width="100%" style={{ borderRadius: 12, border: '1px solid var(--border)', maxHeight: 340, background: '#000' }} src={embedUrl} />
-              </div>
-            )
-          }
-          return (
-            <div style={{ marginBottom: 20 }}>
-              <FieldLabel>Preview</FieldLabel>
-              <iframe
-                width="100%" height="315" src={embedUrl}
-                title="Interpreter introduction video"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                style={{ borderRadius: 12, border: 'none' }}
-              />
+              ) : (
+                <iframe width="100%" height="315" src={embedUrl} title="Introduction video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
+                  style={{ borderRadius: 12, border: 'none' }} />
+              )
+            })()}
+            <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+              <button
+                type="button"
+                onClick={() => setVideoRecorderOpen(true)}
+                style={{
+                  background: 'none', border: '1px solid rgba(0,229,255,0.4)',
+                  borderRadius: 8, padding: '8px 16px', color: 'var(--accent)',
+                  cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: '0.82rem',
+                }}
+              >
+                Replace video
+              </button>
+              <button
+                type="button"
+                onClick={() => updateField('videoUrl', '')}
+                style={{
+                  background: 'none', border: '1px solid var(--border)',
+                  borderRadius: 8, padding: '8px 16px', color: 'var(--muted)',
+                  cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: '0.82rem',
+                }}
+              >
+                Remove
+              </button>
             </div>
-          )
-        })()}
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setVideoRecorderOpen(true)}
+            style={{
+              background: 'none', border: '1px dashed rgba(0,229,255,0.4)',
+              borderRadius: 'var(--radius-sm)', padding: '24px 20px',
+              color: 'var(--accent)', fontFamily: "'DM Sans', sans-serif",
+              fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer',
+              width: '100%',
+            }}
+          >
+            + Record or add a video
+          </button>
+        )}
+
+        <VideoRecorder
+          isOpen={videoRecorderOpen}
+          onClose={() => setVideoRecorderOpen(false)}
+          onVideoSaved={(url) => {
+            updateField('videoUrl', url)
+            setVideoRecorderOpen(false)
+          }}
+          accentColor="#00e5ff"
+          storageBucket="interpreter-videos"
+        />
       </FormSection>
 
       {/* Video Description */}

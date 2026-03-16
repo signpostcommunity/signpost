@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { Interpreter } from '@/lib/types';
 import { getVideoEmbedUrl } from '@/lib/videoUtils';
+import { createClient as createBrowserClient } from '@/lib/supabase/client';
 import FlagProfileModal from '@/components/directory/FlagProfileModal';
 import AddToListModal from '@/components/directory/AddToListModal';
 import SendMessageModal from '@/components/messaging/SendMessageModal';
@@ -575,30 +576,79 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
    ═══════════════════════════════════════════════════ */
 
 function OverviewTab({ interpreter: i }: { interpreter: Interpreter }) {
+  const [videos, setVideos] = useState<{ id: string; language: string; label: string | null; video_url: string }[]>([]);
+  const [activeVideoIdx, setActiveVideoIdx] = useState(0);
+
+  useEffect(() => {
+    const supabase = createBrowserClient();
+    supabase
+      .from('interpreter_videos')
+      .select('id, language, label, video_url, sort_order')
+      .eq('interpreter_id', String(i.id))
+      .order('sort_order')
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setVideos(data);
+        }
+      });
+  }, [i.id]);
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      {(() => {
+      {/* Multi-language videos */}
+      {videos.length > 0 ? (
+        <Section title="Introduction Videos">
+          {videos.length > 1 && (
+            <div style={{ display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }}>
+              {videos.map((v, idx) => (
+                <button
+                  key={v.id}
+                  onClick={() => setActiveVideoIdx(idx)}
+                  style={{
+                    padding: '5px 14px', borderRadius: 100, fontSize: '0.78rem', fontWeight: 600,
+                    border: `1px solid ${activeVideoIdx === idx ? 'rgba(0,229,255,0.5)' : 'var(--border)'}`,
+                    background: activeVideoIdx === idx ? 'rgba(0,229,255,0.1)' : 'var(--surface2)',
+                    color: activeVideoIdx === idx ? 'var(--accent)' : 'var(--muted)',
+                    cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {v.language}
+                </button>
+              ))}
+            </div>
+          )}
+          {(() => {
+            const v = videos[activeVideoIdx];
+            if (!v) return null;
+            const embedUrl = getVideoEmbedUrl(v.video_url);
+            if (!embedUrl) return null;
+            return (
+              <div>
+                {v.label && <div style={{ fontSize: '0.82rem', color: 'var(--muted)', marginBottom: 8 }}>{v.label}</div>}
+                {embedUrl.includes('supabase.co/storage') ? (
+                  <video controls width="100%" src={embedUrl} style={{ borderRadius: 12, border: '1px solid var(--border)', maxHeight: 420, background: '#000' }} />
+                ) : (
+                  <iframe width="100%" height="315" src={embedUrl} title={`${v.language} introduction video`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
+                    style={{ borderRadius: 12, border: 'none' }} />
+                )}
+              </div>
+            );
+          })()}
+        </Section>
+      ) : (() => {
+        // Fallback to legacy single video
         const embedUrl = i.videoUrl ? getVideoEmbedUrl(i.videoUrl) : null;
         if (!embedUrl) return null;
         return (
           <Section title="Introduction Video">
             {embedUrl.includes('supabase.co/storage') ? (
-              <video
-                controls
-                width="100%"
-                src={embedUrl}
-                style={{ borderRadius: '12px', border: '1px solid var(--border)', maxHeight: 420, background: '#000' }}
-              />
+              <video controls width="100%" src={embedUrl} style={{ borderRadius: 12, border: '1px solid var(--border)', maxHeight: 420, background: '#000' }} />
             ) : (
-              <iframe
-                width="100%"
-                height="315"
-                src={embedUrl}
-                title="Interpreter introduction video"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                style={{ borderRadius: '12px', border: 'none' }}
-              />
+              <iframe width="100%" height="315" src={embedUrl} title="Interpreter introduction video"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
+                style={{ borderRadius: 12, border: 'none' }} />
             )}
           </Section>
         );

@@ -11,6 +11,7 @@ import {
 } from '@/lib/data/languages'
 import { SPECIALIZATION_CATEGORIES, SPECIALIZED_SKILLS } from '@/lib/constants/specializations'
 import { getVideoEmbedUrl, isValidVideoUrl } from '@/lib/videoUtils'
+import VideoRecorder from '@/components/ui/VideoRecorder'
 import LocationPicker from '@/components/shared/LocationPicker'
 import { generateSlug, validateSlug } from '@/lib/slugUtils'
 
@@ -393,6 +394,24 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const [videoUrlError, setVideoUrlError] = useState<string | null>(null)
   const [videoDescription, setVideoDescription] = useState(fallback(p.video_desc, 'videoDescription', ''))
 
+  // Multi-video state
+  interface InterpreterVideo {
+    id: string
+    language: string
+    label: string | null
+    video_url: string
+    video_source: string
+    sort_order: number
+  }
+  const [interpreterVideos, setInterpreterVideos] = useState<InterpreterVideo[]>([])
+  const [videoRecorderOpen, setVideoRecorderOpen] = useState(false)
+  const [newVideoLanguage, setNewVideoLanguage] = useState('')
+  const [newVideoLabel, setNewVideoLabel] = useState('')
+  const [pendingVideoUrl, setPendingVideoUrl] = useState('')
+  const [pendingVideoSource, setPendingVideoSource] = useState<'recorded' | 'uploaded' | 'url'>('url')
+  const [showVideoForm, setShowVideoForm] = useState(false)
+  const [videosLoading, setVideosLoading] = useState(false)
+
   // ── Payment & Invoicing state ───────────────────────────────────────
   const [invoicingPref, setInvoicingPref] = useState(p.invoicing_preference || 'own')
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>(p.payment_methods || [])
@@ -478,6 +497,68 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
     })()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // ── Load interpreter_videos ──────────────────────────────────────────
+  useEffect(() => {
+    if (!p.id) return
+    setVideosLoading(true)
+    const supabase = createClient()
+    supabase
+      .from('interpreter_videos')
+      .select('id, language, label, video_url, video_source, sort_order')
+      .eq('interpreter_id', p.id)
+      .order('sort_order')
+      .then(({ data }) => {
+        if (data) setInterpreterVideos(data)
+        setVideosLoading(false)
+      })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [p.id])
+
+  async function loadVideos() {
+    if (!p.id) return
+    const supabase = createClient()
+    const { data } = await supabase
+      .from('interpreter_videos')
+      .select('id, language, label, video_url, video_source, sort_order')
+      .eq('interpreter_id', p.id)
+      .order('sort_order')
+    if (data) setInterpreterVideos(data)
+  }
+
+  async function deleteVideo(videoId: string) {
+    const supabase = createClient()
+    await supabase.from('interpreter_videos').delete().eq('id', videoId)
+    setInterpreterVideos(prev => prev.filter(v => v.id !== videoId))
+  }
+
+  async function saveNewVideo() {
+    if (!p.id || !pendingVideoUrl || !newVideoLanguage) return
+    setSaving(true)
+    const supabase = createClient()
+    const { data, error } = await supabase
+      .from('interpreter_videos')
+      .insert({
+        interpreter_id: p.id,
+        language: newVideoLanguage,
+        label: newVideoLabel || null,
+        video_url: pendingVideoUrl,
+        video_source: pendingVideoSource,
+        sort_order: interpreterVideos.length,
+      })
+      .select()
+      .single()
+
+    if (!error && data) {
+      setInterpreterVideos(prev => [...prev, data])
+    }
+    setPendingVideoUrl('')
+    setPendingVideoSource('url')
+    setNewVideoLanguage('')
+    setNewVideoLabel('')
+    setShowVideoForm(false)
+    setSaving(false)
+  }
 
   // ── Helpers ────────────────────────────────────────────────────────────
 
@@ -1221,77 +1302,155 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
             </div>
           </div>
 
-          <div style={sectionTitleStyle}>Introduction Video</div>
+          <div style={sectionTitleStyle}>Introduction Videos</div>
           <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
-            Paste a link to a short video introduction. This is the first thing Deaf clients will see.
+            Record or add videos for each language you interpret. Deaf clients see these on your profile.
           </p>
-          <div style={{ marginBottom: 16 }}>
-            <label style={labelStyle}>Video URL</label>
-            <input
-              type="text"
-              value={videoUrl}
-              onChange={e => { setVideoUrl(e.target.value); setVideoUrlError(null) }}
-              onBlur={() => {
-                if (videoUrl.trim() && !isValidVideoUrl(videoUrl)) {
-                  setVideoUrlError('Please enter a YouTube or Vimeo link. Direct file upload coming soon.')
-                } else {
-                  setVideoUrlError(null)
-                }
-              }}
-              placeholder="YouTube or Vimeo link (e.g. youtube.com/watch?v=...)"
-              style={{ ...inputStyle, borderColor: videoUrlError ? 'var(--accent3)' : undefined }}
-              onFocus={handleFocus}
-            />
-            {videoUrlError && (
-              <div style={{ color: 'var(--accent3)', fontSize: '0.78rem', marginTop: 6 }}>{videoUrlError}</div>
-            )}
-            <div style={{ color: 'var(--muted)', fontSize: '0.78rem', marginTop: 6 }}>Please enter a YouTube or Vimeo link. Direct file upload coming soon.</div>
-            {/* TODO: direct video upload — spec in master doc */}
-          </div>
 
-          {/* Live preview */}
-          {(() => {
-            const embedUrl = getVideoEmbedUrl(videoUrl)
-            if (!embedUrl) return null
-            if (embedUrl.includes('supabase.co/storage')) {
-              return (
-                <div style={{ marginBottom: 20 }}>
-                  <label style={labelStyle}>Preview</label>
-                  <video controls width="100%" style={{ borderRadius: 12, border: '1px solid var(--border)', maxHeight: 340, background: '#000' }} src={embedUrl} />
-                </div>
-              )
-            }
-            return (
-              <div style={{ marginBottom: 20 }}>
-                <label style={labelStyle}>Preview</label>
-                <iframe
-                  width="100%" height="315" src={embedUrl}
-                  title="Interpreter introduction video"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  style={{ borderRadius: 12, border: 'none' }}
+          {/* Existing videos */}
+          {videosLoading ? (
+            <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16 }}>Loading videos...</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
+              {interpreterVideos.map(v => {
+                const embedUrl = getVideoEmbedUrl(v.video_url)
+                return (
+                  <div key={v.id} style={{
+                    background: 'var(--surface2)', border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-sm)', padding: 16,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{
+                          padding: '3px 10px', borderRadius: 100, fontSize: '0.75rem', fontWeight: 600,
+                          background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.3)', color: 'var(--accent)',
+                        }}>
+                          {v.language}
+                        </span>
+                        {v.label && <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>{v.label}</span>}
+                      </div>
+                      <button
+                        onClick={() => { if (confirm('Delete this video?')) deleteVideo(v.id) }}
+                        style={{
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          color: 'var(--accent3)', fontSize: '0.78rem', fontFamily: "'DM Sans', sans-serif",
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                    {embedUrl && (
+                      embedUrl.includes('supabase.co/storage') ? (
+                        <video controls width="100%" src={embedUrl} style={{ borderRadius: 8, maxHeight: 200, background: '#000' }} />
+                      ) : (
+                        <iframe
+                          width="100%" height="200" src={embedUrl}
+                          title={`${v.language} intro video`}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          style={{ borderRadius: 8, border: 'none' }}
+                        />
+                      )
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Add video form (after recorder saves) */}
+          {showVideoForm && pendingVideoUrl && (
+            <div style={{
+              background: 'var(--surface2)', border: '1px solid rgba(0,229,255,0.3)',
+              borderRadius: 'var(--radius-sm)', padding: 16, marginBottom: 16,
+            }}>
+              <div style={{ marginBottom: 12 }}>
+                <label style={labelStyle}>Language *</label>
+                <select
+                  value={newVideoLanguage}
+                  onChange={e => setNewVideoLanguage(e.target.value)}
+                  style={{ ...inputStyle, appearance: 'auto' as unknown as undefined }}
+                  onFocus={handleFocus} onBlur={handleBlur}
+                >
+                  <option value="">Select language...</option>
+                  {(signLangs.length > 0 ? signLangs : ['ASL']).map(lang => (
+                    <option key={lang} value={lang}>{lang}</option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <label style={labelStyle}>Label (optional)</label>
+                <input
+                  type="text"
+                  value={newVideoLabel}
+                  onChange={e => setNewVideoLabel(e.target.value)}
+                  placeholder="e.g. Medical interpreting introduction"
+                  style={inputStyle}
+                  onFocus={handleFocus} onBlur={handleBlur}
                 />
               </div>
-            )
-          })()}
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button
+                  onClick={() => { setShowVideoForm(false); setPendingVideoUrl('') }}
+                  style={{
+                    background: 'none', border: '1px solid var(--border)',
+                    borderRadius: 8, padding: '8px 16px', color: 'var(--muted)',
+                    cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: '0.85rem',
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={saveNewVideo}
+                  disabled={!newVideoLanguage || saving}
+                  style={{
+                    background: 'var(--accent)', color: '#000', border: 'none',
+                    borderRadius: 8, padding: '8px 16px', fontWeight: 600,
+                    cursor: !newVideoLanguage || saving ? 'not-allowed' : 'pointer',
+                    fontFamily: "'DM Sans', sans-serif", fontSize: '0.85rem',
+                    opacity: !newVideoLanguage || saving ? 0.5 : 1,
+                  }}
+                >
+                  {saving ? 'Saving...' : 'Save video'}
+                </button>
+              </div>
+            </div>
+          )}
 
-          <div style={sectionTitleStyle}>Video Description</div>
-          <div style={{ marginBottom: 16 }}>
-            <label style={labelStyle}>Brief description of your video (shown to clients)</label>
-            <textarea
-              value={videoDescription} onChange={e => setVideoDescription(e.target.value)}
-              placeholder="In this video I introduce myself in ASL and explain my background..."
-              rows={3} style={{ ...inputStyle, resize: 'vertical', minHeight: 80 }}
-              onFocus={handleFocus} onBlur={handleBlur}
-            />
-          </div>
+          {/* Add video button */}
+          {!showVideoForm && (
+            <button
+              onClick={() => setVideoRecorderOpen(true)}
+              style={{
+                background: 'none', border: '1px dashed rgba(0,229,255,0.4)',
+                borderRadius: 'var(--radius-sm)', padding: '12px 20px',
+                color: 'var(--accent)', fontFamily: "'DM Sans', sans-serif",
+                fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer',
+                width: '100%', transition: 'all 0.15s',
+              }}
+            >
+              + Add a video
+            </button>
+          )}
+
+          <VideoRecorder
+            isOpen={videoRecorderOpen}
+            onClose={() => setVideoRecorderOpen(false)}
+            onVideoSaved={(url, source) => {
+              setPendingVideoUrl(url)
+              setPendingVideoSource(source)
+              setVideoRecorderOpen(false)
+              setShowVideoForm(true)
+              // Default to first sign language
+              if (signLangs.length > 0) setNewVideoLanguage(signLangs[0])
+            }}
+            accentColor="#00e5ff"
+            storageBucket="interpreter-videos"
+            storagePath={p.id ? `${p.id}` : undefined}
+          />
 
           <SaveButton saving={saving} onClick={() => {
-            if (videoUrl.trim() && !isValidVideoUrl(videoUrl)) {
-              setVideoUrlError('Please enter a YouTube or Vimeo link. Direct file upload coming soon.')
-              return
-            }
-            saveFields({ bio, bio_specializations: bioSpecializations, bio_extra: bioExtra, video_url: videoUrl, video_desc: videoDescription })
+            saveFields({ bio, bio_specializations: bioSpecializations, bio_extra: bioExtra })
           }} />
         </>
       )}

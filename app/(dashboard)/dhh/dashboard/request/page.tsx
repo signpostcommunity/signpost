@@ -8,6 +8,8 @@ import { createClient } from '@/lib/supabase/client'
 import InterpreterPicker from '@/components/dhh/InterpreterPicker'
 import CommPrefsDisplay from '@/components/dhh/CommPrefsDisplay'
 import { BetaBanner, PageHeader, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+import VideoRecorder from '@/components/ui/VideoRecorder'
+import { getVideoEmbedUrl } from '@/lib/videoUtils'
 
 const TIMEZONES = [
   { label: 'Pacific Time (PT)', value: 'America/Los_Angeles' },
@@ -77,6 +79,9 @@ export default function DhhRequestPage() {
   const [interpreterCount, setInterpreterCount] = useState(1)
   const [selectedInterpreters, setSelectedInterpreters] = useState<string[]>(interpreterParam ? [interpreterParam] : [])
   const [description, setDescription] = useState('')
+  const [contextVideoUrl, setContextVideoUrl] = useState('')
+  const [contextVideoVisible, setContextVideoVisible] = useState(true)
+  const [videoRecorderOpen, setVideoRecorderOpen] = useState(false)
 
   useEffect(() => {
     async function init() {
@@ -130,6 +135,8 @@ export default function DhhRequestPage() {
           interpreterCount,
           description: description.trim(),
           interpreterIds: selectedInterpreters,
+          contextVideoUrl: contextVideoUrl || null,
+          contextVideoVisibleBeforeAccept: contextVideoVisible,
         }),
       })
 
@@ -336,7 +343,103 @@ export default function DhhRequestPage() {
           </div>
         </div>
 
-        {/* Section 5: Communication Preferences */}
+        {/* Section 5: Context Video */}
+        <div style={{ marginBottom: 32 }}>
+          <h3 style={sectionHeadingStyle}>Add a video for context (optional)</h3>
+          <p style={{ fontSize: '0.84rem', color: 'var(--muted)', marginBottom: 14, lineHeight: 1.55 }}>
+            Sign your request details instead of typing them.
+          </p>
+
+          {contextVideoUrl ? (
+            <div>
+              {(() => {
+                const embedUrl = getVideoEmbedUrl(contextVideoUrl)
+                if (!embedUrl) return null
+                return embedUrl.includes('supabase.co/storage') ? (
+                  <video controls width="100%" src={embedUrl} style={{ borderRadius: 12, border: '1px solid var(--border)', maxHeight: 260, background: '#000', marginBottom: 12 }} />
+                ) : (
+                  <iframe width="100%" height="260" src={embedUrl} title="Context video"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
+                    style={{ borderRadius: 12, border: 'none', marginBottom: 12 }} />
+                )
+              })()}
+              <button
+                type="button"
+                onClick={() => setContextVideoUrl('')}
+                style={{
+                  background: 'none', border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-sm)', padding: '7px 16px',
+                  fontSize: '0.82rem', color: 'var(--muted)',
+                  cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                }}
+              >
+                Remove video
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setVideoRecorderOpen(true)}
+              style={{
+                background: 'none', border: '1px dashed rgba(157,135,255,0.4)',
+                borderRadius: 'var(--radius-sm)', padding: '16px',
+                color: '#9d87ff', fontFamily: "'DM Sans', sans-serif",
+                fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
+                width: '100%',
+              }}
+            >
+              Record or add a video
+            </button>
+          )}
+
+          {contextVideoUrl && (
+            <div style={{ marginTop: 14 }}>
+              <button
+                type="button"
+                onClick={() => setContextVideoVisible(!contextVideoVisible)}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  width: '100%', padding: '10px 14px', cursor: 'pointer',
+                  borderRadius: 'var(--radius-sm)',
+                  border: `1px solid ${contextVideoVisible ? 'rgba(157,135,255,0.4)' : 'var(--border)'}`,
+                  background: contextVideoVisible ? 'rgba(157,135,255,0.06)' : 'var(--surface2)',
+                  transition: 'all 0.15s', textAlign: 'left',
+                }}
+              >
+                <span style={{ fontSize: '0.84rem', color: contextVideoVisible ? 'var(--text)' : 'var(--muted)' }}>
+                  Show this video to interpreters before they accept
+                </span>
+                <span style={{
+                  width: 36, height: 20, borderRadius: 10, flexShrink: 0,
+                  background: contextVideoVisible ? '#9d87ff' : 'var(--border)',
+                  position: 'relative', transition: 'background 0.2s',
+                  display: 'inline-block',
+                }}>
+                  <span style={{
+                    width: 14, height: 14, borderRadius: '50%',
+                    background: '#fff', position: 'absolute', top: 3,
+                    left: contextVideoVisible ? 19 : 3,
+                    transition: 'left 0.2s',
+                  }} />
+                </span>
+              </button>
+            </div>
+          )}
+
+          <VideoRecorder
+            isOpen={videoRecorderOpen}
+            onClose={() => setVideoRecorderOpen(false)}
+            onVideoSaved={(url) => {
+              setContextVideoUrl(url)
+              setVideoRecorderOpen(false)
+            }}
+            accentColor="#7b61ff"
+            storageBucket="videos"
+            storagePath="context"
+          />
+        </div>
+
+        {/* Section 6: Communication Preferences */}
         <div style={{ marginBottom: 32 }}>
           <h3 style={sectionHeadingStyle}>Your Communication Preferences</h3>
           <p style={{ fontSize: '0.84rem', color: 'var(--muted)', marginBottom: 14, lineHeight: 1.55 }}>
