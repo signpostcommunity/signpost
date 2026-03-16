@@ -33,7 +33,7 @@ const STATUS_STYLES: Record<string, { bg: string; border: string; color: string 
 
 const TABS: Array<'all' | RequestStatus> = ['all', 'pending', 'confirmed', 'completed', 'declined'];
 const EVENT_TYPES = ['Medical', 'Legal', 'Conference', 'Academic', 'Business', 'Community', 'Religious', 'Other'];
-const FORMATS = ['In-person', 'Remote', 'Hybrid'];
+const FORMATS = ['In-person', 'Remote'];
 
 const backdropStyle: React.CSSProperties = {
   position: 'fixed', inset: 0, zIndex: 1000,

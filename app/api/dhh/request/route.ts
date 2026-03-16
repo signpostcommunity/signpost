@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       ? `${deafProfile.first_name} ${deafProfile.last_name || ''}`.trim()
       : deafProfile?.name || 'A Deaf user'
 
-    // Map format value for DB constraint (in_person, remote, hybrid)
+    // Map format value for DB constraint (in_person, remote)
     const dbFormat = format === 'in-person' ? 'in_person' : format
 
     // Create ONE booking (the request)

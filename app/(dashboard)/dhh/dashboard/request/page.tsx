@@ -172,8 +172,11 @@ export default function DhhRequestPage() {
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       <PageHeader
         title="New Interpreter Request"
-        subtitle="Request an interpreter for a personal appointment. This is free — no platform fee for Deaf/DB/HH users."
+        subtitle="Request an interpreter for a personal event. Submitting booking requests for personal events is always free for Deaf/DB/HH users and their families."
       />
+      <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: -16, marginBottom: 28, maxWidth: 640, lineHeight: 1.5 }}>
+        (Note: this is separate from what the interpreter charges for their services. They will send you their rate directly.)
+      </p>
 
       <form onSubmit={handleSubmit} style={{ maxWidth: 640 }}>
         {/* Section 1: Event Details */}
@@ -186,7 +189,7 @@ export default function DhhRequestPage() {
               type="text"
               value={title}
               onChange={e => setTitle(e.target.value)}
-              placeholder="e.g. Family reunion, doctor appointment, wedding, church service"
+              placeholder="e.g. Wedding, family reunion, birthday party"
               style={inputStyle}
               required
             />
@@ -207,7 +210,7 @@ export default function DhhRequestPage() {
           <div style={fieldGroupStyle}>
             <label style={labelStyle}>Format *</label>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              {(['in-person', 'remote', 'hybrid'] as const).map(f => (
+              {(['in-person', 'remote'] as const).map(f => (
                 <label key={f} style={{
                   display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
                   padding: '8px 16px',
@@ -224,7 +227,7 @@ export default function DhhRequestPage() {
                     onChange={() => setFormat(f)}
                     style={{ accentColor: '#9d87ff' }}
                   />
-                  {f === 'in-person' ? 'In-person' : f === 'remote' ? 'Remote' : 'Hybrid'}
+                  {f === 'in-person' ? 'In-person' : 'Remote'}
                 </label>
               ))}
             </div>
@@ -232,12 +235,12 @@ export default function DhhRequestPage() {
 
           {format !== 'remote' && (
             <div style={fieldGroupStyle}>
-              <label style={labelStyle}>Location *</label>
+              <label style={labelStyle}>Physical address or Meeting ID *</label>
               <input
                 type="text"
                 value={location}
                 onChange={e => setLocation(e.target.value)}
-                placeholder="Address or location name"
+                placeholder="e.g. 123 Main St, Seattle WA or Zoom meeting link"
                 style={inputStyle}
                 required={format !== 'remote'}
               />

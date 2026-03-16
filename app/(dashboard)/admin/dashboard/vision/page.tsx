@@ -124,7 +124,7 @@ function DeafPortalTab() {
 
         <FeatureBlock accent={PURPLE} title="Personal Interpreter Request" items={[
           'Submit requests directly from your portal. Always free for Deaf/DB/HH individuals',
-          'Specify: date/time, format (in-person/remote/hybrid), event type, location, interpreter count',
+          'Specify: date/time, format (in-person/remote), event type, location, interpreter count',
           'Choose which interpreters from your preferred list to send the request to',
           'Your communication preferences are automatically shared with every request',
         ]} />

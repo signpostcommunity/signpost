@@ -298,7 +298,7 @@ export default function DeafDashboardOverview() {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {recentBookings.map(booking => {
-                const formatLabel = booking.format === 'remote' ? 'Remote' : booking.format === 'in_person' ? 'In-person' : booking.format === 'hybrid' ? 'Hybrid' : booking.format || 'TBD'
+                const formatLabel = booking.format === 'remote' ? 'Remote' : booking.format === 'in_person' ? 'In-person' : booking.format || 'TBD'
                 const formatColor = booking.format === 'remote' ? 'rgba(0,229,255,0.12)' : 'rgba(157,135,255,0.12)'
                 const formatBorder = booking.format === 'remote' ? 'rgba(0,229,255,0.3)' : 'rgba(157,135,255,0.3)'
                 const formatTextColor = booking.format === 'remote' ? 'var(--accent)' : '#9d87ff'

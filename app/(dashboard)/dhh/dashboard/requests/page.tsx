@@ -73,12 +73,10 @@ function formatTime(start: string, end: string): string {
 
 function FormatBadge({ format }: { format: string | null }) {
   if (!format) return null
-  const label = format === 'in_person' ? 'In-person' : format === 'remote' ? 'Remote' : 'Hybrid'
+  const label = format === 'in_person' ? 'In-person' : 'Remote'
   const colors = format === 'in_person'
     ? { bg: 'rgba(0,229,255,0.15)', color: '#00e5ff', border: 'rgba(0,229,255,0.25)' }
-    : format === 'remote'
-    ? { bg: 'rgba(123,97,255,0.15)', color: '#7b61ff', border: 'rgba(123,97,255,0.25)' }
-    : { bg: 'rgba(249,115,22,0.15)', color: '#f97316', border: 'rgba(249,115,22,0.25)' }
+    : { bg: 'rgba(123,97,255,0.15)', color: '#7b61ff', border: 'rgba(123,97,255,0.25)' }
   return (
     <span style={{
       fontSize: '0.7rem', fontWeight: 600, padding: '2px 8px',
