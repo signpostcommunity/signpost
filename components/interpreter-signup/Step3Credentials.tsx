@@ -114,6 +114,9 @@ export default function Step3Credentials({ onBack, onContinue }: {
                     onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
                     onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
                   />
+                  <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 6, lineHeight: 1.4 }}>
+                    Link to your credential on Credly, the RID registry, or your certifying body&apos;s website.
+                  </div>
                 </FormField>
                 <RemoveButton onClick={() => removeCert(cert.id)} />
               </div>

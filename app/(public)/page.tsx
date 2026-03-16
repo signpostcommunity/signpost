@@ -227,7 +227,8 @@ export default function HomePage() {
           color: #c4b5ff !important;
         }
         .hero-interp-btn:hover {
-          text-decoration: underline !important;
+          border-color: rgba(0,229,255,0.7) !important;
+          color: #a8f0ff !important;
         }
         .features-grid {
           display: grid;

@@ -41,102 +41,127 @@ export default function DeafDashboardPage() {
   }
 
   const fetchRoster = useCallback(async () => {
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setLoading(false); return; }
+    try {
+      const supabase = createClient();
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      console.log('[PREF DEBUG] auth user:', user?.id, 'error:', authError?.message);
+      if (!user) { setLoading(false); return; }
 
-    // Resolve deaf_profiles.id for this auth user (may differ from auth.uid())
-    const { data: deafProfile } = await supabase
-      .from('deaf_profiles')
-      .select('id')
-      .or(`user_id.eq.${user.id},id.eq.${user.id}`)
-      .maybeSingle();
+      // Resolve deaf_profiles.id — try by id first, then by user_id
+      // Avoids .or() + .maybeSingle() which can fail silently if edge cases arise
+      let deafUserId = user.id;
+      const { data: byId } = await supabase
+        .from('deaf_profiles')
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle();
 
-    const deafUserId = deafProfile?.id || user.id;
+      if (byId) {
+        deafUserId = byId.id;
+      } else {
+        const { data: byUserId } = await supabase
+          .from('deaf_profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (byUserId) {
+          deafUserId = byUserId.id;
+        }
+      }
+      console.log('[PREF DEBUG] deafUserId:', deafUserId, '(user.id:', user.id + ')');
 
-    // Step 1: Fetch roster rows (no nested embeds — avoids PostgREST issues)
-    const { data: rosterRows, error: rosterError } = await supabase
-      .from('deaf_roster')
-      .select('id, interpreter_id, tier, approve_work, approve_personal, notes')
-      .eq('deaf_user_id', deafUserId);
+      // Step 1: Fetch roster rows (no nested embeds — avoids PostgREST issues)
+      const { data: rosterRows, error: rosterError } = await supabase
+        .from('deaf_roster')
+        .select('id, interpreter_id, tier, approve_work, approve_personal, notes')
+        .eq('deaf_user_id', deafUserId);
 
-    if (rosterError) {
-      console.error('[deaf-dashboard] roster fetch error:', rosterError.message);
+      console.log('[PREF DEBUG] roster rows:', rosterRows?.length, 'error:', rosterError?.message);
+
+      if (rosterError) {
+        console.error('[deaf-dashboard] roster fetch error:', rosterError.message);
+        setLoading(false);
+        return;
+      }
+
+      if (!rosterRows || rosterRows.length === 0) {
+        setRoster([]);
+        setLoading(false);
+        return;
+      }
+
+      // Step 2: Fetch interpreter profiles for the IDs on the roster
+      const interpreterIds = rosterRows.map(r => r.interpreter_id);
+
+      const { data: interpreters, error: interpError } = await supabase
+        .from('interpreter_profiles')
+        .select('id, name, first_name, last_name, color')
+        .in('id', interpreterIds);
+
+      console.log('[PREF DEBUG] profiles:', interpreters?.length, 'error:', interpError?.message);
+
+      // Step 3: Fetch certs and specializations for these interpreters
+      const { data: certs } = await supabase
+        .from('interpreter_certifications')
+        .select('interpreter_id, name')
+        .in('interpreter_id', interpreterIds);
+
+      const { data: specs } = await supabase
+        .from('interpreter_specializations')
+        .select('interpreter_id, specialization')
+        .in('interpreter_id', interpreterIds);
+
+      // Build lookup maps
+      const interpMap: Record<string, { name: string; first_name: string | null; last_name: string | null; color: string | null }> = {};
+      for (const ip of interpreters || []) {
+        interpMap[ip.id] = ip;
+      }
+
+      const certsMap: Record<string, string[]> = {};
+      for (const c of certs || []) {
+        if (!certsMap[c.interpreter_id]) certsMap[c.interpreter_id] = [];
+        certsMap[c.interpreter_id].push(c.name);
+      }
+
+      const specsMap: Record<string, string[]> = {};
+      for (const s of specs || []) {
+        if (!specsMap[s.interpreter_id]) specsMap[s.interpreter_id] = [];
+        specsMap[s.interpreter_id].push(s.specialization);
+      }
+
+      // Step 4: Map roster rows to display objects
+      const mapped: RosterInterpreter[] = rosterRows.map(row => {
+        const ip = interpMap[row.interpreter_id];
+        const fullName = ip?.first_name
+          ? `${ip.first_name} ${ip.last_name || ''}`.trim()
+          : ip?.name || 'Unknown';
+        const parts = fullName.split(' ');
+        const initials = parts.map((p: string) => p[0]).join('').slice(0, 2).toUpperCase();
+        const certStr = (certsMap[row.interpreter_id] || []).join(', ') || 'Certified Interpreter';
+        const domainStr = (specsMap[row.interpreter_id] || []).join(', ') || 'General';
+
+        return {
+          roster_id: row.id,
+          interpreter_id: row.interpreter_id,
+          tier: row.tier as Tier,
+          approve_work: row.approve_work,
+          approve_personal: row.approve_personal,
+          notes: row.notes,
+          name: fullName,
+          initials,
+          color: ip?.color || 'linear-gradient(135deg, #7b61ff, #00e5ff)',
+          certs: certStr,
+          domains: domainStr,
+        };
+      });
+
+      console.log('[PREF DEBUG] mapped roster:', mapped.length);
+      setRoster(mapped);
       setLoading(false);
-      return;
-    }
-
-    if (!rosterRows || rosterRows.length === 0) {
-      setRoster([]);
+    } catch (err) {
+      console.error('[PREF DEBUG] Unhandled error in fetchRoster:', err);
       setLoading(false);
-      return;
     }
-
-    // Step 2: Fetch interpreter profiles for the IDs on the roster
-    const interpreterIds = rosterRows.map(r => r.interpreter_id);
-
-    const { data: interpreters } = await supabase
-      .from('interpreter_profiles')
-      .select('id, name, first_name, last_name, color')
-      .in('id', interpreterIds);
-
-    // Step 3: Fetch certs and specializations for these interpreters
-    const { data: certs } = await supabase
-      .from('interpreter_certifications')
-      .select('interpreter_id, name')
-      .in('interpreter_id', interpreterIds);
-
-    const { data: specs } = await supabase
-      .from('interpreter_specializations')
-      .select('interpreter_id, specialization')
-      .in('interpreter_id', interpreterIds);
-
-    // Build lookup maps
-    const interpMap: Record<string, { name: string; first_name: string | null; last_name: string | null; color: string | null }> = {};
-    for (const ip of interpreters || []) {
-      interpMap[ip.id] = ip;
-    }
-
-    const certsMap: Record<string, string[]> = {};
-    for (const c of certs || []) {
-      if (!certsMap[c.interpreter_id]) certsMap[c.interpreter_id] = [];
-      certsMap[c.interpreter_id].push(c.name);
-    }
-
-    const specsMap: Record<string, string[]> = {};
-    for (const s of specs || []) {
-      if (!specsMap[s.interpreter_id]) specsMap[s.interpreter_id] = [];
-      specsMap[s.interpreter_id].push(s.specialization);
-    }
-
-    // Step 4: Map roster rows to display objects
-    const mapped: RosterInterpreter[] = rosterRows.map(row => {
-      const ip = interpMap[row.interpreter_id];
-      const fullName = ip?.first_name
-        ? `${ip.first_name} ${ip.last_name || ''}`.trim()
-        : ip?.name || 'Unknown';
-      const parts = fullName.split(' ');
-      const initials = parts.map((p: string) => p[0]).join('').slice(0, 2).toUpperCase();
-      const certStr = (certsMap[row.interpreter_id] || []).join(', ') || 'Certified Interpreter';
-      const domainStr = (specsMap[row.interpreter_id] || []).join(', ') || 'General';
-
-      return {
-        roster_id: row.id,
-        interpreter_id: row.interpreter_id,
-        tier: row.tier as Tier,
-        approve_work: row.approve_work,
-        approve_personal: row.approve_personal,
-        notes: row.notes,
-        name: fullName,
-        initials,
-        color: ip?.color || 'linear-gradient(135deg, #7b61ff, #00e5ff)',
-        certs: certStr,
-        domains: domainStr,
-      };
-    });
-
-    setRoster(mapped);
-    setLoading(false);
   }, []);
 
   useEffect(() => { fetchRoster(); }, [fetchRoster]);

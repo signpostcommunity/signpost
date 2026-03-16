@@ -65,9 +65,11 @@ export const SPECIALIZATION_CATEGORIES: Record<string, string[]> = {
 export const SPECIALIZED_SKILLS = [
   "Cued Speech Transliteration",
   "DeafBlind Pro-Tactile ASL (PTASL)",
+  "Legal Interpreting (SC:L)",
   "Oral Transliteration",
   "Platform Voicing / Specialized Voice Interpreting",
-  "Trilingual Interpreting"
+  "Trilingual Interpreting",
+  "Working with Deaf Interpreters (CDI Teaming)"
 ]
 
 // All sub-categories as a flat array (for backward compat / simple lookups)

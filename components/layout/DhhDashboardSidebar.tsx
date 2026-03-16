@@ -248,14 +248,24 @@ export default function DhhDashboardSidebar({ userName = 'User', userInitials = 
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // Resolve deaf_profiles.id for this auth user (may differ from auth.uid())
-      const { data: deafProfile } = await supabase
+      // Resolve deaf_profiles.id — try by id first, then by user_id
+      let deafUserId = user.id
+      const { data: byId } = await supabase
         .from('deaf_profiles')
         .select('id')
-        .or(`user_id.eq.${user.id},id.eq.${user.id}`)
+        .eq('id', user.id)
         .maybeSingle()
 
-      const deafUserId = deafProfile?.id || user.id
+      if (byId) {
+        deafUserId = byId.id
+      } else {
+        const { data: byUserId } = await supabase
+          .from('deaf_profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle()
+        if (byUserId) deafUserId = byUserId.id
+      }
 
       const { count: rosterCount } = await supabase
         .from('deaf_roster')
