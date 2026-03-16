@@ -1482,7 +1482,7 @@ function BookingCard({ booking, onViewDetails, onCancel, onForwardToTeam, onToas
   return (
     <div style={{
       background: 'var(--card-bg)', border: '1px solid var(--border)',
-      borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 12,
+      borderRadius: 'var(--radius)', padding: '24px 24px', marginBottom: 24,
       opacity: isCancelled ? 0.75 : 1,
     }}>
       <div className="dash-card-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>

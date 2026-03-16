@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 interface BookingFilterBarProps {
   search: string
@@ -149,4 +149,79 @@ export function getLocalToday(): string {
   const m = String(d.getMonth() + 1).padStart(2, '0')
   const day = String(d.getDate()).padStart(2, '0')
   return `${y}-${m}-${day}`
+}
+
+/** Group bookings by time category relative to today */
+export function groupByTimeCategory<T extends { date: string }>(bookings: T[]): { label: string; items: T[]; isPast: boolean }[] {
+  const now = new Date()
+  const today = getLocalToday()
+
+  // Monday of this week
+  const dayOfWeek = now.getDay() // 0=Sun
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek
+  const thisMonday = new Date(now)
+  thisMonday.setDate(now.getDate() + mondayOffset)
+  const thisSunday = new Date(thisMonday)
+  thisSunday.setDate(thisMonday.getDate() + 6)
+
+  const nextMonday = new Date(thisMonday)
+  nextMonday.setDate(thisMonday.getDate() + 7)
+  const nextSunday = new Date(nextMonday)
+  nextSunday.setDate(nextMonday.getDate() + 6)
+
+  const fmt = (d: Date) => {
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const dy = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${dy}`
+  }
+
+  const thisMon = fmt(thisMonday)
+  const thisSun = fmt(thisSunday)
+  const nextMon = fmt(nextMonday)
+  const nextSun = fmt(nextSunday)
+
+  const groups: Record<string, T[]> = { today: [], thisWeek: [], nextWeek: [], later: [], past: [] }
+
+  for (const b of bookings) {
+    if (b.date < today) {
+      groups.past.push(b)
+    } else if (b.date === today) {
+      groups.today.push(b)
+    } else if (b.date >= thisMon && b.date <= thisSun) {
+      groups.thisWeek.push(b)
+    } else if (b.date >= nextMon && b.date <= nextSun) {
+      groups.nextWeek.push(b)
+    } else {
+      groups.later.push(b)
+    }
+  }
+
+  // Sort each group by date ascending (past: most recent first)
+  const asc = (a: T, b: T) => a.date.localeCompare(b.date)
+  const desc = (a: T, b: T) => b.date.localeCompare(a.date)
+  groups.today.sort(asc)
+  groups.thisWeek.sort(asc)
+  groups.nextWeek.sort(asc)
+  groups.later.sort(asc)
+  groups.past.sort(desc)
+
+  return [
+    { label: 'TODAY', items: groups.today, isPast: false },
+    { label: 'THIS WEEK', items: groups.thisWeek, isPast: false },
+    { label: 'NEXT WEEK', items: groups.nextWeek, isPast: false },
+    { label: 'LATER', items: groups.later, isPast: false },
+    { label: 'PAST', items: groups.past, isPast: true },
+  ].filter(g => g.items.length > 0)
+}
+
+/** Section header style for time categories */
+export const timeCategoryHeaderStyle: React.CSSProperties = {
+  fontSize: '0.75rem',
+  fontWeight: 700,
+  letterSpacing: '0.05em',
+  textTransform: 'uppercase',
+  color: '#666',
+  marginBottom: 16,
+  marginTop: 32,
 }

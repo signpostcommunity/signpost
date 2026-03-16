@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import LocationPicker from '@/components/shared/LocationPicker'
-import { BetaBanner, PageHeader, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+import { PageHeader, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import VideoRecorder from '@/components/ui/VideoRecorder'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
 

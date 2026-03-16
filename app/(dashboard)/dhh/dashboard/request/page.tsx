@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import InterpreterPicker from '@/components/dhh/InterpreterPicker'
 import CommPrefsDisplay from '@/components/dhh/CommPrefsDisplay'
-import { BetaBanner, PageHeader, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+import { PageHeader, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import VideoRecorder from '@/components/ui/VideoRecorder'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
 

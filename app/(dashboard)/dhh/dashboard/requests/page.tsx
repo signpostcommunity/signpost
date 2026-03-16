@@ -4,11 +4,11 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { BetaBanner, PageHeader, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+import { PageHeader, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import RequestTracker from '@/components/dashboard/dhh/RequestTracker'
 import InterpreterRating from '@/components/dashboard/dhh/InterpreterRating'
 import { createClient } from '@/lib/supabase/client'
-import BookingFilterBar, { filterBySearch, filterByDateRange, sortSoonestFirst } from '@/components/dashboard/shared/BookingFilterBar'
+import BookingFilterBar, { filterBySearch, filterByDateRange, groupByTimeCategory, timeCategoryHeaderStyle } from '@/components/dashboard/shared/BookingFilterBar'
 
 interface Recipient {
   id: string
@@ -411,12 +411,11 @@ export default function DhhRequestsListPage() {
   const professionalBookings = bookings.filter(b => b.request_type === 'professional' || (!b.request_type && !b.recipients?.length))
   const personalBookings = bookings.filter(b => b.request_type === 'personal')
   const tabBookings = activeTab === 'professional' ? professionalBookings : personalBookings
-  const activeBookings = sortSoonestFirst(
-    filterByDateRange(
-      filterBySearch(tabBookings, search, ['title', 'location', 'description', 'notes']),
-      dateFrom, dateTo
-    )
+  const activeBookings = filterByDateRange(
+    filterBySearch(tabBookings, search, ['title', 'location', 'description', 'notes']),
+    dateFrom, dateTo
   )
+  const groupedBookings = groupByTimeCategory(activeBookings)
 
   const tabStyle = (tab: Tab): React.CSSProperties => ({
     background: 'none', border: 'none', cursor: 'pointer',
@@ -454,7 +453,7 @@ export default function DhhRequestsListPage() {
         <div style={{ padding: '40px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem' }}>
           Loading...
         </div>
-      ) : activeBookings.length === 0 ? (
+      ) : groupedBookings.length === 0 ? (
         <div style={{
           border: '2px dashed var(--border)', borderRadius: 'var(--radius)',
           padding: '40px 24px', textAlign: 'center',
@@ -482,18 +481,23 @@ export default function DhhRequestsListPage() {
           )}
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          {activeBookings.map(b => (
-            <RequestCard
-              key={b.id}
-              booking={b}
-              expanded={expandedId === b.id}
-              onExpand={() => setExpandedId(expandedId === b.id ? null : b.id)}
-              ratedInterpreters={ratedInterpreters}
-              onRated={handleRated}
-            />
-          ))}
-        </div>
+        groupedBookings.map((group, gi) => (
+          <div key={group.label} style={group.isPast ? { opacity: 0.6 } : undefined}>
+            <div style={{ ...timeCategoryHeaderStyle, marginTop: gi === 0 ? 0 : 32 }}>{group.label}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {group.items.map(b => (
+                <RequestCard
+                  key={b.id}
+                  booking={b}
+                  expanded={expandedId === b.id}
+                  onExpand={() => setExpandedId(expandedId === b.id ? null : b.id)}
+                  ratedInterpreters={ratedInterpreters}
+                  onRated={handleRated}
+                />
+              ))}
+            </div>
+          </div>
+        ))
       )}
 
       <DashMobileStyles />

@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { BetaBanner, PageHeader, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
 import { sendNotification } from '@/lib/notifications'
-import BookingFilterBar, { filterBySearch, filterByDateRange, sortSoonestFirst } from '@/components/dashboard/shared/BookingFilterBar'
+import BookingFilterBar, { filterBySearch, filterByDateRange, groupByTimeCategory, timeCategoryHeaderStyle } from '@/components/dashboard/shared/BookingFilterBar'
 
 /* ── Types ── */
 
@@ -635,12 +635,11 @@ export default function InquiriesPage() {
 
   const hasSeedData = bookings.some(b => b.is_seed)
 
-  const filteredBookings = sortSoonestFirst(
-    filterByDateRange(
-      filterBySearch(bookings, search, ['title', 'requester_name', 'specialization', 'location', 'notes']),
-      dateFrom, dateTo
-    )
+  const filteredBookings = filterByDateRange(
+    filterBySearch(bookings, search, ['title', 'requester_name', 'specialization', 'location', 'notes']),
+    dateFrom, dateTo
   )
+  const groupedBookings = groupByTimeCategory(filteredBookings)
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
@@ -657,7 +656,7 @@ export default function InquiriesPage() {
         <div style={{ padding: '40px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem' }}>
           Loading…
         </div>
-      ) : filteredBookings.length === 0 ? (
+      ) : groupedBookings.length === 0 ? (
         <div style={{
           background: 'var(--card-bg)', border: '1px solid var(--border)',
           borderRadius: 'var(--radius)', padding: '32px 24px',
@@ -666,10 +665,13 @@ export default function InquiriesPage() {
           No pending inquiries. They&apos;ll appear here when clients reach out.
         </div>
       ) : (
-        filteredBookings.map(inq => (
+        groupedBookings.map((group, gi) => (
+          <div key={group.label} style={group.isPast ? { opacity: 0.6 } : undefined}>
+            <div style={{ ...timeCategoryHeaderStyle, marginTop: gi === 0 ? 0 : 32 }}>{group.label}</div>
+            {group.items.map(inq => (
           <div key={inq.id} style={{
             background: 'var(--card-bg)', border: '1px solid var(--border)',
-            borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 12,
+            borderRadius: 'var(--radius)', padding: '24px 24px', marginBottom: 24,
           }}>
             <div className="dash-card-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
               <div>
@@ -722,6 +724,8 @@ export default function InquiriesPage() {
               }}>View Details</GhostButton>
               <GhostButton danger onClick={() => setDeclining(inq.id)}>Decline</GhostButton>
             </div>
+          </div>
+            ))}
           </div>
         ))
       )}

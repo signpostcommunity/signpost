@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { BetaBanner, PageHeader, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+import { PageHeader, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import ConversationList from '@/components/messaging/ConversationList'
 
 /* ── Types ── */

@@ -4,10 +4,10 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { BetaBanner, PageHeader, SectionLabel, DemoBadge, GhostButton, Avatar, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+import { PageHeader, SectionLabel, DemoBadge, GhostButton, Avatar, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import VideoRecorder from '@/components/ui/VideoRecorder'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
-import BookingFilterBar, { filterBySearch, filterByDateRange, sortSoonestFirst } from '@/components/dashboard/shared/BookingFilterBar'
+import BookingFilterBar, { filterBySearch, filterByDateRange, groupByTimeCategory, timeCategoryHeaderStyle } from '@/components/dashboard/shared/BookingFilterBar'
 
 /* ── Types ── */
 
@@ -410,7 +410,7 @@ function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast, on
   return (
     <div style={{
       background: 'var(--card-bg)', border: '1px solid var(--border)',
-      borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 12,
+      borderRadius: 'var(--radius)', padding: '24px 24px', marginBottom: 24,
       opacity: isCancelled && !booking.sub_search_initiated ? 0.75 : 1,
     }}>
       {/* DNB warning */}
@@ -740,8 +740,10 @@ export default function DhhBookingsPage() {
   useEffect(() => { fetchData() }, [fetchData])
 
   const searchFields: (keyof MockBooking)[] = ['title', 'requester_name', 'location', 'specialization']
-  const filteredSelf = sortSoonestFirst(filterByDateRange(filterBySearch(selfBookings, search, searchFields), dateFrom, dateTo))
-  const filteredOnBehalf = sortSoonestFirst(filterByDateRange(filterBySearch(onBehalfBookings, search, searchFields), dateFrom, dateTo))
+  const filteredSelf = filterByDateRange(filterBySearch(selfBookings, search, searchFields), dateFrom, dateTo)
+  const filteredOnBehalf = filterByDateRange(filterBySearch(onBehalfBookings, search, searchFields), dateFrom, dateTo)
+  const groupedSelf = groupByTimeCategory(filteredSelf)
+  const groupedOnBehalf = groupByTimeCategory(filteredOnBehalf)
   const allBookings = [...selfBookings, ...onBehalfBookings]
   const viewingBooking = allBookings.find(b => b.id === viewing)
 
@@ -764,41 +766,51 @@ export default function DhhBookingsPage() {
         <>
           {/* Section A: Requests Made by You */}
           <SectionLabel>Requests Made by You</SectionLabel>
-          {filteredSelf.length === 0 ? (
+          {groupedSelf.length === 0 ? (
             <EmptyState />
           ) : (
-            filteredSelf.map(b => (
-              <DhhBookingCard
-                key={b.id}
-                booking={b}
-                dnbInterpreterIds={dnbInterpreterIds}
-                onViewDetails={() => setViewing(b.id)}
-                onToast={showToast}
-                onAddContextVideo={(bookingId) => {
-                  setContextVideoBookingId(bookingId)
-                  setVideoRecorderOpen(true)
-                }}
-              />
+            groupedSelf.map((group, gi) => (
+              <div key={group.label} style={group.isPast ? { opacity: 0.6 } : undefined}>
+                <div style={{ ...timeCategoryHeaderStyle, marginTop: gi === 0 ? 0 : 32 }}>{group.label}</div>
+                {group.items.map(b => (
+                  <DhhBookingCard
+                    key={b.id}
+                    booking={b}
+                    dnbInterpreterIds={dnbInterpreterIds}
+                    onViewDetails={() => setViewing(b.id)}
+                    onToast={showToast}
+                    onAddContextVideo={(bookingId) => {
+                      setContextVideoBookingId(bookingId)
+                      setVideoRecorderOpen(true)
+                    }}
+                  />
+                ))}
+              </div>
             ))
           )}
 
           {/* Section B: Requests Made on Your Behalf */}
           <SectionLabel>Requests Made on Your Behalf</SectionLabel>
-          {filteredOnBehalf.length === 0 ? (
+          {groupedOnBehalf.length === 0 ? (
             <EmptyState />
           ) : (
-            filteredOnBehalf.map(b => (
-              <DhhBookingCard
-                key={b.id}
-                booking={b}
-                dnbInterpreterIds={dnbInterpreterIds}
-                onViewDetails={() => setViewing(b.id)}
-                onToast={showToast}
-                onAddContextVideo={(bookingId) => {
-                  setContextVideoBookingId(bookingId)
-                  setVideoRecorderOpen(true)
-                }}
-              />
+            groupedOnBehalf.map((group, gi) => (
+              <div key={group.label} style={group.isPast ? { opacity: 0.6 } : undefined}>
+                <div style={{ ...timeCategoryHeaderStyle, marginTop: gi === 0 ? 0 : 32 }}>{group.label}</div>
+                {group.items.map(b => (
+                  <DhhBookingCard
+                    key={b.id}
+                    booking={b}
+                    dnbInterpreterIds={dnbInterpreterIds}
+                    onViewDetails={() => setViewing(b.id)}
+                    onToast={showToast}
+                    onAddContextVideo={(bookingId) => {
+                      setContextVideoBookingId(bookingId)
+                      setVideoRecorderOpen(true)
+                    }}
+                  />
+                ))}
+              </div>
             ))
           )}
         </>
