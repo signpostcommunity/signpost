@@ -292,25 +292,26 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       }
 
       // Pending bookings data (for display, limit 2, via booking_recipients)
+      // Two-step fetch to avoid RLS nested embed bug
       const { data: pendingRecipients, error: pendingErr } = await supabase
         .from('booking_recipients')
-        .select(`
-          id,
-          status,
-          booking:bookings(
-            id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed
-          )
-        `)
+        .select('id, status, booking_id')
         .eq('interpreter_id', interpreterProfileId!)
         .in('status', ['sent', 'viewed', 'responded'])
         .order('sent_at', { ascending: true })
         .limit(2)
 
       if (!pendingErr && pendingRecipients) {
-        const pending = pendingRecipients
-          .filter((r: Record<string, unknown>) => r.booking)
-          .map((r: Record<string, unknown>) => r.booking as Booking)
-        setPendingBookings(pending)
+        const pendingBookingIds = pendingRecipients.map(r => r.booking_id).filter(Boolean)
+        if (pendingBookingIds.length > 0) {
+          const { data: pendingBookingsData } = await supabase
+            .from('bookings')
+            .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed')
+            .in('id', pendingBookingIds)
+          if (pendingBookingsData) {
+            setPendingBookings(pendingBookingsData as Booking[])
+          }
+        }
       }
 
       // Confirmed this month count (via booking_recipients + bookings)
@@ -318,43 +319,43 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       const startOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
       const endOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()}`
 
+      // Two-step fetch to avoid RLS nested embed bug
       const { data: confirmedRecipients, error: confirmedErr } = await supabase
         .from('booking_recipients')
-        .select('id, booking:bookings(date)')
+        .select('id, booking_id')
         .eq('interpreter_id', interpreterProfileId!)
         .eq('status', 'confirmed')
 
       if (!confirmedErr && confirmedRecipients) {
-        const thisMonthCount = confirmedRecipients.filter((r: Record<string, unknown>) => {
-          const b = r.booking as { date: string } | null
-          return b && b.date >= startOfMonth && b.date <= endOfMonth
-        }).length
+        const confBookingIds = confirmedRecipients.map(r => r.booking_id).filter(Boolean)
+        let confBookingsData: { id: string; date: string }[] = []
+        if (confBookingIds.length > 0) {
+          const { data: bData } = await supabase
+            .from('bookings')
+            .select('id, date')
+            .in('id', confBookingIds)
+          confBookingsData = (bData || []) as { id: string; date: string }[]
+        }
+        const thisMonthCount = confBookingsData.filter(b => b.date >= startOfMonth && b.date <= endOfMonth).length
         setConfirmedThisMonth(thisMonthCount)
       }
 
-      // Upcoming confirmed bookings for display
+      // Upcoming confirmed bookings for display (reuse confirmedRecipients from above)
       const today = now.toISOString().slice(0, 10)
-      const { data: upcomingRecipients, error: confDataErr } = await supabase
-        .from('booking_recipients')
-        .select(`
-          id,
-          booking:bookings(
-            id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed
-          )
-        `)
-        .eq('interpreter_id', interpreterProfileId!)
-        .eq('status', 'confirmed')
-
-      if (!confDataErr && upcomingRecipients) {
-        const upcoming = upcomingRecipients
-          .filter((r: Record<string, unknown>) => {
-            const b = r.booking as { date: string } | null
-            return b && b.date >= today
-          })
-          .map((r: Record<string, unknown>) => r.booking as Booking)
-          .sort((a, b) => a.date.localeCompare(b.date))
-          .slice(0, 2)
-        setConfirmedBookings(upcoming)
+      if (!confirmedErr && confirmedRecipients) {
+        const upcomingBookingIds = confirmedRecipients.map(r => r.booking_id).filter(Boolean)
+        if (upcomingBookingIds.length > 0) {
+          const { data: upcomingData } = await supabase
+            .from('bookings')
+            .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed')
+            .in('id', upcomingBookingIds)
+            .gte('date', today)
+            .order('date', { ascending: true })
+            .limit(2)
+          if (upcomingData) {
+            setConfirmedBookings(upcomingData as Booking[])
+          }
+        }
       }
 
       // Preferred team count — table may not exist

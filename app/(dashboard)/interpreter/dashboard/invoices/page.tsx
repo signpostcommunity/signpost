@@ -269,24 +269,32 @@ export default function InvoicesPage() {
     const allInvoices = invData || []
     setInvoices(allInvoices)
 
-    // Fetch completed bookings via booking_recipients
-    const { data: completedRecipients, error: bookingsErr } = await supabase
+    // Two-step fetch to avoid RLS nested embed bug
+    const { data: completedRecipients, error: recipientsErr } = await supabase
       .from('booking_recipients')
-      .select(`
-        booking:bookings(
-          id, title, requester_name, specialization, date, time_start, time_end, location, format, is_seed, status
-        )
-      `)
+      .select('booking_id')
       .eq('interpreter_id', profile.id)
       .eq('status', 'confirmed')
 
-    const bookingsData = (completedRecipients || [])
-      .map((r: Record<string, unknown>) => r.booking as CompletedBooking & { status: string } | null)
-      .filter((b): b is CompletedBooking & { status: string } => b !== null && b.status === 'completed')
-      .sort((a, b) => b.date.localeCompare(a.date))
+    let bookingsData: (CompletedBooking & { status: string })[] = []
+    if (!recipientsErr && completedRecipients) {
+      const bIds = completedRecipients.map(r => r.booking_id).filter(Boolean)
+      if (bIds.length > 0) {
+        const { data: bData, error: bookingsErr } = await supabase
+          .from('bookings')
+          .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, is_seed, status')
+          .in('id', bIds)
 
-    if (bookingsErr) {
-      console.error('[invoices] completed bookings fetch failed:', bookingsErr.message)
+        if (bookingsErr) {
+          console.error('[invoices] completed bookings fetch failed:', bookingsErr.message)
+        }
+
+        bookingsData = ((bData || []) as (CompletedBooking & { status: string })[])
+          .filter(b => b.status === 'completed')
+          .sort((a, b) => b.date.localeCompare(a.date))
+      }
+    } else if (recipientsErr) {
+      console.error('[invoices] recipients fetch failed:', recipientsErr.message)
     }
 
     // Filter out bookings that already have an invoice

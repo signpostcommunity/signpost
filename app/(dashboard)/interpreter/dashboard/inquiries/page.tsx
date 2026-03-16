@@ -550,27 +550,38 @@ export default function InquiriesPage() {
 
     if (profileErr || !profile) { setLoading(false); return }
 
-    const { data, error } = await supabase
+    // Two-step fetch to avoid RLS nested embed bug (bookings RLS doesn't recognize
+    // interpreter via booking_recipients, only via bookings.interpreter_id)
+    const { data: recipientRows, error: recipientErr } = await supabase
       .from('booking_recipients')
-      .select(`
-        id,
-        status,
-        sent_at,
-        booking:bookings(
-          id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed, created_at, request_type, dhh_client_id, context_video_url, context_video_visible_before_accept
-        )
-      `)
+      .select('id, status, sent_at, booking_id')
       .eq('interpreter_id', profile.id)
       .in('status', ['sent', 'viewed', 'responded'])
       .order('sent_at', { ascending: false })
 
-    if (error) {
-      console.error('[inquiries] fetch failed:', error.message)
+    if (recipientErr) {
+      console.error('[inquiries] fetch recipients failed:', recipientErr.message)
     } else {
-      const mapped = (data || [])
-        .filter((r: Record<string, unknown>) => r.booking)
-        .map((r: Record<string, unknown>) => {
-          const b = r.booking as Record<string, unknown>
+      const bookingIds = (recipientRows || []).map(r => r.booking_id).filter(Boolean)
+
+      let bookingsMap: Record<string, Record<string, unknown>> = {}
+      if (bookingIds.length > 0) {
+        const { data: bookingsData } = await supabase
+          .from('bookings')
+          .select('id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed, created_at, request_type, dhh_client_id, context_video_url, context_video_visible_before_accept')
+          .in('id', bookingIds)
+
+        if (bookingsData) {
+          for (const b of bookingsData) {
+            bookingsMap[b.id] = b
+          }
+        }
+      }
+
+      const mapped = (recipientRows || [])
+        .filter(r => bookingsMap[r.booking_id])
+        .map(r => {
+          const b = bookingsMap[r.booking_id]
           return {
             ...b,
             recipient_id: r.id as string,

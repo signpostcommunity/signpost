@@ -1586,26 +1586,37 @@ export default function ConfirmedPage() {
         .catch(err => console.error('[confirmed] backfill failed:', err))
     }
 
-    const { data: recipientData, error } = await supabase
+    // Two-step fetch to avoid RLS nested embed bug (bookings RLS doesn't recognize
+    // interpreter via booking_recipients, only via bookings.interpreter_id)
+    const { data: recipientRows, error: recipientErr } = await supabase
       .from('booking_recipients')
-      .select(`
-        id,
-        status,
-        rate_profile_id,
-        booking:bookings(
-          id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, description, notes, status, is_seed, cancellation_reason, sub_search_initiated, context_video_url
-        )
-      `)
+      .select('id, status, rate_profile_id, booking_id')
       .eq('interpreter_id', profile.id)
       .in('status', ['confirmed', 'withdrawn'])
 
-    if (error) {
-      console.error('[confirmed] fetch failed:', error.message)
+    if (recipientErr) {
+      console.error('[confirmed] fetch recipients failed:', recipientErr.message)
     } else {
-      const data = (recipientData || [])
-        .filter((r: Record<string, unknown>) => r.booking)
-        .map((r: Record<string, unknown>) => {
-          const b = r.booking as Record<string, unknown>
+      const recipientBookingIds = (recipientRows || []).map(r => r.booking_id).filter(Boolean)
+
+      let bookingsMap: Record<string, Record<string, unknown>> = {}
+      if (recipientBookingIds.length > 0) {
+        const { data: bookingsData } = await supabase
+          .from('bookings')
+          .select('id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, description, notes, status, is_seed, cancellation_reason, sub_search_initiated, context_video_url')
+          .in('id', recipientBookingIds)
+
+        if (bookingsData) {
+          for (const b of bookingsData) {
+            bookingsMap[b.id] = b
+          }
+        }
+      }
+
+      const data = (recipientRows || [])
+        .filter(r => bookingsMap[r.booking_id])
+        .map(r => {
+          const b = bookingsMap[r.booking_id]
           // Determine display status: use booking status for completed/cancelled, otherwise confirmed
           let displayStatus = 'confirmed'
           if (b.status === 'completed') displayStatus = 'completed'
