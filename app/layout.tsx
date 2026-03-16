@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Syne, DM_Sans } from 'next/font/google';
 import './globals.css';
+import { Analytics } from '@vercel/analytics/react';
 import BetaWelcomeModal from '@/components/beta/BetaWelcomeModal';
 
 const syne = Syne({
@@ -40,6 +41,7 @@ export default function RootLayout({
         </a>
         {process.env.NEXT_PUBLIC_BETA_MODE === 'true' && <BetaWelcomeModal />}
         {children}
+        <Analytics />
       </body>
     </html>
   );
