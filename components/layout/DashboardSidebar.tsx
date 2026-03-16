@@ -120,7 +120,7 @@ function SidebarContent({ userName, userInitials, photoUrl, badges }: {
             </div>
           )}
           <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.92rem' }}>{userName}</div>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.92rem' }}>{userName}</div>
             <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 2 }}>Interpreter</div>
           </div>
         </div>

@@ -222,7 +222,7 @@ export default function DeafDashboardPage() {
   if (roster.length === 0) {
     return (
       <div style={{ maxWidth: 960, margin: '0 auto', padding: '60px 32px 64px' }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 4 }}>
+        <h1 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 4 }}>
           My Interpreter List
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: 40 }}>

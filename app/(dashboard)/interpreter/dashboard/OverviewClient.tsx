@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { BetaBanner, PageHeader, SectionLabel, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+import { BetaBanner, SectionLabel, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 
 /* ── Types ── */
 
@@ -402,12 +402,12 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       {hasSeedData && <BetaBanner />}
 
-      <PageHeader
-        title={`Welcome back, ${displayName}.`}
-        subtitle={
-          'Here\'s a snapshot of your activity on signpost.'
-        }
-      />
+      <div style={{ marginBottom: 28 }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.6rem', margin: '0 0 6px' }}>
+          Welcome back, {displayName}.
+        </h1>
+        <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>Here&apos;s a snapshot of your activity on signpost.</p>
+      </div>
 
       {/* Draft resume banner */}
       {hasDraftProfile && (
