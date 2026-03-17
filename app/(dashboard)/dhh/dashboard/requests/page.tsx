@@ -544,11 +544,11 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
         {/* Line 3: Progress tracker */}
         <RequestTracker booking={booking} recipients={booking.recipients} compact hasRating={allRated} />
 
-        {/* Line 4 (conditional): Confirmed interpreter(s) — right-aligned under tracker */}
+        {/* Line 4 (conditional): Confirmed interpreter(s) — stacked vertically, right-aligned */}
         {confirmedRecipients.length > 0 && !expanded && (
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap',
-            justifyContent: 'flex-end',
+            display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
+            gap: 6, marginTop: 4,
           }}>
             {confirmedRecipients.map(r => {
               const interp = r.interpreter
@@ -635,9 +635,6 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
             padding: '0 24px 20px', borderTop: '1px solid var(--border)',
           }}>
           <div style={{ paddingTop: 20 }}>
-            {/* Full tracker (non-compact) */}
-            <RequestTracker booking={booking} recipients={booking.recipients} hasRating={allRated} />
-
             {/* Two-column layout */}
             <div className="dhh-card-expanded-cols" style={{
               display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginTop: 16,

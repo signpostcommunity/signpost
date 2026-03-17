@@ -301,9 +301,9 @@ export default function RequestTracker({ booking, recipients, compact = false, h
                 }}>
                   {step.label}
                 </span>
-                {step.sublabel && !compact && (
+                {step.sublabel && (
                   <span style={{
-                    fontSize: '0.58rem',
+                    fontSize: compact ? '0.56rem' : '0.58rem',
                     color: isError ? '#ff6b85' : '#666',
                     lineHeight: 1.3,
                     display: 'block',
