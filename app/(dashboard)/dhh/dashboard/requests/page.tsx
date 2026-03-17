@@ -752,20 +752,35 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
             </div>
 
             {/* Rating UI — one form per confirmed interpreter */}
-            {completed && confirmedRecipients.map(r => {
-              const interpName = r.interpreter?.name || 'Interpreter'
-              const key = `${booking.id}:${r.interpreter_id}`
-              if (ratedInterpreters.has(key)) return null
+            {completed && (() => {
+              const unrated = confirmedRecipients.filter(r => !ratedInterpreters.has(`${booking.id}:${r.interpreter_id}`))
+              if (unrated.length === 0) return null
               return (
-                <InterpreterRating
-                  key={r.interpreter_id}
-                  bookingId={booking.id}
-                  interpreterId={r.interpreter_id}
-                  interpreterName={interpName}
-                  onRated={() => onRated(key)}
-                />
+                <>
+                  {confirmedRecipients.length > 1 && (
+                    <div style={{
+                      fontSize: '0.82rem', color: 'var(--muted)', fontWeight: 600,
+                      marginTop: 12, marginBottom: 4,
+                    }}>
+                      Rate your interpreters ({confirmedRecipients.length - unrated.length + 1} of {confirmedRecipients.length})
+                    </div>
+                  )}
+                  {unrated.map(r => {
+                    const interpName = r.interpreter?.name || 'Interpreter'
+                    const key = `${booking.id}:${r.interpreter_id}`
+                    return (
+                      <InterpreterRating
+                        key={r.interpreter_id}
+                        bookingId={booking.id}
+                        interpreterId={r.interpreter_id}
+                        interpreterName={interpName}
+                        onRated={() => onRated(key)}
+                      />
+                    )
+                  })}
+                </>
               )
-            })}
+            })()}
           </div>
         </div>
       )}
