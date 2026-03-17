@@ -491,7 +491,7 @@ export default function TrustedDeafCirclePage() {
       {/* Toast */}
       {toast && (
         <div style={{
-          position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
+          position: 'fixed', top: 24, left: '50%', transform: 'translateX(-50%)',
           background: '#1a1a2e', color: 'var(--text)', border: '1px solid var(--border)',
           borderRadius: 'var(--radius-sm)', padding: '10px 24px', fontSize: '0.88rem',
           fontFamily: "'DM Sans', sans-serif", zIndex: 999,

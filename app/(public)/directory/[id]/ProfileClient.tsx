@@ -549,7 +549,7 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
       {/* Toast */}
       {toast && (
         <div style={{
-          position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
+          position: 'fixed', top: 24, left: '50%', transform: 'translateX(-50%)',
           background: 'var(--surface)', border: '1px solid rgba(52,211,153,0.3)',
           borderRadius: '16px', padding: '14px 24px',
           boxShadow: '0 8px 40px rgba(0,0,0,0.5)', zIndex: 9999,

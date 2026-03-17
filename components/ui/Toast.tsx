@@ -33,8 +33,9 @@ export default function Toast({ message, type = 'success', onClose, duration = 3
       aria-live="polite"
       style={{
         position: 'fixed',
-        bottom: 24,
-        right: 24,
+        top: 24,
+        left: '50%',
+        transform: visible ? 'translateX(-50%)' : 'translateX(-50%) translateY(-8px)',
         zIndex: 9999,
         display: 'flex',
         alignItems: 'center',
@@ -45,7 +46,6 @@ export default function Toast({ message, type = 'success', onClose, duration = 3
         padding: '12px 16px',
         boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
         opacity: visible ? 1 : 0,
-        transform: visible ? 'translateY(0)' : 'translateY(8px)',
         transition: 'opacity 0.3s, transform 0.3s',
         maxWidth: 320,
       }}

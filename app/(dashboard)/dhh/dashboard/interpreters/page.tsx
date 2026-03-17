@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 
@@ -18,6 +18,7 @@ interface RosterInterpreter {
   name: string;
   initials: string;
   color: string;
+  photo_url: string | null;
   certs: string;
   domains: string;
 }
@@ -34,6 +35,10 @@ export default function DeafDashboardPage() {
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editNoteText, setEditNoteText] = useState('');
   const [toast, setToast] = useState<string | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{
+    rosterId: string; name: string; currentTier: Tier; newTier: Tier;
+  } | null>(null);
+  const confirmModalRef = useRef<HTMLDivElement>(null);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -95,7 +100,7 @@ export default function DeafDashboardPage() {
 
       const { data: interpreters, error: interpError } = await supabase
         .from('interpreter_profiles')
-        .select('id, name, first_name, last_name, avatar_color')
+        .select('id, name, first_name, last_name, avatar_color, photo_url')
         .in('id', interpreterIds);
 
       console.log('[PREF DEBUG] profiles:', interpreters?.length, 'error:', interpError?.message);
@@ -112,7 +117,7 @@ export default function DeafDashboardPage() {
         .in('interpreter_id', interpreterIds);
 
       // Build lookup maps
-      const interpMap: Record<string, { name: string; first_name: string | null; last_name: string | null; avatar_color: string | null }> = {};
+      const interpMap: Record<string, { name: string; first_name: string | null; last_name: string | null; avatar_color: string | null; photo_url: string | null }> = {};
       for (const ip of interpreters || []) {
         interpMap[ip.id] = ip;
       }
@@ -150,6 +155,7 @@ export default function DeafDashboardPage() {
           name: fullName,
           initials,
           color: ip?.avatar_color || 'linear-gradient(135deg, #7b61ff, #00e5ff)',
+          photo_url: ip?.photo_url || null,
           certs: certStr,
           domains: domainStr,
         };
@@ -179,10 +185,35 @@ export default function DeafDashboardPage() {
     await updateRosterField(rosterId, field, newVal);
   }
 
-  async function setTier(rosterId: string, tier: Tier) {
-    setRoster(prev => prev.map(r => r.roster_id === rosterId ? { ...r, tier } : r));
-    await updateRosterField(rosterId, 'tier', tier);
-    showToast(`Moved to ${tier === 'preferred' ? 'Preferred' : tier === 'approved' ? 'Secondary Tier' : 'Do Not Book'}`);
+  function requestTierChange(rosterId: string, newTier: Tier) {
+    const item = roster.find(r => r.roster_id === rosterId);
+    if (!item) return;
+    setConfirmModal({ rosterId, name: item.name, currentTier: item.tier, newTier });
+  }
+
+  async function confirmTierChange() {
+    if (!confirmModal) return;
+    const { rosterId, newTier } = confirmModal;
+    setConfirmModal(null);
+
+    // If moving to DNB, also disable approvals
+    if (newTier === 'dnb') {
+      setRoster(prev => prev.map(r => r.roster_id === rosterId ? { ...r, tier: newTier, approve_work: false, approve_personal: false } : r));
+      const supabase = createClient();
+      await supabase.from('deaf_roster').update({ tier: newTier, approve_work: false, approve_personal: false }).eq('id', rosterId);
+    } else {
+      // Moving FROM DNB: reset approvals to false, make toggles interactive
+      const item = roster.find(r => r.roster_id === rosterId);
+      if (item?.tier === 'dnb') {
+        setRoster(prev => prev.map(r => r.roster_id === rosterId ? { ...r, tier: newTier, approve_work: false, approve_personal: false } : r));
+        const supabase = createClient();
+        await supabase.from('deaf_roster').update({ tier: newTier, approve_work: false, approve_personal: false }).eq('id', rosterId);
+      } else {
+        setRoster(prev => prev.map(r => r.roster_id === rosterId ? { ...r, tier: newTier } : r));
+        await updateRosterField(rosterId, 'tier', newTier);
+      }
+    }
+    showToast(`Moved to ${newTier === 'preferred' ? 'Preferred' : newTier === 'approved' ? 'Secondary Tier' : 'Do Not Book'}`);
   }
 
   async function removeInterp(rosterId: string) {
@@ -262,15 +293,24 @@ export default function DeafDashboardPage() {
         onMouseOver={e => (e.currentTarget.style.borderColor = 'rgba(0,229,255,0.3)')}
         onMouseOut={e => (e.currentTarget.style.borderColor = 'var(--border)')}
       >
-        {/* Avatar */}
-        <div style={{
-          width: 44, height: 44, borderRadius: '50%',
-          background: item.color,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontWeight: 700, fontSize: '0.9rem', flexShrink: 0, color: '#fff',
-        }}>
-          {item.initials}
-        </div>
+        {/* Avatar — clickable to profile */}
+        <Link href={`/directory/${item.interpreter_id}`} onClick={e => e.stopPropagation()} style={{ flexShrink: 0, textDecoration: 'none' }}>
+          {item.photo_url ? (
+            <img src={item.photo_url} alt={item.name} style={{
+              width: 44, height: 44, borderRadius: '50%', objectFit: 'cover',
+              border: '2px solid var(--accent)',
+            }} />
+          ) : (
+            <div style={{
+              width: 44, height: 44, borderRadius: '50%',
+              background: item.color,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontWeight: 700, fontSize: '0.9rem', color: '#fff',
+            }}>
+              {item.initials}
+            </div>
+          )}
+        </Link>
 
         {/* Content */}
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -280,6 +320,8 @@ export default function DeafDashboardPage() {
               href={`/directory/${item.interpreter_id}`}
               style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text)', textDecoration: 'none' }}
               onClick={e => e.stopPropagation()}
+              onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'underline' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'none' }}
             >
               {item.name}
             </Link>
@@ -341,26 +383,32 @@ export default function DeafDashboardPage() {
           {/* Approval toggles */}
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }} onClick={e => e.stopPropagation()}>
             <button
-              onClick={() => toggleApproval(item.roster_id, 'approve_work')}
+              onClick={() => item.tier !== 'dnb' && toggleApproval(item.roster_id, 'approve_work')}
+              disabled={item.tier === 'dnb'}
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '4px 12px', borderRadius: 20, cursor: 'pointer',
+                padding: '4px 12px', borderRadius: 20,
+                cursor: item.tier === 'dnb' ? 'not-allowed' : 'pointer',
                 fontSize: '0.75rem', fontWeight: 600, border: 'none',
-                background: item.approve_work ? 'rgba(0,229,255,0.1)' : 'rgba(255,255,255,0.04)',
-                color: item.approve_work ? 'var(--accent)' : 'var(--muted)',
+                background: item.tier === 'dnb' ? 'rgba(255,255,255,0.02)' : item.approve_work ? 'rgba(0,229,255,0.1)' : 'rgba(255,255,255,0.04)',
+                color: item.tier === 'dnb' ? 'rgba(184,191,207,0.4)' : item.approve_work ? 'var(--accent)' : 'var(--muted)',
+                opacity: item.tier === 'dnb' ? 0.5 : 1,
                 transition: 'all 0.15s',
               }}
             >
               <em style={{ fontStyle: 'normal' }}>{item.approve_work ? '\u2713' : '\u2715'}</em> Work settings
             </button>
             <button
-              onClick={() => toggleApproval(item.roster_id, 'approve_personal')}
+              onClick={() => item.tier !== 'dnb' && toggleApproval(item.roster_id, 'approve_personal')}
+              disabled={item.tier === 'dnb'}
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '4px 12px', borderRadius: 20, cursor: 'pointer',
+                padding: '4px 12px', borderRadius: 20,
+                cursor: item.tier === 'dnb' ? 'not-allowed' : 'pointer',
                 fontSize: '0.75rem', fontWeight: 600, border: 'none',
-                background: item.approve_personal ? 'rgba(157,135,255,0.1)' : 'rgba(255,255,255,0.04)',
-                color: item.approve_personal ? '#a78bfa' : 'var(--muted)',
+                background: item.tier === 'dnb' ? 'rgba(255,255,255,0.02)' : item.approve_personal ? 'rgba(157,135,255,0.1)' : 'rgba(255,255,255,0.04)',
+                color: item.tier === 'dnb' ? 'rgba(184,191,207,0.4)' : item.approve_personal ? '#a78bfa' : 'var(--muted)',
+                opacity: item.tier === 'dnb' ? 0.5 : 1,
                 transition: 'all 0.15s',
               }}
             >
@@ -374,7 +422,7 @@ export default function DeafDashboardPage() {
             paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)',
           }} onClick={e => e.stopPropagation()}>
             {item.tier !== 'preferred' && (
-              <button onClick={() => setTier(item.roster_id, 'preferred')} style={{
+              <button onClick={() => requestTierChange(item.roster_id, 'preferred')} style={{
                 background: 'rgba(0,229,255,0.07)', border: '1px dashed rgba(0,229,255,0.35)',
                 color: 'var(--accent)', borderRadius: 8, padding: '4px 12px',
                 fontSize: '0.75rem', cursor: 'pointer',
@@ -383,7 +431,7 @@ export default function DeafDashboardPage() {
               </button>
             )}
             {item.tier !== 'approved' && (
-              <button onClick={() => setTier(item.roster_id, 'approved')} style={{
+              <button onClick={() => requestTierChange(item.roster_id, 'approved')} style={{
                 background: 'rgba(123,97,255,0.07)', border: '1px dashed rgba(123,97,255,0.35)',
                 color: '#a78bfa', borderRadius: 8, padding: '4px 12px',
                 fontSize: '0.75rem', cursor: 'pointer',
@@ -392,7 +440,7 @@ export default function DeafDashboardPage() {
               </button>
             )}
             {item.tier !== 'dnb' && (
-              <button onClick={() => setTier(item.roster_id, 'dnb')} style={{
+              <button onClick={() => requestTierChange(item.roster_id, 'dnb')} style={{
                 background: 'transparent', border: '1px dashed rgba(255,77,109,0.35)',
                 color: '#ff8099', borderRadius: 8, padding: '4px 12px',
                 fontSize: '0.75rem', cursor: 'pointer',
@@ -529,10 +577,10 @@ export default function DeafDashboardPage() {
         </div>
       </div>
 
-      {/* Toast */}
+      {/* Toast — top center */}
       {toast && (
         <div style={{
-          position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
+          position: 'fixed', top: 24, left: '50%', transform: 'translateX(-50%)',
           background: 'var(--card-bg)', border: '1px solid rgba(52,211,153,0.3)',
           borderRadius: 'var(--radius)', padding: '14px 24px',
           boxShadow: '0 8px 40px rgba(0,0,0,0.5)', zIndex: 9999,
@@ -541,6 +589,71 @@ export default function DeafDashboardPage() {
           {toast}
         </div>
       )}
+
+      {/* Tier move confirmation modal */}
+      {confirmModal && (() => {
+        const tierLabel = (t: Tier) => t === 'preferred' ? 'Preferred' : t === 'approved' ? 'Secondary Tier' : 'Do Not Book';
+        const isDnb = confirmModal.newTier === 'dnb';
+        return (
+          <div
+            style={{
+              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              zIndex: 10000, padding: 20,
+            }}
+            onClick={() => setConfirmModal(null)}
+            onKeyDown={e => { if (e.key === 'Escape') setConfirmModal(null) }}
+          >
+            <div
+              ref={confirmModalRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label={`Move ${confirmModal.name}`}
+              onClick={e => e.stopPropagation()}
+              style={{
+                background: '#111118', border: '1px solid #1e2433',
+                borderRadius: 16, padding: 32, maxWidth: 400, width: '100%',
+              }}
+            >
+              <h3 style={{
+                fontFamily: "'Syne', sans-serif", fontWeight: 600,
+                fontSize: '1.1rem', margin: '0 0 12px 0',
+              }}>
+                Move {confirmModal.name}?
+              </h3>
+              <p style={{ color: 'var(--muted)', fontSize: '0.85rem', margin: '0 0 24px 0', lineHeight: 1.5 }}>
+                {isDnb
+                  ? `Move ${confirmModal.name} to Do Not Book? This will remove their work and personal approvals.`
+                  : `Move ${confirmModal.name} from ${tierLabel(confirmModal.currentTier)} to ${tierLabel(confirmModal.newTier)}?`
+                }
+              </p>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => setConfirmModal(null)}
+                  style={{
+                    background: 'transparent', border: '1px solid var(--border)',
+                    borderRadius: 8, padding: '8px 20px', color: 'var(--muted)',
+                    fontSize: '0.85rem', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmTierChange}
+                  style={{
+                    background: isDnb ? '#ff6b85' : 'var(--accent)',
+                    border: 'none', borderRadius: 8, padding: '8px 20px',
+                    color: isDnb ? '#fff' : '#000', fontSize: '0.85rem',
+                    fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                  }}
+                >
+                  Move
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
