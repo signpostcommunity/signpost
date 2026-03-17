@@ -508,33 +508,13 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
     >
       {/* COLLAPSED VIEW */}
       <div style={{ padding: '20px 24px' }}>
-        {/* Line 1: Title + Format badge + Status pill */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8,
-        }}>
+        {/* Line 1: Title */}
+        <div style={{ marginBottom: 8 }}>
           <span style={{
             fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem',
-            color: 'var(--text)', flex: 1, minWidth: 0,
+            color: 'var(--text)',
           }}>
             {booking.title || 'Interpreter Request'}
-          </span>
-          {/* Format badge */}
-          <span style={{
-            fontSize: '0.7rem', fontWeight: 600, padding: '2px 10px',
-            borderRadius: 100, background: 'none',
-            color: 'var(--muted)', border: '1px solid #333',
-            whiteSpace: 'nowrap',
-          }}>
-            {formatLabel}
-          </span>
-          {/* Status pill */}
-          <span style={{
-            fontSize: '0.7rem', fontWeight: 600, padding: '2px 10px',
-            borderRadius: 100, background: statusColors.bg,
-            color: statusColors.text, border: `1px solid ${statusColors.border}`,
-            whiteSpace: 'nowrap',
-          }}>
-            {getDisplayStatusLabel(booking.status)}
           </span>
         </div>
 
@@ -564,10 +544,11 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
         {/* Line 3: Progress tracker */}
         <RequestTracker booking={booking} recipients={booking.recipients} compact hasRating={allRated} />
 
-        {/* Line 4 (conditional): Confirmed interpreter(s) */}
+        {/* Line 4 (conditional): Confirmed interpreter(s) — right-aligned under tracker */}
         {confirmedRecipients.length > 0 && !expanded && (
           <div style={{
             display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, flexWrap: 'wrap',
+            justifyContent: 'flex-end',
           }}>
             {confirmedRecipients.map(r => {
               const interp = r.interpreter
