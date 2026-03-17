@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { PageHeader, SectionLabel, DemoBadge, GhostButton, Avatar, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import VideoRecorder from '@/components/ui/VideoRecorder'
@@ -351,16 +352,21 @@ function DetailModal({ booking, onClose, onToast }: {
                     : interpName[0]?.toUpperCase() || 'I'
                   return (
                     <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      {interp?.photo_url ? (
-                        <img src={interp.photo_url} alt={interpName} style={{
-                          width: 36, height: 36, borderRadius: '50%', objectFit: 'cover',
-                          border: '2px solid var(--accent)',
-                        }} />
-                      ) : (
-                        <Avatar initials={initials} gradient="linear-gradient(135deg,#9d87ff,#00e5ff)" size={36} />
-                      )}
+                      <Link href={`/directory/${r.interpreter_id}`} style={{ flexShrink: 0, textDecoration: 'none' }}>
+                        {interp?.photo_url ? (
+                          <img src={interp.photo_url} alt={interpName} style={{
+                            width: 36, height: 36, borderRadius: '50%', objectFit: 'cover',
+                            border: '2px solid var(--accent)',
+                          }} />
+                        ) : (
+                          <Avatar initials={initials} gradient="linear-gradient(135deg,#9d87ff,#00e5ff)" size={36} />
+                        )}
+                      </Link>
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>{interpName}</div>
+                        <Link href={`/directory/${r.interpreter_id}`} style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)', textDecoration: 'none' }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'underline' }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'none' }}
+                        >{interpName}</Link>
                       </div>
                     </div>
                   )
@@ -476,16 +482,21 @@ function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast, on
               <div key={r.id} style={{
                 display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6,
               }}>
-                {interp?.photo_url ? (
-                  <img src={interp.photo_url} alt={interpName} style={{
-                    width: 32, height: 32, borderRadius: '50%', objectFit: 'cover',
-                    border: '2px solid var(--accent)',
-                  }} />
-                ) : (
-                  <Avatar initials={initials} gradient="linear-gradient(135deg,#7b61ff,#00e5ff)" size={32} />
-                )}
+                <Link href={`/directory/${r.interpreter_id}`} style={{ flexShrink: 0, textDecoration: 'none' }}>
+                  {interp?.photo_url ? (
+                    <img src={interp.photo_url} alt={interpName} style={{
+                      width: 32, height: 32, borderRadius: '50%', objectFit: 'cover',
+                      border: '2px solid var(--accent)',
+                    }} />
+                  ) : (
+                    <Avatar initials={initials} gradient="linear-gradient(135deg,#7b61ff,#00e5ff)" size={32} />
+                  )}
+                </Link>
                 <div style={{ fontSize: '0.84rem' }}>
-                  <span style={{ fontWeight: 600, color: 'var(--text)' }}>{interpName}</span>
+                  <Link href={`/directory/${r.interpreter_id}`} style={{ fontWeight: 600, color: 'var(--text)', textDecoration: 'none' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'underline' }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'none' }}
+                  >{interpName}</Link>
                 </div>
               </div>
             )

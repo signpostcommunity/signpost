@@ -208,20 +208,22 @@ function InterpreterMiniCard({ recipient }: { recipient: Recipient }) {
       alignItems: 'center',
       gap: 10,
     }}>
-      {interp?.photo_url ? (
-        <img src={interp.photo_url} alt="" style={{
-          width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0,
-        }} />
-      ) : (
-        <div style={{
-          width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-          background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.6rem', color: '#fff',
-        }}>
-          {initials}
-        </div>
-      )}
+      <Link href={`/directory/${recipient.interpreter_id}`} onClick={e => e.stopPropagation()} style={{ flexShrink: 0, textDecoration: 'none' }}>
+        {interp?.photo_url ? (
+          <img src={interp.photo_url} alt="" style={{
+            width: 32, height: 32, borderRadius: '50%', objectFit: 'cover',
+          }} />
+        ) : (
+          <div style={{
+            width: 32, height: 32, borderRadius: '50%',
+            background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.6rem', color: '#fff',
+          }}>
+            {initials}
+          </div>
+        )}
+      </Link>
       <div style={{ flex: 1, minWidth: 0 }}>
         <Link
           href={`/directory/${recipient.interpreter_id}`}

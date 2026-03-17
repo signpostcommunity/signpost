@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
 
@@ -668,24 +669,29 @@ function ViewListModal({ userName, roster, loading, tierBadge, onClose }: {
               padding: '14px 16px',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: item.notes ? 8 : 0 }}>
-                {item.photo_url ? (
-                  <img
-                    src={item.photo_url}
-                    alt=""
-                    style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-                  />
-                ) : (
-                  <div style={{
-                    width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                    background: item.color || 'linear-gradient(135deg, #9d87ff, #00e5ff)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem', color: '#fff',
-                  }}>
-                    {item.initials}
-                  </div>
-                )}
+                <Link href={`/directory/${item.interpreter_id}`} style={{ flexShrink: 0, textDecoration: 'none' }}>
+                  {item.photo_url ? (
+                    <img
+                      src={item.photo_url}
+                      alt=""
+                      style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: 32, height: 32, borderRadius: '50%',
+                      background: item.color || 'linear-gradient(135deg, #9d87ff, #00e5ff)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem', color: '#fff',
+                    }}>
+                      {item.initials}
+                    </div>
+                  )}
+                </Link>
                 <div style={{ flex: 1 }}>
-                  <span style={{ fontWeight: 600, fontSize: '0.88rem' }}>{item.name}</span>
+                  <Link href={`/directory/${item.interpreter_id}`} style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)', textDecoration: 'none' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'underline' }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'none' }}
+                  >{item.name}</Link>
                   {badge && (
                     <span style={{
                       marginLeft: 8,

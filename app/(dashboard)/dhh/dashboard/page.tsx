@@ -884,17 +884,29 @@ export default function DeafDashboardOverview() {
                     onMouseOver={e => (e.currentTarget.style.borderColor = 'rgba(157,135,255,0.3)')}
                     onMouseOut={e => (e.currentTarget.style.borderColor = '#1e2433')}
                   >
-                    <div style={{
-                      width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-                      background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontWeight: 700, fontSize: '0.82rem', color: '#fff',
-                    }}>
-                      {initials}
-                    </div>
+                    <Link href={`/directory/${interp.id}`} style={{ flexShrink: 0, textDecoration: 'none' }}>
+                      {interp.photo_url ? (
+                        <img src={interp.photo_url} alt={name} style={{
+                          width: 40, height: 40, borderRadius: '50%', objectFit: 'cover',
+                          border: '2px solid #9d87ff',
+                        }} />
+                      ) : (
+                        <div style={{
+                          width: 40, height: 40, borderRadius: '50%',
+                          background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontWeight: 700, fontSize: '0.82rem', color: '#fff',
+                        }}>
+                          {initials}
+                        </div>
+                      )}
+                    </Link>
 
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{name}</div>
+                      <Link href={`/directory/${interp.id}`} style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text)', textDecoration: 'none' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'underline' }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'none' }}
+                      >{name}</Link>
                       <div style={{ color: 'var(--muted)', fontSize: '0.78rem', marginTop: 2 }}>{certStr}</div>
                     </div>
 
