@@ -178,8 +178,6 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
                   </span>
                   <span style={{ opacity: 0.4 }}>·</span>
                   <span>Available for remote &amp; on-site</span>
-                  <span style={{ opacity: 0.4 }}>·</span>
-                  <span>Member since 2019</span>
                 </div>
 
                 {/* Badges row */}
@@ -395,15 +393,8 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
               <InfoRow label="Interpreter Type" value={i.isDeafInterpreter ? 'Deaf Interpreter' : 'Hearing Interpreter'} />
               <InfoRow label="Response Time" value="~2 hours" />
               <InfoRow label="Mode" value="Remote + On-site" />
-              <InfoRow label="Experience" value="12 Years" />
-              <InfoRow
-                label="Gender"
-                value={
-                  i.gender === 'male' ? 'Male' :
-                  i.gender === 'female' ? 'Female' :
-                  i.gender === 'nonbinary' ? 'Non-binary' : '—'
-                }
-              />
+              {i.yearsExperience && <InfoRow label="Experience" value={i.yearsExperience} />}
+              {i.genderIdentity && <InfoRow label="Gender" value={i.genderIdentity} />}
             </SidebarCard>
 
             {i.certs.length > 0 && (
@@ -800,12 +791,6 @@ function CredentialsTab({ interpreter: i }: { interpreter: Interpreter }) {
         </div>
       </Section>
 
-      <Section title="Education">
-        <div style={{ padding: '14px 18px', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: '10px' }}>
-          <div style={{ fontWeight: 600, marginBottom: '2px' }}>BA Interpreting &amp; Translation Studies</div>
-          <div style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>2012 — Example University</div>
-        </div>
-      </Section>
     </div>
   );
 }

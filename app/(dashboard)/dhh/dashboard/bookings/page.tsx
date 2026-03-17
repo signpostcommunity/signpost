@@ -351,7 +351,14 @@ function DetailModal({ booking, onClose, onToast }: {
                     : interpName[0]?.toUpperCase() || 'I'
                   return (
                     <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <Avatar initials={initials} gradient="linear-gradient(135deg,#9d87ff,#00e5ff)" size={36} />
+                      {interp?.photo_url ? (
+                        <img src={interp.photo_url} alt={interpName} style={{
+                          width: 36, height: 36, borderRadius: '50%', objectFit: 'cover',
+                          border: '2px solid var(--accent)',
+                        }} />
+                      ) : (
+                        <Avatar initials={initials} gradient="linear-gradient(135deg,#9d87ff,#00e5ff)" size={36} />
+                      )}
                       <div>
                         <div style={{ fontWeight: 600, fontSize: '0.88rem' }}>{interpName}</div>
                       </div>
@@ -469,7 +476,14 @@ function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast, on
               <div key={r.id} style={{
                 display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6,
               }}>
-                <Avatar initials={initials} gradient="linear-gradient(135deg,#7b61ff,#00e5ff)" size={32} />
+                {interp?.photo_url ? (
+                  <img src={interp.photo_url} alt={interpName} style={{
+                    width: 32, height: 32, borderRadius: '50%', objectFit: 'cover',
+                    border: '2px solid var(--accent)',
+                  }} />
+                ) : (
+                  <Avatar initials={initials} gradient="linear-gradient(135deg,#7b61ff,#00e5ff)" size={32} />
+                )}
                 <div style={{ fontSize: '0.84rem' }}>
                   <span style={{ fontWeight: 600, color: 'var(--text)' }}>{interpName}</span>
                 </div>
