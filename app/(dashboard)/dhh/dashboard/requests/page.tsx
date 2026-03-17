@@ -94,6 +94,21 @@ function getStatusColors(status: string) {
   return { bg: 'rgba(255,255,255,0.06)', border: 'var(--border)', text: 'var(--muted)' }
 }
 
+const RECIPIENT_STATUS_ORDER: Record<string, number> = {
+  confirmed: 0,
+  responded: 1,
+  viewed: 2,
+  sent: 3,
+  declined: 4,
+  withdrawn: 5,
+}
+
+function sortRecipients(recipients: Recipient[]): Recipient[] {
+  return [...recipients].sort((a, b) =>
+    (RECIPIENT_STATUS_ORDER[a.status] ?? 3) - (RECIPIENT_STATUS_ORDER[b.status] ?? 3)
+  )
+}
+
 function isBookingCompleted(booking: BookingWithRecipients): boolean {
   if (booking.status === 'completed') return true
   if (booking.status === 'filled') {
@@ -210,6 +225,7 @@ function InterpreterMiniCard({ recipient }: { recipient: Recipient }) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <Link
           href={`/directory/${recipient.interpreter_id}`}
+          onClick={e => e.stopPropagation()}
           style={{
             fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.82rem',
             color: 'var(--text)', textDecoration: 'none', display: 'block',
@@ -479,11 +495,17 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
     confirmedRecipients.every(r => ratedInterpreters.has(`${booking.id}:${r.interpreter_id}`))
 
   return (
-    <div style={{
-      background: '#111118', border: '1px solid #1e2433',
-      borderRadius: 'var(--radius)', overflow: 'hidden',
-      opacity: isDismissed || allDeclined ? 0.6 : 1,
-    }}>
+    <div
+      onClick={onExpand}
+      style={{
+        background: '#111118', border: '1px solid #1e2433',
+        borderRadius: 'var(--radius)', overflow: 'hidden',
+        opacity: isDismissed || allDeclined ? 0.6 : 1,
+        cursor: 'pointer', transition: 'border-color 0.15s',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.35)' }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = '#1e2433' }}
+    >
       {/* COLLAPSED VIEW */}
       <div style={{ padding: '20px 24px' }}>
         {/* Line 1: Title + Format badge + Status pill */}
@@ -591,7 +613,7 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
           display: 'flex', alignItems: 'center', gap: 20, marginTop: 10,
         }}>
           <button
-            onClick={onExpand}
+            onClick={(e) => { e.stopPropagation(); onExpand() }}
             aria-expanded={expanded}
             style={{
               background: 'none', border: 'none', cursor: 'pointer', padding: 0,
@@ -609,6 +631,7 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
             href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(booking.title || 'Interpreter Booking')}&dates=${booking.date.replace(/-/g, '')}T${booking.time_start.replace(/:/g, '')}00/${booking.date.replace(/-/g, '')}T${booking.time_end.replace(/:/g, '')}00&location=${encodeURIComponent(booking.location || '')}`}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={e => e.stopPropagation()}
             style={{
               fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: '0.82rem',
               color: '#00e5ff', textDecoration: 'none',
@@ -625,9 +648,11 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
 
       {/* EXPANDED VIEW */}
       {expanded && (
-        <div style={{
-          padding: '0 24px 20px', borderTop: '1px solid var(--border)',
-        }}>
+        <div
+          onClick={e => e.stopPropagation()}
+          style={{
+            padding: '0 24px 20px', borderTop: '1px solid var(--border)',
+          }}>
           <div style={{ paddingTop: 20 }}>
             {/* Full tracker (non-compact) */}
             <RequestTracker booking={booking} recipients={booking.recipients} hasRating={allRated} />
@@ -736,7 +761,7 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
                   <div className="dhh-interp-grid" style={{
                     display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8,
                   }}>
-                    {booking.recipients.map(r => (
+                    {sortRecipients(booking.recipients).map(r => (
                       <InterpreterMiniCard key={r.id} recipient={r} />
                     ))}
                   </div>
