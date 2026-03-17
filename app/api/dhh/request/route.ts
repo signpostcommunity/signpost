@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     // Fetch the Deaf user's comm prefs and name
     const { data: deafProfile, error: deafError } = await admin
       .from('deaf_profiles')
-      .select('comm_prefs, first_name, last_name, name, profile_video_url')
+      .select('comm_prefs, first_name, last_name, name, bio, profile_video_url, share_intro_text_before_confirm, share_intro_video_before_confirm')
       .or(`user_id.eq.${user.id},id.eq.${user.id}`)
       .maybeSingle()
 
@@ -104,10 +104,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Failed to create booking: ${insertError.message}` }, { status: 500 })
     }
 
-    // Create booking_dhh_client entry (include profile_video_url in snapshot)
+    // Create booking_dhh_client entry (include intro data + sharing prefs in snapshot)
+    const shareTextBefore = deafProfile?.share_intro_text_before_confirm !== false
+    const shareVideoBefore = deafProfile?.share_intro_video_before_confirm !== false
     const commPrefsSnapshot = {
       ...(commPrefs as Record<string, unknown> || {}),
+      bio: deafProfile?.bio || null,
       profile_video_url: deafProfile?.profile_video_url || null,
+      share_intro_text_before_confirm: shareTextBefore,
+      share_intro_video_before_confirm: shareVideoBefore,
     }
     const { error: dhhClientErr } = await admin
       .from('booking_dhh_clients')

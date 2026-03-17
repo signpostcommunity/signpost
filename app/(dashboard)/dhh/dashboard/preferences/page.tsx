@@ -65,7 +65,8 @@ export default function DhhPreferencesPage() {
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [profileVideoUrl, setProfileVideoUrl] = useState('')
-  // videoRecorderOpen removed — using inline capture
+  const [shareTextBefore, setShareTextBefore] = useState(true)
+  const [shareVideoBefore, setShareVideoBefore] = useState(true)
 
   // Comm prefs
   const [signingStyles, setSigningStyles] = useState<string[]>([])
@@ -99,6 +100,8 @@ export default function DhhPreferencesPage() {
         setPhotoUrl(profile.photo_url || '')
         setBio(profile.bio || '')
         setProfileVideoUrl(profile.profile_video_url || '')
+        setShareTextBefore(profile.share_intro_text_before_confirm !== false)
+        setShareVideoBefore(profile.share_intro_video_before_confirm !== false)
 
         const cp = profile.comm_prefs as Record<string, unknown> | null
         if (cp) {
@@ -178,6 +181,8 @@ export default function DhhPreferencesPage() {
       photo_url: photoUrl,
       bio: bio.trim(),
       profile_video_url: profileVideoUrl || null,
+      share_intro_text_before_confirm: shareTextBefore,
+      share_intro_video_before_confirm: shareVideoBefore,
       comm_prefs: commPrefs,
       updated_at: new Date().toISOString(),
     }
@@ -341,89 +346,184 @@ export default function DhhPreferencesPage() {
             />
           </div>
 
-          {/* Bio */}
-          <div style={fieldGroupStyle}>
-            <label style={labelStyle}>Short bio (optional)</label>
-            <textarea
-              value={bio}
-              onChange={e => setBio(e.target.value.slice(0, 280))}
-              placeholder="A few words about yourself"
-              rows={3}
-              style={{ ...inputStyle, resize: 'vertical', minHeight: 72 }}
-            />
-            <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textAlign: 'right', marginTop: 4 }}>
-              {bio.length}/280
-            </div>
-          </div>
         </div>
 
-        {/* ── Intro Video Section ── */}
-        <div style={{ marginBottom: 40 }}>
-          <div style={{
-            fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em',
-            textTransform: 'uppercase', color: '#9d87ff', marginBottom: 8,
+        {/* ── Introduce Yourself Section ── */}
+        <div style={{
+          marginBottom: 40,
+          background: 'rgba(157,135,255,0.03)',
+          border: '1px solid rgba(157,135,255,0.15)',
+          borderRadius: 'var(--radius)',
+          padding: '28px 28px 24px',
+        }}>
+          <h3 style={{
+            ...sectionHeadingStyle,
+            color: '#9d87ff',
+            display: 'flex', alignItems: 'baseline', gap: 8,
           }}>
-            INTRO VIDEO (OPTIONAL)
-          </div>
-          <p style={{ fontSize: '0.84rem', color: 'var(--muted)', marginBottom: 6, lineHeight: 1.6 }}>
-            Give a brief introduction, with whatever information you want. For example: where you grew up, if you went to a Deaf school or mainstream, etc.
-          </p>
-          <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginBottom: 16, lineHeight: 1.5, fontStyle: 'italic', opacity: 0.8 }}>
-            *You can choose to share this with interpreters either before or after they are confirmed for your requests.
+            Introduce Yourself
+            <span style={{ fontWeight: 400, fontSize: '0.82rem', color: 'var(--muted)' }}>(optional)</span>
+          </h3>
+
+          <p style={{ fontSize: '0.84rem', color: 'var(--muted)', lineHeight: 1.7, marginTop: 0, marginBottom: 24 }}>
+            Give a brief introduction, with whatever information you want.<br />
+            For example: where you grew up, if you went to a Deaf school or mainstream, etc.<br />
+            <strong style={{ color: 'var(--text)' }}>You can write, record a video, or both.</strong>
           </p>
 
-          {profileVideoUrl ? (
-            <div>
-              {(() => {
-                const embedUrl = getVideoEmbedUrl(profileVideoUrl)
-                if (!embedUrl) return null
-                return embedUrl.includes('supabase.co/storage') ? (
-                  <video controls width="100%" src={embedUrl} style={{ borderRadius: 12, border: '1px solid var(--border)', maxHeight: 300, background: '#000', marginBottom: 12 }} />
-                ) : (
-                  <iframe width="100%" height="280" src={embedUrl} title="Intro video"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
-                    style={{ borderRadius: 12, border: 'none', marginBottom: 12 }} />
-                )
-              })()}
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button
-                  type="button"
-                  onClick={() => setProfileVideoUrl('')}
-                  style={{
-                    background: 'none', border: '1px solid rgba(157,135,255,0.4)',
-                    borderRadius: 'var(--radius-sm)', padding: '7px 16px',
-                    fontSize: '0.82rem', fontWeight: 600, color: '#9d87ff',
-                    cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
-                  }}
-                >
-                  Replace video
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setProfileVideoUrl('')}
-                  style={{
-                    background: 'none', border: '1px solid var(--border)',
-                    borderRadius: 'var(--radius-sm)', padding: '7px 16px',
-                    fontSize: '0.82rem', color: 'var(--muted)',
-                    cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
-                  }}
-                >
-                  Remove video
-                </button>
-              </div>
+          {/* ── Written sub-section ── */}
+          <div style={{ marginBottom: 24 }}>
+            <div style={{
+              fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em',
+              textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10,
+            }}>
+              Written
             </div>
-          ) : (
-            <InlineVideoCapture
-              onVideoSaved={(url) => {
-                setProfileVideoUrl(url)
-              }}
-              accentColor="#7b61ff"
-              storageBucket="videos"
-              storagePath="deaf"
+            <textarea
+              value={bio}
+              onChange={e => setBio(e.target.value.slice(0, 500))}
+              placeholder="Tell interpreters a little about yourself..."
+              rows={4}
+              style={{ ...inputStyle, resize: 'vertical', minHeight: 80 }}
             />
-          )}
+            <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textAlign: 'right', marginTop: 4 }}>
+              {bio.length} / 500
+            </div>
 
-          <p style={{ fontSize: '0.76rem', color: 'var(--muted)', marginTop: 14, lineHeight: 1.5, opacity: 0.85 }}>
+            {/* Sharing toggle for text */}
+            <button
+              type="button"
+              onClick={() => setShareTextBefore(!shareTextBefore)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                width: '100%', padding: '10px 14px', marginTop: 8,
+                borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+                border: `1px solid ${shareTextBefore ? 'rgba(157,135,255,0.3)' : 'var(--border)'}`,
+                background: shareTextBefore ? 'rgba(157,135,255,0.04)' : 'var(--surface2)',
+                transition: 'all 0.15s', textAlign: 'left',
+              }}
+            >
+              <span style={{ fontSize: '0.82rem', color: 'var(--muted)', flex: 1, fontFamily: "'DM Sans', sans-serif" }}>
+                {shareTextBefore
+                  ? 'Share with interpreters before they are confirmed'
+                  : 'Wait until interpreters are confirmed to share'}
+              </span>
+              <span style={{
+                width: 40, height: 22, borderRadius: 11, flexShrink: 0,
+                background: shareTextBefore ? '#9d87ff' : 'var(--border)',
+                position: 'relative', transition: 'background 0.2s',
+                display: 'inline-block',
+              }}>
+                <span style={{
+                  width: 16, height: 16, borderRadius: '50%',
+                  background: '#fff', position: 'absolute', top: 3,
+                  left: shareTextBefore ? 21 : 3,
+                  transition: 'left 0.2s',
+                }} />
+              </span>
+            </button>
+          </div>
+
+          {/* Divider */}
+          <div style={{ borderTop: '1px solid var(--border)', marginBottom: 24 }} />
+
+          {/* ── Video sub-section ── */}
+          <div>
+            <div style={{
+              fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em',
+              textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 4,
+            }}>
+              Video
+            </div>
+            <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: 0, marginBottom: 14, lineHeight: 1.5 }}>
+              Record, upload, or link a video. 2 minutes max.
+            </p>
+
+            {profileVideoUrl ? (
+              <div>
+                {(() => {
+                  const embedUrl = getVideoEmbedUrl(profileVideoUrl)
+                  if (!embedUrl) return null
+                  return embedUrl.includes('supabase.co/storage') ? (
+                    <video controls width="100%" src={embedUrl} style={{ borderRadius: 12, border: '1px solid var(--border)', maxHeight: 300, background: '#000', marginBottom: 12 }} />
+                  ) : (
+                    <iframe width="100%" height="280" src={embedUrl} title="Intro video"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
+                      style={{ borderRadius: 12, border: 'none', marginBottom: 12 }} />
+                  )
+                })()}
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button
+                    type="button"
+                    onClick={() => setProfileVideoUrl('')}
+                    style={{
+                      background: 'none', border: '1px solid rgba(157,135,255,0.4)',
+                      borderRadius: 'var(--radius-sm)', padding: '7px 16px',
+                      fontSize: '0.82rem', fontWeight: 600, color: '#9d87ff',
+                      cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                    }}
+                  >
+                    Replace video
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setProfileVideoUrl('')}
+                    style={{
+                      background: 'none', border: '1px solid var(--border)',
+                      borderRadius: 'var(--radius-sm)', padding: '7px 16px',
+                      fontSize: '0.82rem', color: 'var(--muted)',
+                      cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                    }}
+                  >
+                    Remove video
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <InlineVideoCapture
+                onVideoSaved={(url) => setProfileVideoUrl(url)}
+                accentColor="#7b61ff"
+                storageBucket="videos"
+                storagePath="deaf"
+              />
+            )}
+
+            {/* Sharing toggle for video */}
+            <button
+              type="button"
+              onClick={() => setShareVideoBefore(!shareVideoBefore)}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                width: '100%', padding: '10px 14px', marginTop: 14,
+                borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+                border: `1px solid ${shareVideoBefore ? 'rgba(157,135,255,0.3)' : 'var(--border)'}`,
+                background: shareVideoBefore ? 'rgba(157,135,255,0.04)' : 'var(--surface2)',
+                transition: 'all 0.15s', textAlign: 'left',
+              }}
+            >
+              <span style={{ fontSize: '0.82rem', color: 'var(--muted)', flex: 1, fontFamily: "'DM Sans', sans-serif" }}>
+                {shareVideoBefore
+                  ? 'Share with interpreters before they are confirmed'
+                  : 'Wait until interpreters are confirmed to share'}
+              </span>
+              <span style={{
+                width: 40, height: 22, borderRadius: 11, flexShrink: 0,
+                background: shareVideoBefore ? '#9d87ff' : 'var(--border)',
+                position: 'relative', transition: 'background 0.2s',
+                display: 'inline-block',
+              }}>
+                <span style={{
+                  width: 16, height: 16, borderRadius: '50%',
+                  background: '#fff', position: 'absolute', top: 3,
+                  left: shareVideoBefore ? 21 : 3,
+                  transition: 'left 0.2s',
+                }} />
+              </span>
+            </button>
+          </div>
+
+          {/* Cross-link to appointment-specific video */}
+          <p style={{ fontSize: '0.76rem', color: 'var(--muted)', marginTop: 18, marginBottom: 0, lineHeight: 1.5, opacity: 0.85 }}>
             To give interpreters context about a specific appointment, add a video from the appointment card in{' '}
             <a href="/dhh/dashboard/requests" style={{ color: '#9d87ff', textDecoration: 'underline' }}>My Requests</a>.
           </p>

@@ -34,6 +34,9 @@ interface Booking {
   context_video_url: string | null
   context_video_visible_before_accept: boolean | null
   profile_video_url: string | null
+  dhh_bio: string | null
+  share_intro_text_before_confirm: boolean | null
+  share_intro_video_before_confirm: boolean | null
 }
 
 /* ── Helpers ── */
@@ -370,17 +373,51 @@ function DetailModal({ booking, onClose }: {
             </div>
           )}
 
+          {/* Written introduction from D/HH client */}
+          {booking.dhh_bio && (() => {
+            const shareBefore = booking.share_intro_text_before_confirm !== false
+            if (!shareBefore) {
+              return (
+                <div style={sectionStyle}>
+                  <div style={sectionLabelStyle}>Introduction</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--muted)', fontStyle: 'italic' }}>
+                    Introduction available after confirmation
+                  </div>
+                </div>
+              )
+            }
+            return (
+              <div style={sectionStyle}>
+                <div style={sectionLabelStyle}>Introduction from {booking.requester_name || booking.dhh_client_name || 'client'}</div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65 }}>
+                  {booking.dhh_bio}
+                </div>
+              </div>
+            )
+          })()}
+
           {/* Profile video from D/HH client */}
           {booking.profile_video_url && (() => {
+            const shareBefore = booking.share_intro_video_before_confirm !== false
+            if (!shareBefore) {
+              return (
+                <div style={sectionStyle}>
+                  <div style={sectionLabelStyle}>Intro Video</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--muted)', fontStyle: 'italic' }}>
+                    Introduction available after confirmation
+                  </div>
+                </div>
+              )
+            }
             const embedUrl = getVideoEmbedUrl(booking.profile_video_url!)
             if (!embedUrl) return null
             return (
               <div style={sectionStyle}>
-                <div style={sectionLabelStyle}>Communication style video from {booking.requester_name || booking.dhh_client_name || 'client'}</div>
+                <div style={sectionLabelStyle}>Intro video from {booking.requester_name || booking.dhh_client_name || 'client'}</div>
                 {embedUrl.includes('supabase.co/storage') ? (
                   <video controls width="100%" src={embedUrl} style={{ borderRadius: 8, maxHeight: 220, background: '#000' }} />
                 ) : (
-                  <iframe width="100%" height="220" src={embedUrl} title="Communication style video"
+                  <iframe width="100%" height="220" src={embedUrl} title="Intro video"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
                     style={{ borderRadius: 8, border: 'none' }} />
                 )}
@@ -606,14 +643,20 @@ export default function InquiriesPage() {
           const dhhClientIds = [...new Set(dhhLinks.map(l => l.dhh_user_id))]
           const { data: deafProfiles } = await supabase
             .from('deaf_profiles')
-            .select('user_id, first_name, last_name, profile_video_url')
+            .select('user_id, first_name, last_name, bio, profile_video_url, share_intro_text_before_confirm, share_intro_video_before_confirm')
             .in('user_id', dhhClientIds)
           if (deafProfiles) {
             const nameMap: Record<string, string> = {}
             const videoMap: Record<string, string> = {}
+            const bioMap: Record<string, string> = {}
+            const shareTextMap: Record<string, boolean> = {}
+            const shareVideoMap: Record<string, boolean> = {}
             for (const dp of deafProfiles) {
               nameMap[dp.user_id] = [dp.first_name, dp.last_name].filter(Boolean).join(' ')
               if (dp.profile_video_url) videoMap[dp.user_id] = dp.profile_video_url
+              if (dp.bio) bioMap[dp.user_id] = dp.bio
+              shareTextMap[dp.user_id] = dp.share_intro_text_before_confirm !== false
+              shareVideoMap[dp.user_id] = dp.share_intro_video_before_confirm !== false
             }
             // Map booking_id → dhh_user_id for lookup
             const bookingDhhMap: Record<string, string> = {}
@@ -625,6 +668,9 @@ export default function InquiriesPage() {
               if (b.request_type === 'personal' && clientId) {
                 if (nameMap[clientId]) b.dhh_client_name = nameMap[clientId]
                 if (videoMap[clientId]) b.profile_video_url = videoMap[clientId]
+                if (bioMap[clientId]) b.dhh_bio = bioMap[clientId]
+                b.share_intro_text_before_confirm = shareTextMap[clientId] ?? true
+                b.share_intro_video_before_confirm = shareVideoMap[clientId] ?? true
               }
             }
           }
