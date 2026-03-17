@@ -228,7 +228,7 @@ CSS variables defined in `app/globals.css` and mapped to Tailwind tokens via `@t
 --accent2: #9d87ff       /* purple — D/HH branding */
 --accent3: #ff6b85       /* pink — error/alert */
 --text: #f0f2f8
---muted: #b8bfcf
+--muted: #c8cfe0
 --card-bg: #0d1220
 --radius: 16px
 --radius-sm: 10px
