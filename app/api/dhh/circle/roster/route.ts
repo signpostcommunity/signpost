@@ -33,38 +33,76 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Not authorized to view this list' }, { status: 403 })
     }
 
-    // Fetch the target user's deaf_roster with interpreter details
+    // Step 1: Fetch the roster entries directly
     const { data: rosterRows, error: rosterError } = await admin
       .from('deaf_roster')
-      .select(`
-        id, interpreter_id, tier, notes,
-        interpreter_profiles (
-          id, name, first_name, last_name, photo_url, color,
-          certifications:interpreter_certifications(name),
-          specializations:interpreter_specializations(specialization)
-        )
-      `)
+      .select('id, interpreter_id, tier, notes')
       .eq('deaf_user_id', userId)
 
     if (rosterError) {
-      console.error('[dhh/circle/roster] fetch failed:', rosterError.message)
+      console.error('[dhh/circle/roster] roster fetch error:', rosterError.message)
       return NextResponse.json({ error: 'Failed to fetch roster' }, { status: 500 })
     }
 
-    const roster = (rosterRows || []).map((row: Record<string, unknown>) => {
-      const interp = row.interpreter_profiles as Record<string, unknown> | null
+    if (!rosterRows || rosterRows.length === 0) {
+      return NextResponse.json({ roster: [] })
+    }
+
+    // Step 2: Fetch interpreter profiles for those IDs
+    const interpIds = rosterRows.map(r => r.interpreter_id)
+
+    const { data: profiles, error: profilesErr } = await admin
+      .from('interpreter_profiles')
+      .select('id, name, first_name, last_name, photo_url, color')
+      .in('id', interpIds)
+
+    if (profilesErr) {
+      console.error('[dhh/circle/roster] profiles fetch error:', profilesErr.message)
+    }
+
+    // Step 3: Fetch certs and specializations separately
+    const { data: certs, error: certsErr } = await admin
+      .from('interpreter_certifications')
+      .select('interpreter_id, name')
+      .in('interpreter_id', interpIds)
+
+    if (certsErr) {
+      console.error('[dhh/circle/roster] certs fetch error:', certsErr.message)
+    }
+
+    const { data: specs, error: specsErr } = await admin
+      .from('interpreter_specializations')
+      .select('interpreter_id, specialization')
+      .in('interpreter_id', interpIds)
+
+    if (specsErr) {
+      console.error('[dhh/circle/roster] specs fetch error:', specsErr.message)
+    }
+
+    // Build lookup maps
+    const profileMap = new Map((profiles || []).map(p => [p.id, p]))
+    const certsByInterp = new Map<string, string[]>()
+    for (const c of certs || []) {
+      const arr = certsByInterp.get(c.interpreter_id) || []
+      arr.push(c.name)
+      certsByInterp.set(c.interpreter_id, arr)
+    }
+    const specsByInterp = new Map<string, string[]>()
+    for (const s of specs || []) {
+      const arr = specsByInterp.get(s.interpreter_id) || []
+      arr.push(s.specialization)
+      specsByInterp.set(s.interpreter_id, arr)
+    }
+
+    // Combine roster + profiles
+    const roster = rosterRows.map(row => {
+      const interp = profileMap.get(row.interpreter_id)
       const interpName = interp
-        ? ((interp.first_name as string)
-          ? `${interp.first_name} ${(interp.last_name as string) || ''}`.trim()
-          : (interp.name as string) || 'Interpreter')
+        ? (interp.first_name
+          ? `${interp.first_name} ${interp.last_name || ''}`.trim()
+          : interp.name || 'Interpreter')
         : 'Interpreter'
       const initials = interpName.split(' ').map((p: string) => p[0]).join('').slice(0, 2).toUpperCase()
-      const certs = interp
-        ? ((interp.certifications as Array<{ name: string }>) || []).map(c => c.name).join(', ')
-        : ''
-      const domains = interp
-        ? ((interp.specializations as Array<{ specialization: string }>) || []).map(s => s.specialization).join(', ')
-        : ''
 
       return {
         id: row.id,
@@ -73,10 +111,10 @@ export async function GET(request: NextRequest) {
         notes: row.notes,
         name: interpName,
         photo_url: interp?.photo_url || null,
-        color: (interp?.color as string) || '',
+        color: interp?.color || '',
         initials,
-        certs,
-        domains,
+        certs: (certsByInterp.get(row.interpreter_id) || []).join(', '),
+        domains: (specsByInterp.get(row.interpreter_id) || []).join(', '),
       }
     })
 
