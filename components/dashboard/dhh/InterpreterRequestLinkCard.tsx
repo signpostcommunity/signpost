@@ -67,16 +67,15 @@ export default function InterpreterRequestLinkCard() {
   }
 
   const outerStyle: React.CSSProperties = {
-    width: 200,
+    width: 280,
     flexShrink: 0,
     background: 'var(--card-bg)',
-    border: '1px solid rgba(0,229,255,0.15)',
+    border: '1px solid rgba(0,229,255,0.2)',
     borderRadius: 'var(--radius)',
-    padding: '20px',
+    padding: 20,
     display: 'flex',
-    flexDirection: 'column',
     alignItems: 'center',
-    gap: 12,
+    gap: 16,
   }
 
   if (loading) {
@@ -93,82 +92,92 @@ export default function InterpreterRequestLinkCard() {
 
   return (
     <div style={outerStyle} role="region" aria-label="My Interpreter Request Link">
-      {/* QR code */}
-      <div style={{
-        padding: 6,
-        background: '#111118',
-        borderRadius: 'var(--radius-sm)',
-        border: '1px solid var(--border)',
-        lineHeight: 0,
-      }}>
-        <QRCodeSVG
-          value={`https://signpost.community/d/${vanitySlug}`}
-          size={80}
-          bgColor="#111118"
-          fgColor="#00e5ff"
-          level="M"
-        />
-      </div>
-
-      {/* Label */}
-      <div style={{
-        color: 'var(--muted)',
-        fontSize: '0.78rem',
-        fontFamily: "'DM Sans', sans-serif",
-        textAlign: 'center',
-      }}>
-        My Interpreter Request Link
-      </div>
-
-      {/* URL */}
-      <code style={{
-        display: 'block',
-        textAlign: 'center',
-        fontSize: '0.72rem',
-        color: 'var(--accent)',
-        fontFamily: 'monospace',
-        wordBreak: 'break-all',
-        lineHeight: 1.5,
-        userSelect: 'all',
-      }}>
-        {fullUrl}
-      </code>
-
-      {/* Copy button */}
-      <button
-        type="button"
-        onClick={handleCopy}
-        aria-label={copied ? 'Link copied' : 'Copy interpreter request link'}
-        style={{
-          width: '100%',
-          padding: '8px 0',
-          background: copied ? 'rgba(52,211,153,0.15)' : 'rgba(0,229,255,0.1)',
-          border: `1px solid ${copied ? 'rgba(52,211,153,0.3)' : 'rgba(0,229,255,0.3)'}`,
+      {/* Left: QR code */}
+      <div style={{ flexShrink: 0 }}>
+        <div style={{
+          padding: 8,
+          background: '#111118',
           borderRadius: 'var(--radius-sm)',
-          fontSize: '0.78rem',
-          fontWeight: 600,
-          color: copied ? '#34d399' : 'var(--accent)',
-          cursor: 'pointer',
-          fontFamily: "'DM Sans', sans-serif",
-          transition: 'all 0.15s',
-        }}
-      >
-        {copied ? 'Copied!' : 'Copy Link'}
-      </button>
-
-      {/* Edit link */}
-      <Link
-        href="/dhh/dashboard/preferences"
-        style={{
-          fontSize: '0.72rem',
+          border: '1px solid var(--border)',
+          lineHeight: 0,
+        }}>
+          <QRCodeSVG
+            value={`https://signpost.community/d/${vanitySlug}`}
+            size={100}
+            bgColor="#111118"
+            fgColor="#00e5ff"
+            level="M"
+          />
+        </div>
+        <p style={{
+          fontSize: '0.68rem',
           color: 'var(--muted)',
-          textDecoration: 'none',
+          textAlign: 'center',
+          marginTop: 6,
+          marginBottom: 0,
+          lineHeight: 1.3,
+        }}>
+          Show to book for you
+        </p>
+      </div>
+
+      {/* Right: text + actions */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{
+          fontSize: '0.82rem',
+          fontWeight: 600,
+          color: 'var(--text)',
           fontFamily: "'DM Sans', sans-serif",
-          opacity: 0.7,
-        }}
-      >
-        Edit
-      </Link>
+        }}>
+          My Interpreter Request Link
+        </div>
+
+        <code style={{
+          display: 'block',
+          fontSize: '0.72rem',
+          color: 'var(--accent)',
+          fontFamily: 'monospace',
+          wordBreak: 'break-all',
+          lineHeight: 1.4,
+          marginTop: 4,
+        }}>
+          {fullUrl}
+        </code>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
+          <button
+            type="button"
+            onClick={handleCopy}
+            aria-label={copied ? 'Link copied' : 'Copy interpreter request link'}
+            style={{
+              padding: '5px 16px',
+              background: copied ? 'rgba(52,211,153,0.15)' : 'transparent',
+              border: `1px solid ${copied ? 'rgba(52,211,153,0.3)' : 'rgba(0,229,255,0.3)'}`,
+              borderRadius: 'var(--radius-sm)',
+              fontSize: '0.76rem',
+              fontWeight: 600,
+              color: copied ? '#34d399' : 'var(--accent)',
+              cursor: 'pointer',
+              fontFamily: "'DM Sans', sans-serif",
+              transition: 'all 0.15s',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {copied ? 'Copied!' : 'Copy Link'}
+          </button>
+          <Link
+            href="/dhh/dashboard/preferences"
+            style={{
+              fontSize: '0.72rem',
+              color: 'var(--muted)',
+              textDecoration: 'none',
+              fontFamily: "'DM Sans', sans-serif",
+            }}
+          >
+            Edit
+          </Link>
+        </div>
+      </div>
     </div>
   )
 }

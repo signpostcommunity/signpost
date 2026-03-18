@@ -809,7 +809,7 @@ export default function DeafDashboardOverview() {
 
       {/* Stat cards + request link */}
       <div style={{ display: 'flex', gap: 16, marginBottom: 32, alignItems: 'stretch' }}>
-        <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16, flex: 1, alignItems: 'stretch' }}>
+        <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, flex: 1, alignItems: 'stretch' }}>
           <StatCard num={activeRequests} label="Active Requests" href="/dhh/dashboard/requests" />
           <StatCard num={prefCount} label="Preferred Interpreters" href="/dhh/dashboard/interpreters" />
           <StatCard num={secCount} label="Secondary Tier" href="/dhh/dashboard/interpreters" />
