@@ -33,8 +33,9 @@ export default function InterpreterGrid({ interpreters, onVideoPreview, onAddToL
         className="interp-grid"
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
+          gridTemplateColumns: 'repeat(5, 1fr)',
           gap: '16px',
+          paddingRight: '8px',
         }}
       >
         {interpreters.map((i) => (
@@ -49,14 +50,11 @@ export default function InterpreterGrid({ interpreters, onVideoPreview, onAddToL
       </div>
 
       <style>{`
-        @media (max-width: 1400px) {
+        @media (max-width: 1024px) {
           .interp-grid { grid-template-columns: repeat(3, 1fr) !important; }
         }
-        @media (max-width: 1024px) {
+        @media (max-width: 640px) {
           .interp-grid { grid-template-columns: repeat(2, 1fr) !important; }
-        }
-        @media (max-width: 768px) {
-          .interp-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
     </>

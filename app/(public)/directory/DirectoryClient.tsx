@@ -284,7 +284,7 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
         </div>
 
         {/* Main content */}
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ flex: 1, minWidth: 0, paddingRight: 8 }}>
           {/* Page title */}
           <h1 style={{
             fontFamily: "'Syne', sans-serif",
@@ -306,10 +306,10 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
 
           {/* Invite prompt */}
           <div style={{
-            background: '#16161f',
-            borderLeft: '3px solid #7b61ff',
+            background: 'rgba(0,229,255,0.03)',
+            border: '1px dashed rgba(0,229,255,0.3)',
             borderRadius: 8,
-            padding: '12px 20px',
+            padding: '14px 20px',
             marginBottom: 20,
             display: 'flex',
             alignItems: 'center',
@@ -321,39 +321,44 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
               color: 'var(--muted)',
               fontSize: '0.88rem',
               fontFamily: "'DM Sans', sans-serif",
+              lineHeight: 1.5,
             }}>
-              Missing an interpreter you love?
+              Don&apos;t see an interpreter here who you love working with?{' '}
+              <button
+                onClick={() => {
+                  const defaultMsg = `${userName || 'Someone'} wants you to join signpost — a community-built interpreter directory connecting interpreters directly with the Deaf community. Create your free profile: https://signpost.community/interpreter`;
+                  setInviteMessage(defaultMsg);
+                  setInviteName('');
+                  setInviteContact('');
+                  setInviteModalOpen(true);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--accent)',
+                  fontSize: '0.88rem',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontFamily: "'DM Sans', sans-serif",
+                  padding: 0,
+                  textDecoration: 'underline',
+                  textUnderlineOffset: '2px',
+                }}
+              >
+                Invite them to signpost.
+              </button>
             </span>
-            <button
-              onClick={() => {
-                const defaultMsg = `${userName || 'Someone'} wants you to join signpost — a community-built interpreter directory connecting interpreters directly with the Deaf community. Create your free profile: https://signpost.community/interpreter`;
-                setInviteMessage(defaultMsg);
-                setInviteName('');
-                setInviteContact('');
-                setInviteModalOpen(true);
-              }}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'var(--accent)',
-                fontSize: '0.88rem',
-                fontWeight: 600,
-                cursor: 'pointer',
-                fontFamily: "'DM Sans', sans-serif",
-                padding: 0,
-              }}
-            >
-              Send them an invite &rarr;
-            </button>
           </div>
 
-          {/* Results count */}
+          {/* Hidden for beta — unhide when directory is larger */}
+          {false && (
           <div style={{ marginBottom: '20px' }}>
             <p style={{ color: 'var(--muted)', fontSize: '0.95rem' }}>
               <span style={{ color: 'var(--accent)', fontWeight: 700 }}>{filtered.length}</span>{' '}
               interpreter{filtered.length !== 1 ? 's' : ''} found
             </p>
           </div>
+          )}
 
           {/* Mobile filter toggle */}
           <div className="filter-mobile-toggle" style={{ marginBottom: '16px' }}>

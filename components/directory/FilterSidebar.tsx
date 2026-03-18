@@ -372,7 +372,7 @@ export default function FilterSidebar({ filters, onChange }: Props) {
                     background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0',
                     fontFamily: "'DM Sans', sans-serif", fontSize: '0.65rem', fontWeight: 700,
                     letterSpacing: '0.1em', textTransform: 'uppercase',
-                    color: selectedCount > 0 ? 'var(--accent)' : 'var(--muted)',
+                    color: selectedCount > 0 ? 'var(--accent)' : 'var(--accent)',
                     display: 'flex', alignItems: 'center', gap: '6px', width: '100%',
                   }}
                 >
