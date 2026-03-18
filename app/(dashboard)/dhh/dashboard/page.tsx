@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import RequestTracker from '@/components/dashboard/dhh/RequestTracker'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
+import InterpreterRequestLinkCard from '@/components/dashboard/dhh/InterpreterRequestLinkCard'
 
 /* ── Types ── */
 
@@ -804,6 +805,11 @@ export default function DeafDashboardOverview() {
           Welcome back, {displayName}.
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>Here&apos;s a snapshot of your activity on signpost.</p>
+      </div>
+
+      {/* Interpreter Request Link */}
+      <div style={{ marginBottom: 24 }}>
+        <InterpreterRequestLinkCard />
       </div>
 
       {/* Stat cards */}
