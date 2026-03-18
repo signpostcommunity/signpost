@@ -808,14 +808,14 @@ export default function DeafDashboardOverview() {
       </div>
 
       {/* Stat cards + request link */}
-      <div style={{ display: 'flex', gap: 24, marginBottom: 32, alignItems: 'stretch' }}>
-        <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, flex: 1.5, alignItems: 'stretch' }}>
+      <div className="dhh-top-columns" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 24, marginBottom: 32, alignItems: 'stretch' }}>
+        <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, alignItems: 'stretch' }}>
           <StatCard num={activeRequests} label="Active Requests" href="/dhh/dashboard/requests" />
           <StatCard num={prefCount} label="Preferred Interpreters" href="/dhh/dashboard/interpreters" />
           <StatCard num={secCount} label="Secondary Tier" href="/dhh/dashboard/interpreters" />
           <StatCard num={circleCount} label="Trusted Circle" href="/dhh/dashboard/circle" />
         </div>
-        <div style={{ flex: 1 }}>
+        <div>
           <InterpreterRequestLinkCard />
         </div>
       </div>
@@ -968,6 +968,9 @@ export default function DeafDashboardOverview() {
 
       <style>{`
         @media (max-width: 768px) {
+          .dhh-top-columns {
+            grid-template-columns: 1fr !important;
+          }
           .dhh-overview-columns {
             grid-template-columns: 1fr !important;
           }
