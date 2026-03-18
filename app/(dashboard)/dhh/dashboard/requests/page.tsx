@@ -6,7 +6,6 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { PageHeader, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import RequestTracker from '@/components/dashboard/dhh/RequestTracker'
-import InterpreterRating from '@/components/dashboard/dhh/InterpreterRating'
 import { createClient } from '@/lib/supabase/client'
 import BookingFilterBar, { filterBySearch, filterByDateRange, groupByTimeCategory, timeCategoryHeaderStyle } from '@/components/dashboard/shared/BookingFilterBar'
 import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
@@ -115,6 +114,18 @@ function isBookingCompleted(booking: BookingWithRecipients): boolean {
     return new Date(booking.date + 'T23:59:59') < new Date()
   }
   return false
+}
+
+/** Returns true when booking is confirmed + 2hrs past end time + has unrated interpreters */
+function isRatingPending(booking: BookingWithRecipients, ratedInterpreters: Set<string>): boolean {
+  if (booking.status !== 'filled' && booking.status !== 'completed') return false
+  const confirmedRecipients = booking.recipients.filter(r => r.status === 'confirmed')
+  if (confirmedRecipients.length === 0) return false
+  const endDateTime = new Date(`${booking.date}T${booking.time_end}`)
+  const twoHoursAfter = new Date(endDateTime.getTime() + 2 * 60 * 60 * 1000)
+  if (new Date() < twoHoursAfter) return false
+  // Check if any confirmed interpreter is unrated
+  return confirmedRecipients.some(r => !ratedInterpreters.has(`${booking.id}:${r.interpreter_id}`))
 }
 
 /* ── SVG Icons (thin-line style) ── */
@@ -472,15 +483,355 @@ function AppointmentVideoSection({ booking }: { booking: BookingWithRecipients }
   )
 }
 
+/* ── Star rating for inline modal ── */
+
+function ModalStar({ filled, onClick, size = 28 }: { filled: boolean; onClick: () => void; size?: number }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={filled ? 'Selected' : 'Not selected'}
+      style={{
+        background: 'none', border: 'none', cursor: 'pointer',
+        padding: 2, display: 'flex', alignItems: 'center',
+      }}
+    >
+      <svg width={size} height={size} viewBox="0 0 24 24" fill={filled ? '#00e5ff' : 'none'} stroke={filled ? '#00e5ff' : 'rgba(184,191,207,0.4)'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+      </svg>
+    </button>
+  )
+}
+
+function ModalStarRating({ value, onChange, label }: { value: number; onChange: (v: number) => void; label: string }) {
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <div style={{ fontSize: '0.85rem', color: 'var(--text)', marginBottom: 8, lineHeight: 1.5, fontWeight: 500 }}>
+        {label}
+      </div>
+      <div style={{ display: 'flex', gap: 4 }} role="radiogroup" aria-label={label}>
+        {[1, 2, 3, 4, 5].map(n => (
+          <ModalStar key={n} filled={n <= value} onClick={() => onChange(n)} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ModalPill({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        padding: '8px 22px', borderRadius: 100, cursor: 'pointer',
+        border: selected ? '1px solid #00e5ff' : '1px solid var(--border)',
+        background: selected ? '#00e5ff' : 'var(--surface2)',
+        color: selected ? '#000' : 'var(--muted)',
+        fontFamily: "'DM Sans', sans-serif", fontSize: '0.85rem',
+        fontWeight: selected ? 700 : 500, transition: 'all 0.15s ease',
+      }}
+    >
+      {label}
+    </button>
+  )
+}
+
+/* ── Inline Rating Modal (rendered below card) ── */
+
+interface RatingFormState {
+  metNeeds: number
+  professional: number
+  wouldBookAgain: string | null
+  feedbackText: string
+  shareWithInterpreter: boolean
+  error: string | null
+}
+
+function InlineRatingModal({ booking, ratedInterpreters, onRated, onClose }: {
+  booking: BookingWithRecipients
+  ratedInterpreters: Set<string>
+  onRated: (key: string) => void
+  onClose: () => void
+}) {
+  const confirmedRecipients = booking.recipients
+    .filter(r => r.status === 'confirmed')
+    .filter(r => !ratedInterpreters.has(`${booking.id}:${r.interpreter_id}`))
+
+  const [forms, setForms] = useState<Record<string, RatingFormState>>(() => {
+    const initial: Record<string, RatingFormState> = {}
+    confirmedRecipients.forEach(r => {
+      initial[r.interpreter_id] = {
+        metNeeds: 0, professional: 0, wouldBookAgain: null,
+        feedbackText: '', shareWithInterpreter: false, error: null,
+      }
+    })
+    return initial
+  })
+  const [submitting, setSubmitting] = useState(false)
+  const [globalError, setGlobalError] = useState<string | null>(null)
+
+  function updateForm(interpreterId: string, patch: Partial<RatingFormState>) {
+    setForms(prev => ({
+      ...prev,
+      [interpreterId]: { ...prev[interpreterId], ...patch },
+    }))
+  }
+
+  async function handleSubmit() {
+    // Validate all forms
+    let hasErrors = false
+    const updatedForms = { ...forms }
+    confirmedRecipients.forEach(r => {
+      const f = updatedForms[r.interpreter_id]
+      if (!f.metNeeds || !f.professional || !f.wouldBookAgain) {
+        updatedForms[r.interpreter_id] = { ...f, error: 'Please complete all required fields.' }
+        hasErrors = true
+      } else {
+        updatedForms[r.interpreter_id] = { ...f, error: null }
+      }
+    })
+    if (hasErrors) {
+      setForms(updatedForms)
+      return
+    }
+
+    setSubmitting(true)
+    setGlobalError(null)
+
+    for (const r of confirmedRecipients) {
+      const f = forms[r.interpreter_id]
+      try {
+        const res = await fetch('/api/dhh/ratings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            bookingId: booking.id,
+            interpreterId: r.interpreter_id,
+            ratingMetNeeds: f.metNeeds,
+            ratingProfessional: f.professional,
+            wouldBookAgain: f.wouldBookAgain,
+            feedbackText: f.feedbackText.trim() || null,
+            sharedWithInterpreter: f.shareWithInterpreter,
+          }),
+        })
+        if (!res.ok) {
+          const data = await res.json().catch(() => null)
+          setGlobalError(data?.error || `Failed to submit rating for ${r.interpreter?.name || 'interpreter'}.`)
+          setSubmitting(false)
+          return
+        }
+        onRated(`${booking.id}:${r.interpreter_id}`)
+      } catch {
+        setGlobalError('Failed to submit ratings. Please try again.')
+        setSubmitting(false)
+        return
+      }
+    }
+
+    setSubmitting(false)
+    onClose()
+  }
+
+  if (confirmedRecipients.length === 0) {
+    return null
+  }
+
+  return (
+    <div
+      onClick={e => e.stopPropagation()}
+      style={{
+        background: 'var(--surface)',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius)',
+        padding: '28px 24px',
+        marginTop: 12,
+      }}
+    >
+      <h3 style={{
+        fontFamily: "'Syne', sans-serif", fontWeight: 700,
+        fontSize: '1.1rem', color: 'var(--text)',
+        margin: '0 0 6px 0',
+      }}>
+        Rate your interpreters
+      </h3>
+      <p style={{
+        fontSize: '0.82rem', color: 'var(--muted)',
+        margin: '0 0 24px 0', lineHeight: 1.5,
+      }}>
+        Your ratings are 100% confidential and never shared with interpreters.
+      </p>
+
+      {/* One card per confirmed interpreter */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+        {confirmedRecipients.map(r => {
+          const interp = r.interpreter
+          const name = interp?.first_name
+            ? `${interp.first_name} ${interp.last_name || ''}`.trim()
+            : interp?.name || 'Interpreter'
+          const initials = interp?.first_name
+            ? `${interp.first_name[0]}${interp.last_name?.[0] || ''}`.toUpperCase()
+            : (interp?.name?.[0] || 'I').toUpperCase()
+          const f = forms[r.interpreter_id]
+
+          return (
+            <div key={r.interpreter_id} style={{
+              background: '#111118', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)', padding: '20px',
+            }}>
+              {/* Avatar + name */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+                {interp?.photo_url ? (
+                  <img src={interp.photo_url} alt="" style={{
+                    width: 40, height: 40, borderRadius: '50%', objectFit: 'cover',
+                  }} />
+                ) : (
+                  <div style={{
+                    width: 40, height: 40, borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.75rem', color: '#fff',
+                  }}>
+                    {initials}
+                  </div>
+                )}
+                <div style={{
+                  fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+                  fontSize: '0.95rem', color: 'var(--text)',
+                }}>
+                  {name}
+                </div>
+              </div>
+
+              {/* Star rating: Met needs */}
+              <ModalStarRating
+                value={f.metNeeds}
+                onChange={v => updateForm(r.interpreter_id, { metNeeds: v })}
+                label="Met my needs: I understood them clearly and they understood me"
+              />
+
+              {/* Star rating: Professional */}
+              <ModalStarRating
+                value={f.professional}
+                onChange={v => updateForm(r.interpreter_id, { professional: v })}
+                label="Professional: on-time, prepared, dressed and behaved appropriately"
+              />
+
+              {/* Would book again */}
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text)', marginBottom: 10, lineHeight: 1.5, fontWeight: 500 }}>
+                  Would you book this interpreter again?
+                </div>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  {['Yes', 'Maybe', 'No'].map(opt => (
+                    <ModalPill
+                      key={opt}
+                      label={opt}
+                      selected={f.wouldBookAgain === opt.toLowerCase()}
+                      onClick={() => updateForm(r.interpreter_id, { wouldBookAgain: opt.toLowerCase() })}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Feedback textarea */}
+              <textarea
+                placeholder={`Any additional notes? Your rating is completely confidential.\n(If you want this forwarded to your interpreter, check the box below)`}
+                value={f.feedbackText}
+                onChange={e => updateForm(r.interpreter_id, { feedbackText: e.target.value })}
+                style={{
+                  width: '100%', boxSizing: 'border-box',
+                  background: 'var(--surface2)', border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-sm)', padding: '12px 14px',
+                  color: 'var(--text)', fontFamily: "'DM Sans', sans-serif",
+                  fontSize: '0.85rem', outline: 'none', resize: 'vertical',
+                  minHeight: 80, marginBottom: 12,
+                }}
+                onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+                onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
+              />
+
+              {/* Share checkbox */}
+              <label style={{
+                display: 'flex', alignItems: 'flex-start', gap: 10,
+                cursor: 'pointer', marginBottom: 8,
+              }}>
+                <input
+                  type="checkbox"
+                  checked={f.shareWithInterpreter}
+                  onChange={e => updateForm(r.interpreter_id, { shareWithInterpreter: e.target.checked })}
+                  style={{ marginTop: 3, accentColor: '#00e5ff', width: 16, height: 16, flexShrink: 0 }}
+                />
+                <span style={{ fontSize: '0.82rem', color: 'var(--text)' }}>
+                  Share my written feedback directly with the interpreter
+                </span>
+              </label>
+
+              {f.shareWithInterpreter && (
+                <div style={{
+                  fontSize: '0.75rem', color: 'var(--accent)', lineHeight: 1.6,
+                  padding: '0 0 0 26px', marginBottom: 4,
+                }}>
+                  Your written feedback above will be sent to the interpreter&apos;s inbox as a direct message. Your star ratings will not be included.
+                </div>
+              )}
+
+              {/* Per-card validation error */}
+              {f.error && (
+                <div style={{ fontSize: '0.82rem', color: 'var(--accent3)', marginTop: 8 }}>
+                  {f.error}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Confidential note */}
+      <div style={{
+        fontSize: '0.75rem', color: 'var(--muted)', lineHeight: 1.6,
+        marginTop: 20, marginBottom: 16,
+      }}>
+        Your ratings are 100% confidential and never shared with interpreters (unless you check the box above).
+        Honest feedback helps signpost maintain a directory that serves the Deaf community well.
+        Interpreters who receive a consistent pattern of concerns may be reviewed by signpost.
+      </div>
+
+      {globalError && (
+        <div style={{ fontSize: '0.82rem', color: 'var(--accent3)', marginBottom: 12 }}>
+          {globalError}
+        </div>
+      )}
+
+      {/* Submit button */}
+      <button
+        onClick={handleSubmit}
+        disabled={submitting}
+        style={{
+          background: '#7b61ff', color: '#fff',
+          border: 'none', borderRadius: 'var(--radius-sm)',
+          padding: '12px 32px', fontSize: '0.9rem', fontWeight: 700,
+          fontFamily: "'DM Sans', sans-serif", cursor: submitting ? 'not-allowed' : 'pointer',
+          opacity: submitting ? 0.6 : 1, transition: 'opacity 0.15s',
+        }}
+      >
+        {submitting ? 'Submitting...' : 'Submit feedback'}
+      </button>
+    </div>
+  )
+}
+
 /* ── Request Card ── */
 
-function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, isOnMyBehalf }: {
+function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, isOnMyBehalf, ratingModalOpen, onToggleRatingModal }: {
   booking: BookingWithRecipients
   onExpand: () => void
   expanded: boolean
   ratedInterpreters: Set<string>
   onRated: (key: string) => void
   isOnMyBehalf?: boolean
+  ratingModalOpen: boolean
+  onToggleRatingModal: () => void
 }) {
   const isDismissed = booking.status === 'cancelled'
   const allDeclined = booking.status === 'open' &&
@@ -495,6 +846,7 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
   // Check if ALL confirmed interpreters on this booking have been rated
   const allRated = confirmedRecipients.length > 0 &&
     confirmedRecipients.every(r => ratedInterpreters.has(`${booking.id}:${r.interpreter_id}`))
+  const ratingPending = isRatingPending(booking, ratedInterpreters)
 
   return (
     <div
@@ -544,51 +896,87 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
         </div>
 
         {/* Line 3: Progress tracker */}
-        <RequestTracker booking={booking} recipients={booking.recipients} compact hasRating={allRated} />
+        <RequestTracker booking={booking} recipients={booking.recipients} compact hasRating={allRated} ratingPending={ratingPending} />
 
-        {/* Line 4 (conditional): Confirmed interpreter(s) — stacked vertically, right-aligned */}
+        {/* Line 4 (conditional): Confirmed interpreter(s) OR Rate button */}
         {confirmedRecipients.length > 0 && !expanded && (
-          <div style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
-            gap: 6, marginTop: 4,
-          }}>
-            {confirmedRecipients.map(r => {
-              const interp = r.interpreter
-              const name = interp?.first_name
-                ? `${interp.first_name} ${interp.last_name || ''}`.trim()
-                : interp?.name || 'Interpreter'
-              const initials = interp?.first_name
-                ? `${interp.first_name[0]}${interp.last_name?.[0] || ''}`.toUpperCase()
-                : (interp?.name?.[0] || 'I').toUpperCase()
+          ratingPending ? (
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              gap: 12, marginTop: 4, flexWrap: 'wrap',
+            }}>
+              <span style={{
+                fontSize: '0.8rem', color: 'var(--muted)', fontWeight: 500,
+              }}>
+                Confirmed: {confirmedRecipients.map(r => {
+                  const interp = r.interpreter
+                  return interp?.first_name
+                    ? `${interp.first_name} ${interp.last_name || ''}`.trim()
+                    : interp?.name || 'Interpreter'
+                }).join(' \u00b7 ')}
+              </span>
+              <button
+                onClick={(e) => { e.stopPropagation(); onToggleRatingModal() }}
+                style={{
+                  background: 'rgba(0,229,255,0.08)',
+                  border: '1.5px solid #00e5ff',
+                  color: '#00e5ff',
+                  fontWeight: 600,
+                  padding: '8px 20px',
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: '0.85rem',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0,
+                }}
+              >
+                Rate your interpreters
+              </button>
+            </div>
+          ) : (
+            <div style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
+              gap: 6, marginTop: 4,
+            }}>
+              {confirmedRecipients.map(r => {
+                const interp = r.interpreter
+                const name = interp?.first_name
+                  ? `${interp.first_name} ${interp.last_name || ''}`.trim()
+                  : interp?.name || 'Interpreter'
+                const initials = interp?.first_name
+                  ? `${interp.first_name[0]}${interp.last_name?.[0] || ''}`.toUpperCase()
+                  : (interp?.name?.[0] || 'I').toUpperCase()
 
-              return (
-                <span key={r.id} style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
-                  fontSize: '0.8rem', color: '#34d399', fontWeight: 500,
-                }}>
-                  {interp?.photo_url ? (
-                    <img src={interp.photo_url} alt="" style={{
-                      width: 24, height: 24, borderRadius: '50%', objectFit: 'cover',
+                return (
+                  <span key={r.id} style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    fontSize: '0.8rem', color: '#34d399', fontWeight: 500,
+                  }}>
+                    {interp?.photo_url ? (
+                      <img src={interp.photo_url} alt="" style={{
+                        width: 24, height: 24, borderRadius: '50%', objectFit: 'cover',
+                      }} />
+                    ) : (
+                      <div style={{
+                        width: 24, height: 24, borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.5rem', color: '#fff',
+                      }}>
+                        {initials}
+                      </div>
+                    )}
+                    Confirmed: {name}
+                    <span style={{
+                      width: 8, height: 8, borderRadius: '50%', background: '#34d399',
+                      display: 'inline-block',
                     }} />
-                  ) : (
-                    <div style={{
-                      width: 24, height: 24, borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.5rem', color: '#fff',
-                    }}>
-                      {initials}
-                    </div>
-                  )}
-                  Confirmed: {name}
-                  <span style={{
-                    width: 8, height: 8, borderRadius: '50%', background: '#34d399',
-                    display: 'inline-block',
-                  }} />
-                </span>
-              )
-            })}
-          </div>
+                  </span>
+                )
+              })}
+            </div>
+          )
         )}
 
         {/* Line 5: Action links */}
@@ -753,39 +1141,12 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
               </div>
             </div>
 
-            {/* Rating UI — one form per confirmed interpreter */}
-            {completed && (() => {
-              const unrated = confirmedRecipients.filter(r => !ratedInterpreters.has(`${booking.id}:${r.interpreter_id}`))
-              if (unrated.length === 0) return null
-              return (
-                <>
-                  {confirmedRecipients.length > 1 && (
-                    <div style={{
-                      fontSize: '0.82rem', color: 'var(--muted)', fontWeight: 600,
-                      marginTop: 12, marginBottom: 4,
-                    }}>
-                      Rate your interpreters ({confirmedRecipients.length - unrated.length + 1} of {confirmedRecipients.length})
-                    </div>
-                  )}
-                  {unrated.map(r => {
-                    const interpName = r.interpreter?.name || 'Interpreter'
-                    const key = `${booking.id}:${r.interpreter_id}`
-                    return (
-                      <InterpreterRating
-                        key={r.interpreter_id}
-                        bookingId={booking.id}
-                        interpreterId={r.interpreter_id}
-                        interpreterName={interpName}
-                        onRated={() => onRated(key)}
-                      />
-                    )
-                  })}
-                </>
-              )
-            })()}
           </div>
         </div>
       )}
+
+      {/* Inline rating modal — below the card */}
+      {ratingModalOpen && <InlineRatingModal booking={booking} ratedInterpreters={ratedInterpreters} onRated={onRated} onClose={onToggleRatingModal} />}
     </div>
   )
 }
@@ -796,6 +1157,7 @@ export default function DhhRequestsListPage() {
   const [bookings, setBookings] = useState<BookingWithRecipients[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [ratingModalId, setRatingModalId] = useState<string | null>(null)
   const [ratedInterpreters, setRatedInterpreters] = useState<Set<string>>(new Set())
   const [activeTab, setActiveTab] = useState<Tab>('professional')
   const [search, setSearch] = useState('')
@@ -840,15 +1202,24 @@ export default function DhhRequestsListPage() {
     setRatedInterpreters(prev => new Set(prev).add(key))
   }
 
-  // Filter bookings by tab, then apply search + date filters + sort soonest-first
+  // Filter bookings by tab, then apply search + date filters
   const professionalBookings = bookings.filter(b => b.request_type === 'professional' || (!b.request_type && !b.recipients?.length))
   const personalBookings = bookings.filter(b => b.request_type === 'personal')
   const tabBookings = activeTab === 'professional' ? professionalBookings : personalBookings
-  const activeBookings = filterByDateRange(
+  const filteredBookings = filterByDateRange(
     filterBySearch(tabBookings, search, ['title', 'location', 'description', 'notes']),
     dateFrom, dateTo
   )
-  const groupedBookings = groupByTimeCategory(activeBookings)
+
+  // Sort: needs rating → upcoming → past/rated
+  const sortedBookings = [...filteredBookings].sort((a, b) => {
+    const aPending = isRatingPending(a, ratedInterpreters) ? 0 : 1
+    const bPending = isRatingPending(b, ratedInterpreters) ? 0 : 1
+    if (aPending !== bPending) return aPending - bPending
+    // Within same priority, sort by date (soonest first for upcoming, most recent first for past)
+    return new Date(a.date).getTime() - new Date(b.date).getTime()
+  })
+  const groupedBookings = groupByTimeCategory(sortedBookings)
 
   const tabStyle = (tab: Tab): React.CSSProperties => ({
     background: 'none', border: 'none', cursor: 'pointer',
@@ -927,6 +1298,8 @@ export default function DhhRequestsListPage() {
                   ratedInterpreters={ratedInterpreters}
                   onRated={handleRated}
                   isOnMyBehalf={activeTab === 'professional'}
+                  ratingModalOpen={ratingModalId === b.id}
+                  onToggleRatingModal={() => setRatingModalId(ratingModalId === b.id ? null : b.id)}
                 />
               ))}
             </div>

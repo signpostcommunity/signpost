@@ -49,6 +49,8 @@ interface RequestTrackerProps {
   recipients: Recipient[]
   compact?: boolean
   hasRating?: boolean
+  /** When true, grey out prior steps and highlight Rate step with pulsing glow */
+  ratingPending?: boolean
 }
 
 type StepState = 'completed' | 'current' | 'future'
@@ -159,15 +161,15 @@ function XIcon({ size }: { size: number }) {
   )
 }
 
-function StarIcon({ size }: { size: number }) {
+function StarIcon({ size, filled = false }: { size: number; filled?: boolean }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#00e5ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={filled ? 'rgba(0,229,255,0.15)' : 'none'} stroke="#00e5ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
     </svg>
   )
 }
 
-export default function RequestTracker({ booking, recipients, compact = false, hasRating = false }: RequestTrackerProps) {
+export default function RequestTracker({ booking, recipients, compact = false, hasRating = false, ratingPending = false }: RequestTrackerProps) {
   const { steps, terminal } = getSteps(booking, recipients, hasRating)
   const circleSize = 20
   const iconSize = 10
@@ -175,160 +177,177 @@ export default function RequestTracker({ booking, recipients, compact = false, h
 
   const isTerminal = terminal !== null
 
+  // When ratingPending, prior steps get dimmed colors
+  const dimBorder = '#2e3650'
+  const dimBg = '#0e0e17'
+  const dimLine = '#1e2433'
+  const dimLabel = '#2e3650'
+
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        width: '100%',
-        padding: compact ? '6px 0' : '12px 0',
-        minHeight: compact ? 36 : undefined,
-      }}
-      role="group"
-      aria-label="Request status tracker"
-    >
-      {steps.map((step, i) => {
-        const isLast = i === steps.length - 1
-        const isError = isTerminal && isLast
-        const isRateStep = !isTerminal && isLast && step.state === 'current'
-        const isGreenCheck = isRateStep && hasRating
-        // Confirmed step with all interpreters confirmed uses green
-        const useGreen = step.isConfirmedAllGreen && (step.state === 'completed' || step.state === 'current')
-        const prevCompleted = i > 0 && steps[i - 1].state === 'completed'
-        const thisFuture = step.state === 'future'
-
-        // Determine circle style
-        let circleStyle: React.CSSProperties = {
-          width: circleSize,
-          height: circleSize,
-          borderRadius: '50%',
+    <>
+      <div
+        style={{
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-          position: 'relative',
-        }
+          alignItems: 'flex-start',
+          width: '100%',
+          padding: compact ? '6px 0' : '12px 0',
+          minHeight: compact ? 36 : undefined,
+        }}
+        role="group"
+        aria-label="Request status tracker"
+      >
+        {steps.map((step, i) => {
+          const isLast = i === steps.length - 1
+          const isError = isTerminal && isLast
+          const isRateStep = !isTerminal && isLast && step.state === 'current'
+          const isGreenCheck = isRateStep && hasRating
+          // Confirmed step with all interpreters confirmed uses green
+          const useGreen = step.isConfirmedAllGreen && (step.state === 'completed' || step.state === 'current')
 
-        if (isError) {
-          // Error: filled red
-          circleStyle = { ...circleStyle, background: '#ff6b85' }
-        } else if (isGreenCheck) {
-          // Rated: green outlined with green check
-          circleStyle = { ...circleStyle, background: 'none', border: '1.5px solid #34d399' }
-        } else if (useGreen && step.state === 'completed') {
-          // Confirmed step completed with all confirmed: green outlined + green check
-          circleStyle = { ...circleStyle, background: 'none', border: '1.5px solid #34d399' }
-        } else if (useGreen && step.state === 'current') {
-          // Confirmed step current with all confirmed: green outlined + green dot
-          circleStyle = { ...circleStyle, background: 'none', border: '2px solid #34d399' }
-        } else if (step.state === 'completed') {
-          // Completed: outlined cyan with white check
-          circleStyle = { ...circleStyle, background: 'none', border: '1.5px solid #00e5ff' }
-        } else if (step.state === 'current') {
-          // Current/active: outlined cyan with cyan dot center (radio button style)
-          circleStyle = { ...circleStyle, background: 'none', border: '2px solid #00e5ff' }
-        } else {
-          // Future: outlined dark gray, empty
-          circleStyle = { ...circleStyle, background: 'none', border: '1.5px solid #444' }
-        }
+          // ratingPending mode: dim all non-rate steps
+          const isDimmed = ratingPending && !hasRating && !isLast
 
-        // Determine line color
-        const lineCompleted = step.state !== 'future' && !thisFuture
-        const lineColor = (prevCompleted || step.state === 'completed' || step.state === 'current') && i > 0
-          ? (steps[i - 1].state === 'completed' ? '#00e5ff' : '#333')
-          : '#333'
+          // Determine circle style
+          let circleStyle: React.CSSProperties = {
+            width: circleSize,
+            height: circleSize,
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            position: 'relative',
+          }
 
-        // Label color
-        let labelColor = '#666'
-        if (isError) labelColor = '#ff6b85'
-        else if (isGreenCheck) labelColor = '#34d399'
-        else if (useGreen) labelColor = '#34d399'
-        else if (step.state === 'current') labelColor = '#fff'
-        else if (step.state === 'completed') labelColor = 'var(--muted)'
-        else labelColor = '#666'
+          if (isDimmed) {
+            circleStyle = { ...circleStyle, background: dimBg, border: `1.5px solid ${dimBorder}` }
+          } else if (isError) {
+            circleStyle = { ...circleStyle, background: '#ff6b85' }
+          } else if (isGreenCheck) {
+            circleStyle = { ...circleStyle, background: 'none', border: '1.5px solid #34d399' }
+          } else if (useGreen && step.state === 'completed') {
+            circleStyle = { ...circleStyle, background: 'none', border: '1.5px solid #34d399' }
+          } else if (useGreen && step.state === 'current') {
+            circleStyle = { ...circleStyle, background: 'none', border: '2px solid #34d399' }
+          } else if (ratingPending && isLast && !hasRating) {
+            // Rate step pulsing glow
+            circleStyle = { ...circleStyle, background: 'none', border: '2px solid #00e5ff', animation: 'rate-pulse 2s ease-in-out infinite' }
+          } else if (step.state === 'completed') {
+            circleStyle = { ...circleStyle, background: 'none', border: '1.5px solid #00e5ff' }
+          } else if (step.state === 'current') {
+            circleStyle = { ...circleStyle, background: 'none', border: '2px solid #00e5ff' }
+          } else {
+            circleStyle = { ...circleStyle, background: 'none', border: '1.5px solid #444' }
+          }
 
-        return (
-          <div
-            key={i}
-            style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              flex: isLast ? '0 0 auto' : 1,
-              minWidth: 0,
-            }}
-          >
-            {/* Step circle + label */}
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap,
-              minWidth: compact ? 44 : 56,
-              maxWidth: compact ? 60 : 80,
-            }}>
-              <div style={circleStyle} aria-label={`${step.label}: ${step.state}`}>
-                {isError ? (
-                  <XIcon size={iconSize} />
-                ) : isGreenCheck ? (
-                  <CheckIcon size={iconSize} color="#34d399" />
-                ) : useGreen && step.state === 'completed' ? (
-                  <CheckIcon size={iconSize} color="#34d399" />
-                ) : useGreen && step.state === 'current' ? (
-                  /* Green radio dot */
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399' }} />
-                ) : step.state === 'completed' ? (
-                  <CheckIcon size={iconSize} color="#fff" />
-                ) : step.state === 'current' && !isRateStep ? (
-                  /* Cyan radio dot */
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#00e5ff' }} />
-                ) : isRateStep && !hasRating ? (
-                  <StarIcon size={iconSize} />
-                ) : null}
-              </div>
+          // Label color
+          let labelColor = '#666'
+          if (isDimmed) labelColor = dimLabel
+          else if (isError) labelColor = '#ff6b85'
+          else if (isGreenCheck) labelColor = '#34d399'
+          else if (useGreen) labelColor = '#34d399'
+          else if (ratingPending && isLast && !hasRating) labelColor = '#00e5ff'
+          else if (step.state === 'current') labelColor = '#fff'
+          else if (step.state === 'completed') labelColor = 'var(--muted)'
+          else labelColor = '#666'
 
-              {/* Label */}
-              <div style={{ textAlign: 'center' }}>
-                <span style={{
-                  fontFamily: "'DM Sans', sans-serif",
-                  fontSize: compact ? '0.62rem' : '0.69rem',
-                  fontWeight: step.state === 'current' ? 700 : 500,
-                  color: labelColor,
-                  lineHeight: 1.3,
-                  maxWidth: compact ? 60 : 80,
-                  wordWrap: 'break-word',
-                  overflowWrap: 'break-word',
-                  display: 'block',
-                }}>
-                  {step.label}
-                </span>
-                {step.sublabel && (
-                  <span style={{
-                    fontSize: compact ? '0.56rem' : '0.58rem',
-                    color: isError ? '#ff6b85' : '#666',
-                    lineHeight: 1.3,
-                    display: 'block',
-                    marginTop: 1,
-                  }}>
-                    {step.sublabel}
-                  </span>
-                )}
-              </div>
-            </div>
+          // Line color
+          const lineColor = isDimmed ? dimLine : (step.state === 'completed' ? '#00e5ff' : '#333')
 
-            {/* Connecting line */}
-            {!isLast && (
+          return (
+            <div
+              key={i}
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                flex: isLast ? '0 0 auto' : 1,
+                minWidth: 0,
+              }}
+            >
+              {/* Step circle + label */}
               <div style={{
-                flex: 1,
-                height: 1,
-                marginTop: circleSize / 2,
-                minWidth: 8,
-                background: step.state === 'completed' ? '#00e5ff' : '#333',
-                borderRadius: 0,
-              }} />
-            )}
-          </div>
-        )
-      })}
-    </div>
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap,
+                minWidth: compact ? 44 : 56,
+                maxWidth: compact ? 60 : 80,
+              }}>
+                <div style={circleStyle} aria-label={`${step.label}: ${step.state}`}>
+                  {isDimmed ? (
+                    <CheckIcon size={iconSize} color={dimBorder} />
+                  ) : isError ? (
+                    <XIcon size={iconSize} />
+                  ) : isGreenCheck ? (
+                    <CheckIcon size={iconSize} color="#34d399" />
+                  ) : useGreen && step.state === 'completed' ? (
+                    <CheckIcon size={iconSize} color="#34d399" />
+                  ) : useGreen && step.state === 'current' ? (
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399' }} />
+                  ) : ratingPending && isLast && !hasRating ? (
+                    <StarIcon size={iconSize} filled />
+                  ) : step.state === 'completed' ? (
+                    <CheckIcon size={iconSize} color="#fff" />
+                  ) : step.state === 'current' && !isRateStep ? (
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#00e5ff' }} />
+                  ) : isRateStep && !hasRating ? (
+                    <StarIcon size={iconSize} />
+                  ) : null}
+                </div>
+
+                {/* Label */}
+                <div style={{ textAlign: 'center' }}>
+                  <span style={{
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: compact ? '0.62rem' : '0.69rem',
+                    fontWeight: (ratingPending && isLast && !hasRating) || step.state === 'current' ? 700 : 500,
+                    color: labelColor,
+                    lineHeight: 1.3,
+                    maxWidth: compact ? 60 : 80,
+                    wordWrap: 'break-word',
+                    overflowWrap: 'break-word',
+                    display: 'block',
+                  }}>
+                    {step.label}
+                  </span>
+                  {step.sublabel && (
+                    <span style={{
+                      fontSize: compact ? '0.56rem' : '0.58rem',
+                      color: isDimmed ? dimLabel : (isError ? '#ff6b85' : '#666'),
+                      lineHeight: 1.3,
+                      display: 'block',
+                      marginTop: 1,
+                    }}>
+                      {step.sublabel}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Connecting line */}
+              {!isLast && (
+                <div style={{
+                  flex: 1,
+                  height: 1,
+                  marginTop: circleSize / 2,
+                  minWidth: 8,
+                  background: lineColor,
+                  borderRadius: 0,
+                }} />
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {ratingPending && !hasRating && (
+        <style>{`
+          @keyframes rate-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0,229,255,0.4); }
+            50% { box-shadow: 0 0 0 5px rgba(0,229,255,0); }
+          }
+        `}</style>
+      )}
+    </>
   )
 }
