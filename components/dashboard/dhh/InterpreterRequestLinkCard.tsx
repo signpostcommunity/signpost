@@ -67,6 +67,8 @@ export default function InterpreterRequestLinkCard() {
   }
 
   const outerStyle: React.CSSProperties = {
+    width: 200,
+    flexShrink: 0,
     background: 'var(--card-bg)',
     border: '1px solid rgba(0,229,255,0.15)',
     borderRadius: 'var(--radius)',
@@ -101,7 +103,7 @@ export default function InterpreterRequestLinkCard() {
       }}>
         <QRCodeSVG
           value={`https://signpost.community/d/${vanitySlug}`}
-          size={72}
+          size={80}
           bgColor="#111118"
           fgColor="#00e5ff"
           level="M"

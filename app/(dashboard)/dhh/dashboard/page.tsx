@@ -807,12 +807,14 @@ export default function DeafDashboardOverview() {
         <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>Here&apos;s a snapshot of your activity on signpost.</p>
       </div>
 
-      {/* Stat cards */}
-      <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16, marginBottom: 32, alignItems: 'stretch' }}>
-        <StatCard num={activeRequests} label="Active Requests" href="/dhh/dashboard/requests" />
-        <StatCard num={prefCount} label="Preferred Interpreters" href="/dhh/dashboard/interpreters" />
-        <StatCard num={secCount} label="Secondary Tier" href="/dhh/dashboard/interpreters" />
-        <StatCard num={circleCount} label="Trusted Circle" href="/dhh/dashboard/circle" />
+      {/* Stat cards + request link */}
+      <div style={{ display: 'flex', gap: 16, marginBottom: 32, alignItems: 'stretch' }}>
+        <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16, flex: 1, alignItems: 'stretch' }}>
+          <StatCard num={activeRequests} label="Active Requests" href="/dhh/dashboard/requests" />
+          <StatCard num={prefCount} label="Preferred Interpreters" href="/dhh/dashboard/interpreters" />
+          <StatCard num={secCount} label="Secondary Tier" href="/dhh/dashboard/interpreters" />
+          <StatCard num={circleCount} label="Trusted Circle" href="/dhh/dashboard/circle" />
+        </div>
         <InterpreterRequestLinkCard />
       </div>
 
