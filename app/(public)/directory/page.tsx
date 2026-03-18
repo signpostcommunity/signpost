@@ -9,7 +9,7 @@ export default async function DirectoryPage() {
 
   const { data: rows } = await supabase
     .from('interpreter_profiles')
-    .select('id, name, first_name, last_name, city, country, state, sign_languages, spoken_languages, specializations, specialized_skills, regions, rating, review_count, available, avatar_color, bio, video_url, interpreter_type, status, photo_url, draft_data, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, latitude, longitude, interpreter_certifications(name, issuing_body, year, verification_link)')
+    .select('id, name, first_name, last_name, city, country, state, sign_languages, spoken_languages, specializations, specialized_skills, regions, rating, review_count, available, avatar_color, bio, video_url, interpreter_type, status, photo_url, draft_data, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, latitude, longitude, interpreter_certifications(name, issuing_body, year, verification_url)')
     .eq('status', 'approved')
     .order('photo_url', { ascending: false, nullsFirst: false })
     .order('name', { ascending: true });
@@ -20,7 +20,7 @@ export default async function DirectoryPage() {
     const location = [r.city, r.state, r.country].filter(Boolean).join(', ');
 
     // Extract certifications from interpreter_certifications table first, fall back to draft_data
-    const tableCerts = (r as Record<string, unknown>).interpreter_certifications as Array<{ name: string; issuing_body?: string; year?: string; verification_link?: string }> | undefined;
+    const tableCerts = (r as Record<string, unknown>).interpreter_certifications as Array<{ name: string; issuing_body?: string; year?: string; verification_url?: string }> | undefined;
     let certNames: string[];
     let certDetails: { name: string; issuingBody?: string; year?: string; verificationLink?: string }[];
 
@@ -30,7 +30,7 @@ export default async function DirectoryPage() {
         name: c.name,
         issuingBody: c.issuing_body || undefined,
         year: c.year || undefined,
-        verificationLink: c.verification_link || undefined,
+        verificationLink: c.verification_url || undefined,
       }));
     } else {
       const draftData = (r.draft_data || {}) as Record<string, unknown>;
