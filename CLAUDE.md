@@ -306,6 +306,12 @@ npm run seed       # Seed 10 demo interpreters into Supabase
 
 ---
 
+## Additional Safety Rules
+
+- **Verify column names before querying:** Before adding any new column reference to a Supabase `.select()`, `.insert()`, `.update()`, or `.upsert()`, run `SELECT column_name FROM information_schema.columns WHERE table_name = '[table_name]'` to confirm the column exists and the name is exact. Never assume column names from memory or context — always verify. A wrong column name in a nested select causes a 400 error that silently breaks the entire query.
+
+---
+
 ## ⚠️ PROTOTYPE COMPARISON PROTOCOL
 
 ### NON-NEGOTIABLE WORKING RULES
