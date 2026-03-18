@@ -2,13 +2,14 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { BetaBanner, PageHeader, Avatar, GhostButton } from '@/components/dashboard/interpreter/shared'
 import AddToListModal from '@/components/directory/AddToListModal'
 import SendMessageModal from '@/components/messaging/SendMessageModal'
 import Toast from '@/components/ui/Toast'
+import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
 
 const overlayStyle: React.CSSProperties = {
   position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
@@ -238,6 +239,10 @@ export default function TeamPage() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null)
   const [messagingMember, setMessagingMember] = useState<TeamMember | null>(null)
+  const [confirmModal, setConfirmModal] = useState<{
+    id: string; name: string; currentTier: string; newTier: string;
+  } | null>(null)
+  const confirmModalRef = useFocusTrap(!!confirmModal)
 
   const fetchTeam = useCallback(async () => {
     const supabase = createClient()
@@ -298,10 +303,18 @@ export default function TeamPage() {
     fetchTeam()
   }
 
-  async function moveTier(id: string) {
+  function requestMoveTier(id: string) {
     const member = team.find(m => m.id === id)
     if (!member) return
     const newTier = member.tier === 'preferred' ? 'secondary' : 'preferred'
+    const name = `${member.first_name} ${member.last_name}`
+    setConfirmModal({ id, name, currentTier: member.tier!, newTier })
+  }
+
+  async function confirmMoveTier() {
+    if (!confirmModal) return
+    const { id, newTier } = confirmModal
+    setConfirmModal(null)
     const supabase = createClient()
     const { error } = await supabase
       .from('interpreter_preferred_team')
@@ -372,7 +385,7 @@ export default function TeamPage() {
             title="Top Tier Team Interpreters"
             accentColor="var(--accent, #00e5ff)"
             members={topTier}
-            onMoveTier={moveTier}
+            onMoveTier={requestMoveTier}
             onRemove={removeMember}
             onEdit={openEdit}
             onMessage={setMessagingMember}
@@ -382,7 +395,7 @@ export default function TeamPage() {
             title="Secondary Tier Team Interpreters"
             accentColor="var(--accent2, #9d87ff)"
             members={secondaryTier}
-            onMoveTier={moveTier}
+            onMoveTier={requestMoveTier}
             onRemove={removeMember}
             onEdit={openEdit}
             onMessage={setMessagingMember}
@@ -450,6 +463,67 @@ export default function TeamPage() {
           }}
         />
       )}
+
+      {/* Tier move confirmation modal */}
+      {confirmModal && (() => {
+        const tierLabel = (t: string) => t === 'preferred' ? 'Top Tier' : 'Secondary Tier';
+        return (
+          <div
+            style={{
+              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              zIndex: 10000, padding: 20,
+            }}
+            onClick={() => setConfirmModal(null)}
+            onKeyDown={e => { if (e.key === 'Escape') setConfirmModal(null) }}
+          >
+            <div
+              ref={confirmModalRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label={`Move ${confirmModal.name}`}
+              onClick={e => e.stopPropagation()}
+              style={{
+                background: '#111118', border: '1px solid #1e2433',
+                borderRadius: 16, padding: 32, maxWidth: 400, width: '100%',
+              }}
+            >
+              <h3 style={{
+                fontFamily: "'Syne', sans-serif", fontWeight: 600,
+                fontSize: '1.1rem', margin: '0 0 12px 0',
+              }}>
+                Move {confirmModal.name}?
+              </h3>
+              <p style={{ color: 'var(--muted)', fontSize: '0.85rem', margin: '0 0 24px 0', lineHeight: 1.5 }}>
+                Move {confirmModal.name} from {tierLabel(confirmModal.currentTier)} to {tierLabel(confirmModal.newTier)}?
+              </p>
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => setConfirmModal(null)}
+                  style={{
+                    background: 'transparent', border: '1px solid var(--border)',
+                    borderRadius: 8, padding: '8px 20px', color: 'var(--muted)',
+                    fontSize: '0.85rem', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmMoveTier}
+                  style={{
+                    background: 'var(--accent)',
+                    border: 'none', borderRadius: 8, padding: '8px 20px',
+                    color: '#000', fontSize: '0.85rem',
+                    fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                  }}
+                >
+                  Move
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
