@@ -40,6 +40,17 @@ organizations, and requesters with certified sign language interpreters worldwid
 ### Supabase Clients
 - **Browser (Client Components):** `lib/supabase/client.ts` — `createBrowserClient()`
 - **Server (Server Components, Route Handlers):** `lib/supabase/server.ts` — `createServerClient()` with `cookies()`
+- **Admin/Service Role:** `lib/supabase/admin.ts` — `getSupabaseAdmin()` — bypasses RLS entirely
+
+### When to use Admin/Service Role
+Use the authenticated client by default. Use `getSupabaseAdmin()` only for:
+- Public pages that bypass RLS (e.g., /d/[slug] landing page)
+- API routes where an authenticated user needs data from a table their RLS doesn't cover (e.g., requester reading a Deaf user's roster via an active connection)
+- **Always verify permission FIRST with the authenticated client, THEN use admin for the privileged read.** Never use admin as a shortcut to skip auth checks.
+- Service role errors are silent — a bug here exposes data without failing loudly. Check errors on every admin client read.
+
+### Layout Alignment Rule
+When adding new UI elements adjacent to existing sections, ALWAYS read the existing layout's CSS/styles first and match the exact same grid/flex ratios. Don't guess at pixel values — read the actual styles on adjacent content and replicate them.
 
 ---
 
@@ -58,6 +69,9 @@ app/
 │       └── [id]/
 │           ├── page.tsx               # generateStaticParams + metadata
 │           └── ProfileClient.tsx      # 4-tab profile (Overview, Credentials, Rates, Availability)
+├── d/[slug]/
+│   ├── page.tsx                       # Public landing page for Deaf user's Interpreter Request Link
+│   └── DeafLandingClient.tsx          # Client component: auth state handling, connection creation CTA
 ├── (auth)/
 │   ├── layout.tsx                     # Nav + Footer wrapper (same as public)
 │   ├── interpreter/
@@ -73,6 +87,18 @@ app/
 │       ├── page.tsx                   # Requester portal landing
 │       ├── login/page.tsx
 │       └── signup/page.tsx            # 5-step form
+├── api/
+│   ├── connections/
+│   │   ├── create/route.ts            # POST: create dhh_requester_connection
+│   │   └── preferences/route.ts       # GET: fetch connected Deaf user's roster (service role)
+│   ├── request/
+│   │   └── booking/route.ts           # POST: requester booking creation, auto-adds DHH participant
+│   ├── notifications/
+│   │   ├── send/route.ts              # Email delivery via Resend
+│   │   └── preferences/route.ts       # User notification preferences
+│   ├── check-slug/route.ts            # Slug uniqueness check (interpreter + deaf profiles)
+│   └── dhh/
+│       └── request/route.ts           # GET/POST: Deaf personal request management
 └── (dashboard)/
     ├── layout.tsx                     # Sticky top bar only
     ├── interpreter/dashboard/
@@ -88,25 +114,20 @@ app/
     │   └── client-lists/page.tsx
     ├── dhh/dashboard/
     │   ├── layout.tsx                 # DhhDashboardSidebar (purple accent)
-    │   └── page.tsx                   # My Preferred Interpreters — 3-tier roster (preferred/approved/dnb)
-    ├── request/dashboard/page.tsx    # Requests + bookings
+    │   ├── page.tsx                   # 2x2 stat grid + QR card, recent requests, preferred interpreters
+    │   ├── bookings/page.tsx          # My requests + requests made on my behalf
+    │   ├── preferences/page.tsx       # Comm prefs + My Interpreter Request Link (QR, slug editor)
+    │   └── interpreters/page.tsx      # 3-tier roster (preferred/approved/dnb)
+    ├── request/dashboard/page.tsx     # Requests + bookings + RecommendedInterpreters for connected Deaf users
     └── admin/
-        ├── layout.tsx                     # Admin layout + auth check (is_admin gate)
+        ├── layout.tsx                 # Admin layout + auth check (is_admin gate)
         └── dashboard/
-            ├── page.tsx                   # Admin overview stats
+            ├── page.tsx               # Admin overview stats
             ├── AdminOverviewClient.tsx
             ├── users/
-            │   ├── page.tsx               # All users management
-            │   └── UsersClient.tsx
             ├── flags/
-            │   ├── page.tsx               # Profile flag review
-            │   └── FlagsClient.tsx
             ├── feedback/
-            │   ├── page.tsx               # Beta feedback viewer
-            │   └── FeedbackClient.tsx
             └── interpreters/
-                ├── page.tsx               # Interpreter management
-                └── InterpretersClient.tsx
 ```
 
 **Important:** The D/HH portal and dashboard use `/dhh` (not `/deaf`). All route references use `/dhh`.
@@ -122,8 +143,8 @@ components/
 │   ├── Footer.tsx
 │   ├── DashboardSidebar.tsx           # Interpreter sidebar with badge counts
 │   ├── DhhDashboardSidebar.tsx        # Deaf portal sidebar (purple accent, roster/requesters badges)
-│   ├── AdminSidebar.tsx              # Admin dashboard sidebar (orange accent #ff7e45)
-│   └── PendingRolesSection.tsx      # Red-dot pending role indicator for sidebar role switcher
+│   ├── AdminSidebar.tsx               # Admin dashboard sidebar (orange accent #ff7e45)
+│   └── PendingRolesSection.tsx        # Red-dot pending role indicator for sidebar role switcher
 ├── directory/
 │   ├── FilterSidebar.tsx              # 9 filter groups
 │   ├── InterpreterGrid.tsx
@@ -140,16 +161,21 @@ components/
 │   ├── SignupStepper.tsx
 │   ├── Step1Personal.tsx through Step6Review.tsx
 ├── shared/
-│   └── LocationPicker.tsx              # Reusable Country→State→City picker (uses country-state-city npm package)
+│   └── LocationPicker.tsx             # Reusable Country→State→City picker (uses country-state-city npm package)
 ├── requester-signup/
 │   ├── SignupStepper.tsx
 │   ├── Step1Role.tsx through Step5Done.tsx
 ├── dashboard/
 │   ├── interpreter/ (OverviewPanel, InquiriesPanel, ConfirmedPanel, InboxPanel)
-│   ├── deaf/ (RosterPanel — 3-tier preferred/approved/dnb with approval toggles)
-│   └── requester/ (RequestsPanel)
+│   ├── dhh/
+│   │   ├── InterpreterRequestLinkCard.tsx  # Dashboard QR card (slug, copy link, edit link)
+│   │   ├── RequestTracker.tsx
+│   │   └── RosterPanel                     # 3-tier preferred/approved/dnb with approval toggles
+│   └── requester/
+│       ├── RequestsPanel
+│       └── RecommendedInterpreters.tsx     # Tiered interpreter display for connected Deaf user bookings
 └── ui/
-    ├── GoogleSignInButton.tsx         # Google OAuth sign-in/up button
+    ├── GoogleSignInButton.tsx
     ├── Toast.tsx
     ├── Chip.tsx
     ├── RatingStars.tsx
@@ -174,7 +200,8 @@ components/
   1. Exchanges code for session
   2. Checks if `user_profiles` row exists (returning user → redirect to dashboard)
   3. New user → creates `user_profiles` + role-specific profile row
-  4. Redirects to appropriate dashboard
+  4. Auto-generates vanity_slug for deaf users
+  5. Redirects to appropriate dashboard
 
 ### Supabase Setup Required
 1. Go to Supabase dashboard → Authentication → Providers → Google → Enable
@@ -188,21 +215,36 @@ components/
 
 Full schema in `supabase/migrations/001_initial_schema.sql`
 
-**Tables:**
+**Core Tables:**
 - `user_profiles` — extends `auth.users`, stores `role` (interpreter/deaf/requester/org), `is_admin` (boolean, default false), `pending_roles` (text[], default '{}') for multi-role signup
-- `interpreter_profiles` — main interpreter data, status: pending/approved/rejected
+- `interpreter_profiles` — main interpreter data, status: pending/approved/rejected, `vanity_slug` (unique, case-insensitive)
 - `interpreter_sign_languages`, `interpreter_spoken_languages`, `interpreter_specializations`, `interpreter_regions`
 - `interpreter_certifications`, `interpreter_education`
 - `interpreter_rate_profiles` — multiple rate cards per interpreter
 - `interpreter_availability` — weekly schedule
-- `deaf_profiles` — D/HH user data (id, user_id, name, first_name, last_name, email, pronouns, bio, photo_url, location, state, country, country_name, city, phone, comm_prefs, created_at, updated_at)
-- `deaf_roster` — interpreter shortlist (preferred/approved/dnb tiers), with approve_work + approve_personal toggles
-- `requester_profiles` — requester/org data
-- `bookings` — job requests linking requester + interpreter
+- `deaf_profiles` — D/HH user data (id, user_id, name, first_name, last_name, email, pronouns, bio, photo_url, location, state, country, country_name, city, phone, comm_prefs, vanity_slug, profile_video_url, created_at, updated_at)
+- `deaf_roster` — interpreter shortlist per Deaf user. Columns: deaf_user_id (FK → deaf_profiles), interpreter_id (FK → interpreter_profiles), tier ('preferred'/'approved'), do_not_book (boolean), approve_work (boolean), approve_personal (boolean), notes, created_at
+- `requester_profiles` — requester/org data (id, name, phone, country, city, org_name, org_type, comm_prefs)
+- `bookings` — requests linking requester + interpreter
+- `booking_recipients` — interpreter assignment per booking (status, wave_number, confirmed_at, declined_at)
+- `booking_dhh_clients` — Deaf participants on a booking (dhh_user_id, comm_prefs_snapshot, context_video_url)
 - `reviews` — post-booking ratings
 - `messages` — per-booking chat
+- `notifications` — in-app notifications
+- `trusted_deaf_circle` — Deaf-to-Deaf list sharing
 
-**RLS:** All tables have RLS enabled. Interpreters can read/write own rows; directory only shows `status='approved'` interpreters; rosters/bookings/messages scoped to owner.
+### Deaf/Requester Connection System
+- `dhh_requester_connections` — links Deaf users to coordinators who book on their behalf
+  - Columns: id, dhh_user_id (FK → deaf_profiles, nullable for off-platform), requester_id (FK → requester_profiles), status, initiated_by, requester_org_name, offplatform_name, offplatform_email, offplatform_phone, created_at, confirmed_at, revoked_at
+  - Status values: `active`, `pending`, `pending_offplatform`, `revoked`
+  - initiated_by values: `dhh` (auto-approves), `requester` (pending until Deaf user approves)
+  - Unique constraint on (dhh_user_id, requester_id) WHERE status IN ('active', 'pending')
+  - 6 RLS policies: dhh read/update own, requester read/insert, dhh insert, admin read all
+- `deaf_profiles.vanity_slug` — public landing page at /d/[slug], case-insensitive unique index
+- Preferences API at /api/connections/preferences uses SERVICE ROLE to read deaf_roster (RLS blocks requester access)
+- **DNB is sacred:** Do Not Book information must never leak specifics. No count, no names, no indication of whose list. Display only: "Not recommended for this request" with greyed-out styling.
+
+**RLS:** All tables have RLS enabled. Interpreters can read/write own rows; directory only shows `status='approved'` interpreters; rosters/bookings/messages scoped to owner. The `is_booking_dhh_client()` helper function allows Deaf users to see bookings where they're a participant.
 
 ---
 
@@ -215,7 +257,7 @@ Full schema in `supabase/migrations/001_initial_schema.sql`
 - **Admin accent orange: `#ff7e45`** (WCAG AA compliant on dark backgrounds).
 - **"CODA" in labels** should always appear as "Deaf-Parented Interpreter / CODA" so hearing users understand the term.
 - **Tab bar design** (all tabbed pages): dark grey header (#1a1a24), black active tabs, cyan underline, proper ARIA roles (tablist/tab/tabpanel).
-- **Accessibility commitment** is published on the About page → Accessibility tab. All ARIA, semantic HTML, and keyboard navigation patterns from Session 5 must be maintained.
+- **Accessibility commitment** is published on the About page → Accessibility tab. All ARIA, semantic HTML, and keyboard navigation patterns must be maintained.
 
 CSS variables defined in `app/globals.css` and mapped to Tailwind tokens via `@theme inline {}`:
 
@@ -224,7 +266,7 @@ CSS variables defined in `app/globals.css` and mapped to Tailwind tokens via `@t
 --surface: #0f1118
 --surface2: #161923
 --border: #1e2433
---accent: #00e5ff        /* cyan — primary CTA */
+--accent: #00e5ff        /* cyan — primary CTA, interpreter/requester branding */
 --accent2: #9d87ff       /* purple — D/HH branding */
 --accent3: #ff6b85       /* pink — error/alert */
 --text: #f0f2f8
@@ -241,6 +283,17 @@ CSS variables defined in `app/globals.css` and mapped to Tailwind tokens via `@t
 - `.available-badge` — green dot + "Available" label
 - `.wordmark` — signpost logo with styled `<span>`
 
+### Dashboard Layout Convention
+The Deaf dashboard uses `display: grid; grid-template-columns: 1.5fr 1fr` for two-column sections.
+- Left column (1.5fr): primary content (stats, recent requests)
+- Right column (1fr): secondary content (QR card, preferred interpreters)
+- New dashboard elements must use this same ratio to maintain column alignment.
+
+### Connection System UI Patterns
+- Interpreter Request Link card: QR code (cyan on #111118), monospace URL, Copy Link button with "Copied!" feedback
+- Tier labels on interpreter cards: "Top Choice" (cyan), "Approved" (muted), "Not recommended for this request" (greyed out, opacity 0.4, pointer-events: none)
+- Setting-specific indicators: "Preferred for personal settings" / "Preferred for work settings" (muted, italic, informational only, never blocking)
+
 ---
 
 ## Environment Variables
@@ -250,11 +303,8 @@ File: `.env.local` (not committed)
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://udyddevceuulwkqpxkxp.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon key>
-```
-
-For the seed script only (not in Next.js runtime):
-```
 SUPABASE_SERVICE_ROLE_KEY=<service role key>
+RESEND_API_KEY=<resend api key>
 ```
 
 ---
@@ -263,21 +313,28 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key>
 
 ```bash
 npm run dev        # Start dev server at localhost:3000
-npm run build      # Build (36 pages, zero errors expected)
+npm run build      # Build (zero errors expected)
 npm run lint       # ESLint check
-npm run seed       # Seed 10 demo interpreters into Supabase
+npm run seed       # Seed demo interpreters into Supabase
 ```
 
 **Seed script note:** `lib/data/seed-script.ts` uses `dotenv` and is excluded from `tsconfig.json`
 `exclude` array to avoid build-time errors. Run it directly with `ts-node` or via `npm run seed`.
 
+**Seed data rules:** Only use fake celebrity profiles as interpreters: Betty White, Keanu Reeves, Idris Elba, Oprah Winfrey. Never use real interpreter names in seed/test data. Primary test account: mollysano.nicm@gmail.com (has interpreter + deaf + admin roles).
+
 ---
 
 ## Key Data Files
 
-- `lib/data/seed.ts` — 10 hardcoded interpreters (`interpretersData` array) matching the original HTML mock data, plus `ALL_SIGN_LANGS`, `ALL_SPOKEN_LANGS`, `ALL_SPECS`, `ALL_CERTS`, `ALL_REGIONS` arrays
+- `lib/data/seed.ts` — hardcoded interpreters (`interpretersData` array) plus `ALL_SIGN_LANGS`, `ALL_SPOKEN_LANGS`, `ALL_SPECS`, `ALL_CERTS`, `ALL_REGIONS` arrays
 - `lib/types.ts` — TypeScript interfaces: `InterpreterProfile`, `RateProfile`, `Certification`, `Education`, etc.
-- `public/hero.jpg` — hero image extracted from original `index.html` (was base64-encoded at ~line 2317)
+- `lib/slugUtils.ts` — `generateSlug()` and `validateSlug()` for vanity URLs (interpreter + deaf profiles)
+- `lib/email.ts` — Resend email delivery utility
+- `lib/email-template.ts` — HTML email template wrapper
+- `lib/notifications-server.ts` — server-side notification service (uses admin client)
+- `lib/notifications.ts` — client-side notification helper
+- `lib/hooks/useFocusTrap.ts` — reusable hook for modal focus trapping
 
 ---
 
@@ -291,7 +348,31 @@ npm run seed       # Seed 10 demo interpreters into Supabase
 | `org` | `/request` | `/request/dashboard` |
 | admin (any role) | — | `/admin/dashboard` |
 
+Users can hold multiple roles simultaneously. The sidebar includes a "Change Hats" role switcher.
+
 **Admin access:** Controlled by `user_profiles.is_admin` boolean column. Admin routes at `/admin/*` check this column in the layout and redirect non-admins to `/`. Admin dashboard uses orange accent (`#ff7e45`).
+
+---
+
+## Safety Rules
+
+### Before writing any code
+1. **Verify column names before querying.** Run `SELECT column_name FROM information_schema.columns WHERE table_name = '[table_name]'` to confirm columns exist and names are exact. A wrong column name in a nested select causes a 400 error that silently breaks the entire query.
+2. **Check errors on every write AND every service role read.** Service role bypasses RLS, so bugs expose data silently.
+3. **Match existing layout ratios.** Before adding any new UI section to a page, read the adjacent sections' layout styles (grid-template-columns, flex ratios) and match exactly. Don't guess pixel values.
+
+### Component rules
+4. **Create wrapper components, not modifications.** When adding tier labels, badges, or visual overlays to existing components (like interpreter cards), create WRAPPER components. Never modify the base component — other pages depend on it.
+5. **Protect existing functionality.** Never remove or modify existing routes, variable names, or component props unless explicitly asked.
+
+### Supabase-specific
+6. **RLS is silent.** Supabase RLS failures don't surface as errors — they silently drop rows or block writes. Nested embeds in `.select()` perform inner joins; if the embedded table has restrictive RLS, the join silently drops parent rows. Fix: split into separate queries.
+7. **Text array columns** (e.g., `sign_languages text[]`) require `contains()` / `@>` operator, not `.eq()` or `.in()`.
+8. **Multi-statement queries** only return last result — run as separate `execute_sql` calls.
+9. **deaf_profiles dual-ID pattern:** deaf_profiles has both `id` and `user_id` columns. Currently they always match, but all queries should use `.or('id.eq.${userId},user_id.eq.${userId}')` for safety.
+
+### DNB protection
+10. **Do Not Book is sacred.** DNB information must never leak specifics — no count, no names, no indication of whose list an interpreter is on. The only permitted display is "Not recommended for this request" with greyed-out styling.
 
 ---
 
@@ -301,22 +382,20 @@ npm run seed       # Seed 10 demo interpreters into Supabase
 - **Tailwind v4**: No `tailwind.config.ts` exists. Do not create one — add new tokens to the `@theme inline {}` block in `globals.css`.
 - **Seed script excluded from build**: `lib/data/seed-script.ts` is in `tsconfig.json` `exclude` because it imports `dotenv` which isn't in Next.js deps.
 - **Route groups**: The `(public)`, `(auth)`, `(dashboard)` directories are Next.js route groups — they don't appear in the URL path.
-- **D/DB/HH terminology**: All user-facing text uses "Deaf/DB/HH" (Deaf, DeafBlind, Hard of Hearing) or "D/DB/HH". Standalone "Deaf" is fine as shorthand. Routes still use `/dhh`, and `user_profiles.role` still stores `'deaf'` as the role value.
-- **WCAG focus trap hook**: `lib/hooks/useFocusTrap.ts` — reusable hook for modal focus trapping. Import and call `useFocusTrap(isOpen)`, assign returned ref to the dialog container div.
+- **D/DB/HH terminology**: All user-facing text uses "Deaf/DB/HH" (Deaf, DeafBlind, Hard of Hearing). Standalone "Deaf" is fine as shorthand. Routes use `/dhh`, and `user_profiles.role` stores `'deaf'` as the role value.
+- **RLS on deaf_roster blocks requester reads:** The preferences API MUST use admin/service role to read deaf_roster entries for connected Deaf users. Connection verified first with authenticated client, then admin used for the roster read.
+- **Migration files vs applied migrations:** Some migrations were applied directly via Supabase MCP (e.g., dhh_requester_connections). Migration files in supabase/migrations/ may duplicate already-applied changes. Since Supabase CLI is not linked locally, these files are documentation only.
+- **Static files:** Static HTML pages (feature sheets, one-pagers) go in `public/features/`. Served by Vercel at `signpost.community/features/[filename].html`.
+- **Claude Code prompt batching:** Claude Code can run multiple sequential prompts in a single session if the full spec is provided upfront. This is faster and more context-aware than separate sessions with git pull between each.
+- **Vercel env vars are silent when missing.** Missing or misassigned env vars fail silently. All env vars must be on `signpost-pdir` project and set to All Environments.
 
 ---
 
-## Additional Safety Rules
+## Prototype Comparison Protocol
 
-- **Verify column names before querying:** Before adding any new column reference to a Supabase `.select()`, `.insert()`, `.update()`, or `.upsert()`, run `SELECT column_name FROM information_schema.columns WHERE table_name = '[table_name]'` to confirm the column exists and the name is exact. Never assume column names from memory or context — always verify. A wrong column name in a nested select causes a 400 error that silently breaks the entire query.
+### Working Rules
 
----
-
-## ⚠️ PROTOTYPE COMPARISON PROTOCOL
-
-### NON-NEGOTIABLE WORKING RULES
-
-1. **No piecemeal fixes.** Read the ENTIRE component, identify ALL problems at once, fix everything in one pass. One commit. Not fix → deploy → find next issue → fix → deploy again.
+1. **No piecemeal fixes.** Read the ENTIRE component, identify ALL problems at once, fix everything in one pass. One commit.
 
 2. **Prototype-first.** Before touching any UI, grep /home/mollysano/signpost/index.html for the relevant section. If the Next.js version doesn't match exactly, full rewrite — not a patch.
 
@@ -331,117 +410,37 @@ npm run seed       # Seed 10 demo interpreters into Supabase
 
 5. **Diagnose completely before fixing.** Identify root cause first. Do not try the first thing that comes to mind.
 
-### ⚠️ CRITICAL RULES — READ BEFORE ANY UI WORK
-
-1. **Prototype-first:** Before touching any component or page, read the corresponding section of the original HTML prototype at /home/mollysano/signpost/index.html. If the Next.js implementation does not match the prototype exactly, do a full rewrite based on the prototype. Do not patch.
-
-2. **Intentional additions are sacred:** Some features were deliberately added to the Next.js app that do NOT exist in the prototype. These must never be removed when aligning to the prototype. Current intentional additions include:
-   - Log in button in the logged-out nav (between D/DB/HH Portal and Request Interpreters)
-   - Beta feedback panel on all pages
-   - force-dynamic exports on server pages
-   - onAuthStateChange session management in Nav
-   - initialSession prop passed from layouts to Nav
-
-   When in doubt, ask before removing anything. The prototype is the visual contract — not the feature contract.
+When in doubt, ask before removing anything. The prototype is the visual contract — not the feature contract.
 
 ---
 
-## Session Handoff
+## Current State
 
-### Session 8 — March 11, 2026
+### Active priorities
+Check Monday.com board 18402265380 for current tasks and priorities.
+Filter by status "Working on it" or priority "Critical" for what to work on next.
+Workspace ID: 14529137.
 
-**Completed:**
-- ✅ Resend email integration (`lib/email.ts`): lazily-initialized Resend client, sends branded HTML emails when RESEND_API_KEY is set
-- ✅ Email template (`lib/email-template.ts`): dark-themed HTML email template with signpost wordmark, CTA button, footer with notification preferences link
-- ✅ Server-side notification service (`lib/notifications-server.ts`): inserts notification rows, checks user prefs from interpreter_profiles, sends email via Resend using admin client
-- ✅ Updated client-side notifications (`lib/notifications.ts`): simplified to insert in-app row + fire API route for email delivery
-- ✅ Updated API route (`app/api/notifications/send/route.ts`): now uses createNotification server-side service instead of stub
-- ✅ Notification preferences API (`app/api/notifications/preferences/route.ts`): returns user's notification prefs, defaults to email ON for deaf/requester users
-- ✅ Wired notification triggers: booking confirmed (both parties), booking cancelled (requester), rate response (requester), added to preferred list (interpreter), invoice paid (interpreter)
-- ✅ Added requester_id to Booking interfaces in inquiries + confirmed pages for cross-party notifications
-- ✅ Notification bell badge already counts unread notifications from notifications table
+### Recently added files
+Update this list when adding major new features. Remove entries once they're established.
 
-**Key files:**
-- `lib/email.ts` — Resend email delivery utility
-- `lib/email-template.ts` — HTML email template wrapper
-- `lib/notifications-server.ts` — server-side notification service (uses admin client)
-- `lib/notifications.ts` — client-side notification helper
-- `app/api/notifications/send/route.ts` — email delivery API route
-- `app/api/notifications/preferences/route.ts` — user notification preferences API
+| File / Directory | Purpose |
+|---|---|
+| app/d/[slug]/ | Public Deaf user landing page (Connection System) |
+| app/api/connections/create/ | POST: create dhh_requester_connection |
+| app/api/connections/preferences/ | GET: fetch connected Deaf user's roster (service role) |
+| app/api/request/booking/ | POST: requester booking creation, auto-adds DHH participant |
+| components/dashboard/dhh/InterpreterRequestLinkCard.tsx | Dashboard QR card |
+| components/dashboard/requester/RecommendedInterpreters.tsx | Tiered interpreter display for bookings |
+| public/features/deaf.html | Deaf portal feature sheet (static) |
 
-**Environment variables needed:**
-- `RESEND_API_KEY` — Resend API key for email delivery (optional; emails silently skip if not set)
-- `SUPABASE_SERVICE_ROLE_KEY` — required for server-side notification service
+### Known incomplete work
+- Connection System Phase 2: requester-initiated flow, off-platform invites, decline messaging
+- Connection System Phase 3: multi-participant matching algorithm
+- Beta questions system: welcome modal, per-page panel, final survey (content in Monday doc object_id 18404390225)
+- Dashboard QR card: height needs to match stat grid, text needs update
+- D/HH signup audit: test script exists, not yet run
+- Requester portal: signup flow, booking form, inbox (all not started)
 
-**In progress / pick up here next session:**
-- Requester booking creation flow (will enable `new_request` notification to interpreters)
-- Message creation flow (will enable `new_message` notification)
-- Interpreter signup Steps 2–6 audit vs prototype
-- Requester signup flow audit
-- Remaining deaf dashboard tabs
-
-### Session 7 — March 10, 2026
-
-**Completed:**
-- ✅ LocationPicker component (`components/shared/LocationPicker.tsx`): reusable Country→State→City picker using `country-state-city` npm package. Searchable country dropdown, dynamic state/province dropdown, free-text city. Adapts subdivision label per country (State/Province/Prefecture/Region).
-- ✅ Interpreter signup Step 1: replaced free-text country/state/city with LocationPicker
-- ✅ Interpreter profile editor (Personal tab): replaced free-text location fields with LocationPicker
-- ✅ Deaf signup (`SignupClient.tsx`): replaced free-text country with LocationPicker (country + state + city), wired to deaf_profiles insert
-- ✅ `Interpreter` type: added `country` field for distance filtering
-- ✅ Directory page + profile detail page: now maps `country` field to Interpreter type
-- ✅ Seed data: added `country` to all 10 seed interpreters
-- ✅ Distance filter on directory: crude state/country matching (100mi/250mi = same state, country = same country, international = no filter). Disabled with hint when search is empty.
-- ✅ DB migration `007_normalize_location_data.sql`: normalizes all US state abbreviations → full names in interpreter_profiles
-- ✅ CLAUDE.md updated with LocationPicker component path
-
-**In progress / pick up here next session:**
-- Interpreter signup Steps 2–6 audit vs prototype
-- Requester signup flow audit
-- Platform Policies doc expansions: HIPAA-adjacent medical booking language, interpreter sub-finding responsibility, data privacy and retention policy
-- Remaining deaf dashboard tabs: Personal Interpreter Request, Preferences & Profile, My Requesters, Share My List
-- True geocoding with lat/lng for distance filter (requires external API)
-
-### Session 6 — March 10, 2026
-
-**Completed:**
-- ✅ DB migration `006_deaf_profiles_columns_and_rls.sql`: Added pronouns, bio, photo_url, email, user_id, first_name, last_name, location, state, country_name, created_at, updated_at to deaf_profiles
-- ✅ Updated deaf_roster tiers from top/preferred/backup → preferred/approved/dnb to match prototype
-- ✅ RLS policies updated for deaf_profiles (id OR user_id matching) + deaf_roster (scoped via deaf_profiles lookup)
-- ✅ Deaf portal landing page: full rewrite matching prototype — purple pill badge, hero with gradient, two-card grid (signup/login), inline form area
-- ✅ Deaf signup flow: inline form with first_name + last_name + email + password → signUp + user_profiles + deaf_profiles insert
-- ✅ Deaf login flow: inline form with email + password → signInWithPassword → redirect to dashboard
-- ✅ Auth callback updated to write first_name, last_name, email, user_id to deaf_profiles for OAuth users
-- ✅ DhhDashboardSidebar rewritten: purple accent (#9d87ff), user info header with gradient avatar + "Deaf Individual" label, full prototype nav (My Preferred Interpreters, Personal Interpreter Request, Preferences & Profile, My Requesters, Share My List, Back to signpost), badge counts from deaf_roster
-- ✅ Dashboard layout updated to fetch first_name/last_name from deaf_profiles
-- ✅ My Preferred Interpreters tab: full rewrite with 3-tier sections (preferred/approved/dnb), interpreter cards with tier badges, approval toggles (work/personal), tier move controls, note editing, remove — all wired to Supabase deaf_roster
-
-**In progress / pick up here next session:**
-- Interpreter signup Steps 2–6 audit vs prototype
-- Requester signup flow audit
-- Platform Policies doc expansions: HIPAA-adjacent medical booking language, interpreter sub-finding responsibility, data privacy and retention policy
-- Remaining deaf dashboard tabs: Personal Interpreter Request, Preferences & Profile, My Requesters, Share My List
-
-### Session 5 — March 10, 2026
-
-**Completed:**
-- ✅ Global "Deaf/HH" → "Deaf/DB/HH" across all user-facing text (8 files: Nav, portal pages, login, signup, sidebar, beta panel, confirmed page). Routes/variables/DB unchanged.
-- ✅ D/HH + Requester coming-soon overlay copy updated (no longer centers interpreters over Deaf visitors)
-- ✅ Privacy policy rates language verified correct (already says "shared privately when an interpreter responds to a booking inquiry")
-- ✅ Stat card top-alignment fix (flexDirection: column on Link wrapper)
-- ✅ WCAG 2.2 Level AA remediation (29 files, 1 new): skip nav, aria-live, keyboard a11y for non-buttons, form label associations, aria-expanded on collapsibles, aria-hidden on decoratives, semantic landmarks (<aside> on sidebars), form validation ARIA, modal focus trapping (new useFocusTrap hook at lib/hooks/useFocusTrap.ts), focus-not-obscured CSS, min target size CSS, heading hierarchy fix, focus-visible indicator
-- ✅ Monday board updated: 3 tasks marked Done
-
-**In progress / pick up here next session:**
-- Interpreter signup Steps 2–6 audit vs prototype
-- Deaf/HoH signup flow audit
-- Requester signup flow audit
-- Platform Policies doc expansions: HIPAA-adjacent medical booking language, interpreter sub-finding responsibility, data privacy and retention policy
-
-### Session 4 — March 3, 2026
-
-**Completed:**
-- ✅ Claude Code installed and configured on Chromebook Linux environment
-- ✅ GitHub auth configured with personal access token on remote URL
-- ✅ `app/(auth)/interpreter/page.tsx` — full redesign matching prototype
-- ✅ `app/(auth)/interpreter/signup/page.tsx` — restored correct 6-step form, rewrote Step 1 to match prototype
-- ✅ `app/(auth)/layout.tsx` — replaced minimal wordmark header with full Nav component and Footer
+### Environment variables
+No recent additions. All required vars documented in Environment Variables section above.

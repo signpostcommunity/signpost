@@ -1,5 +1,7 @@
 import DhhDashboardSidebar from '@/components/layout/DhhDashboardSidebar'
 import AslTourButton from '@/components/ui/AslTourButton'
+import DhhBetaWelcomeModal from '@/components/beta/DhhBetaWelcomeModal'
+import DhhBetaPanel from '@/components/beta/DhhBetaPanel'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function DhhDashboardLayout({ children }: { children: React.ReactNode }) {
@@ -32,6 +34,8 @@ export default async function DhhDashboardLayout({ children }: { children: React
         {children}
       </main>
       <AslTourButton />
+      {user && <DhhBetaWelcomeModal userId={user.id} />}
+      {user && <DhhBetaPanel userId={user.id} />}
       <style>{`
         @media (max-width: 768px) {
           .dash-layout { flex-direction: column !important; }
