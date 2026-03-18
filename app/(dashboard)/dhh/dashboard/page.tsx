@@ -807,13 +807,9 @@ export default function DeafDashboardOverview() {
         <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>Here&apos;s a snapshot of your activity on signpost.</p>
       </div>
 
-      {/* Interpreter Request Link */}
-      <div style={{ marginBottom: 24 }}>
-        <InterpreterRequestLinkCard />
-      </div>
-
       {/* Stat cards */}
       <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16, marginBottom: 32, alignItems: 'stretch' }}>
+        <InterpreterRequestLinkCard />
         <StatCard num={activeRequests} label="Active Requests" href="/dhh/dashboard/requests" />
         <StatCard num={prefCount} label="Preferred Interpreters" href="/dhh/dashboard/interpreters" />
         <StatCard num={secCount} label="Secondary Tier" href="/dhh/dashboard/interpreters" />
