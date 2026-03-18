@@ -67,8 +67,7 @@ export default function InterpreterRequestLinkCard() {
   }
 
   const outerStyle: React.CSSProperties = {
-    width: 280,
-    flexShrink: 0,
+    width: '100%',
     background: 'var(--card-bg)',
     border: '1px solid rgba(0,229,255,0.2)',
     borderRadius: 'var(--radius)',
