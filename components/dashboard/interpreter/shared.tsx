@@ -4,8 +4,11 @@ import { useState } from 'react'
 
 // ── Beta Sample Banner ────────────────────────────────────────────────────────
 
+const BETA_UI_ENABLED = false
+
 export function BetaBanner() {
   const [dismissed, setDismissed] = useState(false)
+  if (!BETA_UI_ENABLED) return null /* Beta UI hidden — re-enable when Deaf/DB/HH beta launches */
   if (dismissed) return null
   return (
     <div style={{

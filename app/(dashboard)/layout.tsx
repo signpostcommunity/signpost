@@ -4,6 +4,8 @@ import DashboardHeaderNav from '@/components/layout/DashboardHeaderNav';
 import Footer from '@/components/layout/Footer';
 import { createClient } from '@/lib/supabase/server';
 
+const BETA_UI_ENABLED = false;
+
 export default async function DashboardRootLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -49,7 +51,8 @@ export default async function DashboardRootLayout({ children }: { children: Reac
         <main id="main-content">{children}</main>
         <Footer />
       </div>
-      {process.env.NEXT_PUBLIC_BETA_MODE === 'true' && <BetaFeedbackPanel />}
+      {/* Beta UI hidden — re-enable when Deaf/DB/HH beta launches */}
+      {BETA_UI_ENABLED && process.env.NEXT_PUBLIC_BETA_MODE === 'true' && <BetaFeedbackPanel />}
     </>
   );
 }
