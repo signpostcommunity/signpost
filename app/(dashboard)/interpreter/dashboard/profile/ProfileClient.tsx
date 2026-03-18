@@ -13,6 +13,7 @@ import { SPECIALIZATION_CATEGORIES, SPECIALIZED_SKILLS } from '@/lib/constants/s
 import { getVideoEmbedUrl, isValidVideoUrl } from '@/lib/videoUtils'
 import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
 import LocationPicker from '@/components/shared/LocationPicker'
+import { useDialCode } from '@/components/shared/PhoneWithDialCode'
 import { generateSlug, validateSlug } from '@/lib/slugUtils'
 
 // ── Shared styles ────────────────────────────────────────────────────────────
@@ -308,6 +309,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const [city, setCity] = useState(fallback(p.city, 'city', ''))
   const [stateProvince, setStateProvince] = useState(fallback(p.state, 'state', ''))
   const [country, setCountry] = useState(fallback(p.country, 'country', ''))
+  const dialCode = useDialCode(country)
   const [phone, setPhone] = useState(fallback(p.phone, 'phone', ''))
   const [yearsExperience, setYearsExperience] = useState(fallback(p.years_experience, 'yearsExperience', ''))
   const [interpreterType, setInterpreterType] = useState(fallback(p.interpreter_type, 'interpreterType', ''))
@@ -1165,7 +1167,15 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, marginBottom: 16 }}>
             <div>
               <label style={labelStyle}>Phone / WhatsApp</label>
-              <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="+1 555 000 0000" style={inputStyle} onFocus={handleFocus} onBlur={handleBlur} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+                <span style={{
+                  background: 'var(--surface2)', border: '1px solid var(--border)',
+                  borderRight: 'none', borderRadius: 'var(--radius-sm) 0 0 var(--radius-sm)',
+                  padding: '10px 10px', color: 'var(--muted)', fontSize: '0.9rem',
+                  whiteSpace: 'nowrap', lineHeight: 1.4,
+                }}>{dialCode}</span>
+                <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="555 000 0000" style={{ ...inputStyle, borderRadius: '0 var(--radius-sm) var(--radius-sm) 0' }} onFocus={handleFocus} onBlur={handleBlur} />
+              </div>
             </div>
             <div>
               <label style={labelStyle}>Years of Experience</label>

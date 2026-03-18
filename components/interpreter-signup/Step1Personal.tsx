@@ -9,6 +9,7 @@ import {
 } from './FormFields'
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton'
 import LocationPicker from '@/components/shared/LocationPicker'
+import { useDialCode } from '@/components/shared/PhoneWithDialCode'
 import { createClient } from '@/lib/supabase/client'
 import { generateSlug, validateSlug } from '@/lib/slugUtils'
 
@@ -27,6 +28,7 @@ const REGIONS = [
 export default function Step1Personal({ onContinue }: { onContinue: () => void }) {
   const { formData, updateField, saveDraft } = useForm()
   const supabase = createClient()
+  const dialCode = useDialCode(formData.country)
 
   // Photo upload state
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -390,12 +392,21 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
         <FormRow>
           <FormField>
             <FieldLabel>Phone / VP</FieldLabel>
-            <TextInput
-              type="tel"
-              placeholder="+1 555 000 0000"
-              value={formData.phone}
-              onChange={e => updateField('phone', e.target.value)}
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+              <span style={{
+                background: 'var(--surface2)', border: '1px solid var(--border)',
+                borderRight: 'none', borderRadius: 'var(--radius-sm) 0 0 var(--radius-sm)',
+                padding: '10px 10px', color: 'var(--muted)', fontSize: '0.9rem',
+                whiteSpace: 'nowrap', lineHeight: 1.4,
+              }}>{dialCode}</span>
+              <TextInput
+                type="tel"
+                placeholder="555 000 0000"
+                value={formData.phone}
+                onChange={e => updateField('phone', e.target.value)}
+                style={{ borderRadius: '0 var(--radius-sm) var(--radius-sm) 0' }}
+              />
+            </div>
           </FormField>
           <FormField>
             <FieldLabel>Years of Experience *</FieldLabel>

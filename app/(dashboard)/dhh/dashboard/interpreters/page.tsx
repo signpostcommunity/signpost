@@ -196,18 +196,20 @@ export default function DeafDashboardPage() {
     const { rosterId, newTier } = confirmModal;
     setConfirmModal(null);
 
-    // If moving to DNB, also disable approvals
+    const supabase = createClient();
+
+    // If moving to DNB, also disable approvals and set do_not_book flag
     if (newTier === 'dnb') {
       setRoster(prev => prev.map(r => r.roster_id === rosterId ? { ...r, tier: newTier, approve_work: false, approve_personal: false } : r));
-      const supabase = createClient();
-      await supabase.from('deaf_roster').update({ tier: newTier, approve_work: false, approve_personal: false }).eq('id', rosterId);
+      const { error } = await supabase.from('deaf_roster').update({ tier: newTier, approve_work: false, approve_personal: false, do_not_book: true }).eq('id', rosterId);
+      if (error) console.error('DNB update error:', error);
     } else {
-      // Moving FROM DNB: reset approvals to false, make toggles interactive
+      // Moving FROM DNB: reset approvals, clear do_not_book flag
       const item = roster.find(r => r.roster_id === rosterId);
       if (item?.tier === 'dnb') {
         setRoster(prev => prev.map(r => r.roster_id === rosterId ? { ...r, tier: newTier, approve_work: false, approve_personal: false } : r));
-        const supabase = createClient();
-        await supabase.from('deaf_roster').update({ tier: newTier, approve_work: false, approve_personal: false }).eq('id', rosterId);
+        const { error } = await supabase.from('deaf_roster').update({ tier: newTier, approve_work: false, approve_personal: false, do_not_book: false }).eq('id', rosterId);
+        if (error) console.error('Tier change error:', error);
       } else {
         setRoster(prev => prev.map(r => r.roster_id === rosterId ? { ...r, tier: newTier } : r));
         await updateRosterField(rosterId, 'tier', newTier);
@@ -217,11 +219,23 @@ export default function DeafDashboardPage() {
   }
 
   async function removeInterp(rosterId: string) {
-    const name = roster.find(r => r.roster_id === rosterId)?.name;
-    setRoster(prev => prev.filter(r => r.roster_id !== rosterId));
+    const item = roster.find(r => r.roster_id === rosterId);
+    if (!item) return;
     const supabase = createClient();
-    await supabase.from('deaf_roster').delete().eq('id', rosterId);
-    showToast(`Removed ${name} from roster`);
+
+    if (item.tier === 'dnb') {
+      // Moving off DNB: restore to secondary tier, clear do_not_book flag
+      setRoster(prev => prev.map(r => r.roster_id === rosterId ? { ...r, tier: 'approved' as Tier, approve_work: false, approve_personal: false } : r));
+      const { error } = await supabase.from('deaf_roster').update({ tier: 'approved', do_not_book: false, approve_work: false, approve_personal: false }).eq('id', rosterId);
+      if (error) console.error('Remove from DNB error:', error);
+      showToast(`Moved ${item.name} to Secondary Tier`);
+    } else {
+      // Non-DNB: delete the roster row entirely
+      setRoster(prev => prev.filter(r => r.roster_id !== rosterId));
+      const { error } = await supabase.from('deaf_roster').delete().eq('id', rosterId);
+      if (error) console.error('Remove roster error:', error);
+      showToast(`Removed ${item.name} from roster`);
+    }
   }
 
   function startEditNote(rosterId: string) {

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { useDialCode } from '@/components/shared/PhoneWithDialCode';
 
 const TOTAL_STEPS = 5;
 
@@ -41,6 +42,7 @@ export default function RequestSignupClient() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [pendingRoles, setPendingRoles] = useState<PendingRole[]>([]);
+  const dialCode = useDialCode(form.country);
 
   function togglePendingRole(role: PendingRole) {
     setPendingRoles(prev => prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role]);
@@ -158,7 +160,20 @@ export default function RequestSignupClient() {
           <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '6px' }}>About your request</h2>
           <p style={{ color: 'var(--muted)', marginBottom: '28px', fontSize: '0.9rem' }}>Tell us a bit about your interpreting needs.</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <InputField label="Phone (optional)" value={form.phone} onChange={(v) => update('phone', v)} placeholder="+1 555 000 0000" />
+            <div>
+              <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 500, color: 'var(--muted)', marginBottom: '6px' }}>Phone (optional)</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+                <span style={{
+                  background: 'var(--surface2)', border: '1px solid var(--border)',
+                  borderRight: 'none', borderRadius: '8px 0 0 8px',
+                  padding: '12px 10px', color: 'var(--muted)', fontSize: '0.95rem',
+                  whiteSpace: 'nowrap', lineHeight: 1,
+                }}>{dialCode}</span>
+                <input type="tel" value={form.phone} onChange={(e) => update('phone', e.target.value)} placeholder="555 000 0000"
+                  style={{ width: '100%', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '0 8px 8px 0', padding: '12px 14px', color: 'var(--text)', fontSize: '0.95rem', outline: 'none' }}
+                  onFocus={(e) => (e.target.style.borderColor = 'rgba(0,229,255,0.5)')} onBlur={(e) => (e.target.style.borderColor = 'var(--border)')} />
+              </div>
+            </div>
             <InputField label="Country" value={form.country} onChange={(v) => update('country', v)} placeholder="United States" />
             {form.role !== 'individual' && (
               <>
