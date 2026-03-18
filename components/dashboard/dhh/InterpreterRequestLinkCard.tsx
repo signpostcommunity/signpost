@@ -68,12 +68,13 @@ export default function InterpreterRequestLinkCard() {
 
   const outerStyle: React.CSSProperties = {
     width: '100%',
+    height: '100%',
     background: 'var(--card-bg)',
     border: '1px solid rgba(0,229,255,0.2)',
     borderRadius: 'var(--radius)',
     padding: 20,
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'stretch',
     gap: 16,
   }
 
@@ -116,12 +117,12 @@ export default function InterpreterRequestLinkCard() {
           marginBottom: 0,
           lineHeight: 1.3,
         }}>
-          Show to book for you
+          Share with anyone who books interpreters for you
         </p>
       </div>
 
       {/* Right: text + actions */}
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
         <div style={{
           fontSize: '0.82rem',
           fontWeight: 600,
