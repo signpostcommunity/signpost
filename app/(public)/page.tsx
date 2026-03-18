@@ -109,7 +109,7 @@ export default function HomePage() {
                   textDecoration: 'none',
                 }}
               >
-                Deaf or Hard of Hearing?<br />Build your preferred interpreter list →
+                Deaf, DeafBlind, or Hard of Hearing?<br />Create your free account →
               </Link>
 
               <Link
@@ -125,7 +125,7 @@ export default function HomePage() {
                   textDecoration: 'none',
                 }}
               >
-                For Interpreters<br />Create your free profile →
+                For Interpreters<br />Create your free account →
               </Link>
             </div>
           </div>
