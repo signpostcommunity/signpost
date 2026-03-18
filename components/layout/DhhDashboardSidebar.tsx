@@ -138,7 +138,17 @@ function SidebarContent({ userName, userInitials, badges }: {
     <>
       {/* Header */}
       <div style={{ padding: '24px 20px 16px', borderBottom: '1px solid var(--border)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <Link
+          href="/dhh/dashboard/preferences"
+          style={{
+            display: 'flex', alignItems: 'center', gap: 12,
+            textDecoration: 'none', color: 'inherit', cursor: 'pointer',
+            borderRadius: 8, padding: 4, margin: -4,
+            transition: 'opacity 0.15s',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.opacity = '0.75')}
+          onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+        >
           <div style={{
             width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
             background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
@@ -151,7 +161,7 @@ function SidebarContent({ userName, userInitials, badges }: {
             <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.92rem' }}>{userName}</div>
             <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 2 }}>Deaf Individual</div>
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Role switcher */}
