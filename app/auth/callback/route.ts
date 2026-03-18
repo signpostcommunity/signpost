@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { generateSlug } from '@/lib/slugUtils';
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -68,14 +69,37 @@ export async function GET(request: NextRequest) {
       .from('deaf_profiles').select('id').eq('id', user.id).maybeSingle();
     if (!existing) {
       const nameParts = displayName.split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
       await supabase.from('deaf_profiles').insert({
         id: user.id,
         user_id: user.id,
         name: displayName,
-        first_name: nameParts[0] || '',
-        last_name: nameParts.slice(1).join(' ') || '',
+        first_name: firstName,
+        last_name: lastName,
         email: user.email || '',
       });
+
+      // Auto-generate vanity slug
+      const baseSlug = generateSlug(firstName, lastName).slice(0, 50);
+      if (baseSlug && baseSlug.length >= 3) {
+        let slug = baseSlug;
+        let attempt = 1;
+        while (attempt <= 20) {
+          const { data: slugExists } = await supabase
+            .from('deaf_profiles')
+            .select('vanity_slug')
+            .ilike('vanity_slug', slug)
+            .maybeSingle();
+          if (!slugExists) break;
+          attempt++;
+          slug = `${baseSlug}-${attempt}`;
+        }
+        await supabase
+          .from('deaf_profiles')
+          .update({ vanity_slug: slug })
+          .eq('id', user.id);
+      }
     }
     return NextResponse.redirect(`${origin}/dhh/dashboard`);
   }

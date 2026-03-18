@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton';
 import LocationPicker from '@/components/shared/LocationPicker';
+import { generateSlug } from '@/lib/slugUtils';
 
 export default function DeafSignupPage() {
   const router = useRouter();
@@ -41,18 +42,41 @@ export default function DeafSignupPage() {
     }
 
     const userId = authData.user.id;
+    const firstName = name.split(' ')[0] || '';
+    const lastNameVal = name.split(' ').slice(1).join(' ') || '';
     await supabase.from('user_profiles').insert({ id: userId, role: 'deaf', pending_roles: pendingRoles.length > 0 ? pendingRoles : [] });
     await supabase.from('deaf_profiles').insert({
       id: userId,
       user_id: userId,
       name,
-      first_name: name.split(' ')[0] || '',
-      last_name: name.split(' ').slice(1).join(' ') || '',
+      first_name: firstName,
+      last_name: lastNameVal,
       email,
       country_name: country,
       state,
       city,
     });
+
+    // Auto-generate vanity slug
+    const baseSlug = generateSlug(firstName, lastNameVal).slice(0, 50);
+    if (baseSlug && baseSlug.length >= 3) {
+      let slug = baseSlug;
+      let attempt = 1;
+      while (attempt <= 20) {
+        const { data: existing } = await supabase
+          .from('deaf_profiles')
+          .select('vanity_slug')
+          .ilike('vanity_slug', slug)
+          .maybeSingle();
+        if (!existing) break;
+        attempt++;
+        slug = `${baseSlug}-${attempt}`;
+      }
+      await supabase
+        .from('deaf_profiles')
+        .update({ vanity_slug: slug })
+        .eq('id', userId);
+    }
 
     router.push('/dhh/dashboard');
   }

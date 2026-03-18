@@ -8,6 +8,8 @@ import LocationPicker from '@/components/shared/LocationPicker'
 import { PageHeader, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
+import { generateSlug, validateSlug } from '@/lib/slugUtils'
+import { QRCodeSVG } from 'qrcode.react'
 
 const SIGNING_STYLES = [
   'ASL',
@@ -68,6 +70,14 @@ export default function DhhPreferencesPage() {
   const [shareTextBefore, setShareTextBefore] = useState(true)
   const [shareVideoBefore, setShareVideoBefore] = useState(true)
 
+  // Vanity slug
+  const [vanitySlug, setVanitySlug] = useState('')
+  const [editSlug, setEditSlug] = useState('')
+  const [slugEditing, setSlugEditing] = useState(false)
+  const [slugSaving, setSlugSaving] = useState(false)
+  const [slugError, setSlugError] = useState('')
+  const [slugCopied, setSlugCopied] = useState(false)
+
   // Comm prefs
   const [signingStyles, setSigningStyles] = useState<string[]>([])
   const [voicePref, setVoicePref] = useState('')
@@ -102,6 +112,35 @@ export default function DhhPreferencesPage() {
         setProfileVideoUrl(profile.profile_video_url || '')
         setShareTextBefore(profile.share_intro_text_before_confirm !== false)
         setShareVideoBefore(profile.share_intro_video_before_confirm !== false)
+        if (profile.vanity_slug) {
+          setVanitySlug(profile.vanity_slug)
+          setEditSlug(profile.vanity_slug)
+        } else if (profile.first_name || profile.last_name) {
+          // Auto-generate slug for existing users who don't have one
+          const baseSlug = generateSlug(profile.first_name || '', profile.last_name || '').slice(0, 50)
+          if (baseSlug && baseSlug.length >= 3) {
+            let slug = baseSlug
+            let attempt = 1
+            while (attempt <= 20) {
+              const { data: existing } = await supabase
+                .from('deaf_profiles')
+                .select('vanity_slug')
+                .ilike('vanity_slug', slug)
+                .maybeSingle()
+              if (!existing) break
+              attempt++
+              slug = `${baseSlug}-${attempt}`
+            }
+            const { error: slugErr } = await supabase
+              .from('deaf_profiles')
+              .update({ vanity_slug: slug })
+              .or(`user_id.eq.${user.id},id.eq.${user.id}`)
+            if (!slugErr) {
+              setVanitySlug(slug)
+              setEditSlug(slug)
+            }
+          }
+        }
 
         const cp = profile.comm_prefs as Record<string, unknown> | null
         if (cp) {
@@ -214,6 +253,62 @@ export default function DhhPreferencesPage() {
     )
   }
 
+  async function handleSlugSave() {
+    const slug = editSlug.toLowerCase().trim()
+    const validation = validateSlug(slug)
+    if (!validation.valid) {
+      setSlugError(validation.error || 'Invalid URL')
+      return
+    }
+    if (slug.length < 3 || slug.length > 50) {
+      setSlugError('Must be between 3 and 50 characters')
+      return
+    }
+
+    setSlugSaving(true)
+    setSlugError('')
+
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setSlugSaving(false); return }
+
+    // Check uniqueness
+    const { data: existing } = await supabase
+      .from('deaf_profiles')
+      .select('vanity_slug, id')
+      .ilike('vanity_slug', slug)
+      .maybeSingle()
+
+    if (existing && existing.id !== user.id) {
+      setSlugError('This URL is already in use. Try another.')
+      setSlugSaving(false)
+      return
+    }
+
+    const { error } = await supabase
+      .from('deaf_profiles')
+      .update({ vanity_slug: slug })
+      .or(`user_id.eq.${user.id},id.eq.${user.id}`)
+
+    if (error) {
+      console.error('[dhh-preferences] slug save failed:', error.message)
+      setSlugError('Failed to save. Please try again.')
+    } else {
+      setVanitySlug(slug)
+      setSlugEditing(false)
+      showToast('Request link updated')
+    }
+    setSlugSaving(false)
+  }
+
+  function handleCopyLink() {
+    const url = `https://signpost.community/d/${vanitySlug}`
+    navigator.clipboard.writeText(url).then(() => {
+      setSlugCopied(true)
+      setTimeout(() => setSlugCopied(false), 2000)
+    })
+  }
+
   if (loading) {
     return (
       <div className="dash-page-content" style={{ padding: '48px 56px' }}>
@@ -227,6 +322,190 @@ export default function DhhPreferencesPage() {
       <PageHeader title="Preferences & Profile" subtitle="Manage your profile and communication preferences." />
 
       <div style={{ maxWidth: 640 }}>
+        {/* ── My Interpreter Request Link ── */}
+        {vanitySlug && (
+          <div style={{
+            marginBottom: 40,
+            background: 'rgba(0,229,255,0.03)',
+            border: '1px solid rgba(0,229,255,0.15)',
+            borderRadius: 'var(--radius)',
+            padding: '28px 28px 24px',
+          }}>
+            <h3 style={{
+              ...sectionHeadingStyle,
+              color: 'var(--accent)',
+              borderBottomColor: 'rgba(0,229,255,0.15)',
+            }}>
+              My Interpreter Request Link
+            </h3>
+
+            <p style={{ fontSize: '0.84rem', color: 'var(--muted)', lineHeight: 1.7, marginTop: 0, marginBottom: 20 }}>
+              Share this link with anyone who books interpreters for you. They can use it to connect with your preferences and book interpreters based on your roster.
+            </p>
+
+            {/* URL display + Copy */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
+              <code style={{
+                flex: 1, minWidth: 200,
+                padding: '10px 14px',
+                background: 'var(--surface2)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-sm)',
+                fontSize: '0.88rem',
+                color: 'var(--accent)',
+                fontFamily: 'monospace',
+                userSelect: 'all',
+                wordBreak: 'break-all',
+              }}>
+                signpost.community/d/{vanitySlug}
+              </code>
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                style={{
+                  padding: '10px 20px',
+                  background: slugCopied ? 'rgba(52,211,153,0.15)' : 'rgba(0,229,255,0.1)',
+                  border: `1px solid ${slugCopied ? 'rgba(52,211,153,0.3)' : 'rgba(0,229,255,0.3)'}`,
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: '0.82rem', fontWeight: 600,
+                  color: slugCopied ? '#34d399' : 'var(--accent)',
+                  cursor: 'pointer',
+                  fontFamily: "'DM Sans', sans-serif",
+                  transition: 'all 0.15s',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {slugCopied ? 'Copied!' : 'Copy Link'}
+              </button>
+            </div>
+
+            {/* QR Code */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 20 }}>
+              <div style={{
+                padding: 16,
+                background: '#111118',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--border)',
+              }}>
+                <QRCodeSVG
+                  value={`https://signpost.community/d/${vanitySlug}`}
+                  size={200}
+                  bgColor="#111118"
+                  fgColor="#00e5ff"
+                  level="M"
+                />
+              </div>
+              <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: 12, textAlign: 'center' }}>
+                Show this to anyone who books interpreters for you
+              </p>
+            </div>
+
+            {/* Editable slug */}
+            <div style={{ borderTop: '1px solid var(--border)', paddingTop: 18 }}>
+              <label style={{
+                display: 'block', fontSize: '0.82rem', fontWeight: 600,
+                color: 'var(--text)', marginBottom: 6,
+              }}>
+                Custom URL
+              </label>
+              {slugEditing ? (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
+                      signpost.community/d/
+                    </span>
+                    <input
+                      type="text"
+                      value={editSlug}
+                      onChange={e => {
+                        setEditSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))
+                        setSlugError('')
+                      }}
+                      maxLength={50}
+                      style={{
+                        ...inputStyle,
+                        flex: 1,
+                        fontFamily: 'monospace',
+                        borderColor: slugError ? 'rgba(255,107,133,0.5)' : 'var(--border)',
+                      }}
+                      aria-label="Custom URL slug"
+                      aria-invalid={!!slugError}
+                      aria-describedby={slugError ? 'slug-error' : undefined}
+                    />
+                  </div>
+                  {slugError && (
+                    <p id="slug-error" style={{ fontSize: '0.78rem', color: 'var(--accent3)', marginTop: 0, marginBottom: 8 }}>
+                      {slugError}
+                    </p>
+                  )}
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button
+                      type="button"
+                      onClick={handleSlugSave}
+                      disabled={slugSaving}
+                      style={{
+                        padding: '8px 20px',
+                        background: 'rgba(0,229,255,0.1)',
+                        border: '1px solid rgba(0,229,255,0.3)',
+                        borderRadius: 'var(--radius-sm)',
+                        fontSize: '0.82rem', fontWeight: 600,
+                        color: 'var(--accent)',
+                        cursor: slugSaving ? 'wait' : 'pointer',
+                        fontFamily: "'DM Sans', sans-serif",
+                        opacity: slugSaving ? 0.6 : 1,
+                      }}
+                    >
+                      {slugSaving ? 'Saving...' : 'Save'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSlugEditing(false)
+                        setEditSlug(vanitySlug)
+                        setSlugError('')
+                      }}
+                      style={{
+                        padding: '8px 20px',
+                        background: 'none',
+                        border: '1px solid var(--border)',
+                        borderRadius: 'var(--radius-sm)',
+                        fontSize: '0.82rem',
+                        color: 'var(--muted)',
+                        cursor: 'pointer',
+                        fontFamily: "'DM Sans', sans-serif",
+                      }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
+                    signpost.community/d/<span style={{ color: 'var(--accent)', fontFamily: 'monospace' }}>{vanitySlug}</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setSlugEditing(true)}
+                    style={{
+                      padding: '6px 14px',
+                      background: 'none',
+                      border: '1px solid var(--border)',
+                      borderRadius: 'var(--radius-sm)',
+                      fontSize: '0.78rem',
+                      color: 'var(--muted)',
+                      cursor: 'pointer',
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}
+                  >
+                    Edit
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* ── Profile Section ── */}
         <div style={{ marginBottom: 40 }}>
           <h3 style={sectionHeadingStyle}>Profile</h3>

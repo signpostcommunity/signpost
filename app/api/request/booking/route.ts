@@ -1,0 +1,123 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { getSupabaseAdmin } from '@/lib/supabase/admin'
+
+export const dynamic = 'force-dynamic'
+
+export async function POST(request: NextRequest) {
+  try {
+    const supabase = await createClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const {
+      title, date, timeStart, timeEnd, timezone,
+      format, location, eventType, eventCategory,
+      interpreterCount, description, interpreterIds,
+      forDhhUserId, // Optional: DHH user ID from connection system
+    } = body
+
+    if (!title || !date || !timeStart || !timeEnd || !format) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    const admin = getSupabaseAdmin()
+
+    // Get requester name
+    const { data: reqProfile } = await admin
+      .from('requester_profiles')
+      .select('name, org_name')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    const requesterName = reqProfile?.org_name || reqProfile?.name || 'Requester'
+
+    // Map format value for DB constraint
+    const dbFormat = format === 'in-person' ? 'in_person' : format
+
+    // Create the booking
+    const { data: booking, error: insertError } = await admin
+      .from('bookings')
+      .insert({
+        requester_id: user.id,
+        status: 'open',
+        request_type: 'professional',
+        title,
+        date,
+        time_start: timeStart,
+        time_end: timeEnd,
+        timezone: timezone || 'America/Los_Angeles',
+        format: dbFormat,
+        location: location || null,
+        event_type: eventType || null,
+        event_category: eventCategory || null,
+        interpreter_count: interpreterCount || (interpreterIds?.length || 1),
+        description: description || null,
+        notes: description || null,
+        requester_name: requesterName,
+        is_seed: false,
+      })
+      .select('id')
+      .single()
+
+    if (insertError) {
+      console.error('[request/booking] booking insert failed:', insertError.message)
+      return NextResponse.json({ error: `Failed to create booking: ${insertError.message}` }, { status: 500 })
+    }
+
+    // If booking is for a connected DHH user, add them to booking_dhh_clients
+    if (forDhhUserId) {
+      const { data: deafProfile, error: deafError } = await admin
+        .from('deaf_profiles')
+        .select('id, comm_prefs')
+        .eq('id', forDhhUserId)
+        .maybeSingle()
+
+      if (deafError) {
+        console.error('[request/booking] deaf_profiles lookup failed:', deafError.message)
+      }
+
+      if (deafProfile) {
+        const { error: dhhClientErr } = await admin
+          .from('booking_dhh_clients')
+          .insert({
+            booking_id: booking.id,
+            dhh_user_id: deafProfile.id,
+            comm_prefs_snapshot: deafProfile.comm_prefs || {},
+            added_at: new Date().toISOString(),
+          })
+
+        if (dhhClientErr) {
+          // Log but don't fail the booking
+          console.error('[request/booking] booking_dhh_clients insert failed:', dhhClientErr.message)
+        }
+      }
+    }
+
+    // Create booking_recipients for each interpreter (if provided)
+    if (interpreterIds?.length) {
+      for (const interpreterId of interpreterIds) {
+        const { error: recipientErr } = await admin
+          .from('booking_recipients')
+          .insert({
+            booking_id: booking.id,
+            interpreter_id: interpreterId,
+            status: 'sent',
+            sent_at: new Date().toISOString(),
+          })
+
+        if (recipientErr) {
+          console.error('[request/booking] booking_recipients insert failed:', recipientErr.message)
+        }
+      }
+    }
+
+    return NextResponse.json({ success: true, bookingId: booking.id })
+  } catch (err) {
+    console.error('[request/booking] error:', err instanceof Error ? err.message : err)
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+  }
+}

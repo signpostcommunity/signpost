@@ -17,10 +17,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ available: false, reason: 'invalid' })
   }
 
+  const table = request.nextUrl.searchParams.get('table') || 'interpreter_profiles'
+  const validTables = ['interpreter_profiles', 'deaf_profiles']
+  const targetTable = validTables.includes(table) ? table : 'interpreter_profiles'
+
   try {
     const admin = getSupabaseAdmin()
     const { data, error } = await admin
-      .from('interpreter_profiles')
+      .from(targetTable)
       .select('id')
       .ilike('vanity_slug', slug)
       .limit(1)

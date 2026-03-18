@@ -4,7 +4,7 @@ export const RESERVED_SLUGS = [
   'dashboard', 'api', 'auth', 'callback', 'interpreter', 'deaf',
   'dhh', 'requester', 'org', 'search', 'browse', 'home', 'index',
   'signpost', 'team', 'inbox', 'messages', 'notifications',
-  'privacy', 'terms', 'policies', 'contact', 'feedback',
+  'privacy', 'terms', 'policies', 'contact', 'feedback', 'd',
 ]
 
 export function generateSlug(firstName: string, lastName: string): string {
@@ -25,8 +25,8 @@ export function validateSlug(slug: string): { valid: boolean; error?: string } {
   if (!slug || slug.length < 3) {
     return { valid: false, error: 'Must be at least 3 characters' }
   }
-  if (slug.length > 40) {
-    return { valid: false, error: 'Must be 40 characters or fewer' }
+  if (slug.length > 50) {
+    return { valid: false, error: 'Must be 50 characters or fewer' }
   }
   if (!/^[a-z0-9][a-z0-9-]*[a-z0-9]$/.test(slug) && slug.length >= 3) {
     if (/^-/.test(slug) || /-$/.test(slug)) {

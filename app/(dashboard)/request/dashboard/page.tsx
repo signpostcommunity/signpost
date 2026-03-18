@@ -3,8 +3,10 @@
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import BookingFilterBar, { filterBySearch, filterByDateRange, sortSoonestFirst } from '@/components/dashboard/shared/BookingFilterBar';
+import RecommendedInterpreters from '@/components/dashboard/requester/RecommendedInterpreters';
 
 type RequestStatus = 'pending' | 'confirmed' | 'completed' | 'declined';
 
@@ -281,6 +283,8 @@ function Toast({ message, onDone }: { message: string; onDone: () => void }) {
 
 /* ── Main Page ── */
 export default function RequesterDashboardPage() {
+  const searchParams = useSearchParams();
+  const forDhhUserId = searchParams.get('for');
   const [activeTab, setActiveTab] = useState<'all' | RequestStatus>('all');
   const [requests, setRequests] = useState<Request[]>(INITIAL_REQUESTS);
   const [detailRequest, setDetailRequest] = useState<Request | null>(null);
@@ -335,6 +339,9 @@ export default function RequesterDashboardPage() {
           }}>{t}</button>
         ))}
       </div>
+
+      {/* Recommended interpreters from connected deaf user */}
+      {forDhhUserId && <RecommendedInterpreters dhhUserId={forDhhUserId} />}
 
       <BookingFilterBar
         search={search} onSearchChange={setSearch}

@@ -454,8 +454,22 @@ function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast, on
           <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: 3 }}>
             {booking.title || 'Booking'}
           </div>
-          <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 2 }}>
-            {booking.requester_display || 'You requested this directly'} · {booking.specialization || 'General'}
+          <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 2, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+            {booking.requester_display ? (
+              <span style={{
+                display: 'inline-flex', alignItems: 'center',
+                background: 'rgba(0,229,255,0.08)',
+                border: '1px solid rgba(0,229,255,0.2)',
+                borderRadius: 100, padding: '1px 8px',
+                fontSize: '0.72rem', color: 'var(--accent)',
+                fontWeight: 600, whiteSpace: 'nowrap',
+              }}>
+                {booking.requester_display}
+              </span>
+            ) : (
+              <span>You requested this directly</span>
+            )}
+            <span>· {booking.specialization || 'General'}</span>
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
@@ -664,7 +678,7 @@ const MOCK_ON_BEHALF_CANCELLED: MockBooking = {
 
 export default function DhhBookingsPage() {
   const [selfBookings, setSelfBookings] = useState<MockBooking[]>([])
-  const [onBehalfBookings] = useState<MockBooking[]>([MOCK_ON_BEHALF_CONFIRMED, MOCK_ON_BEHALF_CANCELLED])
+  const [onBehalfBookings, setOnBehalfBookings] = useState<MockBooking[]>([MOCK_ON_BEHALF_CONFIRMED, MOCK_ON_BEHALF_CANCELLED])
   const [dnbInterpreterIds, setDnbInterpreterIds] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
   const [viewing, setViewing] = useState<string | null>(null)
@@ -691,13 +705,23 @@ export default function DhhBookingsPage() {
       const res = await fetch('/api/dhh/request')
       const data = await res.json()
       if (data.bookings) {
+        // Separate self-initiated vs on-behalf bookings
         const realSelfBookings: MockBooking[] = data.bookings
-          .filter((b: BookingWithRecipients) => b.request_type === 'personal')
+          .filter((b: BookingWithRecipients) => !b.is_on_behalf)
           .map((b: BookingWithRecipients) => ({
             ...b,
             requester_display: '',
             comm_prefs_summary: '',
           }))
+
+        const realOnBehalfBookings: MockBooking[] = data.bookings
+          .filter((b: BookingWithRecipients) => b.is_on_behalf)
+          .map((b: BookingWithRecipients) => ({
+            ...b,
+            requester_display: (b as Record<string, unknown>).requested_by_display as string || `Requested by ${b.requester_name || 'a requester'}`,
+            comm_prefs_summary: '',
+          }))
+
         if (realSelfBookings.length === 0) {
           // Show a mock self-booking
           setSelfBookings([{
@@ -736,6 +760,11 @@ export default function DhhBookingsPage() {
         } else {
           setSelfBookings(realSelfBookings)
         }
+
+        if (realOnBehalfBookings.length > 0) {
+          setOnBehalfBookings(realOnBehalfBookings)
+        }
+        // If no real on-behalf bookings, keep the mock data
       }
     } catch (err) {
       console.error('[dhh-bookings] fetch failed:', err)

@@ -283,14 +283,66 @@ export async function GET() {
       }
     }
 
+    // Build a set of booking IDs that were made FOR this user (not BY them)
+    const onBehalfBookingIds = new Set(
+      dhhBookingIds.filter(id => !reqBookingIds.includes(id))
+    )
+
+    // Fetch requester info for on-behalf bookings
+    let requesterMap: Record<string, { name: string; org_name: string | null }> = {}
+    if (onBehalfBookingIds.size > 0) {
+      const onBehalfBookings = (bookings || []).filter(b => onBehalfBookingIds.has(b.id))
+      const requesterIds = [...new Set(onBehalfBookings.map(b => (b as Record<string, unknown>).requester_id as string).filter(Boolean))]
+
+      if (requesterIds.length > 0) {
+        // Check requester_profiles for org names
+        const { data: reqProfiles } = await admin
+          .from('requester_profiles')
+          .select('id, name, org_name')
+          .in('id', requesterIds)
+
+        for (const rp of reqProfiles || []) {
+          requesterMap[rp.id] = { name: rp.name, org_name: rp.org_name }
+        }
+
+        // Also check dhh_requester_connections for stored org names
+        if (dhhEntries && dhhEntries.length > 0) {
+          const { data: connections } = await admin
+            .from('dhh_requester_connections')
+            .select('requester_id, requester_org_name')
+            .in('requester_id', requesterIds)
+
+          for (const conn of connections || []) {
+            if (conn.requester_org_name && requesterMap[conn.requester_id]) {
+              requesterMap[conn.requester_id].org_name = conn.requester_org_name
+            }
+          }
+        }
+      }
+    }
+
     const enriched = (bookings || []).map(b => {
       const bookingRecipients = (recipientsByBooking[b.id] || []).map(r => ({
         ...r,
         interpreter: interpreterMap[r.interpreter_id] || null,
       }))
+
+      const isOnBehalf = onBehalfBookingIds.has(b.id)
+      const requesterId = (b as Record<string, unknown>).requester_id as string
+      const requesterInfo = isOnBehalf && requesterId ? requesterMap[requesterId] : null
+      const requestedByDisplay = requesterInfo
+        ? requesterInfo.org_name
+          ? `Requested by ${requesterInfo.org_name}`
+          : `Requested by ${requesterInfo.name}`
+        : isOnBehalf
+          ? `Requested by ${b.requester_name || 'a requester'}`
+          : null
+
       return {
         ...b,
         recipients: bookingRecipients,
+        is_on_behalf: isOnBehalf,
+        requested_by_display: requestedByDisplay,
       }
     })
 
