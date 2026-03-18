@@ -28,7 +28,6 @@ export default function InterpreterRequestLinkCard() {
       if (profile.vanity_slug) {
         setVanitySlug(profile.vanity_slug)
       } else if (profile.first_name || profile.last_name) {
-        // Auto-generate slug for users who don't have one yet
         const baseSlug = generateSlug(profile.first_name || '', profile.last_name || '').slice(0, 50)
         if (baseSlug && baseSlug.length >= 3) {
           let slug = baseSlug
@@ -67,16 +66,15 @@ export default function InterpreterRequestLinkCard() {
     })
   }
 
-  // Shared outer style matching StatCard: card-bg, border, radius, padding, flex
   const outerStyle: React.CSSProperties = {
-    gridColumn: 'span 2',
     background: 'var(--card-bg)',
     border: '1px solid rgba(0,229,255,0.15)',
     borderRadius: 'var(--radius)',
     padding: '20px',
     display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
-    gap: 20,
+    gap: 12,
   }
 
   if (loading) {
@@ -93,10 +91,9 @@ export default function InterpreterRequestLinkCard() {
 
   return (
     <div style={outerStyle} role="region" aria-label="My Interpreter Request Link">
-      {/* Left: QR code */}
+      {/* QR code */}
       <div style={{
-        flexShrink: 0,
-        padding: 8,
+        padding: 6,
         background: '#111118',
         borderRadius: 'var(--radius-sm)',
         border: '1px solid var(--border)',
@@ -104,74 +101,72 @@ export default function InterpreterRequestLinkCard() {
       }}>
         <QRCodeSVG
           value={`https://signpost.community/d/${vanitySlug}`}
-          size={80}
+          size={72}
           bgColor="#111118"
           fgColor="#00e5ff"
           level="M"
         />
       </div>
 
-      {/* Right: label, URL, copy button */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 6 }}>
-          <div style={{ color: 'var(--muted)', fontSize: '0.78rem', fontFamily: "'DM Sans', sans-serif" }}>
-            My Interpreter Request Link
-          </div>
-          <Link
-            href="/dhh/dashboard/preferences"
-            style={{
-              fontSize: '0.72rem',
-              color: 'var(--muted)',
-              textDecoration: 'none',
-              whiteSpace: 'nowrap',
-              fontFamily: "'DM Sans', sans-serif",
-              opacity: 0.7,
-            }}
-          >
-            Edit
-          </Link>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <code style={{
-            flex: 1,
-            minWidth: 0,
-            padding: '7px 12px',
-            background: 'var(--surface2)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-sm)',
-            fontSize: '0.82rem',
-            color: 'var(--accent)',
-            fontFamily: 'monospace',
-            userSelect: 'all',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-          }}>
-            {fullUrl}
-          </code>
-          <button
-            type="button"
-            onClick={handleCopy}
-            aria-label={copied ? 'Link copied' : 'Copy interpreter request link'}
-            style={{
-              padding: '7px 14px',
-              background: copied ? 'rgba(52,211,153,0.15)' : 'rgba(0,229,255,0.1)',
-              border: `1px solid ${copied ? 'rgba(52,211,153,0.3)' : 'rgba(0,229,255,0.3)'}`,
-              borderRadius: 'var(--radius-sm)',
-              fontSize: '0.78rem',
-              fontWeight: 600,
-              color: copied ? '#34d399' : 'var(--accent)',
-              cursor: 'pointer',
-              fontFamily: "'DM Sans', sans-serif",
-              transition: 'all 0.15s',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {copied ? 'Copied!' : 'Copy Link'}
-          </button>
-        </div>
+      {/* Label */}
+      <div style={{
+        color: 'var(--muted)',
+        fontSize: '0.78rem',
+        fontFamily: "'DM Sans', sans-serif",
+        textAlign: 'center',
+      }}>
+        My Interpreter Request Link
       </div>
+
+      {/* URL */}
+      <code style={{
+        display: 'block',
+        textAlign: 'center',
+        fontSize: '0.72rem',
+        color: 'var(--accent)',
+        fontFamily: 'monospace',
+        wordBreak: 'break-all',
+        lineHeight: 1.5,
+        userSelect: 'all',
+      }}>
+        {fullUrl}
+      </code>
+
+      {/* Copy button */}
+      <button
+        type="button"
+        onClick={handleCopy}
+        aria-label={copied ? 'Link copied' : 'Copy interpreter request link'}
+        style={{
+          width: '100%',
+          padding: '8px 0',
+          background: copied ? 'rgba(52,211,153,0.15)' : 'rgba(0,229,255,0.1)',
+          border: `1px solid ${copied ? 'rgba(52,211,153,0.3)' : 'rgba(0,229,255,0.3)'}`,
+          borderRadius: 'var(--radius-sm)',
+          fontSize: '0.78rem',
+          fontWeight: 600,
+          color: copied ? '#34d399' : 'var(--accent)',
+          cursor: 'pointer',
+          fontFamily: "'DM Sans', sans-serif",
+          transition: 'all 0.15s',
+        }}
+      >
+        {copied ? 'Copied!' : 'Copy Link'}
+      </button>
+
+      {/* Edit link */}
+      <Link
+        href="/dhh/dashboard/preferences"
+        style={{
+          fontSize: '0.72rem',
+          color: 'var(--muted)',
+          textDecoration: 'none',
+          fontFamily: "'DM Sans', sans-serif",
+          opacity: 0.7,
+        }}
+      >
+        Edit
+      </Link>
     </div>
   )
 }
