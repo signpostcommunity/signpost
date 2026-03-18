@@ -101,6 +101,20 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
 
   const config = getPageConfig(pathname)
 
+  // Push body content left when panel is open
+  useEffect(() => {
+    const body = document.body
+    if (isOpen) {
+      body.style.paddingRight = '320px'
+      body.style.transition = 'padding-right 0.25s ease'
+    } else {
+      body.style.paddingRight = '0'
+    }
+    return () => {
+      body.style.paddingRight = '0'
+    }
+  }, [isOpen])
+
   // Load existing responses for this page
   useEffect(() => {
     if (!config) return
