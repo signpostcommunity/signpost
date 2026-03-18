@@ -61,6 +61,7 @@ interface PrefInterpreter {
   name: string | null
   photo_url: string | null
   certs: string[]
+  tier: 'preferred' | 'approved'
 }
 
 /* ── Helpers ── */
@@ -680,10 +681,12 @@ export default function DeafDashboardOverview() {
         .eq('dhh_user_id', user.id),
       supabase
         .from('deaf_roster')
-        .select('interpreter_id, tier, notes')
+        .select('interpreter_id, tier, notes, do_not_book')
         .eq('deaf_user_id', deafProfileId)
-        .eq('tier', 'preferred')
-        .limit(3),
+        .in('tier', ['preferred', 'approved'])
+        .or('do_not_book.is.null,do_not_book.eq.false')
+        .order('tier', { ascending: true })
+        .limit(10),
     ])
 
     if (!activeRes.error) setActiveRequests(activeRes.count ?? 0)
@@ -742,6 +745,12 @@ export default function DeafDashboardOverview() {
           certsMap[c.interpreter_id].push(c.name)
         }
 
+        // Build a tier lookup from roster data
+        const tierMap: Record<string, 'preferred' | 'approved'> = {}
+        for (const r of prefInterpRes.data) {
+          tierMap[r.interpreter_id] = r.tier as 'preferred' | 'approved'
+        }
+
         const mapped: PrefInterpreter[] = profilesRes.data.map(p => ({
           id: p.id,
           first_name: p.first_name,
@@ -749,7 +758,13 @@ export default function DeafDashboardOverview() {
           name: p.name,
           photo_url: p.photo_url,
           certs: certsMap[p.id] || [],
+          tier: tierMap[p.id] || 'preferred',
         }))
+        // Sort: preferred first, then approved
+        mapped.sort((a, b) => {
+          if (a.tier === b.tier) return 0
+          return a.tier === 'preferred' ? -1 : 1
+        })
         setPrefInterpreters(mapped)
       }
     }
@@ -872,7 +887,9 @@ export default function DeafDashboardOverview() {
               {prefInterpreters.map(interp => {
                 const name = getDisplayName(interp.first_name, interp.last_name, interp.name)
                 const initials = getInitials(interp.first_name, interp.last_name, interp.name)
-                const certStr = interp.certs.length > 0 ? interp.certs.join(', ') : 'Certified Interpreter'
+                const tierBadge = interp.tier === 'preferred'
+                  ? { label: 'Preferred', color: '#a78bfa', bg: 'rgba(167,139,250,0.1)', border: 'rgba(167,139,250,0.3)' }
+                  : { label: 'Secondary Tier', color: 'var(--accent)', bg: 'rgba(0,229,255,0.1)', border: 'rgba(0,229,255,0.3)' }
 
                 return (
                   <div key={interp.id} style={{
@@ -903,24 +920,21 @@ export default function DeafDashboardOverview() {
                     </Link>
 
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <Link href={`/directory/${interp.id}`} style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text)', textDecoration: 'none' }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'underline' }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'none' }}
-                      >{name}</Link>
-                      <div style={{ color: 'var(--muted)', fontSize: '0.78rem', marginTop: 2 }}>{certStr}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <Link href={`/directory/${interp.id}`} style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text)', textDecoration: 'none' }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'underline' }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLAnchorElement).style.textDecoration = 'none' }}
+                        >{name}</Link>
+                        <span style={{
+                          fontSize: '0.65rem', fontWeight: 600, padding: '1px 8px',
+                          borderRadius: 100, background: tierBadge.bg,
+                          color: tierBadge.color, border: `1px solid ${tierBadge.border}`,
+                          whiteSpace: 'nowrap',
+                        }}>
+                          {tierBadge.label}
+                        </span>
+                      </div>
                     </div>
-
-                    <Link
-                      href="/dhh/dashboard/request"
-                      style={{
-                        background: 'rgba(157,135,255,0.1)', border: '1px solid rgba(157,135,255,0.3)',
-                        color: '#9d87ff', borderRadius: 8, padding: '6px 14px',
-                        fontSize: '0.78rem', fontWeight: 600, textDecoration: 'none',
-                        flexShrink: 0, transition: 'background 0.15s',
-                      }}
-                    >
-                      Request &#8594;
-                    </Link>
                   </div>
                 )
               })}
