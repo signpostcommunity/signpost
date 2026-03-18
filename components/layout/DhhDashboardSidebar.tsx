@@ -292,6 +292,7 @@ export default function DhhDashboardSidebar({ userName = 'User', userInitials = 
         .select('id', { count: 'exact', head: true })
         .eq('deaf_user_id', deafUserId)
         .in('tier', ['preferred', 'approved'])
+        .neq('do_not_book', true)
 
       // Unread notifications count (in_app only)
       const { count: notifCount } = await supabase
