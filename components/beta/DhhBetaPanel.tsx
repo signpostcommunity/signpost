@@ -266,7 +266,7 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
         display: 'flex',
         flexDirection: 'column',
         overflowY: 'auto',
-        boxShadow: '-4px 0 32px rgba(0,0,0,0.2)',
+        boxShadow: '-8px 0 40px rgba(0,0,0,0.5)',
         fontFamily: "'DM Sans', sans-serif",
       }}
     >
