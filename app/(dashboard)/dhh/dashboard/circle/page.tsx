@@ -197,7 +197,7 @@ export default function TrustedDeafCirclePage() {
         color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.6,
         margin: '0 0 24px',
       }}>
-        Privately share interpreter lists with friends. Help each other find the interpreters you&apos;ll love — and avoid the ones you won&apos;t.
+        Deaf-to-Deaf: Privately share interpreter lists with friends. Help each other find the interpreters you&apos;ll love... and avoid the ones you won&apos;t.
       </p>
 
       {/* Scenario cards — 3-column grid */}
