@@ -1286,7 +1286,7 @@ export default function DhhRequestsListPage() {
         </div>
       ) : (
         groupedBookings.map((group, gi) => (
-          <div key={group.label} style={group.isPast ? { opacity: 0.6 } : undefined}>
+          <div key={group.label}>
             <div style={{ ...timeCategoryHeaderStyle, marginTop: gi === 0 ? 0 : 32 }}>{group.label}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
               {group.items.map(b => (
