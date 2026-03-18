@@ -9,7 +9,7 @@ export default async function DirectoryPage() {
 
   const { data: rows } = await supabase
     .from('interpreter_profiles')
-    .select('id, name, first_name, last_name, city, country, state, sign_languages, spoken_languages, specializations, specialized_skills, regions, rating, review_count, available, avatar_color, bio, video_url, interpreter_type, status, photo_url, draft_data, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, latitude, longitude')
+    .select('id, name, first_name, last_name, city, country, state, sign_languages, spoken_languages, specializations, specialized_skills, regions, rating, review_count, available, avatar_color, bio, video_url, interpreter_type, status, photo_url, draft_data, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, latitude, longitude, interpreter_certifications(name, issuing_body, year, verification_link)')
     .eq('status', 'approved')
     .order('photo_url', { ascending: false, nullsFirst: false })
     .order('name', { ascending: true });
@@ -19,17 +19,31 @@ export default async function DirectoryPage() {
     const initials = fullName.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
     const location = [r.city, r.state, r.country].filter(Boolean).join(', ');
 
-    // Extract certifications from draft_data if present
-    const draftData = (r.draft_data || {}) as Record<string, unknown>;
-    const draftCerts = Array.isArray(draftData.certifications) ? draftData.certifications : [];
-    const validCerts = draftCerts.filter((c: Record<string, unknown>) => c && typeof c.name === 'string' && c.name.trim());
-    const certNames = validCerts.map((c: Record<string, unknown>) => c.name as string);
-    const certDetails = validCerts.map((c: Record<string, unknown>) => ({
-      name: c.name as string,
-      issuingBody: (c.issuingBody as string) || undefined,
-      year: (c.year as string) || undefined,
-      verificationLink: (c.verificationLink as string) || undefined,
-    }));
+    // Extract certifications from interpreter_certifications table first, fall back to draft_data
+    const tableCerts = (r as Record<string, unknown>).interpreter_certifications as Array<{ name: string; issuing_body?: string; year?: string; verification_link?: string }> | undefined;
+    let certNames: string[];
+    let certDetails: { name: string; issuingBody?: string; year?: string; verificationLink?: string }[];
+
+    if (tableCerts && tableCerts.length > 0) {
+      certNames = tableCerts.map(c => c.name);
+      certDetails = tableCerts.map(c => ({
+        name: c.name,
+        issuingBody: c.issuing_body || undefined,
+        year: c.year || undefined,
+        verificationLink: c.verification_link || undefined,
+      }));
+    } else {
+      const draftData = (r.draft_data || {}) as Record<string, unknown>;
+      const draftCerts = Array.isArray(draftData.certifications) ? draftData.certifications : [];
+      const validCerts = draftCerts.filter((c: Record<string, unknown>) => c && typeof c.name === 'string' && c.name.trim());
+      certNames = validCerts.map((c: Record<string, unknown>) => c.name as string);
+      certDetails = validCerts.map((c: Record<string, unknown>) => ({
+        name: c.name as string,
+        issuingBody: (c.issuingBody as string) || undefined,
+        year: (c.year as string) || undefined,
+        verificationLink: (c.verificationLink as string) || undefined,
+      }));
+    }
 
     // Build affinities array from boolean columns
     const affinities: string[] = [];
