@@ -790,7 +790,7 @@ function InlineRatingModal({ booking, ratedInterpreters, onRated, onClose }: {
       {/* Confidential note */}
       <div style={{
         fontSize: '0.75rem', color: 'var(--muted)', lineHeight: 1.6,
-        marginTop: 20, marginBottom: 16,
+        marginTop: 20, marginBottom: 16, maxWidth: 640,
       }}>
         Your ratings are 100% confidential and never shared with interpreters (unless you check the box above).
         Honest feedback helps signpost maintain a directory that serves the Deaf community well.
