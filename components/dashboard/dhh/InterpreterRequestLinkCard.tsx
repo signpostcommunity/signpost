@@ -93,43 +93,52 @@ export default function InterpreterRequestLinkCard() {
   return (
     <div style={outerStyle} role="region" aria-label="My Interpreter Request Link">
       {/* Left: QR code */}
-      <div style={{ flexShrink: 0 }}>
+      <div style={{
+        flexShrink: 0,
+        alignSelf: 'stretch',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
         <div style={{
-          padding: 8,
+          padding: 10,
           background: '#111118',
           borderRadius: 'var(--radius-sm)',
           border: '1px solid var(--border)',
           lineHeight: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}>
           <QRCodeSVG
             value={`https://signpost.community/d/${vanitySlug}`}
-            size={100}
+            size={120}
             bgColor="#111118"
             fgColor="#00e5ff"
             level="M"
           />
         </div>
-        <p style={{
-          fontSize: '0.68rem',
-          color: 'var(--muted)',
-          textAlign: 'center',
-          marginTop: 6,
-          marginBottom: 0,
-          lineHeight: 1.3,
-        }}>
-          Share with anyone who books interpreters for you
-        </p>
       </div>
 
       {/* Right: text + actions */}
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-        <div style={{
-          fontSize: '0.82rem',
-          fontWeight: 600,
-          color: 'var(--text)',
-          fontFamily: "'DM Sans', sans-serif",
-        }}>
-          My Interpreter Request Link
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6 }}>
+        <div>
+          <div style={{
+            fontSize: '0.82rem',
+            fontWeight: 600,
+            color: 'var(--text)',
+            fontFamily: "'DM Sans', sans-serif",
+          }}>
+            My Interpreter Request Link
+          </div>
+          <p style={{
+            fontSize: '0.68rem',
+            color: 'var(--muted)',
+            margin: '2px 0 0',
+            lineHeight: 1.3,
+          }}>
+            Share with anyone who books interpreters for you
+          </p>
         </div>
 
         <code style={{
@@ -139,12 +148,11 @@ export default function InterpreterRequestLinkCard() {
           fontFamily: 'monospace',
           wordBreak: 'break-all',
           lineHeight: 1.4,
-          marginTop: 4,
         }}>
           {fullUrl}
         </code>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button
             type="button"
             onClick={handleCopy}
