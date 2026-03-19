@@ -97,6 +97,21 @@ export default function Nav({ initialSession = null }: NavProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [mobileOpen]);
+
   // Close language dropdown on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -291,6 +306,7 @@ export default function Nav({ initialSession = null }: NavProps) {
           role="dialog"
           aria-modal="true"
           aria-label="Mobile navigation"
+          onClick={() => setMobileOpen(false)}
           style={{
             position: 'fixed',
             top: 0,
@@ -309,29 +325,45 @@ export default function Nav({ initialSession = null }: NavProps) {
             padding: '20px',
           }}
         >
-          {/* Close button */}
-          <button
-            onClick={() => setMobileOpen(false)}
-            aria-label="Close menu"
+          {/* Top bar: wordmark left, close right */}
+          <div
+            onClick={e => e.stopPropagation()}
             style={{
               position: 'absolute',
-              top: 20,
-              right: 20,
-              background: 'none',
-              border: 'none',
-              color: 'var(--muted)',
-              fontSize: '1.5rem',
-              cursor: 'pointer',
-              padding: '8px',
-              minWidth: 44,
-              minHeight: 44,
+              top: 0,
+              left: 0,
+              right: 0,
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
+              justifyContent: 'space-between',
+              padding: '14px 16px',
             }}
           >
-            <span aria-hidden="true">&#10005;</span>
-          </button>
+            <Link href="/" onClick={() => setMobileOpen(false)} style={{ textDecoration: 'none' }}>
+              <div className="wordmark" style={{ fontSize: '1.2rem' }}>
+                sign<span>post</span>
+              </div>
+            </Link>
+            <button
+              onClick={() => setMobileOpen(false)}
+              aria-label="Close menu"
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--muted)',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                padding: '8px',
+                minWidth: 44,
+                minHeight: 44,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <span aria-hidden="true">&#10005;</span>
+            </button>
+          </div>
 
           <Link
             href="/directory"
