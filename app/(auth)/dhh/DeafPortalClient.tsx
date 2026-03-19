@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -11,6 +11,17 @@ type FormType = 'signup' | 'login' | null;
 export default function DeafPortalClient() {
   const router = useRouter();
   const [activeForm, setActiveForm] = useState<FormType>(null);
+
+  // Beta banner state
+  const [bannerDismissed, setBannerDismissed] = useState(true); // default true to avoid flash
+  useEffect(() => {
+    setBannerDismissed(localStorage.getItem('signpost_dhh_beta_banner_dismissed') === 'true');
+  }, []);
+
+  function dismissBanner() {
+    setBannerDismissed(true);
+    localStorage.setItem('signpost_dhh_beta_banner_dismissed', 'true');
+  }
 
   // Signup state
   const [firstName, setFirstName] = useState('');
@@ -121,8 +132,44 @@ export default function DeafPortalClient() {
           &#8592; Back to Home
         </Link>
 
+        {/* Beta welcome banner */}
+        {!bannerDismissed && (
+          <div style={{
+            background: '#111118',
+            borderLeft: '3px solid var(--accent2)',
+            borderRadius: 'var(--radius-sm)',
+            padding: '16px 20px',
+            marginBottom: 28,
+            position: 'relative',
+          }}>
+            <button
+              onClick={dismissBanner}
+              aria-label="Dismiss banner"
+              style={{
+                position: 'absolute', top: 12, right: 14,
+                background: 'none', border: 'none', color: 'var(--muted)',
+                fontSize: '1.1rem', cursor: 'pointer', padding: 0, lineHeight: 1,
+              }}
+            >
+              &#10005;
+            </button>
+            <div style={{
+              fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem',
+              color: 'var(--accent2)', marginBottom: 6,
+            }}>
+              Welcome to the signpost Deaf community beta!
+            </div>
+            <p style={{ color: 'var(--text)', fontSize: '0.88rem', lineHeight: 1.6, margin: 0, paddingRight: 24 }}>
+              Create your free account below to get started. There&apos;s a feedback panel built into the site. Share your honest thoughts as you explore. We need to hear what&apos;s working, what&apos;s missing, and what we got wrong.
+            </p>
+            <p style={{ color: 'var(--muted)', fontSize: '0.82rem', margin: '8px 0 0', fontStyle: 'italic' }}>
+              &mdash; Regina and Molly
+            </p>
+          </div>
+        )}
+
         {/* Hero */}
-        <div style={{ marginBottom: 56 }}>
+        <div style={{ marginBottom: 32 }}>
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
             background: 'rgba(157,135,255,0.1)', border: '1px solid rgba(157,135,255,0.25)',
@@ -132,8 +179,8 @@ export default function DeafPortalClient() {
             For Deaf, DeafBlind &amp; Hard of Hearing Individuals
           </div>
           <h1 style={{
-            fontFamily: "'Syne', sans-serif", fontSize: 'clamp(2rem, 4vw, 3rem)',
-            fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: 16,
+            fontFamily: "'Syne', sans-serif", fontSize: 'clamp(1.4rem, 3vw, 2rem)',
+            fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: 12,
           }}>
             Your portal. Your preferences.<br />
             <em style={{
@@ -195,7 +242,7 @@ export default function DeafPortalClient() {
               onMouseOver={e => (e.currentTarget.style.background = '#7b61ff')}
               onMouseOut={e => (e.currentTarget.style.background = '#8b72ff')}
             >
-              Create my profile &#8594;
+              Create my account &#8594;
             </button>
           </div>
 
@@ -298,7 +345,7 @@ export default function DeafPortalClient() {
               </>
             ) : (
               <>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.2rem', marginBottom: 20 }}>Create your free profile</div>
+                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.2rem', marginBottom: 20 }}>Create your free account</div>
                 <GoogleSignInButton role="deaf" label="Sign up with Google" />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '4px 0' }}>
                   <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
@@ -351,7 +398,7 @@ export default function DeafPortalClient() {
                     onMouseOver={e => (e.currentTarget.style.background = '#7b61ff')}
                     onMouseOut={e => (e.currentTarget.style.background = '#8b72ff')}
                   >
-                    {signupLoading ? 'Creating profile...' : 'Create my profile \u2192'}
+                    {signupLoading ? 'Creating account...' : 'Create my account \u2192'}
                   </button>
                   <div style={{ textAlign: 'center', fontSize: '0.82rem', color: 'var(--muted)' }}>
                     Already have an account?{' '}

@@ -57,6 +57,80 @@ const selectStyle: React.CSSProperties = {
 
 const fieldGroupStyle: React.CSSProperties = { marginBottom: 18 }
 
+function RequestCallout() {
+  const [slug, setSlug] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
+
+  useEffect(() => {
+    async function fetchSlug() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase
+        .from('deaf_profiles')
+        .select('vanity_slug')
+        .or(`user_id.eq.${user.id},id.eq.${user.id}`)
+        .maybeSingle()
+      if (data?.vanity_slug) setSlug(data.vanity_slug)
+    }
+    fetchSlug()
+  }, [])
+
+  function handleCopy() {
+    if (!slug) return
+    navigator.clipboard.writeText(`https://signpost.community/d/${slug}`).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
+  return (
+    <div style={{
+      maxWidth: 640, marginBottom: 32,
+      background: 'var(--surface)', borderLeft: '3px solid #9d87ff',
+      border: '1px solid var(--border)', borderLeftWidth: 3, borderLeftColor: '#9d87ff',
+      borderRadius: 'var(--radius-sm)', padding: '20px 24px',
+    }}>
+      <p style={{ fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.65, margin: '0 0 10px' }}>
+        This page is for booking interpreters for your own personal events (family gatherings, celebrations, private appointments).
+      </p>
+      <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.65, margin: '0 0 14px' }}>
+        Need interpreters for work, medical appointments, or school? Share your Interpreter Request Link with your coordinator and they can book interpreters for you using your preferred list.
+      </p>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+        {slug && (
+          <button
+            type="button"
+            onClick={handleCopy}
+            style={{
+              padding: '8px 18px',
+              background: copied ? 'rgba(52,211,153,0.15)' : 'rgba(157,135,255,0.1)',
+              border: `1px solid ${copied ? 'rgba(52,211,153,0.3)' : 'rgba(157,135,255,0.3)'}`,
+              borderRadius: 'var(--radius-sm)',
+              fontSize: '0.82rem', fontWeight: 600,
+              color: copied ? '#34d399' : '#9d87ff',
+              cursor: 'pointer',
+              fontFamily: "'DM Sans', sans-serif",
+              transition: 'all 0.15s',
+            }}
+          >
+            {copied ? 'Copied!' : 'Copy My Link'}
+          </button>
+        )}
+        <a
+          href="/dhh/dashboard/preferences"
+          style={{
+            fontSize: '0.82rem', color: '#9d87ff', textDecoration: 'none',
+            fontWeight: 500, fontFamily: "'DM Sans', sans-serif",
+          }}
+        >
+          Go to My Request Link
+        </a>
+      </div>
+    </div>
+  )
+}
+
 export default function DhhRequestPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -177,6 +251,9 @@ export default function DhhRequestPage() {
       <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: -16, marginBottom: 28, maxWidth: 640, lineHeight: 1.5 }}>
         (Note: this is separate from what the interpreter charges for their services. They will send you their rate directly.)
       </p>
+
+      {/* Callout box */}
+      <RequestCallout />
 
       <form onSubmit={handleSubmit} style={{ maxWidth: 640 }}>
         {/* Section 1: Event Details */}

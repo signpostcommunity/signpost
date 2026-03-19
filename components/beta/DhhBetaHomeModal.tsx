@@ -2,42 +2,18 @@
 
 import { useState, useEffect } from 'react'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
-import { createClient } from '@/lib/supabase/client'
 
-export default function DhhBetaWelcomeModal({ userId }: { userId: string }) {
+const LS_KEY = 'signpost_dhh_beta_welcome_dismissed'
+
+export default function DhhBetaHomeModal() {
   const [show, setShow] = useState(false)
-  const [loading, setLoading] = useState(true)
   const focusTrapRef = useFocusTrap(show)
 
   useEffect(() => {
-    async function checkStatus() {
-      try {
-        const supabase = createClient()
-        const { data } = await supabase
-          .from('dhh_beta_status')
-          .select('welcome_dismissed')
-          .eq('user_id', userId)
-          .maybeSingle()
-
-        const dbDismissed = data?.welcome_dismissed === true
-        const homeDismissed = typeof window !== 'undefined' && localStorage.getItem('signpost_dhh_beta_welcome_dismissed') === 'true'
-
-        // If both home modal was seen AND DB says dismissed, don't show
-        // If only home modal was seen, still show dashboard version as reminder
-        // If neither, show it
-        if (dbDismissed) {
-          setShow(false)
-        } else {
-          setShow(true)
-        }
-      } catch (err) {
-        console.error('Failed to check beta status:', err)
-      } finally {
-        setLoading(false)
-      }
+    if (typeof window !== 'undefined' && !localStorage.getItem(LS_KEY)) {
+      setShow(true)
     }
-    checkStatus()
-  }, [userId])
+  }, [])
 
   useEffect(() => {
     if (!show) return
@@ -48,27 +24,12 @@ export default function DhhBetaWelcomeModal({ userId }: { userId: string }) {
     return () => window.removeEventListener('keydown', handleKey)
   }, [show])
 
-  async function dismiss() {
+  function dismiss() {
+    localStorage.setItem(LS_KEY, 'true')
     setShow(false)
-    try {
-      const supabase = createClient()
-      const { error } = await supabase
-        .from('dhh_beta_status')
-        .upsert(
-          {
-            user_id: userId,
-            welcome_dismissed: true,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'user_id' }
-        )
-      if (error) console.error('Failed to save welcome dismissed:', error)
-    } catch (err) {
-      console.error('Failed to dismiss welcome modal:', err)
-    }
   }
 
-  if (loading || !show) return null
+  if (!show) return null
 
   return (
     <div
@@ -76,8 +37,8 @@ export default function DhhBetaWelcomeModal({ userId }: { userId: string }) {
         position: 'fixed',
         inset: 0,
         background: 'rgba(0,0,0,0.75)',
-        backdropFilter: 'blur(6px)',
-        WebkitBackdropFilter: 'blur(6px)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -89,12 +50,12 @@ export default function DhhBetaWelcomeModal({ userId }: { userId: string }) {
         ref={focusTrapRef}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="dhh-beta-welcome-title"
+        aria-labelledby="dhh-beta-home-title"
         style={{
           background: 'var(--surface)',
           border: '1px solid var(--border)',
           borderRadius: 'var(--radius)',
-          maxWidth: 520,
+          maxWidth: 560,
           width: '100%',
           maxHeight: '85vh',
           fontFamily: "'DM Sans', sans-serif",
@@ -106,7 +67,7 @@ export default function DhhBetaWelcomeModal({ userId }: { userId: string }) {
         {/* Scrollable content */}
         <div style={{ overflowY: 'auto', padding: '28px 32px 16px', flex: 1, minHeight: 0 }}>
           <h2
-            id="dhh-beta-welcome-title"
+            id="dhh-beta-home-title"
             style={{
               fontFamily: "'DM Sans', sans-serif",
               fontWeight: 700,

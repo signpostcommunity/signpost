@@ -331,178 +331,189 @@ export default function DhhPreferencesPage() {
             borderRadius: 'var(--radius)',
             padding: '28px 28px 24px',
           }}>
-            <h3 style={{
-              ...sectionHeadingStyle,
-              color: 'var(--accent)',
-              borderBottomColor: 'rgba(0,229,255,0.15)',
-            }}>
-              My Interpreter Request Link
-            </h3>
-
-            <p style={{ fontSize: '0.84rem', color: 'var(--muted)', lineHeight: 1.7, marginTop: 0, marginBottom: 20 }}>
-              Share this link with anyone who books interpreters for you. They can use it to connect with your preferences and book interpreters based on your roster.
-            </p>
-
-            {/* URL display + Copy */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
-              <code style={{
-                flex: 1, minWidth: 200,
-                padding: '10px 14px',
-                background: 'var(--surface2)',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-sm)',
-                fontSize: '0.88rem',
-                color: 'var(--accent)',
-                fontFamily: 'monospace',
-                userSelect: 'all',
-                wordBreak: 'break-all',
-              }}>
-                signpost.community/d/{vanitySlug}
-              </code>
-              <button
-                type="button"
-                onClick={handleCopyLink}
-                style={{
-                  padding: '10px 20px',
-                  background: slugCopied ? 'rgba(52,211,153,0.15)' : 'rgba(0,229,255,0.1)',
-                  border: `1px solid ${slugCopied ? 'rgba(52,211,153,0.3)' : 'rgba(0,229,255,0.3)'}`,
+            {/* Horizontal layout: QR left, info right */}
+            <div style={{ display: 'flex', gap: 28, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+              {/* QR Code */}
+              <div style={{ flexShrink: 0 }}>
+                <div style={{
+                  padding: 16,
+                  background: '#111118',
                   borderRadius: 'var(--radius-sm)',
-                  fontSize: '0.82rem', fontWeight: 600,
-                  color: slugCopied ? '#34d399' : 'var(--accent)',
-                  cursor: 'pointer',
-                  fontFamily: "'DM Sans', sans-serif",
-                  transition: 'all 0.15s',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {slugCopied ? 'Copied!' : 'Copy Link'}
-              </button>
-            </div>
-
-            {/* QR Code */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 20 }}>
-              <div style={{
-                padding: 16,
-                background: '#111118',
-                borderRadius: 'var(--radius-sm)',
-                border: '1px solid var(--border)',
-              }}>
-                <QRCodeSVG
-                  value={`https://signpost.community/d/${vanitySlug}`}
-                  size={200}
-                  bgColor="#111118"
-                  fgColor="#00e5ff"
-                  level="M"
-                />
-              </div>
-              <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: 12, textAlign: 'center' }}>
-                Show this to anyone who books interpreters for you
-              </p>
-            </div>
-
-            {/* Editable slug */}
-            <div style={{ borderTop: '1px solid var(--border)', paddingTop: 18 }}>
-              <label style={{
-                display: 'block', fontSize: '0.82rem', fontWeight: 600,
-                color: 'var(--text)', marginBottom: 6,
-              }}>
-                Custom URL
-              </label>
-              {slugEditing ? (
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
-                      signpost.community/d/
-                    </span>
-                    <input
-                      type="text"
-                      value={editSlug}
-                      onChange={e => {
-                        setEditSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))
-                        setSlugError('')
-                      }}
-                      maxLength={50}
-                      style={{
-                        ...inputStyle,
-                        flex: 1,
-                        fontFamily: 'monospace',
-                        borderColor: slugError ? 'rgba(255,107,133,0.5)' : 'var(--border)',
-                      }}
-                      aria-label="Custom URL slug"
-                      aria-invalid={!!slugError}
-                      aria-describedby={slugError ? 'slug-error' : undefined}
-                    />
-                  </div>
-                  {slugError && (
-                    <p id="slug-error" style={{ fontSize: '0.78rem', color: 'var(--accent3)', marginTop: 0, marginBottom: 8 }}>
-                      {slugError}
-                    </p>
-                  )}
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button
-                      type="button"
-                      onClick={handleSlugSave}
-                      disabled={slugSaving}
-                      style={{
-                        padding: '8px 20px',
-                        background: 'rgba(0,229,255,0.1)',
-                        border: '1px solid rgba(0,229,255,0.3)',
-                        borderRadius: 'var(--radius-sm)',
-                        fontSize: '0.82rem', fontWeight: 600,
-                        color: 'var(--accent)',
-                        cursor: slugSaving ? 'wait' : 'pointer',
-                        fontFamily: "'DM Sans', sans-serif",
-                        opacity: slugSaving ? 0.6 : 1,
-                      }}
-                    >
-                      {slugSaving ? 'Saving...' : 'Save'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setSlugEditing(false)
-                        setEditSlug(vanitySlug)
-                        setSlugError('')
-                      }}
-                      style={{
-                        padding: '8px 20px',
-                        background: 'none',
-                        border: '1px solid var(--border)',
-                        borderRadius: 'var(--radius-sm)',
-                        fontSize: '0.82rem',
-                        color: 'var(--muted)',
-                        cursor: 'pointer',
-                        fontFamily: "'DM Sans', sans-serif",
-                      }}
-                    >
-                      Cancel
-                    </button>
-                  </div>
+                  border: '1px solid var(--border)',
+                }}>
+                  <QRCodeSVG
+                    value={`https://signpost.community/d/${vanitySlug}`}
+                    size={200}
+                    bgColor="#111118"
+                    fgColor="#00e5ff"
+                    level="M"
+                  />
                 </div>
-              ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
-                    signpost.community/d/<span style={{ color: 'var(--accent)', fontFamily: 'monospace' }}>{vanitySlug}</span>
-                  </span>
+              </div>
+
+              {/* Info column */}
+              <div style={{ flex: 1, minWidth: 200 }}>
+                <h3 style={{
+                  ...sectionHeadingStyle,
+                  color: 'var(--accent)',
+                  borderBottomColor: 'rgba(0,229,255,0.15)',
+                  marginTop: 0,
+                }}>
+                  My Interpreter Request Link
+                </h3>
+
+                <p style={{ fontSize: '0.84rem', color: 'var(--muted)', lineHeight: 1.7, marginTop: 0, marginBottom: 14 }}>
+                  Share this link with anyone who books interpreters for you. They can use it to connect with your preferences and book interpreters based on your roster.
+                </p>
+
+                {/* URL display + Copy on same row */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
+                  <code style={{
+                    flex: 1, minWidth: 160,
+                    padding: '10px 14px',
+                    background: 'var(--surface2)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '0.88rem',
+                    color: 'var(--accent)',
+                    fontFamily: 'monospace',
+                    userSelect: 'all',
+                    wordBreak: 'break-all',
+                  }}>
+                    signpost.community/d/{vanitySlug}
+                  </code>
                   <button
                     type="button"
-                    onClick={() => setSlugEditing(true)}
+                    onClick={handleCopyLink}
                     style={{
-                      padding: '6px 14px',
+                      padding: '10px 20px',
+                      background: slugCopied ? 'rgba(52,211,153,0.15)' : 'rgba(0,229,255,0.1)',
+                      border: `1px solid ${slugCopied ? 'rgba(52,211,153,0.3)' : 'rgba(0,229,255,0.3)'}`,
+                      borderRadius: 'var(--radius-sm)',
+                      fontSize: '0.82rem', fontWeight: 600,
+                      color: slugCopied ? '#34d399' : 'var(--accent)',
+                      cursor: 'pointer',
+                      fontFamily: "'DM Sans', sans-serif",
+                      transition: 'all 0.15s',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {slugCopied ? 'Copied!' : 'Copy Link'}
+                  </button>
+                </div>
+
+                <p style={{ fontSize: '0.82rem', color: 'var(--muted)', margin: '0 0 14px' }}>
+                  Show this to anyone who books interpreters for you
+                </p>
+
+                {/* Custom URL */}
+                <div>
+                  <label style={{
+                    display: 'block', fontSize: '0.82rem', fontWeight: 600,
+                    color: 'var(--text)', marginBottom: 6,
+                  }}>
+                    Custom URL
+                  </label>
+                  {!slugEditing && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
+                        signpost.community/d/<span style={{ color: 'var(--accent)', fontFamily: 'monospace' }}>{vanitySlug}</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setSlugEditing(true)}
+                        style={{
+                          padding: '6px 14px',
+                          background: 'none',
+                          border: '1px solid var(--border)',
+                          borderRadius: 'var(--radius-sm)',
+                          fontSize: '0.78rem',
+                          color: 'var(--muted)',
+                          cursor: 'pointer',
+                          fontFamily: "'DM Sans', sans-serif",
+                        }}
+                      >
+                        Edit
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Slug editor — only visible when editing */}
+            {slugEditing && (
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: 18, marginTop: 18 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
+                    signpost.community/d/
+                  </span>
+                  <input
+                    type="text"
+                    value={editSlug}
+                    onChange={e => {
+                      setEditSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))
+                      setSlugError('')
+                    }}
+                    maxLength={50}
+                    style={{
+                      ...inputStyle,
+                      flex: 1,
+                      fontFamily: 'monospace',
+                      borderColor: slugError ? 'rgba(255,107,133,0.5)' : 'var(--border)',
+                    }}
+                    aria-label="Custom URL slug"
+                    aria-invalid={!!slugError}
+                    aria-describedby={slugError ? 'slug-error' : undefined}
+                  />
+                </div>
+                {slugError && (
+                  <p id="slug-error" style={{ fontSize: '0.78rem', color: 'var(--accent3)', marginTop: 0, marginBottom: 8 }}>
+                    {slugError}
+                  </p>
+                )}
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    type="button"
+                    onClick={handleSlugSave}
+                    disabled={slugSaving}
+                    style={{
+                      padding: '8px 20px',
+                      background: 'rgba(0,229,255,0.1)',
+                      border: '1px solid rgba(0,229,255,0.3)',
+                      borderRadius: 'var(--radius-sm)',
+                      fontSize: '0.82rem', fontWeight: 600,
+                      color: 'var(--accent)',
+                      cursor: slugSaving ? 'wait' : 'pointer',
+                      fontFamily: "'DM Sans', sans-serif",
+                      opacity: slugSaving ? 0.6 : 1,
+                    }}
+                  >
+                    {slugSaving ? 'Saving...' : 'Save'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSlugEditing(false)
+                      setEditSlug(vanitySlug)
+                      setSlugError('')
+                    }}
+                    style={{
+                      padding: '8px 20px',
                       background: 'none',
                       border: '1px solid var(--border)',
                       borderRadius: 'var(--radius-sm)',
-                      fontSize: '0.78rem',
+                      fontSize: '0.82rem',
                       color: 'var(--muted)',
                       cursor: 'pointer',
                       fontFamily: "'DM Sans', sans-serif",
                     }}
                   >
-                    Edit
+                    Cancel
                   </button>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
 

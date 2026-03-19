@@ -96,7 +96,10 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
   // Per-question response values keyed by question_key
   const [responses, setResponses] = useState<Record<string, string>>({})
   const [savedKeys, setSavedKeys] = useState<Set<string>>(new Set())
+  const [justSavedKeys, setJustSavedKeys] = useState<Set<string>>(new Set())
+  const [errorKeys, setErrorKeys] = useState<Set<string>>(new Set())
   const [savingKeys, setSavingKeys] = useState<Set<string>>(new Set())
+  const fadeTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
   const visitTracked = useRef(false)
 
   const config = getPageConfig(pathname)
@@ -195,6 +198,7 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
   // Save response on blur
   const saveResponse = useCallback(async (questionKey: string, text: string) => {
     if (!text.trim()) return
+    setErrorKeys(prev => { const next = new Set(prev); next.delete(questionKey); return next })
     setSavingKeys(prev => new Set(prev).add(questionKey))
     try {
       const supabase = createClient()
@@ -213,11 +217,19 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
         )
       if (error) {
         console.error('Failed to save beta response:', error)
+        setErrorKeys(prev => new Set(prev).add(questionKey))
       } else {
         setSavedKeys(prev => new Set(prev).add(questionKey))
+        setJustSavedKeys(prev => new Set(prev).add(questionKey))
+        // Clear any existing fade timer for this key
+        if (fadeTimers.current[questionKey]) clearTimeout(fadeTimers.current[questionKey])
+        fadeTimers.current[questionKey] = setTimeout(() => {
+          setJustSavedKeys(prev => { const next = new Set(prev); next.delete(questionKey); return next })
+        }, 3000)
       }
     } catch (err) {
       console.error('Failed to save beta response:', err)
+      setErrorKeys(prev => new Set(prev).add(questionKey))
     } finally {
       setSavingKeys(prev => {
         const next = new Set(prev)
@@ -369,9 +381,18 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
                 <div style={{ fontSize: '0.72rem', color: '#666', marginTop: 4, minHeight: 16 }}>
                   {savingKeys.has(q.key) ? (
                     <span style={{ color: 'var(--accent2)' }}>Saving...</span>
-                  ) : savedKeys.has(q.key) ? (
-                    <span style={{ color: '#00c875', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  ) : errorKeys.has(q.key) ? (
+                    <span style={{ color: 'var(--accent3)' }}>Could not save — try again</span>
+                  ) : justSavedKeys.has(q.key) ? (
+                    <span style={{ color: '#00c875', display: 'inline-flex', alignItems: 'center', gap: 4, transition: 'opacity 0.3s' }}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M5 13l4 4L19 7" />
+                      </svg>
+                      Saved
+                    </span>
+                  ) : savedKeys.has(q.key) ? (
+                    <span style={{ color: '#666', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                         <path d="M5 13l4 4L19 7" />
                       </svg>
                       Saved

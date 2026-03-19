@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import Link from 'next/link';
 import Image from 'next/image';
+import DhhBetaHomeModal from '@/components/beta/DhhBetaHomeModal';
 
 const features = [
   {
@@ -25,6 +26,7 @@ const features = [
 export default function HomePage() {
   return (
     <div>
+      <DhhBetaHomeModal />
       {/* Hero */}
       <section
         style={{
