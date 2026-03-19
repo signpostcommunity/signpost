@@ -147,6 +147,7 @@
   .hero-screenshot img {
     width: 100%; height: auto; display: block;
     border-radius: var(--radius);
+    max-height: 420px; object-fit: contain;
   }
   .screenshot-placeholder {
     color: var(--muted); font-size: 0.78rem; opacity: 0.5;
@@ -183,6 +184,7 @@
   .sub-screenshot img {
     width: 100%; height: auto; display: block;
     border-radius: 12px;
+    max-height: 340px; object-fit: contain;
   }
 
   .compact-grid {
@@ -213,6 +215,7 @@
   .compact-card .card-screenshot img {
     width: 100%; height: auto; display: block;
     border-radius: 10px;
+    max-height: 300px; object-fit: contain;
   }
 
   .callout {
@@ -346,29 +349,6 @@
     background: rgba(0,229,255,0.04); border-color: rgba(0,229,255,0.15);
   }
   .callout.accent-cyan .callout-title { color: var(--accent); }
-
-  /* ── Targeted image sizing per section ── */
-
-  /* Full-width UI screenshots: directory, dashboard, circle, preferences, track */
-  #track .hero-screenshot img,
-  #circle .hero-screenshot img,
-  #directory .hero-screenshot img,
-  #connect .hero-screenshot img,
-  #dashboard .hero-screenshot img {
-    max-width: 100%; max-height: 480px; object-fit: contain;
-  }
-
-  /* QR code + Ratings/feedback — smaller focused screenshots */
-  #connect .hero-screenshot img[alt*="QR"],
-  #ratings .hero-screenshot img {
-    max-width: 560px; max-height: 400px; object-fit: contain;
-    display: block; margin: 24px auto;
-  }
-
-  /* Video recording screenshot — medium */
-  #video .hero-screenshot img {
-    max-width: 480px; max-height: 420px; object-fit: contain;
-  }
 
   @media (max-width: 800px) {
     .sticky-nav-inner { padding: 0 16px; }
