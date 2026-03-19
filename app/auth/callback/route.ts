@@ -100,6 +100,18 @@ export async function GET(request: NextRequest) {
           .update({ vanity_slug: slug })
           .eq('id', user.id);
       }
+      // BETA: seed demo bookings + roster for new Deaf account
+      try {
+        await fetch(`${origin}/api/seed-deaf-account`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Cookie': request.headers.get('cookie') || '',
+          },
+        })
+      } catch (seedErr) {
+        console.warn('Beta: deaf seed call failed, continuing', seedErr)
+      }
     }
     return NextResponse.redirect(`${origin}/dhh/dashboard`);
   }

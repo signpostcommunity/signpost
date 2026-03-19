@@ -61,6 +61,16 @@ export default function DeafPortalClient() {
       email: signupEmail,
     });
 
+    // BETA: seed demo bookings + roster for new Deaf account
+    try {
+      await fetch('/api/seed-deaf-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+    } catch (seedErr) {
+      console.warn('Beta: deaf seed call failed, continuing', seedErr)
+    }
+
     router.refresh();
     router.push('/dhh/dashboard');
   }
