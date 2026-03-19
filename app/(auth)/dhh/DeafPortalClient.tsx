@@ -113,7 +113,7 @@ export default function DeafPortalClient() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '100px 24px 60px' }}>
+    <div className="deaf-portal-wrapper" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '100px 24px 60px' }}>
       <div style={{ maxWidth: 960, width: '100%', margin: '0 auto' }}>
 
         {/* Back link */}
@@ -142,7 +142,7 @@ export default function DeafPortalClient() {
         </div>
 
         {/* Two-card grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 48 }}>
+        <div className="deaf-portal-cards" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 48 }}>
 
           {/* Create profile card */}
           <div
@@ -360,7 +360,13 @@ export default function DeafPortalClient() {
         {/* Responsive grid */}
         <style>{`
           @media (max-width: 640px) {
-            #deaf-portal-cards { grid-template-columns: 1fr !important; }
+            .deaf-portal-cards { grid-template-columns: 1fr !important; }
+            .deaf-portal-cards > div { padding: 24px 20px !important; }
+            .deaf-portal-wrapper { padding: 80px 16px 40px !important; }
+          }
+          @media (max-width: 390px) {
+            .deaf-portal-cards > div { padding: 20px 16px !important; }
+            .deaf-portal-wrapper { padding: 72px 16px 32px !important; }
           }
         `}</style>
       </div>

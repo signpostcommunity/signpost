@@ -239,6 +239,7 @@ function DetailModal({ booking, onClose }: { booking: RecentBooking; onClose: ()
         role="dialog"
         aria-modal="true"
         aria-label={booking.title || 'Booking details'}
+        className="dhh-detail-modal"
         style={{
           background: '#111118', border: '1px solid #1e2433',
           borderRadius: 'var(--radius)', maxWidth: 700, width: '100%',
@@ -250,9 +251,10 @@ function DetailModal({ booking, onClose }: { booking: RecentBooking; onClose: ()
         <button
           onClick={onClose}
           style={{
-            position: 'absolute', top: 16, right: 16,
+            position: 'absolute', top: 12, right: 12,
             background: 'none', border: 'none', cursor: 'pointer',
-            padding: 4, borderRadius: 6,
+            padding: 10, borderRadius: 6, minWidth: 44, minHeight: 44,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
           aria-label="Close"
         >
@@ -979,6 +981,22 @@ export default function DeafDashboardOverview() {
           }
           .dhh-interp-grid {
             grid-template-columns: 1fr !important;
+          }
+          .stat-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+        }
+        @media (max-width: 390px) {
+          .stat-grid {
+            gap: 10px !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .dhh-detail-modal {
+            max-height: 95vh !important;
+            min-height: 80vh !important;
+            border-radius: 12px !important;
+            padding: 20px 16px !important;
           }
         }
       `}</style>

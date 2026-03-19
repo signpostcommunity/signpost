@@ -284,6 +284,12 @@ export default function DhhInboxPage() {
       )}
 
       <DashMobileStyles />
+
+      <style>{`
+        @media (max-width: 640px) {
+          .dash-page-content { height: auto !important; min-height: calc(100vh - 80px); }
+        }
+      `}</style>
     </div>
   )
 }

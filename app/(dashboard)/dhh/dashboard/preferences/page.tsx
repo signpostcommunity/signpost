@@ -947,6 +947,7 @@ export default function DhhPreferencesPage() {
 
         {/* Save button */}
         <button
+          className="dhh-prefs-save-btn"
           onClick={handleSave}
           disabled={saving}
           style={{
@@ -976,6 +977,13 @@ export default function DhhPreferencesPage() {
       )}
 
       <DashMobileStyles />
+
+      <style>{`
+        @media (max-width: 640px) {
+          .dash-page-content button[type="button"]:last-of-type,
+          .dhh-prefs-save-btn { width: 100% !important; }
+        }
+      `}</style>
     </div>
   )
 }

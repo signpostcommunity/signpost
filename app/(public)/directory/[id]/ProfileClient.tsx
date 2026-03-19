@@ -254,6 +254,7 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
 
             {/* Right: action buttons */}
             <div
+              className="profile-action-buttons"
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -556,6 +557,8 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
           .profile-header-inner { padding: 16px 16px 0 !important; }
           .profile-content-inner { padding: 20px 16px 60px !important; }
           .profile-flag-row { padding: 0 16px 32px !important; }
+          .profile-action-buttons { width: 100% !important; min-width: 0 !important; }
+          .profile-action-buttons a, .profile-action-buttons button { width: 100% !important; }
         }
       `}</style>
     </div>

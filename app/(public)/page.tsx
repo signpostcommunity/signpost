@@ -244,12 +244,16 @@ export default function HomePage() {
           .hero-ctas { justify-content: center; max-width: 100%; }
         }
         @media (max-width: 480px) {
-          .hero-section { padding: 60px 24px !important; }
+          .hero-section { padding: 40px 16px !important; }
           .hero-logo-img { max-width: 260px !important; margin: 0 auto; display: block; }
           .hero-ctas { flex-direction: column; align-items: center; }
-          .hero-ctas a { max-width: 320px; }
+          .hero-ctas a { max-width: 100%; }
           .feature-highlights-section { padding: 0 16px 60px !important; }
           .features-grid { grid-template-columns: 1fr !important; }
+        }
+        @media (max-width: 390px) {
+          .hero-section { padding: 32px 16px !important; }
+          .hero-logo-img { max-width: 220px !important; }
         }
       `}</style>
     </div>

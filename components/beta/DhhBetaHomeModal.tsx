@@ -51,6 +51,7 @@ export default function DhhBetaHomeModal() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="dhh-beta-home-title"
+        className="dhh-beta-modal-inner"
         style={{
           background: 'var(--surface)',
           border: '1px solid var(--border)',
@@ -143,6 +144,14 @@ export default function DhhBetaHomeModal() {
           </button>
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 480px) {
+          .dhh-beta-modal-inner { max-height: 95vh !important; }
+          .dhh-beta-modal-inner > div:first-child { padding: 20px 16px 12px !important; }
+          .dhh-beta-modal-inner > div:last-child { padding: 12px 16px 16px !important; }
+        }
+      `}</style>
     </div>
   )
 }

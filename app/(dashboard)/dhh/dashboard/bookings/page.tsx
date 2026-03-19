@@ -1259,6 +1259,21 @@ export default function DhhBookingsPage() {
       )}
 
       <DashMobileStyles />
+
+      <style>{`
+        @media (max-width: 640px) {
+          .dash-page-content [role="tablist"] {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+          }
+          .dash-page-content [role="tablist"]::-webkit-scrollbar { display: none; }
+          .dash-page-content [role="tablist"] button {
+            white-space: nowrap;
+            flex-shrink: 0;
+          }
+        }
+      `}</style>
     </div>
   )
 }

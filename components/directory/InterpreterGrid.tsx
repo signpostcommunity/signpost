@@ -56,6 +56,9 @@ export default function InterpreterGrid({ interpreters, onVideoPreview, onAddToL
         @media (max-width: 640px) {
           .interp-grid { grid-template-columns: repeat(2, 1fr) !important; }
         }
+        @media (max-width: 420px) {
+          .interp-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+        }
       `}</style>
     </>
   );

@@ -1319,6 +1319,21 @@ export default function DhhRequestsListPage() {
             grid-template-columns: 1fr !important;
           }
         }
+        @media (max-width: 640px) {
+          .dash-page-content [role="tablist"],
+          .dash-page-content > div:nth-child(2) {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+          }
+          .dash-page-content [role="tablist"]::-webkit-scrollbar,
+          .dash-page-content > div:nth-child(2)::-webkit-scrollbar { display: none; }
+          .dash-page-content [role="tablist"] button,
+          .dash-page-content > div:nth-child(2) button {
+            white-space: nowrap;
+            flex-shrink: 0;
+          }
+        }
       `}</style>
     </div>
   )
