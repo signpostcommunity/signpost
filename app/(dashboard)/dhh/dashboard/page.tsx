@@ -670,8 +670,47 @@ export default function DeafDashboardOverview() {
         .eq('deaf_user_id', deafProfileId)
         .in('tier', ['preferred', 'approved'])
         .or('do_not_book.is.null,do_not_book.eq.false'),
-      // "Interpreters to Review" — TODO: count completed bookings without ratings
-      Promise.resolve({ count: 0, error: null } as { count: number; error: null }),
+      // "Interpreters to Review" — count confirmed interpreters on past bookings not yet rated
+      (async () => {
+        try {
+          // Get booking IDs where this user is a DHH client
+          const { data: clientRows } = await supabase
+            .from('booking_dhh_clients')
+            .select('booking_id')
+            .eq('dhh_user_id', user.id)
+          if (!clientRows || clientRows.length === 0) return { count: 0, error: null }
+          const bookingIds = clientRows.map(r => r.booking_id)
+
+          // Get past bookings (date < today, status completed or filled)
+          const today = new Date().toISOString().split('T')[0]
+          const { data: pastBookings } = await supabase
+            .from('bookings')
+            .select('id')
+            .in('id', bookingIds)
+            .in('status', ['completed', 'filled'])
+            .lt('date', today)
+          if (!pastBookings || pastBookings.length === 0) return { count: 0, error: null }
+          const pastIds = pastBookings.map(b => b.id)
+
+          // Count confirmed recipients on those bookings
+          const { count: confirmedCount } = await supabase
+            .from('booking_recipients')
+            .select('id', { count: 'exact', head: true })
+            .in('booking_id', pastIds)
+            .eq('status', 'confirmed')
+
+          // Count ratings already submitted by this user for those bookings
+          const { count: ratedCount } = await supabase
+            .from('interpreter_ratings')
+            .select('id', { count: 'exact', head: true })
+            .eq('deaf_user_id', user.id)
+            .in('booking_id', pastIds)
+
+          return { count: Math.max(0, (confirmedCount ?? 0) - (ratedCount ?? 0)), error: null }
+        } catch {
+          return { count: 0, error: null }
+        }
+      })() as Promise<{ count: number; error: null }>,
       supabase
         .from('trusted_deaf_circle')
         .select('id', { count: 'exact', head: true })
