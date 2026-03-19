@@ -347,12 +347,27 @@
   }
   .callout.accent-cyan .callout-title { color: var(--accent); }
 
-  .section img {
-    max-width: min(560px, 100%);
-    height: auto;
-    display: block;
-    margin: 24px auto;
-    border-radius: 12px;
+  /* ── Targeted image sizing per section ── */
+
+  /* Full-width UI screenshots: directory, dashboard, circle, preferences, track */
+  #track .hero-screenshot img,
+  #circle .hero-screenshot img,
+  #directory .hero-screenshot img,
+  #connect .hero-screenshot img,
+  #dashboard .hero-screenshot img {
+    max-width: 100%; max-height: 480px; object-fit: contain;
+  }
+
+  /* QR code + Ratings/feedback — smaller focused screenshots */
+  #connect .hero-screenshot img[alt*="QR"],
+  #ratings .hero-screenshot img {
+    max-width: 560px; max-height: 400px; object-fit: contain;
+    display: block; margin: 24px auto;
+  }
+
+  /* Video recording screenshot — medium */
+  #video .hero-screenshot img {
+    max-width: 480px; max-height: 420px; object-fit: contain;
   }
 
   @media (max-width: 800px) {
