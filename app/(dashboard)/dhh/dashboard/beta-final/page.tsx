@@ -69,6 +69,9 @@ const QUESTIONS: QuestionDef[] = [
       "I'm not sure I want that much visibility.",
     ],
     followUp: { key: 'transparency_followup', label: "What would you want to be able to see or do that you can't right now?" },
+    freeTextQuestions: [
+      { key: 'transparency_anxiety', label: 'Does seeing the real-time status of your request reduce your anxiety, or does it feel like too much information?' },
+    ],
   },
   {
     step: 5,
@@ -82,6 +85,9 @@ const QUESTIONS: QuestionDef[] = [
       "No. I couldn't tell enough from what was there.",
     ],
     followUp: { key: 'directory_followup', label: "What's missing that you'd need to make a confident choice?" },
+    freeTextQuestions: [
+      { key: 'directory_personality', label: "When looking at a profile, did you feel like you were 'meeting' a professional, or just looking at a resume?" },
+    ],
   },
   {
     step: 6,

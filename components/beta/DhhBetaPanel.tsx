@@ -14,7 +14,7 @@ type PageConfig = {
 function getPageConfig(pathname: string): PageConfig | null {
   if (pathname === '/dhh') {
     return {
-      prompts: ['Take a moment to read this page. Does it feel like it was made for you?'],
+      prompts: ['Take a look at this page. Does the language here feel like it was written by people who understand your experience?'],
       questions: [
         { key: 'portal_landing_feedback', label: "Is there anything about how we've described this platform that feels off, missing, or surprising?" },
       ],
@@ -24,7 +24,7 @@ function getPageConfig(pathname: string): PageConfig | null {
     return {
       prompts: ["You're creating your account. Note anything confusing or missing."],
       questions: [
-        { key: 'signup_feedback', label: "Did we ask for anything you weren't comfortable sharing? Was there anything we should have asked for that we didn't?" },
+        { key: 'signup_feedback', label: "Did we ask for anything that felt uncomfortable sharing? Is there a part of your identity or communication preference we forgot to include?" },
       ],
     }
   }
@@ -41,6 +41,7 @@ function getPageConfig(pathname: string): PageConfig | null {
       prompts: ["You need an interpreter for a doctor's appointment next week. Find someone you'd want to book."],
       questions: [
         { key: 'directory_feedback', label: "What information would you need to see that isn't here? What do you wish you could filter by?" },
+        { key: 'directory_profiles_feedback', label: "What information is missing from these profiles? (e.g., specific certifications, video intros, specialized experience like medical/legal?)" },
       ],
     }
   }
@@ -59,7 +60,7 @@ function getPageConfig(pathname: string): PageConfig | null {
         'Try this: Add an interpreter to your Preferred List. Add a different interpreter to your Do Not Book list.',
       ],
       questions: [
-        { key: 'preferences_feedback', label: "Does having a Preferred List and a Do Not Book list feel useful? Is there anything about how this works that you'd want to change?" },
+        { key: 'preferences_feedback', label: "Does the 'Do Not Book' list feel clear and safe to use? How would you want us to handle that information to ensure your privacy? Is there anything you'd like to change?" },
       ],
     }
   }
