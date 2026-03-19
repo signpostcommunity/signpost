@@ -9,6 +9,7 @@ import { DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import RequestTracker from '@/components/dashboard/dhh/RequestTracker'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
 import InterpreterRequestLinkCard from '@/components/dashboard/dhh/InterpreterRequestLinkCard'
+import PendingRolesNudge from '@/components/shared/PendingRolesNudge'
 
 /* ── Types ── */
 
@@ -806,6 +807,8 @@ export default function DeafDashboardOverview() {
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>Here&apos;s a snapshot of your activity on signpost.</p>
       </div>
+
+      <PendingRolesNudge accentColor="var(--accent2)" />
 
       {/* Stat cards + request link */}
       <div className="dhh-top-columns" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 24, marginBottom: 32, alignItems: 'stretch' }}>

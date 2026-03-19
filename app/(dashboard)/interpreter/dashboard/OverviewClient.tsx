@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { BetaBanner, SectionLabel, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+import PendingRolesNudge from '@/components/shared/PendingRolesNudge'
 
 /* ── Types ── */
 
@@ -408,6 +409,8 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>Here&apos;s a snapshot of your activity on signpost.</p>
       </div>
+
+      <PendingRolesNudge accentColor="var(--accent)" />
 
       {/* Draft resume banner */}
       {hasDraftProfile && (

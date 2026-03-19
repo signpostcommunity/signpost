@@ -5,9 +5,9 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 const ROLE_LABELS: Record<string, { label: string; href: string }> = {
-  interpreter: { label: 'Interpreter Profile', href: '/interpreter' },
-  deaf: { label: 'D/DB/HH Personal Account', href: '/dhh' },
-  requester: { label: 'Requester Portal', href: '/request' },
+  interpreter: { label: 'Interpreter Profile', href: '/interpreter/signup?addRole=true' },
+  deaf: { label: 'D/DB/HH Personal Account', href: '/dhh/signup?addRole=true' },
+  requester: { label: 'Requester Portal', href: '/request/signup?addRole=true' },
 }
 
 export function usePendingRoles() {

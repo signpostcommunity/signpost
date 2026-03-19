@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { useForm } from './FormContext'
 import { StepWrapper, FormSection, SectionTitle, FormNav } from './FormFields'
@@ -49,6 +49,8 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const isAddRole = searchParams.get('addRole') === 'true'
 
   const allAgreed = formData.agreeTerms && formData.agreeBooking && formData.agreeCredentials
 
@@ -156,6 +158,26 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
       if (!profileId) {
         console.error('[signup] No profile ID returned after upsert')
         throw new Error('Save failed: could not find your profile')
+      }
+
+      // Clean up pending_roles if adding a role
+      if (isAddRole) {
+        try {
+          const { data: upProfile } = await supabase
+            .from('user_profiles')
+            .select('pending_roles')
+            .eq('id', userId)
+            .single()
+          if (upProfile?.pending_roles?.includes('interpreter')) {
+            const updated = (upProfile.pending_roles as string[]).filter((r: string) => r !== 'interpreter')
+            await supabase
+              .from('user_profiles')
+              .update({ pending_roles: updated })
+              .eq('id', userId)
+          }
+        } catch (e) {
+          console.error('Failed to clean pending_roles:', e)
+        }
       }
 
       // Write certifications to interpreter_certifications table

@@ -18,9 +18,9 @@ const ROLES: RoleInfo[] = [
 ]
 
 const PENDING_ROLE_LABELS: Record<string, { label: string; href: string }> = {
-  interpreter: { label: 'Interpreter Profile', href: '/interpreter' },
-  deaf: { label: 'D/DB/HH Account', href: '/dhh' },
-  requester: { label: 'Requester Portal', href: '/request' },
+  interpreter: { label: 'Interpreter Profile', href: '/interpreter/signup?addRole=true' },
+  deaf: { label: 'D/DB/HH Account', href: '/dhh/signup?addRole=true' },
+  requester: { label: 'Requester Portal', href: '/request/signup?addRole=true' },
 }
 
 interface UserRoles {
@@ -103,7 +103,10 @@ export default function RoleSwitcher({ currentRole }: { currentRole: string }) {
   const otherRoles = roles.active.filter(r => r !== currentRole)
   const pendingRoles = roles.pending.filter(r => !roles.active.includes(r))
 
-  if (otherRoles.length === 0 && pendingRoles.length === 0) return null
+  const addableRoles = ['interpreter', 'deaf', 'requester'].filter(
+    r => !roles.active.includes(r) && !pendingRoles.includes(r)
+  )
+  if (otherRoles.length === 0 && pendingRoles.length === 0 && addableRoles.length === 0) return null
 
   const currentRoleInfo = ROLES.find(r => r.key === currentRole)
 
@@ -202,6 +205,56 @@ export default function RoleSwitcher({ currentRole }: { currentRole: string }) {
               </Link>
             )
           })}
+
+          {/* Add a role */}
+          {(() => {
+            const dropdownAddableRoles = ['interpreter', 'deaf', 'requester'].filter(
+              r => !roles.active.includes(r) && !pendingRoles.includes(r)
+            )
+            if (dropdownAddableRoles.length === 0) return null
+            const ADD_ROLE_INFO: Record<string, { label: string; href: string }> = {
+              interpreter: { label: 'Interpreter Profile', href: '/interpreter/signup?addRole=true' },
+              deaf: { label: 'Deaf/DB/HH Profile', href: '/dhh/signup?addRole=true' },
+              requester: { label: 'Requester Profile', href: '/request/signup?addRole=true' },
+            }
+            return (
+              <>
+                {(otherRoles.length > 0 || pendingRoles.length > 0) && (
+                  <div style={{ height: 1, background: 'var(--border)', margin: '4px 0' }} />
+                )}
+                <div style={{
+                  padding: '6px 14px 2px',
+                  fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.08em',
+                  textTransform: 'uppercase', color: 'var(--muted)', opacity: 0.6,
+                }}>
+                  Add a role
+                </div>
+                {dropdownAddableRoles.map(roleKey => {
+                  const info = ADD_ROLE_INFO[roleKey]
+                  if (!info) return null
+                  return (
+                    <Link
+                      key={`add-${roleKey}`}
+                      href={info.href}
+                      onClick={() => setOpen(false)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 8,
+                        padding: '6px 14px', textDecoration: 'none',
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontSize: '0.78rem', color: 'var(--muted)',
+                        transition: 'background 0.1s',
+                      }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--surface2)' }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
+                    >
+                      <span style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>+</span>
+                      {info.label}
+                    </Link>
+                  )
+                })}
+              </>
+            )
+          })()}
         </div>
       )}
     </div>

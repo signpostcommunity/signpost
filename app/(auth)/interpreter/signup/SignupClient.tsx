@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { FormProvider, useForm } from '@/components/interpreter-signup/FormContext'
 import SignupStepper from '@/components/interpreter-signup/SignupStepper'
@@ -18,6 +19,8 @@ function SignupForm() {
   const { currentStep, setCurrentStep, formData, updateFormData, setDraftUserId, saveDraft, draftUserId } = useForm()
   const [step1Error, setStep1Error] = useState<string | null>(null)
   const [isCreatingAccount, setIsCreatingAccount] = useState(false)
+  const searchParams = useSearchParams()
+  const isAddRole = searchParams.get('addRole') === 'true'
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,21 +31,33 @@ function SignupForm() {
   useEffect(() => {
     if (draftUserId) return // Already set
     ;(async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        setDraftUserId(user.id)
-        // Pre-fill name from Google metadata if available
-        const fullName = user.user_metadata?.full_name
-        if (fullName && !formData.firstName) {
-          const parts = fullName.split(' ')
-          updateFormData({
-            firstName: parts[0] || '',
-            lastName: parts.slice(1).join(' ') || '',
-            email: user.email || '',
-          })
-        } else if (user.email && !formData.email) {
-          updateFormData({ email: user.email })
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          setDraftUserId(user.id)
+          // Pre-fill name from Google metadata if available
+          const fullName = user.user_metadata?.full_name
+          if (fullName && !formData.firstName) {
+            const parts = fullName.split(' ')
+            updateFormData({
+              firstName: parts[0] || '',
+              lastName: parts.slice(1).join(' ') || '',
+              email: user.email || '',
+            })
+          } else if (user.email && !formData.email) {
+            updateFormData({ email: user.email })
+          }
+
+          if (isAddRole) {
+            // Skip to step 2 for add-role users
+            setCurrentStep(2)
+          }
+        } else if (isAddRole) {
+          // Not logged in but trying to add role — redirect to login
+          window.location.href = '/interpreter/login'
         }
+      } catch (e) {
+        console.error('Auth check failed:', e)
       }
     })()
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -160,7 +175,9 @@ function SignupForm() {
 export default function SignupClient() {
   return (
     <FormProvider>
-      <SignupForm />
+      <Suspense fallback={null}>
+        <SignupForm />
+      </Suspense>
     </FormProvider>
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { useForm } from './FormContext'
 
 const STEPS = [
@@ -15,6 +16,12 @@ const STEPS = [
 export default function SignupStepper() {
   const { currentStep, setCurrentStep, saveDraft, isSaving, draftUserId } = useForm()
   const [draftToast, setDraftToast] = useState(false)
+  const searchParams = useSearchParams()
+  const isAddRole = searchParams.get('addRole') === 'true'
+  const displaySteps = isAddRole
+    ? STEPS.slice(1).map((s, i) => `${i + 1}. ${s.split('. ')[1]}`)
+    : STEPS
+  const stepOffset = isAddRole ? 1 : 0
 
   async function handleSaveExit() {
     await saveDraft()
@@ -48,8 +55,8 @@ export default function SignupStepper() {
         overflowX: 'auto', WebkitOverflowScrolling: 'touch',
         scrollbarWidth: 'none',
       }}>
-        {STEPS.map((label, i) => {
-          const stepNum = i + 1
+        {displaySteps.map((label, i) => {
+          const stepNum = i + 1 + stepOffset
           const isActive = stepNum === currentStep
           const isDone = stepNum < currentStep
           return (
@@ -82,8 +89,8 @@ export default function SignupStepper() {
         <div style={{
           display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 10,
         }}>
-          {STEPS.map((_, i) => {
-            const stepNum = i + 1
+          {displaySteps.map((_, i) => {
+            const stepNum = i + 1 + stepOffset
             const isActive = stepNum === currentStep
             const isDone = stepNum < currentStep
             return (
@@ -104,13 +111,13 @@ export default function SignupStepper() {
                   minWidth: 32, minHeight: 32,
                 }}
               >
-                {isDone ? '\u2713' : stepNum}
+                {isDone ? '\u2713' : i + 1}
               </button>
             )
           })}
         </div>
         <div style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '0.82rem' }}>
-          {STEPS[currentStep - 1]}
+          {displaySteps[currentStep - 1 - stepOffset] || ''}
         </div>
       </div>
 

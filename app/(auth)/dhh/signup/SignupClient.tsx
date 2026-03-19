@@ -1,15 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton';
 import LocationPicker from '@/components/shared/LocationPicker';
 import { generateSlug } from '@/lib/slugUtils';
 
-export default function DeafSignupPage() {
+function DeafSignupForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isAddRole = searchParams.get('addRole') === 'true';
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,6 +21,30 @@ export default function DeafSignupPage() {
   const [pendingRoles, setPendingRoles] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [existingUserId, setExistingUserId] = useState<string | null>(null);
+
+  // Add-role initialization: fetch existing user and pre-fill
+  useEffect(() => {
+    if (!isAddRole) return;
+    (async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          window.location.href = '/dhh/login';
+          return;
+        }
+        setExistingUserId(user.id);
+        // Pre-fill from auth metadata
+        const fullName = user.user_metadata?.full_name;
+        if (fullName) setName(fullName);
+        if (user.email) setEmail(user.email);
+      } catch (e) {
+        console.error('Add role init failed:', e);
+      }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAddRole]);
 
   function togglePendingRole(role: string) {
     setPendingRoles(prev => prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role]);
@@ -26,59 +52,97 @@ export default function DeafSignupPage() {
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
-    if (!name || !email || !password) {
+    if (!name || !email || (!isAddRole && !password)) {
       setError('Please fill in all required fields.');
       return;
     }
     setError('');
     setLoading(true);
 
-    const supabase = createClient();
-    const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
-    if (authError || !authData.user) {
-      setError(authError?.message || 'Failed to create account');
-      setLoading(false);
-      return;
-    }
+    try {
+      const supabase = createClient();
+      let userId: string;
 
-    const userId = authData.user.id;
-    const firstName = name.split(' ')[0] || '';
-    const lastNameVal = name.split(' ').slice(1).join(' ') || '';
-    await supabase.from('user_profiles').insert({ id: userId, role: 'deaf', pending_roles: pendingRoles.length > 0 ? pendingRoles : [] });
-    await supabase.from('deaf_profiles').insert({
-      id: userId,
-      user_id: userId,
-      name,
-      first_name: firstName,
-      last_name: lastNameVal,
-      email,
-      country_name: country,
-      state,
-      city,
-    });
+      if (isAddRole && existingUserId) {
+        // Skip account creation for existing users
+        userId = existingUserId;
+      } else {
+        const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
+        if (authError || !authData.user) {
+          setError(authError?.message || 'Failed to create account');
+          setLoading(false);
+          return;
+        }
+        userId = authData.user.id;
 
-    // Auto-generate vanity slug
-    const baseSlug = generateSlug(firstName, lastNameVal).slice(0, 50);
-    if (baseSlug && baseSlug.length >= 3) {
-      let slug = baseSlug;
-      let attempt = 1;
-      while (attempt <= 20) {
-        const { data: existing } = await supabase
-          .from('deaf_profiles')
-          .select('vanity_slug')
-          .ilike('vanity_slug', slug)
-          .maybeSingle();
-        if (!existing) break;
-        attempt++;
-        slug = `${baseSlug}-${attempt}`;
+        // Only insert user_profiles for new accounts
+        await supabase.from('user_profiles').insert({
+          id: userId, role: 'deaf',
+          pending_roles: pendingRoles.length > 0 ? pendingRoles : [],
+        });
       }
-      await supabase
-        .from('deaf_profiles')
-        .update({ vanity_slug: slug })
-        .eq('id', userId);
-    }
 
-    router.push('/dhh/dashboard');
+      const firstName = name.split(' ')[0] || '';
+      const lastNameVal = name.split(' ').slice(1).join(' ') || '';
+
+      await supabase.from('deaf_profiles').insert({
+        id: userId,
+        user_id: userId,
+        name,
+        first_name: firstName,
+        last_name: lastNameVal,
+        email,
+        country_name: country,
+        state,
+        city,
+      });
+
+      // Auto-generate vanity slug
+      const baseSlug = generateSlug(firstName, lastNameVal).slice(0, 50);
+      if (baseSlug && baseSlug.length >= 3) {
+        let slug = baseSlug;
+        let attempt = 1;
+        while (attempt <= 20) {
+          const { data: existing } = await supabase
+            .from('deaf_profiles')
+            .select('vanity_slug')
+            .ilike('vanity_slug', slug)
+            .maybeSingle();
+          if (!existing) break;
+          attempt++;
+          slug = `${baseSlug}-${attempt}`;
+        }
+        await supabase
+          .from('deaf_profiles')
+          .update({ vanity_slug: slug })
+          .eq('id', userId);
+      }
+
+      // Clean up pending_roles if adding a role
+      if (isAddRole) {
+        try {
+          const { data: upProfile } = await supabase
+            .from('user_profiles')
+            .select('pending_roles')
+            .eq('id', userId)
+            .single();
+          if (upProfile?.pending_roles?.includes('deaf')) {
+            const updated = (upProfile.pending_roles as string[]).filter((r: string) => r !== 'deaf');
+            await supabase
+              .from('user_profiles')
+              .update({ pending_roles: updated })
+              .eq('id', userId);
+          }
+        } catch (cleanupErr) {
+          console.error('Failed to clean pending_roles:', cleanupErr);
+        }
+      }
+
+      router.push('/dhh/dashboard');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Signup failed');
+      setLoading(false);
+    }
   }
 
   return (
@@ -109,30 +173,49 @@ export default function DeafSignupPage() {
           D/DB/HH Portal
         </div>
         <h1 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.8rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '8px' }}>
-          Create Account
+          {isAddRole ? 'Add Deaf/DB/HH Profile' : 'Create Account'}
         </h1>
-        <p style={{ color: 'var(--muted)', marginBottom: '12px', fontSize: '0.9rem' }}>
-          Already have an account?{' '}
-          <Link href="/dhh/login" style={{ color: 'var(--accent2)', textDecoration: 'none' }}>
-            Sign in
-          </Link>
-        </p>
-        <p style={{
-          color: 'var(--muted)',
-          fontSize: '0.78rem',
-          marginTop: 6,
-          lineHeight: 1.5,
-          marginBottom: '28px',
-        }}>
-          After completing signup, you'll have the option to add an interpreter or requester profile to your account.
-        </p>
+        {!isAddRole && (
+          <p style={{ color: 'var(--muted)', marginBottom: '12px', fontSize: '0.9rem' }}>
+            Already have an account?{' '}
+            <Link href="/dhh/login" style={{ color: 'var(--accent2)', textDecoration: 'none' }}>
+              Sign in
+            </Link>
+          </p>
+        )}
+        {!isAddRole && (
+          <p style={{
+            color: 'var(--muted)',
+            fontSize: '0.78rem',
+            marginTop: 6,
+            lineHeight: 1.5,
+            marginBottom: '28px',
+          }}>
+            After completing signup, you'll have the option to add an interpreter or requester profile to your account.
+          </p>
+        )}
+        {isAddRole && (
+          <p style={{
+            color: 'var(--muted)',
+            fontSize: '0.78rem',
+            marginTop: 6,
+            lineHeight: 1.5,
+            marginBottom: '28px',
+          }}>
+            Add a Deaf/DB/HH profile to your existing account.
+          </p>
+        )}
 
-        <GoogleSignInButton role="deaf" label="Sign up with Google" />
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '4px 0' }}>
-          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-          <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>or</span>
-          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-        </div>
+        {!isAddRole && (
+          <>
+            <GoogleSignInButton role="deaf" label="Sign up with Google" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '4px 0' }}>
+              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+              <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>or</span>
+              <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+            </div>
+          </>
+        )}
         <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {error && (
             <div style={{ background: 'rgba(255,107,133,0.1)', border: '1px solid rgba(255,107,133,0.3)', borderRadius: '8px', padding: '12px 16px', color: 'var(--accent3)', fontSize: '0.85rem' }}>
@@ -141,7 +224,9 @@ export default function DeafSignupPage() {
           )}
           <AuthInput label="Full Name" value={name} onChange={setName} placeholder="Your name" required />
           <AuthInput label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" required />
-          <AuthInput label="Password" type="password" value={password} onChange={setPassword} placeholder="Minimum 8 characters" required />
+          {!isAddRole && (
+            <AuthInput label="Password" type="password" value={password} onChange={setPassword} placeholder="Minimum 8 characters" required />
+          )}
           <div style={{ marginTop: 4 }}>
             <LocationPicker
               country={country}
@@ -155,39 +240,49 @@ export default function DeafSignupPage() {
               accentColor="var(--accent2)"
             />
           </div>
-          {/* Multi-role checkboxes */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
-            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.5 }}>
-              <input
-                type="checkbox"
-                checked={pendingRoles.includes('interpreter')}
-                onChange={() => togglePendingRole('interpreter')}
-                style={{ marginTop: 3, accentColor: 'var(--accent2)', flexShrink: 0, width: 'auto' }}
-              />
-              <span>I am also a sign language interpreter and would like to create an interpreter profile.</span>
-            </label>
-            <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.5 }}>
-              <input
-                type="checkbox"
-                checked={pendingRoles.includes('requester')}
-                onChange={() => togglePendingRole('requester')}
-                style={{ marginTop: 3, accentColor: 'var(--accent2)', flexShrink: 0, width: 'auto' }}
-              />
-              <span>I also coordinate interpreters for an organization and would like to have access to the full requester portal.</span>
-            </label>
-            {pendingRoles.length > 0 && (
-              <p style={{ color: 'var(--muted)', fontSize: '0.75rem', marginLeft: 26, lineHeight: 1.5 }}>
-                ↳ You&apos;ll find a setup prompt in your portal after you finish here. Just look for the 🔴 on your role switcher.
-              </p>
-            )}
-          </div>
+          {/* Multi-role checkboxes — hidden in add-role mode */}
+          {!isAddRole && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.5 }}>
+                <input
+                  type="checkbox"
+                  checked={pendingRoles.includes('interpreter')}
+                  onChange={() => togglePendingRole('interpreter')}
+                  style={{ marginTop: 3, accentColor: 'var(--accent2)', flexShrink: 0, width: 'auto' }}
+                />
+                <span>I am also a sign language interpreter and would like to create an interpreter profile.</span>
+              </label>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.5 }}>
+                <input
+                  type="checkbox"
+                  checked={pendingRoles.includes('requester')}
+                  onChange={() => togglePendingRole('requester')}
+                  style={{ marginTop: 3, accentColor: 'var(--accent2)', flexShrink: 0, width: 'auto' }}
+                />
+                <span>I also coordinate interpreters for an organization and would like to have access to the full requester portal.</span>
+              </label>
+              {pendingRoles.length > 0 && (
+                <p style={{ color: 'var(--muted)', fontSize: '0.75rem', marginLeft: 26, lineHeight: 1.5 }}>
+                  You&apos;ll find a setup prompt in your portal after you finish here. Just look for the red dot on your role switcher.
+                </p>
+              )}
+            </div>
+          )}
 
           <button type="submit" disabled={loading} className="btn-primary btn-large" style={{ marginTop: '8px', opacity: loading ? 0.7 : 1, background: 'var(--accent2)', color: '#000' }}>
-            {loading ? 'Creating account…' : 'Create Account →'}
+            {loading ? (isAddRole ? 'Adding profile...' : 'Creating account...') : (isAddRole ? 'Add Profile' : 'Create Account')}
           </button>
         </form>
       </div>
     </div>
+  );
+}
+
+export default function DeafSignupPage() {
+  return (
+    <Suspense fallback={null}>
+      <DeafSignupForm />
+    </Suspense>
   );
 }
 
