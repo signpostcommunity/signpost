@@ -83,6 +83,7 @@ export default function DeafSignupPage() {
 
   return (
     <div
+      className="dhh-signup-container"
       style={{
         display: 'flex',
         flexDirection: 'column',

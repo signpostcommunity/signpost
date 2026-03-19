@@ -471,4 +471,63 @@ img {
   .modal-dialog .modal-actions .ghost-btn {
     width: 100% !important;
   }
+
+  /* Modal footer: stack buttons vertically on mobile */
+  .modal-dialog-footer {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .modal-dialog-footer button {
+    width: 100% !important;
+  }
+
+  /* Modal close button: adequate touch target */
+  .modal-close-btn {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* DHH Signup page mobile */
+  .dhh-signup-container {
+    padding: 24px 16px !important;
+  }
+
+  /* Privacy page mobile */
+  .privacy-page {
+    padding: 32px 16px 60px !important;
+  }
+  .privacy-page h1 {
+    font-size: 1.5rem !important;
+  }
+  .privacy-page h2 {
+    font-size: 1.15rem !important;
+  }
+  .privacy-page h3 {
+    font-size: 0.95rem !important;
+  }
+
+  /* Beta final survey mobile */
+  .beta-final-page {
+    padding: 24px 16px 60px !important;
+  }
+  .beta-final-nav {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  .beta-final-nav button {
+    width: 100% !important;
+  }
+  .beta-final-choice-card {
+    padding: 16px !important;
+    min-height: 44px !important;
+  }
+}
+
+/* Body scroll lock when beta panel is open on mobile */
+body.beta-panel-open-mobile {
+  overflow: hidden !important;
+  touch-action: none;
 }

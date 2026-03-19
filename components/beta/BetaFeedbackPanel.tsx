@@ -261,7 +261,7 @@ export default function BetaFeedbackPanel() {
     }
   }, [pathname]);
 
-  // Push page content right when panel is open (desktop only)
+  // Push page content right when panel is open (desktop only), lock body scroll on mobile
   useEffect(() => {
     const el = document.getElementById('site-content');
     if (!el) return;
@@ -273,9 +273,16 @@ export default function BetaFeedbackPanel() {
       el.classList.remove('panel-open');
       document.documentElement.style.setProperty('--panel-offset', '0px');
     }
+    // Lock body scroll on mobile when panel is open
+    if (isOpen && isMobile) {
+      document.body.classList.add('beta-panel-open-mobile');
+    } else {
+      document.body.classList.remove('beta-panel-open-mobile');
+    }
     return () => {
       el.classList.remove('panel-open');
       document.documentElement.style.setProperty('--panel-offset', '0px');
+      document.body.classList.remove('beta-panel-open-mobile');
     };
   }, [isOpen]);
 

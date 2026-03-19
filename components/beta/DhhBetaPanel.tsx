@@ -105,17 +105,24 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
 
   const config = getPageConfig(pathname)
 
-  // Push body content left when panel is open
+  // Push body content left when panel is open (desktop), lock scroll on mobile
   useEffect(() => {
-    const body = document.body
-    if (isOpen) {
-      body.style.paddingRight = '320px'
-      body.style.transition = 'padding-right 0.25s ease'
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
+    if (isOpen && !isMobile) {
+      document.body.style.paddingRight = '320px'
+      document.body.style.transition = 'padding-right 0.25s ease'
     } else {
-      body.style.paddingRight = '0'
+      document.body.style.paddingRight = '0'
+    }
+    // Lock body scroll on mobile when panel is open
+    if (isOpen && isMobile) {
+      document.body.classList.add('beta-panel-open-mobile')
+    } else {
+      document.body.classList.remove('beta-panel-open-mobile')
     }
     return () => {
-      body.style.paddingRight = '0'
+      document.body.style.paddingRight = '0'
+      document.body.classList.remove('beta-panel-open-mobile')
     }
   }, [isOpen])
 

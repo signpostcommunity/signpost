@@ -1019,6 +1019,7 @@ export default function AddToListModal({
 
         {/* Footer */}
         <div
+          className="modal-dialog-footer"
           style={{
             padding: '20px 28px',
             borderTop: '1px solid var(--border, #1e2433)',

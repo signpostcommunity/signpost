@@ -136,13 +136,11 @@ const QUESTIONS: QuestionDef[] = [
 
 // ── Styles ──────────────────────────────────────────────────────────────────
 
-const cardStyle: (selected: boolean) => React.CSSProperties = (selected) => ({
+const cardStyleBase: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: 12,
   padding: '14px 16px',
-  background: selected ? 'rgba(157,135,255,0.12)' : 'var(--surface)',
-  border: `1.5px solid ${selected ? 'var(--accent2)' : 'var(--border)'}`,
   borderRadius: 'var(--radius-sm)',
   cursor: 'pointer',
   transition: 'border-color 0.15s, background 0.15s',
@@ -152,6 +150,12 @@ const cardStyle: (selected: boolean) => React.CSSProperties = (selected) => ({
   lineHeight: 1.5,
   textAlign: 'left' as const,
   width: '100%',
+}
+
+const cardStyle: (selected: boolean) => React.CSSProperties = (selected) => ({
+  ...cardStyleBase,
+  background: selected ? 'rgba(157,135,255,0.12)' : 'var(--surface)',
+  border: `1.5px solid ${selected ? 'var(--accent2)' : 'var(--border)'}`,
 })
 
 const textareaStyle: React.CSSProperties = {
@@ -364,7 +368,7 @@ export default function BetaFinalPage() {
   const progressPct = ((currentStep + 1) / QUESTIONS.length) * 100
 
   return (
-    <div style={{
+    <div className="beta-final-page" style={{
       maxWidth: 640,
       margin: '0 auto',
       padding: '40px 24px 80px',
@@ -417,6 +421,7 @@ export default function BetaFinalPage() {
                 <button
                   key={choice}
                   onClick={() => setChoice(q.key, choice)}
+                  className="beta-final-choice-card"
                   style={cardStyle(selected)}
                 >
                   <span style={{
@@ -478,7 +483,7 @@ export default function BetaFinalPage() {
       </div>
 
       {/* Navigation buttons */}
-      <div style={{
+      <div className="beta-final-nav" style={{
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         paddingTop: 20, borderTop: '1px solid var(--border)',
       }}>

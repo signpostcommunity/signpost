@@ -644,6 +644,7 @@ export default function AboutPage() {
           .about-founders-grid { grid-template-columns: 1fr !important; }
           .about-values-grid { grid-template-columns: 1fr !important; }
           .contact-form-grid { grid-template-columns: 1fr !important; }
+          .about-founders-grid > div { align-items: center !important; text-align: center; }
         }
       `}</style>
     </div>

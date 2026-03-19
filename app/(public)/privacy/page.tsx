@@ -61,7 +61,7 @@ function Section({ number, title, children }: { number: number; title: string; c
 
 export default function PrivacyPolicyPage() {
   return (
-    <div style={{ padding: '60px 40px 100px', maxWidth: 760, margin: '0 auto' }}>
+    <div className="privacy-page" style={{ padding: '60px 40px 100px', maxWidth: 760, margin: '0 auto' }}>
       <Link href="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--muted)', fontSize: '0.85rem', textDecoration: 'none', marginBottom: 40 }}>
         &#8592; Back to Home
       </Link>

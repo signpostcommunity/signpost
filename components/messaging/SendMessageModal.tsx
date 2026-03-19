@@ -134,6 +134,7 @@ export default function SendMessageModal({ recipientId, recipientName, recipient
         role="dialog"
         aria-modal="true"
         aria-label={`Message ${recipientName}`}
+        className="modal-dialog"
         style={{
           background: 'var(--surface)', border: '1px solid var(--border)',
           borderRadius: 'var(--radius)', width: '100%', maxWidth: 520,
@@ -282,7 +283,7 @@ export default function SendMessageModal({ recipientId, recipientName, recipient
         </div>
 
         {/* Footer */}
-        <div style={{
+        <div className="modal-dialog-footer" style={{
           padding: '16px 24px', borderTop: '1px solid var(--border)',
           display: 'flex', justifyContent: 'flex-end', gap: 10,
         }}>

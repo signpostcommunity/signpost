@@ -49,6 +49,7 @@ export default function BetaWelcomeModal() {
         role="dialog"
         aria-modal="true"
         aria-labelledby="beta-welcome-title"
+        className="modal-dialog"
         style={{
           background: 'var(--surface)',
           border: '1px solid var(--border)',
@@ -60,10 +61,36 @@ export default function BetaWelcomeModal() {
           color: 'var(--text)',
           display: 'flex',
           flexDirection: 'column',
+          position: 'relative',
         }}
       >
         {/* Scrollable content */}
         <div style={{ overflowY: 'auto', padding: '24px 32px 16px', flex: 1, minHeight: 0 }}>
+          {/* Close button */}
+          <button
+            onClick={dismiss}
+            aria-label="Close"
+            className="modal-close-btn"
+            style={{
+              position: 'absolute',
+              top: 12,
+              right: 12,
+              background: 'rgba(255,255,255,0.1)',
+              border: 'none',
+              borderRadius: '50%',
+              width: 36,
+              height: 36,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: 'var(--muted)',
+              fontSize: '1.2rem',
+              zIndex: 1,
+            }}
+          >
+            &#10005;
+          </button>
           <h2
             id="beta-welcome-title"
             style={{

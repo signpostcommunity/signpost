@@ -92,7 +92,7 @@ export default function ConfirmModal({
           {description}
         </p>
 
-        <div className="modal-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+        <div className="modal-actions modal-dialog-footer" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
           <button
             onClick={onCancel}
             style={{

@@ -185,7 +185,7 @@ export default function FlagProfileModal({ isOpen, onClose, interpreterProfileId
         )}
 
         {/* Actions */}
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+        <div className="modal-dialog-footer" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
           <button
             onClick={handleClose}
             style={{
