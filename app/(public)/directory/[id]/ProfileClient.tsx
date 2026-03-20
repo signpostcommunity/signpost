@@ -53,11 +53,27 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
         .eq('id', user.id)
         .single()
         .then(({ data }) => {
-          const contextParam = new URLSearchParams(window.location.search).get('context');
-          if (contextParam && ['deaf', 'requester', 'interpreter'].includes(contextParam)) {
-            setUserRole(contextParam as 'deaf' | 'requester' | 'interpreter');
-          } else if (data?.role) {
-            setUserRole(data.role as 'deaf' | 'requester' | 'interpreter');
+          // Determine active role for modal (layered fallback)
+          // Priority: URL ?context > localStorage signpost:lastRole > user_profiles.role
+          const urlContext = new URLSearchParams(window.location.search).get('context');
+          const validRoles = ['deaf', 'requester', 'interpreter'];
+
+          if (urlContext && validRoles.includes(urlContext)) {
+            setUserRole(urlContext as 'deaf' | 'requester' | 'interpreter');
+          } else {
+            try {
+              const lastRole = localStorage.getItem('signpost:lastRole');
+              if (lastRole && validRoles.includes(lastRole)) {
+                setUserRole(lastRole as 'deaf' | 'requester' | 'interpreter');
+              } else if (data?.role) {
+                setUserRole(data.role as 'deaf' | 'requester' | 'interpreter');
+              }
+            } catch {
+              // localStorage unavailable (private browsing, etc.)
+              if (data?.role) {
+                setUserRole(data.role as 'deaf' | 'requester' | 'interpreter');
+              }
+            }
           }
         });
     });

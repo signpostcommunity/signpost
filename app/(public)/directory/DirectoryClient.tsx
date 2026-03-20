@@ -105,13 +105,28 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
         .eq('id', user.id)
         .single()
         .then(({ data }) => {
-          // Check URL ?context param for multi-role users
+          // Determine active role for modal (layered fallback)
+          // Priority: URL ?context > localStorage signpost:lastRole > user_profiles.role
           const urlContext = new URLSearchParams(window.location.search).get('context');
-          if (urlContext && ['deaf', 'requester', 'interpreter'].includes(urlContext)) {
+          const validRoles = ['deaf', 'requester', 'interpreter'];
+
+          if (urlContext && validRoles.includes(urlContext)) {
             setUserRole(urlContext as 'deaf' | 'requester' | 'interpreter');
             setContextParam(urlContext);
-          } else if (data?.role) {
-            setUserRole(data.role as 'deaf' | 'requester' | 'interpreter');
+          } else {
+            try {
+              const lastRole = localStorage.getItem('signpost:lastRole');
+              if (lastRole && validRoles.includes(lastRole)) {
+                setUserRole(lastRole as 'deaf' | 'requester' | 'interpreter');
+              } else if (data?.role) {
+                setUserRole(data.role as 'deaf' | 'requester' | 'interpreter');
+              }
+            } catch {
+              // localStorage unavailable (private browsing, etc.)
+              if (data?.role) {
+                setUserRole(data.role as 'deaf' | 'requester' | 'interpreter');
+              }
+            }
           }
           if (data?.display_name) {
             setUserName(data.display_name);
