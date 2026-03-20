@@ -53,7 +53,10 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
         .eq('id', user.id)
         .single()
         .then(({ data }) => {
-          if (data?.role) {
+          const contextParam = new URLSearchParams(window.location.search).get('context');
+          if (contextParam && ['deaf', 'requester', 'interpreter'].includes(contextParam)) {
+            setUserRole(contextParam as 'deaf' | 'requester' | 'interpreter');
+          } else if (data?.role) {
             setUserRole(data.role as 'deaf' | 'requester' | 'interpreter');
           }
         });

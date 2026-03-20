@@ -103,7 +103,11 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
         .eq('id', user.id)
         .single()
         .then(({ data }) => {
-          if (data?.role) {
+          // Check URL ?context param for multi-role users
+          const contextParam = new URLSearchParams(window.location.search).get('context');
+          if (contextParam && ['deaf', 'requester', 'interpreter'].includes(contextParam)) {
+            setUserRole(contextParam as 'deaf' | 'requester' | 'interpreter');
+          } else if (data?.role) {
             setUserRole(data.role as 'deaf' | 'requester' | 'interpreter');
           }
           if (data?.display_name) {
