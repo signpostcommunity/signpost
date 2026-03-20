@@ -6,9 +6,10 @@ interface Props {
   onVideoPreview?: (interpreter: Interpreter) => void;
   onAddToList?: (interpreter: Interpreter) => void;
   userRole?: string | null;
+  contextParam?: string | null;
 }
 
-export default function InterpreterGrid({ interpreters, onVideoPreview, onAddToList, userRole }: Props) {
+export default function InterpreterGrid({ interpreters, onVideoPreview, onAddToList, userRole, contextParam }: Props) {
   if (interpreters.length === 0) {
     return (
       <div
@@ -45,6 +46,7 @@ export default function InterpreterGrid({ interpreters, onVideoPreview, onAddToL
             onVideoPreview={onVideoPreview}
             onAddToList={onAddToList}
             userRole={userRole}
+            contextParam={contextParam}
           />
         ))}
       </div>

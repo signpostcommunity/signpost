@@ -49,6 +49,8 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
 
   // User role for AddToListModal
   const [userRole, setUserRole] = useState<'deaf' | 'requester' | 'interpreter' | null>(null);
+  // URL context param for multi-role users (e.g. ?context=interpreter)
+  const [contextParam, setContextParam] = useState<string | null>(null);
 
   // Video preview modal state
   const [videoModal, setVideoModal] = useState<{
@@ -104,9 +106,10 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
         .single()
         .then(({ data }) => {
           // Check URL ?context param for multi-role users
-          const contextParam = new URLSearchParams(window.location.search).get('context');
-          if (contextParam && ['deaf', 'requester', 'interpreter'].includes(contextParam)) {
-            setUserRole(contextParam as 'deaf' | 'requester' | 'interpreter');
+          const urlContext = new URLSearchParams(window.location.search).get('context');
+          if (urlContext && ['deaf', 'requester', 'interpreter'].includes(urlContext)) {
+            setUserRole(urlContext as 'deaf' | 'requester' | 'interpreter');
+            setContextParam(urlContext);
           } else if (data?.role) {
             setUserRole(data.role as 'deaf' | 'requester' | 'interpreter');
           }
@@ -482,6 +485,7 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
             onVideoPreview={openVideoPreview}
             onAddToList={openAddToList}
             userRole={userRole}
+            contextParam={contextParam}
           />
         </div>
       </div>

@@ -6,6 +6,7 @@ interface Props {
   onVideoPreview?: (interpreter: Interpreter) => void;
   onAddToList?: (interpreter: Interpreter) => void;
   userRole?: string | null;
+  contextParam?: string | null;
 }
 
 const CERT_ABBREVIATIONS: Record<string, string> = {
@@ -31,10 +32,11 @@ function abbreviateCert(cert: string): string {
   return cert;
 }
 
-export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddToList, userRole }: Props) {
+export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddToList, userRole, contextParam }: Props) {
+  const profileHref = `/directory/${i.id}${contextParam ? `?context=${contextParam}` : ''}`;
   return (
     <Link
-      href={`/directory/${i.id}`}
+      href={profileHref}
       style={{ textDecoration: 'none', color: 'inherit' }}
     >
       <div
