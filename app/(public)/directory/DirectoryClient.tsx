@@ -101,7 +101,7 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
       setIsLoggedIn(true);
       supabase
         .from('user_profiles')
-        .select('role, display_name')
+        .select('role')
         .eq('id', user.id)
         .single()
         .then(({ data }) => {
@@ -128,9 +128,7 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
               }
             }
           }
-          if (data?.display_name) {
-            setUserName(data.display_name);
-          } else if (user.user_metadata?.full_name) {
+          if (user.user_metadata?.full_name) {
             setUserName(user.user_metadata.full_name);
           }
         });
