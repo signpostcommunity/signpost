@@ -28,6 +28,11 @@ const NAV: NavGroup[] = [
         href: '/admin/dashboard',
         icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 6.5L8 2L14 6.5V14H10V10H6V14H2V6.5Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/></svg>,
       },
+      {
+        label: 'Email Inbox',
+        href: 'https://mail.google.com/mail/u/0/#inbox',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.4"/><path d="M1 5l7 4 7-4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+      },
     ],
   },
   {
@@ -148,9 +153,33 @@ function SidebarContent({ userName, userInitials }: { userName: string; userInit
               {group.section}
             </div>
             {group.items.map(item => {
-              const active = item.href === '/admin/dashboard'
+              const isExternal = item.href.startsWith('http')
+              const active = !isExternal && (item.href === '/admin/dashboard'
                 ? pathname === item.href
-                : pathname.startsWith(item.href)
+                : pathname.startsWith(item.href))
+              const linkStyle: React.CSSProperties = {
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '9px 20px', textDecoration: 'none',
+                fontSize: '0.88rem', transition: 'all 0.15s',
+                color: active ? ORANGE : 'var(--muted)',
+                background: active ? 'rgba(255,107,43,0.06)' : 'transparent',
+                borderLeft: active ? `2px solid ${ORANGE}` : '2px solid transparent',
+              }
+              const content = (
+                <>
+                  <span aria-hidden="true" style={{ width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    {item.icon}
+                  </span>
+                  <span style={{ flex: 1 }}>{item.label}</span>
+                </>
+              )
+              if (isExternal) {
+                return (
+                  <a key={item.href} href={item.href} target="_blank" rel="noopener noreferrer" style={linkStyle}>
+                    {content}
+                  </a>
+                )
+              }
               return (
                 <Link
                   key={item.href}
@@ -159,19 +188,9 @@ function SidebarContent({ userName, userInitials }: { userName: string; userInit
                     window.scrollTo({ top: 0, behavior: 'instant' })
                     document.querySelector('.dash-main')?.scrollTo({ top: 0, behavior: 'instant' })
                   }}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 10,
-                    padding: '9px 20px', textDecoration: 'none',
-                    fontSize: '0.88rem', transition: 'all 0.15s',
-                    color: active ? ORANGE : 'var(--muted)',
-                    background: active ? 'rgba(255,107,43,0.06)' : 'transparent',
-                    borderLeft: active ? `2px solid ${ORANGE}` : '2px solid transparent',
-                  }}
+                  style={linkStyle}
                 >
-                  <span aria-hidden="true" style={{ width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    {item.icon}
-                  </span>
-                  <span style={{ flex: 1 }}>{item.label}</span>
+                  {content}
                 </Link>
               )
             })}
