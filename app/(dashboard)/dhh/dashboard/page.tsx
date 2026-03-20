@@ -854,7 +854,7 @@ export default function DeafDashboardOverview() {
         <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, alignItems: 'stretch' }}>
           <StatCard num={activeRequests} label="Active Requests" href="/dhh/dashboard/requests" />
           <StatCard num={prefCount} label="Preferred Interpreters" href="/dhh/dashboard/interpreters" />
-          <StatCard num={secCount} label="Interpreters to Review" href="/dhh/dashboard/interpreters" />
+          <StatCard num={secCount} label="Interpreters to Review" href="/dhh/dashboard/requests" />
           <StatCard num={circleCount} label="Deaf Circle" href="/dhh/dashboard/circle" />
         </div>
         <div>
