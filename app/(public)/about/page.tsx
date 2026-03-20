@@ -129,7 +129,7 @@ export default function AboutPage() {
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               </div>
-              <div>
+              <div className="about-hero-text" style={{ paddingRight: 48 }}>
                 <h2 style={{
                   fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.4rem, 2.5vw, 1.9rem)',
                   fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.2, marginBottom: 20,
@@ -642,6 +642,7 @@ export default function AboutPage() {
           .about-hero-grid { grid-template-columns: 1fr !important; text-align: left; gap: 28px !important; }
           .about-hero-grid h2 { font-size: clamp(1.3rem, 4vw, 1.6rem) !important; }
           .about-hero-photo { max-width: 70% !important; margin: 0 auto !important; }
+          .about-hero-text { padding-right: 0 !important; }
           .contact-form-grid { grid-template-columns: 1fr !important; }
           .about-tab-header { padding: 0 16px !important; }
           .about-tab-content { padding: 32px 16px 48px !important; }
