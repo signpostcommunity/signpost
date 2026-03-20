@@ -24,6 +24,8 @@ export default function Footer() {
         <Link href="/request" className="footer-link">Request Interpreters</Link>
         <Link href="/about" className="footer-link">About Us</Link>
         <a href="mailto:hello@signpost.community" className="footer-link">hello@signpost.community</a>
+        <Link href="/privacy" className="footer-link">Privacy Policy</Link>
+        <Link href="/policies" className="footer-link">Terms &amp; Policies</Link>
       </div>
 
       <div style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>
