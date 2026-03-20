@@ -114,38 +114,43 @@ export default function AboutPage() {
             aria-labelledby="tab-about"
             hidden={activeTab !== 'about'}
           >
-            {/* Hero headline */}
-            <h2 style={{
-              fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.6rem, 3vw, 2.2rem)',
-              fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.25, marginBottom: 32,
-              color: 'var(--text)',
-            }}>
-              signpost grew out of a conversation between two best friends
-            </h2>
-
-            {/* Hero: photo left, story text right */}
+            {/* Hero: photo left, all text right */}
             <div className="about-hero-grid" style={{
-              display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: 48,
-              alignItems: 'start', marginBottom: 56,
+              display: 'grid', gridTemplateColumns: '2fr 3fr', gap: 48,
+              alignItems: 'center', marginBottom: 56,
             }}>
-              <div style={{ borderRadius: 'var(--radius)', overflow: 'hidden', maxHeight: 480 }}>
+              <div className="about-hero-photo" style={{ borderRadius: 'var(--radius)', overflow: 'hidden' }}>
                 <Image
                   src="/founders-together.png"
                   alt="Regina McGinnis and Molly Sano-Mahgoub, co-founders of signpost"
                   width={600}
                   height={800}
                   className="rounded-xl object-cover"
-                  style={{ width: '100%', height: '100%', maxHeight: 480, objectFit: 'cover' }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               </div>
               <div>
-                <p style={{ color: 'var(--muted)', fontSize: '1rem', lineHeight: 1.75, marginBottom: 16 }}>
+                <h2 style={{
+                  fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.4rem, 2.5vw, 1.9rem)',
+                  fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.25, marginBottom: 16,
+                  color: 'var(--text)',
+                }}>
+                  signpost grew out of a conversation between{' '}
+                  <em style={{
+                    fontStyle: 'normal',
+                    background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}>two best friends</em>
+                </h2>
+                <p style={{ color: 'var(--text)', fontSize: '0.95rem', lineHeight: 1.75, marginBottom: 14 }}>
                   ...a certified interpreter and a Deaf mental health professional, about something they&apos;d both been frustrated by for years.
                 </p>
-                <p style={{ color: 'var(--muted)', fontSize: '1rem', lineHeight: 1.75, marginBottom: 16 }}>
+                <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.75, marginBottom: 14 }}>
                   Finding the right interpreter is harder than it should be. Deaf people often have to rely on whoever an agency sends, with little visibility into that person&apos;s signing style, cultural background, or specialization. Too often, the person who matters most has the least say in the decision.
                 </p>
-                <p style={{ color: 'var(--muted)', fontSize: '1rem', lineHeight: 1.75, marginBottom: 0 }}>
+                <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.75, marginBottom: 0 }}>
                   We built signpost to change that. A place where interpreters present themselves fully and honestly, and where the Deaf community can make informed choices about who they work with.
                 </p>
               </div>
@@ -634,7 +639,9 @@ export default function AboutPage() {
 
       <style>{`
         @media (max-width: 768px) {
-          .about-hero-grid { grid-template-columns: 1fr !important; }
+          .about-hero-grid { grid-template-columns: 1fr !important; text-align: left; }
+          .about-hero-grid h2 { font-size: clamp(1.3rem, 4vw, 1.6rem) !important; }
+          .about-hero-photo { max-width: 70% !important; margin: 0 auto !important; }
           .contact-form-grid { grid-template-columns: 1fr !important; }
           .about-tab-header { padding: 0 16px !important; }
           .about-tab-content { padding: 32px 16px 48px !important; }
