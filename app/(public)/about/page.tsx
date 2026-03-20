@@ -129,7 +129,7 @@ export default function AboutPage() {
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               </div>
-              <div className="about-hero-text" style={{ paddingRight: 48 }}>
+              <div className="about-hero-text" style={{ paddingRight: 96 }}>
                 <h2 style={{
                   fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.4rem, 2.5vw, 1.9rem)',
                   fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.2, marginBottom: 20,
