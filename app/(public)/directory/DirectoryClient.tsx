@@ -102,35 +102,14 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
         .select('role, display_name')
         .eq('id', user.id)
         .single()
-        .then(async ({ data }) => {
-          const dbRole = data?.role as 'deaf' | 'requester' | 'interpreter' | undefined;
+        .then(({ data }) => {
+          if (data?.role) {
+            setUserRole(data.role as 'deaf' | 'requester' | 'interpreter');
+          }
           if (data?.display_name) {
             setUserName(data.display_name);
           } else if (user.user_metadata?.full_name) {
             setUserName(user.user_metadata.full_name);
-          }
-
-          // For multi-role users: prefer localStorage lastRole if valid
-          try {
-            const lastRole = localStorage.getItem('signpost:lastRole');
-            if (lastRole && lastRole !== dbRole && ['deaf', 'requester', 'interpreter'].includes(lastRole)) {
-              // Verify the user actually has a profile for this role
-              const table = lastRole === 'interpreter' ? 'interpreter_profiles'
-                : lastRole === 'deaf' ? 'deaf_profiles'
-                : 'requester_profiles';
-              const { count } = await supabase
-                .from(table)
-                .select('id', { count: 'exact', head: true })
-                .eq('user_id', user!.id);
-              if ((count ?? 0) > 0) {
-                setUserRole(lastRole as 'deaf' | 'requester' | 'interpreter');
-                return;
-              }
-            }
-          } catch {}
-
-          if (dbRole) {
-            setUserRole(dbRole);
           }
         });
     });

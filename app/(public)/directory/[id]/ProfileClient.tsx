@@ -52,29 +52,9 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
         .select('role')
         .eq('id', user.id)
         .single()
-        .then(async ({ data }) => {
-          const dbRole = data?.role as 'deaf' | 'requester' | 'interpreter' | undefined;
-
-          // For multi-role users: prefer localStorage lastRole if valid
-          try {
-            const lastRole = localStorage.getItem('signpost:lastRole');
-            if (lastRole && lastRole !== dbRole && ['deaf', 'requester', 'interpreter'].includes(lastRole)) {
-              const table = lastRole === 'interpreter' ? 'interpreter_profiles'
-                : lastRole === 'deaf' ? 'deaf_profiles'
-                : 'requester_profiles';
-              const { count } = await supabase
-                .from(table)
-                .select('id', { count: 'exact', head: true })
-                .eq('user_id', user!.id);
-              if ((count ?? 0) > 0) {
-                setUserRole(lastRole as 'deaf' | 'requester' | 'interpreter');
-                return;
-              }
-            }
-          } catch {}
-
-          if (dbRole) {
-            setUserRole(dbRole);
+        .then(({ data }) => {
+          if (data?.role) {
+            setUserRole(data.role as 'deaf' | 'requester' | 'interpreter');
           }
         });
     });
