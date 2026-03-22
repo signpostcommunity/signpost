@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 const languages = [
   { code: 'en', label: 'English', flag: '\u{1F1FA}\u{1F1F8}' },
@@ -16,6 +17,20 @@ export default function DashboardHeaderNav({ portalPath }: { portalPath: string 
   const [langOpen, setLangOpen] = useState(false);
   const [selectedLang, setSelectedLang] = useState('en');
   const langRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+
+  // Persist last active portal role when user is on a dashboard route
+  useEffect(() => {
+    if (pathname.startsWith('/dhh')) {
+      try { localStorage.setItem('signpost:lastRole', 'deaf') } catch {}
+    } else if (pathname.startsWith('/request')) {
+      try { localStorage.setItem('signpost:lastRole', 'requester') } catch {}
+    } else if (pathname.startsWith('/interpreter')) {
+      try { localStorage.setItem('signpost:lastRole', 'interpreter') } catch {}
+    } else if (pathname.startsWith('/admin')) {
+      try { localStorage.setItem('signpost:lastRole', 'admin') } catch {}
+    }
+  }, [pathname]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
