@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { BetaBanner, SectionLabel, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import PendingRolesNudge from '@/components/shared/PendingRolesNudge'
+import BookMeBadge from '@/components/interpreter/BookMeBadge'
 
 /* ── Types ── */
 
@@ -461,16 +462,10 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
 
         {/* Badge preview */}
         {interpreterProfileId && !hasDraftProfile && (
-          <div style={{
-            background: '#1a1a24', padding: '24px 32px',
-            marginBottom: 20, display: 'flex', justifyContent: 'center',
-            maxWidth: 540,
-          }}>
-            <img
-              src={`/api/badge/${interpreterProfileId}`}
-              alt={`Book ${[firstName, lastName].filter(Boolean).join(' ') || 'Interpreter'} on signpost`}
-              width={500}
-              style={{ borderRadius: '16px', maxWidth: '100%', height: 'auto' }}
+          <div style={{ marginBottom: 20 }}>
+            <BookMeBadge
+              interpreterProfileId={interpreterProfileId}
+              displayName={[firstName, lastName].filter(Boolean).join(' ') || 'Interpreter'}
             />
           </div>
         )}

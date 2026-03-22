@@ -15,6 +15,7 @@ import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
 import LocationPicker from '@/components/shared/LocationPicker'
 import { useDialCode } from '@/components/shared/PhoneWithDialCode'
 import { generateSlug, validateSlug } from '@/lib/slugUtils'
+import BookMeBadge from '@/components/interpreter/BookMeBadge'
 
 // ── Shared styles ────────────────────────────────────────────────────────────
 
@@ -874,39 +875,12 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
             borderRadius: 'var(--radius-sm)', padding: '24px', marginBottom: 24,
           }}>
             {/* ── Badge preview ── */}
-            {vanitySlug && (
+            {vanitySlug && p.id && (
               <div style={{ marginBottom: 24 }}>
-                <div style={{
-                  background: 'var(--card-bg)', border: '1px solid var(--border)',
-                  borderRadius: 'var(--radius-sm)', padding: '20px', maxWidth: 320,
-                  display: 'flex', alignItems: 'center', gap: 14,
-                }}>
-                  {photoUrl ? (
-                    <img src={photoUrl} alt="" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-                  ) : (
-                    <div style={{
-                      width: 48, height: 48, borderRadius: '50%', flexShrink: 0,
-                      background: 'linear-gradient(135deg, var(--accent), var(--accent2))',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontWeight: 700, fontSize: '1rem', color: '#000',
-                    }}>{initials}</div>
-                  )}
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)', marginBottom: 2 }}>
-                      {displayName || 'Your Name'}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: 6 }}>
-                      Sign Language Interpreter
-                    </div>
-                    <div style={{
-                      display: 'inline-block', background: 'linear-gradient(135deg, var(--accent), #00b8d4)',
-                      color: '#000', fontSize: '0.7rem', fontWeight: 700,
-                      padding: '4px 10px', borderRadius: 6, whiteSpace: 'nowrap',
-                    }}>
-                      Book me on signpost
-                    </div>
-                  </div>
-                </div>
+                <BookMeBadge
+                  interpreterProfileId={p.id}
+                  displayName={displayName || 'Interpreter'}
+                />
               </div>
             )}
 
