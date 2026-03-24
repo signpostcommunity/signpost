@@ -1,34 +1,102 @@
-import Link from 'next/link'
+import { createClient } from '@/lib/supabase/server'
+import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import RequestsClient from './RequestsClient'
 
 export const dynamic = 'force-dynamic'
 
-export default function AllRequestsPage() {
+export default async function AllRequestsPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return (
+      <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
+        <p style={{ color: 'var(--muted)' }}>Please log in to view your requests.</p>
+      </div>
+    )
+  }
+
+  // Fetch all bookings for this requester
+  const { data: bookings, error: bookingsErr } = await supabase
+    .from('bookings')
+    .select('id, title, description, notes, date, time_start, time_end, location, format, specialization, event_type, event_category, recurrence, interpreter_count, interpreters_confirmed, status, platform_fee_amount, platform_fee_status, created_at')
+    .eq('requester_id', user.id)
+    .order('date', { ascending: false })
+
+  if (bookingsErr) {
+    console.error('[requests] bookings fetch error:', bookingsErr.message)
+  }
+
+  const allBookings = bookings || []
+  const bookingIds = allBookings.map(b => b.id)
+
+  // Fetch booking_recipients for all bookings (separate query)
+  let allRecipients: {
+    id: string
+    booking_id: string
+    interpreter_id: string
+    status: string
+    response_rate: number | null
+    response_notes: string | null
+    rate_profile_id: string | null
+    confirmed_at: string | null
+    declined_at: string | null
+  }[] = []
+
+  if (bookingIds.length > 0) {
+    const { data: recipients, error: recipErr } = await supabase
+      .from('booking_recipients')
+      .select('id, booking_id, interpreter_id, status, response_rate, response_notes, rate_profile_id, confirmed_at, declined_at')
+      .in('booking_id', bookingIds)
+
+    if (recipErr) {
+      console.error('[requests] recipients fetch error:', recipErr.message)
+    }
+    allRecipients = recipients || []
+  }
+
+  // Fetch interpreter names for all recipients (use admin to bypass RLS)
+  const interpreterIds = [...new Set(allRecipients.map(r => r.interpreter_id))]
+  let interpreterMap: Record<string, { name: string; first_name: string | null; last_name: string | null }> = {}
+
+  if (interpreterIds.length > 0) {
+    const admin = getSupabaseAdmin()
+    const { data: interps, error: interpErr } = await admin
+      .from('interpreter_profiles')
+      .select('id, name, first_name, last_name')
+      .in('id', interpreterIds)
+
+    if (interpErr) {
+      console.error('[requests] interpreter fetch error:', interpErr.message)
+    }
+    if (interps) {
+      for (const ip of interps) {
+        interpreterMap[ip.id] = {
+          name: ip.first_name && ip.last_name ? `${ip.first_name} ${ip.last_name}` : ip.name || 'Unknown',
+          first_name: ip.first_name,
+          last_name: ip.last_name,
+        }
+      }
+    }
+  }
+
+  // Fetch DHH client info for bookings
+  let dhhClients: { booking_id: string; dhh_user_id: string }[] = []
+  if (bookingIds.length > 0) {
+    const { data: clients } = await supabase
+      .from('booking_dhh_clients')
+      .select('booking_id, dhh_user_id')
+      .in('booking_id', bookingIds)
+
+    dhhClients = clients || []
+  }
+
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.6rem', margin: '0 0 6px' }}>
-          All Requests
-        </h1>
-        <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>
-          View and manage all your interpreter requests.
-        </p>
-      </div>
-      <div style={{
-        background: 'var(--surface)', border: '1px solid var(--border)',
-        borderRadius: 'var(--radius)', padding: '48px 32px', textAlign: 'center',
-      }}>
-        <p style={{ color: 'var(--muted)', fontSize: '0.92rem', marginBottom: 20 }}>
-          Coming in the next update.
-        </p>
-        <Link
-          href="/directory?context=requester"
-          className="btn-primary"
-          style={{ display: 'inline-block', padding: '12px 24px', fontSize: '0.88rem', textDecoration: 'none' }}
-        >
-          Browse Interpreter Directory
-        </Link>
-      </div>
-      <style>{`@media (max-width: 768px) { .dash-page-content { padding: 24px 20px !important; } }`}</style>
-    </div>
+    <RequestsClient
+      bookings={allBookings}
+      recipients={allRecipients}
+      interpreterMap={interpreterMap}
+      dhhClients={dhhClients}
+    />
   )
 }

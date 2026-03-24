@@ -313,21 +313,45 @@ export default function RequesterDashboardSidebar({ userName = 'User', userIniti
         .eq('channel', 'in_app')
         .neq('status', 'read')
 
-      // Unread messages count — get user's booking IDs first, then count unread
+      // Unread conversations count (via conversation_participants)
       let inboxCount = 0
+      const { data: participations } = await supabase
+        .from('conversation_participants')
+        .select('conversation_id, last_read_at')
+        .eq('user_id', user.id)
+
+      if (participations && participations.length > 0) {
+        const convoIds = participations.map(p => p.conversation_id)
+        const { data: convos } = await supabase
+          .from('conversations')
+          .select('id, last_message_at')
+          .in('id', convoIds)
+
+        if (convos) {
+          const lastReadMap = new Map(participations.map(p => [p.conversation_id, p.last_read_at]))
+          inboxCount = convos.filter(c => {
+            const lastRead = lastReadMap.get(c.id)
+            return c.last_message_at && (!lastRead || c.last_message_at > lastRead)
+          }).length
+        }
+      }
+
+      // Pending rate responses count (booking_recipients with response_rate and status = 'responded')
+      let pendingRateResponses = 0
       const { data: userBookings } = await supabase
         .from('bookings')
         .select('id')
         .eq('requester_id', user.id)
+        .in('status', ['open', 'filled'])
+
       if (userBookings && userBookings.length > 0) {
         const bookingIds = userBookings.map(b => b.id)
-        const { count: msgCount } = await supabase
-          .from('messages')
+        const { count: rateCount } = await supabase
+          .from('booking_recipients')
           .select('id', { count: 'exact', head: true })
           .in('booking_id', bookingIds)
-          .eq('is_read', false)
-          .neq('sender_id', user.id)
-        inboxCount = msgCount ?? 0
+          .eq('status', 'responded')
+        pendingRateResponses = rateCount ?? 0
       }
 
       // Preferred interpreters count
@@ -352,9 +376,9 @@ export default function RequesterDashboardSidebar({ userName = 'User', userIniti
         .eq('status', 'active')
 
       setBadges({
-        requests: requestsCount ?? 0,
+        requests: (requestsCount ?? 0) + pendingRateResponses,
         notifications: notifCount ?? 0,
-        inbox: inboxCount,
+        inbox: inboxCount + pendingRateResponses,
         preferred: prefCount ?? 0,
         secondary: secCount ?? 0,
         clientLists: clientListsCount ?? 0,
