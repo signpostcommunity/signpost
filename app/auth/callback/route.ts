@@ -121,9 +121,16 @@ export async function GET(request: NextRequest) {
   const { data: existing } = await supabase
     .from('requester_profiles').select('id').eq('id', user.id).maybeSingle();
   if (!existing) {
+    const nameParts = displayName.split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
     await supabase.from('requester_profiles').insert({
       id: user.id,
+      user_id: user.id,
       name: displayName,
+      first_name: firstName,
+      last_name: lastName,
+      email: user.email || '',
     });
   }
   return NextResponse.redirect(`${origin}/request/dashboard`);

@@ -440,7 +440,7 @@ Update this list when adding major new features. Remove entries once they're est
 - Beta questions system: welcome modal, per-page panel, final survey (content in Monday doc object_id 18404390225)
 - Dashboard QR card: height needs to match stat grid, text needs update
 - D/HH signup audit: test script exists, not yet run
-- Requester portal: signup flow, booking form, inbox (all not started)
+- Requester portal: Phase 1 (landing, signup, login, dashboard layout, sidebar) built; Phase 2+ (booking form, inbox, requests) not started
 
 ### Environment variables
 No recent additions. All required vars documented in Environment Variables section above.

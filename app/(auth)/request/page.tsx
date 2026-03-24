@@ -1,42 +1,250 @@
 export const dynamic = 'force-dynamic';
 
 import Link from 'next/link';
-import ComingSoonOverlay from '@/components/beta/ComingSoonOverlay';
 
 export default function RequestPortalPage() {
   return (
-    <ComingSoonOverlay message="The Requester portal is coming soon. We're building out our interpreter roster first. Stay tuned!">
-      <RequestPortalContent />
-    </ComingSoonOverlay>
-  );
-}
+    <div
+      style={{
+        minHeight: '100vh',
+        background: 'var(--bg)',
+        padding: '40px 48px 80px',
+        maxWidth: 1200,
+        margin: '0 auto',
+      }}
+    >
+      {/* Back link */}
+      <div style={{ marginBottom: '28px' }}>
+        <Link
+          href="/"
+          style={{
+            fontSize: '0.85rem',
+            color: 'var(--muted)',
+            textDecoration: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px',
+          }}
+        >
+          ← Back to Home
+        </Link>
+      </div>
 
-function RequestPortalContent() {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 73px)', padding: '40px 24px' }}>
-      <div style={{ maxWidth: 580, width: '100%' }}>
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div style={{ display: 'inline-flex', background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.2)', borderRadius: '100px', padding: '8px 20px', fontSize: '0.82rem', color: 'var(--accent)', marginBottom: '20px', fontWeight: 500 }}>
-            Request Portal
+      {/* For Requesters pill badge */}
+      <div style={{ marginBottom: '20px' }}>
+        <span
+          style={{
+            display: 'inline-flex',
+            background: 'rgba(0,229,255,0.08)',
+            border: '1px solid rgba(0,229,255,0.2)',
+            borderRadius: '100px',
+            padding: '8px 20px',
+            fontSize: '0.82rem',
+            color: 'var(--accent)',
+            fontWeight: 500,
+          }}
+        >
+          For Requesters
+        </span>
+      </div>
+
+      {/* Hero headline */}
+      <div style={{ marginBottom: '16px' }}>
+        <h1
+          style={{
+            fontFamily: 'var(--font-syne)',
+            fontSize: 'clamp(1.8rem, 3.2vw, 2.6rem)',
+            fontWeight: 800,
+            letterSpacing: '-0.03em',
+            lineHeight: 1.05,
+            margin: 0,
+          }}
+        >
+          Find the right interpreter,{' '}
+          <br />
+          <span
+            style={{
+              background: 'linear-gradient(90deg, var(--accent), var(--accent2))',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          >
+            every time.
+          </span>
+        </h1>
+      </div>
+
+      {/* Subheadline */}
+      <p
+        style={{
+          color: 'var(--muted)',
+          fontSize: '1rem',
+          lineHeight: 1.6,
+          marginBottom: '40px',
+        }}
+      >
+        Book directly with qualified interpreters. No agency markup.
+        <br />
+        Full transparency on rates, credentials, and availability.
+      </p>
+
+      {/* Two-column cards */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
+          gap: '16px',
+          width: '100%',
+          maxWidth: 860,
+        }}
+      >
+        {/* New to signpost */}
+        <div
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius)',
+            padding: '32px',
+            display: 'flex',
+            flexDirection: 'column',
+            transition: 'border-color 0.2s',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)')}
+          onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
+        >
+          {/* Icon */}
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: '10px',
+              background: 'rgba(0,229,255,0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '20px',
+            }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+              <circle cx="12" cy="7" r="4" />
+            </svg>
           </div>
-          <h1 style={{ fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', fontWeight: 800, letterSpacing: '-0.04em', marginBottom: '12px' }}>
-            Find the right interpreter for every job.
-          </h1>
-          <p style={{ color: 'var(--muted)', lineHeight: 1.65, fontSize: '0.95rem' }}>
-            Post a request, browse profiles, and connect directly with certified sign language interpreters.
-          </p>
+
+          <h2
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: '1.2rem',
+              fontWeight: 700,
+              marginBottom: '16px',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            New to signpost?
+          </h2>
+
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {['Browse certified interpreter profiles', 'Send booking requests directly', 'No agency markup or hidden fees'].map((item) => (
+              <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: 'var(--muted)' }}>
+                <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '0.85rem' }}>✓</span>
+                {item}
+              </li>
+            ))}
+          </ul>
+
+          <Link
+            href="/request/signup"
+            style={{
+              display: 'block',
+              width: '100%',
+              background: 'var(--accent)',
+              color: '#000',
+              borderRadius: '8px',
+              padding: '13px 0',
+              textAlign: 'center',
+              fontWeight: 700,
+              fontSize: '0.95rem',
+              textDecoration: 'none',
+              marginTop: 'auto',
+            }}
+          >
+            Create my first request →
+          </Link>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <Link href="/request/signup" style={{ display: 'block', padding: '28px', background: 'var(--surface)', border: '1px solid rgba(0,229,255,0.3)', borderRadius: 'var(--radius)', textDecoration: 'none' }}>
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: 'var(--accent)', marginBottom: '8px' }}>New account</div>
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '6px' }}>Create your free account &rarr;</div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6 }}>For individuals, organizations, and institutions that need sign language interpreters.</div>
-          </Link>
-          <Link href="/request/login" style={{ display: 'block', padding: '28px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', textDecoration: 'none' }}>
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: 'var(--muted)', marginBottom: '8px' }}>Existing account</div>
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginBottom: '6px' }}>Sign in to your dashboard &rarr;</div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6 }}>Manage your requests, messages, and bookings.</div>
+        {/* Been here before */}
+        <div
+          style={{
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius)',
+            padding: '32px',
+            display: 'flex',
+            flexDirection: 'column',
+            transition: 'border-color 0.2s',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'rgba(157,135,255,0.4)')}
+          onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
+        >
+          {/* Icon */}
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: '10px',
+              background: 'rgba(157,135,255,0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '20px',
+            }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent2)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+              <polyline points="10 17 15 12 10 7" />
+              <line x1="15" y1="12" x2="3" y2="12" />
+            </svg>
+          </div>
+
+          <h2
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: '1.2rem',
+              fontWeight: 700,
+              marginBottom: '16px',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Been here before?
+          </h2>
+
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {['Manage your active requests', 'Review interpreter responses', 'Track bookings and invoices'].map((item) => (
+              <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: 'var(--muted)' }}>
+                <span style={{ color: 'var(--accent2)', fontWeight: 700, fontSize: '0.85rem' }}>✓</span>
+                {item}
+              </li>
+            ))}
+          </ul>
+
+          <Link
+            href="/request/login"
+            style={{
+              display: 'block',
+              width: '100%',
+              background: 'var(--accent2)',
+              color: '#000',
+              borderRadius: '8px',
+              padding: '13px 0',
+              textAlign: 'center',
+              fontWeight: 700,
+              fontSize: '0.95rem',
+              textDecoration: 'none',
+              marginTop: 'auto',
+            }}
+          >
+            Sign in to my portal →
           </Link>
         </div>
       </div>
