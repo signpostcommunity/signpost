@@ -18,9 +18,11 @@ export async function POST(request: NextRequest) {
       format, location, eventType, eventCategory,
       interpreterCount, description, interpreterIds,
       forDhhUserId, // Optional: DHH user ID from connection system
+      specialization, recurrence, notes,
+      saveAsDraft, // Optional: save as draft instead of submitting
     } = body
 
-    if (!title || !date || !timeStart || !timeEnd || !format) {
+    if (!saveAsDraft && (!title || !date || !timeStart || !timeEnd || !format)) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
@@ -38,26 +40,32 @@ export async function POST(request: NextRequest) {
     // Map format value for DB constraint
     const dbFormat = format === 'in-person' ? 'in_person' : format
 
+    const count = interpreterCount || (interpreterIds?.length || 1)
+
     // Create the booking
     const { data: booking, error: insertError } = await admin
       .from('bookings')
       .insert({
         requester_id: user.id,
-        status: 'open',
+        status: saveAsDraft ? 'draft' : 'open',
         request_type: 'professional',
-        title,
-        date,
-        time_start: timeStart,
-        time_end: timeEnd,
+        title: title || null,
+        date: date || null,
+        time_start: timeStart || null,
+        time_end: timeEnd || null,
         timezone: timezone || 'America/Los_Angeles',
-        format: dbFormat,
+        format: dbFormat || null,
         location: location || null,
         event_type: eventType || null,
         event_category: eventCategory || null,
-        interpreter_count: interpreterCount || (interpreterIds?.length || 1),
+        specialization: specialization || null,
+        recurrence: recurrence || 'one-time',
+        interpreter_count: count,
         description: description || null,
-        notes: description || null,
+        notes: notes || null,
         requester_name: requesterName,
+        platform_fee_amount: 15.0 * count,
+        platform_fee_status: 'pending',
         is_seed: false,
       })
       .select('id')

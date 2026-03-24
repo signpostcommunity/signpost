@@ -298,6 +298,13 @@ export default function RequesterDashboardSidebar({ userName = 'User', userIniti
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
+      // Pending bookings count (All Requests badge)
+      const { count: requestsCount } = await supabase
+        .from('bookings')
+        .select('id', { count: 'exact', head: true })
+        .eq('requester_id', user.id)
+        .eq('status', 'open')
+
       // Unread notifications count
       const { count: notifCount } = await supabase
         .from('notifications')
@@ -306,11 +313,22 @@ export default function RequesterDashboardSidebar({ userName = 'User', userIniti
         .eq('channel', 'in_app')
         .neq('status', 'read')
 
-      // Unread messages count
-      const { count: inboxCount } = await supabase
-        .from('messages')
-        .select('id', { count: 'exact', head: true })
-        .eq('is_read', false)
+      // Unread messages count — get user's booking IDs first, then count unread
+      let inboxCount = 0
+      const { data: userBookings } = await supabase
+        .from('bookings')
+        .select('id')
+        .eq('requester_id', user.id)
+      if (userBookings && userBookings.length > 0) {
+        const bookingIds = userBookings.map(b => b.id)
+        const { count: msgCount } = await supabase
+          .from('messages')
+          .select('id', { count: 'exact', head: true })
+          .in('booking_id', bookingIds)
+          .eq('is_read', false)
+          .neq('sender_id', user.id)
+        inboxCount = msgCount ?? 0
+      }
 
       // Preferred interpreters count
       const { count: prefCount } = await supabase
@@ -326,11 +344,20 @@ export default function RequesterDashboardSidebar({ userName = 'User', userIniti
         .eq('requester_user_id', user.id)
         .eq('tier', 'secondary')
 
+      // Client interpreter lists count (active connections)
+      const { count: clientListsCount } = await supabase
+        .from('dhh_requester_connections')
+        .select('id', { count: 'exact', head: true })
+        .eq('requester_id', user.id)
+        .eq('status', 'active')
+
       setBadges({
+        requests: requestsCount ?? 0,
         notifications: notifCount ?? 0,
-        inbox: inboxCount ?? 0,
+        inbox: inboxCount,
         preferred: prefCount ?? 0,
         secondary: secCount ?? 0,
+        clientLists: clientListsCount ?? 0,
       })
     }
     fetchBadges()

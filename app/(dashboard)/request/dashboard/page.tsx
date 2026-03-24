@@ -1,97 +1,116 @@
-'use client'
+import { createClient } from '@/lib/supabase/server'
+import RequesterOverviewClient from './RequesterOverviewClient'
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
+export const dynamic = 'force-dynamic'
 
-export default function RequesterDashboardPage() {
-  const [userName, setUserName] = useState('')
+export default async function RequesterDashboardPage() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  useEffect(() => {
-    async function fetchName() {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+  let firstName = ''
+  let orgName = ''
 
-      const { data } = await supabase
-        .from('requester_profiles')
-        .select('first_name, name')
-        .or(`user_id.eq.${user.id},id.eq.${user.id}`)
-        .maybeSingle()
+  // Stat counts
+  let activeRequests = 0
+  let confirmedBookings = 0
+  let rosterCount = 0
+  let pendingResponses = 0
 
-      if (data?.first_name) {
-        setUserName(data.first_name)
-      } else if (data?.name) {
-        setUserName(data.name.split(' ')[0] || 'there')
-      }
+  // Recent bookings
+  let recentBookings: {
+    id: string
+    title: string | null
+    date: string
+    time_start: string
+    time_end: string
+    status: string
+    interpreter_count: number
+    event_category: string | null
+  }[] = []
+
+  if (user) {
+    // Get requester profile
+    const { data: profile } = await supabase
+      .from('requester_profiles')
+      .select('first_name, last_name, org_name')
+      .or(`user_id.eq.${user.id},id.eq.${user.id}`)
+      .maybeSingle()
+
+    if (profile?.first_name) {
+      firstName = profile.first_name
     }
-    fetchName()
-  }, [])
+    if (profile?.org_name) {
+      orgName = profile.org_name
+    }
+
+    // Active requests (status = 'open')
+    const { count: activeCount } = await supabase
+      .from('bookings')
+      .select('id', { count: 'exact', head: true })
+      .eq('requester_id', user.id)
+      .eq('status', 'open')
+
+    activeRequests = activeCount ?? 0
+
+    // Confirmed bookings (status = 'filled')
+    const { count: filledCount } = await supabase
+      .from('bookings')
+      .select('id', { count: 'exact', head: true })
+      .eq('requester_id', user.id)
+      .eq('status', 'filled')
+
+    confirmedBookings = filledCount ?? 0
+
+    // Interpreters on roster
+    const { count: rCount } = await supabase
+      .from('requester_roster')
+      .select('id', { count: 'exact', head: true })
+      .eq('requester_user_id', user.id)
+
+    rosterCount = rCount ?? 0
+
+    // Pending responses: booking_recipients with status='sent' for user's bookings
+    // Two-step: get user's booking IDs, then count pending recipients
+    const { data: userBookings } = await supabase
+      .from('bookings')
+      .select('id')
+      .eq('requester_id', user.id)
+      .in('status', ['open', 'filled'])
+
+    if (userBookings && userBookings.length > 0) {
+      const bookingIds = userBookings.map(b => b.id)
+      const { count: pendingCount } = await supabase
+        .from('booking_recipients')
+        .select('id', { count: 'exact', head: true })
+        .in('booking_id', bookingIds)
+        .in('status', ['sent', 'viewed'])
+
+      pendingResponses = pendingCount ?? 0
+    }
+
+    // Recent 5 bookings
+    const { data: recent } = await supabase
+      .from('bookings')
+      .select('id, title, date, time_start, time_end, status, interpreter_count, event_category')
+      .eq('requester_id', user.id)
+      .neq('status', 'draft')
+      .order('date', { ascending: false })
+      .limit(5)
+
+    if (recent) {
+      recentBookings = recent
+    }
+  }
 
   return (
-    <div style={{ maxWidth: 720, margin: '0 auto', padding: '48px 32px 64px' }}>
-      {/* Greeting */}
-      <h1 style={{
-        fontFamily: "'Syne', sans-serif",
-        fontSize: '1.6rem',
-        fontWeight: 700,
-        letterSpacing: '-0.03em',
-        marginBottom: 8,
-      }}>
-        {userName ? `Good to see you, ${userName}.` : 'Welcome to your dashboard.'}
-      </h1>
-      <p style={{ color: 'var(--muted)', fontSize: '0.92rem', marginBottom: 40, lineHeight: 1.6 }}>
-        {"Here's a snapshot of your activity on signpost."}
-      </p>
-
-      {/* Placeholder card */}
-      <div style={{
-        background: 'var(--surface)',
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--radius)',
-        padding: '48px 32px',
-        textAlign: 'center',
-      }}>
-        <div style={{
-          width: 56, height: 56, borderRadius: '50%', margin: '0 auto 20px',
-          background: 'rgba(0,229,255,0.1)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="4" width="18" height="18" rx="2" />
-            <path d="M16 2v4M8 2v4M3 10h18" />
-          </svg>
-        </div>
-        <h2 style={{
-          fontFamily: "'DM Sans', sans-serif",
-          fontSize: '1.15rem',
-          fontWeight: 700,
-          marginBottom: 8,
-        }}>
-          Your dashboard is being built
-        </h2>
-        <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.6, maxWidth: 400, margin: '0 auto 24px' }}>
-          Request overview, stats, and booking management are coming soon. In the meantime, browse interpreters and start building your preferred list.
-        </p>
-        <Link
-          href="/directory?context=requester"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            background: 'var(--accent)',
-            color: '#000',
-            borderRadius: 8,
-            padding: '12px 24px',
-            fontWeight: 700,
-            fontSize: '0.92rem',
-            textDecoration: 'none',
-            transition: 'opacity 0.15s',
-          }}
-        >
-          Browse Interpreter Directory →
-        </Link>
-      </div>
-    </div>
+    <RequesterOverviewClient
+      firstName={firstName}
+      orgName={orgName}
+      activeRequests={activeRequests}
+      confirmedBookings={confirmedBookings}
+      rosterCount={rosterCount}
+      pendingResponses={pendingResponses}
+      recentBookings={recentBookings}
+    />
   )
 }
