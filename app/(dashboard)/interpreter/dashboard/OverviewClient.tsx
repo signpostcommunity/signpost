@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { BetaBanner, SectionLabel, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import PendingRolesNudge from '@/components/shared/PendingRolesNudge'
 import BookMeBadge from '@/components/interpreter/BookMeBadge'
+import CalendarSyncCard from '@/components/dashboard/interpreter/CalendarSyncCard'
 
 /* ── Types ── */
 
@@ -252,100 +253,6 @@ function BookMeBadgeActions({ interpreterProfileId, displayName, onToast }: {
   )
 }
 
-/* ── Calendar Sync Card ── */
-
-function CalendarSyncCard({ calendarToken, onTokenChange, onToast }: {
-  calendarToken: string; onTokenChange: (t: string) => void; onToast: (m: string) => void
-}) {
-  const feedUrl = `https://signpost.community/api/calendar/${calendarToken}.ics`
-
-  async function regenerateToken() {
-    if (!confirm('This will break any existing calendar subscriptions. You\'ll need to re-add the new link. Continue?')) return
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-    const newToken = crypto.randomUUID()
-    const { error } = await supabase
-      .from('interpreter_profiles')
-      .update({ calendar_token: newToken })
-      .eq('user_id', user.id)
-    if (error) {
-      onToast('Failed to regenerate link')
-    } else {
-      onTokenChange(newToken)
-      onToast('Calendar link regenerated')
-    }
-  }
-
-  return (
-    <div style={{
-      background: 'var(--card-bg)', border: '1px solid var(--border)',
-      borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 24,
-    }}>
-      <div style={{
-        fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
-        letterSpacing: '0.1em', textTransform: 'uppercase',
-        color: 'var(--accent)', marginBottom: 8,
-      }}>
-        Calendar Sync
-      </div>
-      <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 20, lineHeight: 1.55 }}>
-        Subscribe to your booking calendar so confirmed appointments automatically
-        appear in Google Calendar, Outlook, or any calendar app. One-time setup.
-      </p>
-
-      {/* Feed URL + Copy */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
-        <span style={{
-          fontSize: '0.82rem', fontWeight: 600, color: 'var(--accent)',
-          fontFamily: "'DM Sans', sans-serif", wordBreak: 'break-all',
-        }}>
-          {feedUrl}
-        </span>
-        <button
-          onClick={() => {
-            navigator.clipboard.writeText(feedUrl)
-            onToast('Calendar link copied!')
-          }}
-          style={{
-            background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.3)',
-            color: 'var(--accent)', borderRadius: 8, padding: '6px 14px',
-            fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
-            fontFamily: "'DM Sans', sans-serif",
-          }}
-        >
-          Copy link
-        </button>
-      </div>
-
-      {/* Help page link */}
-      <Link
-        href="/help/calendar-sync"
-        style={{
-          display: 'inline-block', color: 'var(--accent)', fontSize: '0.82rem',
-          fontWeight: 600, fontFamily: "'DM Sans', sans-serif",
-          textDecoration: 'none', marginBottom: 12,
-        }}
-      >
-        How to add this to my calendar &rarr;
-      </Link>
-
-      {/* Regenerate */}
-      <button
-        onClick={regenerateToken}
-        style={{
-          display: 'block', background: 'none', border: 'none', cursor: 'pointer',
-          color: 'var(--muted)', fontSize: '0.78rem', fontWeight: 500,
-          fontFamily: "'DM Sans', sans-serif", padding: '2px 0',
-          textDecoration: 'underline', textUnderlineOffset: '3px',
-        }}
-      >
-        Regenerate link
-      </button>
-    </div>
-  )
-}
-
 /* ── Main Component ── */
 
 interface OverviewClientProps {
@@ -355,9 +262,10 @@ interface OverviewClientProps {
   profileStatus: string | null
   vanitySlug: string | null
   calendarToken: string | null
+  activeAwayPeriod?: { end_date: string; message: string } | null
 }
 
-export default function OverviewClient({ interpreterProfileId, firstName, lastName, profileStatus, vanitySlug, calendarToken }: OverviewClientProps) {
+export default function OverviewClient({ interpreterProfileId, firstName, lastName, profileStatus, vanitySlug, calendarToken, activeAwayPeriod }: OverviewClientProps) {
   const displayName = firstName || 'there'
   const hasDraftProfile = profileStatus === 'draft'
   const [toast, setToast] = useState<string | null>(null)
@@ -499,6 +407,33 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       {hasSeedData && <BetaBanner />}
+
+      {activeAwayPeriod && (
+        <div style={{
+          background: 'rgba(0,229,255,0.06)', border: '1px solid rgba(0,229,255,0.15)',
+          borderRadius: 'var(--radius-sm)', padding: '14px 20px', marginBottom: 20,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+          flexWrap: 'wrap',
+        }}>
+          <div>
+            <span style={{ color: 'var(--text)', fontSize: '0.9rem' }}>
+              You&apos;re currently marked as away until {new Date(activeAwayPeriod.end_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}.
+            </span>
+            <span style={{ color: 'var(--muted)', fontSize: '0.85rem', fontStyle: 'italic', marginLeft: 8 }}>
+              &ldquo;{activeAwayPeriod.message}&rdquo;
+            </span>
+          </div>
+          <a
+            href="/interpreter/dashboard/availability"
+            style={{
+              color: 'var(--accent)', fontSize: '0.85rem', fontWeight: 600,
+              fontFamily: "'DM Sans', sans-serif", textDecoration: 'none', whiteSpace: 'nowrap',
+            }}
+          >
+            Manage in Availability
+          </a>
+        </div>
+      )}
 
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.6rem', margin: '0 0 6px' }}>

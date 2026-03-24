@@ -8,6 +8,7 @@ export default async function OverviewPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   let profile: { id: string; first_name: string; last_name: string; status: string; vanity_slug: string | null; calendar_token: string | null } | null = null
+  let activeAwayPeriod: { end_date: string; message: string } | null = null
 
   if (user) {
     const { data } = await supabase
@@ -16,6 +17,21 @@ export default async function OverviewPage() {
       .eq('user_id', user.id)
       .single()
     profile = data
+
+    if (profile?.id) {
+      const today = new Date().toISOString().split('T')[0]
+      const { data: awayData } = await supabase
+        .from('interpreter_away_periods')
+        .select('end_date, message')
+        .eq('interpreter_id', profile.id)
+        .lte('start_date', today)
+        .gte('end_date', today)
+        .order('end_date', { ascending: true })
+        .limit(1)
+      if (awayData && awayData.length > 0) {
+        activeAwayPeriod = awayData[0]
+      }
+    }
   }
 
   return (
@@ -26,6 +42,7 @@ export default async function OverviewPage() {
       profileStatus={profile?.status || null}
       vanitySlug={profile?.vanity_slug || null}
       calendarToken={profile?.calendar_token || null}
+      activeAwayPeriod={activeAwayPeriod}
     />
   )
 }

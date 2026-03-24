@@ -15,14 +15,29 @@ import { groupSpecsByCategory } from '@/lib/constants/specializations';
 const TABS = ['Overview', 'Credentials', 'Availability'] as const;
 type Tab = (typeof TABS)[number];
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const MOCK_AVAILABILITY = [
-  { day: 1, start: '09:00', end: '18:00' },
-  { day: 2, start: '09:00', end: '18:00' },
-  { day: 3, start: '09:00', end: '17:00' },
-  { day: 4, start: '09:00', end: '18:00' },
-  { day: 5, start: '10:00', end: '15:00' },
-];
+const DAYS_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+interface AvailabilityRow {
+  day_of_week: number
+  status: string
+  start_time: string | null
+  end_time: string | null
+}
+
+interface ActiveAway {
+  end_date: string
+  message: string
+}
+
+function formatTime12(t: string | null): string {
+  if (!t) return ''
+  const [hStr, mStr] = t.split(':')
+  let h = parseInt(hStr)
+  const m = mStr || '00'
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  h = h % 12 || 12
+  return `${h}:${m} ${ampm}`
+}
 
 const CERT_FULL_NAMES: Record<string, string> = {
   RID: 'Registry of Interpreters for the Deaf, USA',
@@ -34,7 +49,7 @@ const CERT_FULL_NAMES: Record<string, string> = {
   AICA: 'Association of International Conference Interpreters',
 };
 
-export default function ProfileClient({ interpreter: i }: { interpreter: Interpreter }) {
+export default function ProfileClient({ interpreter: i, activeAway, availability }: { interpreter: Interpreter; activeAway?: ActiveAway | null; availability?: AvailabilityRow[] }) {
   const [activeTab, setActiveTab] = useState<Tab>('Overview');
   const router = useRouter();
   const [toast, setToast] = useState<string | null>(null);
@@ -282,6 +297,22 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
                 minWidth: 180,
               }}
             >
+              {activeAway && (
+                <div style={{
+                  background: 'var(--surface2)', border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-sm)', padding: '12px 16px', marginBottom: 4,
+                }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--muted)', marginBottom: 4 }}>
+                    Away until {new Date(activeAway.end_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+                  </div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--muted)', fontStyle: 'italic', marginBottom: 8 }}>
+                    &ldquo;{activeAway.message}&rdquo;
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.5 }}>
+                    You can still send a request — {i.name.split(' ')[0]} may respond after they return.
+                  </div>
+                </div>
+              )}
               <Link
                 href={userRole === 'deaf' ? `/dhh/dashboard/request?interpreter=${i.id}` : '/request'}
                 className="btn-primary"
@@ -393,7 +424,7 @@ export default function ProfileClient({ interpreter: i }: { interpreter: Interpr
           <div style={{ flex: 1, minWidth: 0 }}>
             {activeTab === 'Overview' && <OverviewTab interpreter={i} />}
             {activeTab === 'Credentials' && <CredentialsTab interpreter={i} />}
-            {activeTab === 'Availability' && <AvailabilityTab />}
+            {activeTab === 'Availability' && <AvailabilityTab availability={availability} />}
           </div>
 
           {/* Right: sticky sidebar */}
@@ -817,43 +848,64 @@ function CredentialsTab({ interpreter: i }: { interpreter: Interpreter }) {
   );
 }
 
-function AvailabilityTab() {
+function AvailabilityTab({ availability }: { availability?: AvailabilityRow[] }) {
+  // Reorder: Mon(1) through Sun(0)
+  const orderedDays = [1, 2, 3, 4, 5, 6, 0]
+  const statusColors: Record<string, string> = {
+    available: '#00e5ff',
+    by_request: '#f59e0b',
+    not_available: 'var(--border)',
+  }
+
   return (
     <Section title="Weekly Availability">
+      <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginBottom: 16, fontStyle: 'italic' }}>
+        Times shown in interpreter&apos;s local time zone.
+      </p>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {DAYS.map((day, idx) => {
-          const slot = MOCK_AVAILABILITY.find((a) => a.day === idx);
+        {orderedDays.map((dow) => {
+          const row = availability?.find(a => a.day_of_week === dow)
+          const status = row?.status || 'not_available'
+          const isAvail = status === 'available'
+          const isByReq = status === 'by_request'
+          const hasTime = row?.start_time && row?.end_time
+          const dotColor = statusColors[status] || 'var(--border)'
+
           return (
             <div
-              key={day}
+              key={dow}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '16px',
                 padding: '12px 16px',
-                background: slot ? 'rgba(0,229,255,0.04)' : 'var(--surface2)',
-                border: `1px solid ${slot ? 'rgba(0,229,255,0.2)' : 'var(--border)'}`,
+                background: isAvail ? 'rgba(0,229,255,0.04)' : isByReq ? 'rgba(245,158,11,0.04)' : 'var(--surface2)',
+                border: `1px solid ${isAvail ? 'rgba(0,229,255,0.2)' : isByReq ? 'rgba(245,158,11,0.2)' : 'var(--border)'}`,
                 borderRadius: '10px',
               }}
             >
-              <span style={{ width: 48, fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.8rem', color: slot ? 'var(--text)' : 'var(--muted)' }}>
-                {day}
+              <span style={{
+                width: 90, fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+                fontSize: '0.85rem', color: status === 'not_available' ? 'var(--muted)' : 'var(--text)',
+              }}>
+                {DAYS_FULL[dow]}
               </span>
-              {slot ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#34d399' }} />
-                  <span style={{ fontSize: '0.88rem', color: '#34d399' }}>{slot.start} – {slot.end}</span>
-                </div>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
+              {isAvail && hasTime ? (
+                <span style={{ fontSize: '0.88rem', color: '#00e5ff' }}>
+                  {formatTime12(row!.start_time)} — {formatTime12(row!.end_time)}
+                </span>
+              ) : isByReq ? (
+                <span style={{ fontSize: '0.85rem', color: '#f59e0b' }}>
+                  By request{hasTime ? ` · ${formatTime12(row!.start_time)} — ${formatTime12(row!.end_time)}` : ''}
+                </span>
               ) : (
-                <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Unavailable</span>
+                <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Not available</span>
               )}
             </div>
-          );
+          )
         })}
       </div>
-      <p style={{ marginTop: '16px', fontSize: '0.82rem', color: 'var(--muted)', fontStyle: 'italic' }}>
-        * Availability shown in interpreter&apos;s local time zone. After-hours bookings available on request.
-      </p>
     </Section>
   );
 }

@@ -40,7 +40,7 @@ const defaultFilters: FilterState = {
   userLocationLabel: '',
 };
 
-export default function DirectoryClient({ interpreters }: { interpreters: Interpreter[] }) {
+export default function DirectoryClient({ interpreters, awayPeriods }: { interpreters: Interpreter[]; awayPeriods?: Record<string, { end_date: string; message: string; dim_profile: boolean }> }) {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [filterOpen, setFilterOpen] = useState(false);
 
@@ -499,6 +499,7 @@ export default function DirectoryClient({ interpreters }: { interpreters: Interp
             onAddToList={openAddToList}
             userRole={userRole}
             contextParam={contextParam}
+            awayPeriods={awayPeriods}
           />
         </div>
       </div>

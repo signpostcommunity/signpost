@@ -83,5 +83,20 @@ export default async function DirectoryPage() {
     };
   });
 
-  return <DirectoryClient interpreters={interpreters} />;
+  // Fetch active away periods for all displayed interpreters
+  const today = new Date().toISOString().split('T')[0]
+  const { data: awayRows } = await supabase
+    .from('interpreter_away_periods')
+    .select('interpreter_id, end_date, message, dim_profile')
+    .lte('start_date', today)
+    .gte('end_date', today)
+
+  const awayMap: Record<string, { end_date: string; message: string; dim_profile: boolean }> = {}
+  if (awayRows) {
+    for (const row of awayRows) {
+      awayMap[row.interpreter_id] = row
+    }
+  }
+
+  return <DirectoryClient interpreters={interpreters} awayPeriods={awayMap} />;
 }

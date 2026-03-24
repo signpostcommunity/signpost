@@ -79,5 +79,30 @@ export default async function ProfilePage({ params }: Props) {
       : [],
   };
 
-  return <ProfileClient interpreter={interpreter} />;
+  // Fetch active away period
+  const today = new Date().toISOString().split('T')[0]
+  const { data: awayData } = await supabase
+    .from('interpreter_away_periods')
+    .select('end_date, message')
+    .eq('interpreter_id', data.id)
+    .lte('start_date', today)
+    .gte('end_date', today)
+    .order('end_date', { ascending: true })
+    .limit(1)
+  const activeAway = awayData && awayData.length > 0 ? awayData[0] : null
+
+  // Fetch weekly availability
+  const { data: availRows } = await supabase
+    .from('interpreter_availability')
+    .select('day_of_week, status, start_time, end_time')
+    .eq('interpreter_id', data.id)
+    .order('day_of_week', { ascending: true })
+
+  return (
+    <ProfileClient
+      interpreter={interpreter}
+      activeAway={activeAway}
+      availability={availRows || []}
+    />
+  );
 }

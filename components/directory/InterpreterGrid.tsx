@@ -1,15 +1,22 @@
 import type { Interpreter } from '@/lib/types';
 import InterpreterCard from './InterpreterCard';
 
+interface AwayInfo {
+  end_date: string
+  message: string
+  dim_profile: boolean
+}
+
 interface Props {
   interpreters: Interpreter[];
   onVideoPreview?: (interpreter: Interpreter) => void;
   onAddToList?: (interpreter: Interpreter) => void;
   userRole?: string | null;
   contextParam?: string | null;
+  awayPeriods?: Record<string, AwayInfo>;
 }
 
-export default function InterpreterGrid({ interpreters, onVideoPreview, onAddToList, userRole, contextParam }: Props) {
+export default function InterpreterGrid({ interpreters, onVideoPreview, onAddToList, userRole, contextParam, awayPeriods }: Props) {
   if (interpreters.length === 0) {
     return (
       <div
@@ -39,16 +46,33 @@ export default function InterpreterGrid({ interpreters, onVideoPreview, onAddToL
           paddingRight: '8px',
         }}
       >
-        {interpreters.map((i) => (
-          <InterpreterCard
-            key={i.id}
-            interpreter={i}
-            onVideoPreview={onVideoPreview}
-            onAddToList={onAddToList}
-            userRole={userRole}
-            contextParam={contextParam}
-          />
-        ))}
+        {interpreters.map((i) => {
+          const away = awayPeriods?.[String(i.id)]
+          const shouldDim = away?.dim_profile === true
+
+          return (
+            <div key={i.id} style={{ position: 'relative', opacity: shouldDim ? 0.6 : 1, transition: 'opacity 0.2s' }}>
+              <InterpreterCard
+                interpreter={i}
+                onVideoPreview={onVideoPreview}
+                onAddToList={onAddToList}
+                userRole={userRole}
+                contextParam={contextParam}
+              />
+              {shouldDim && (
+                <span style={{
+                  position: 'absolute', top: 10, left: 10, zIndex: 2,
+                  background: 'rgba(0,0,0,0.6)', border: '1px solid var(--border)',
+                  borderRadius: 4, padding: '2px 8px',
+                  fontSize: '0.68rem', fontWeight: 600, color: 'var(--muted)',
+                  fontFamily: "'DM Sans', sans-serif", pointerEvents: 'none',
+                }}>
+                  Away
+                </span>
+              )}
+            </div>
+          )
+        })}
       </div>
 
       <style>{`
