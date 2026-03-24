@@ -19,9 +19,6 @@ export default function Footer() {
       </div>
 
       <div style={{ display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
-        <Link href="/directory" className="footer-link">Browse Interpreter Directory</Link>
-        <Link href="/interpreter" className="footer-link">Interpreter Portal</Link>
-        <Link href="/request" className="footer-link">Request Interpreters</Link>
         <Link href="/about" className="footer-link">About Us</Link>
         <a href="mailto:hello@signpost.community" className="footer-link">hello@signpost.community</a>
         <Link href="/privacy" className="footer-link">Privacy Policy</Link>
