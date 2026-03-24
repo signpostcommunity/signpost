@@ -529,6 +529,31 @@ export default function RequestsClient({
                       )}
                     </div>
 
+                    {/* Smart directory link */}
+                    {booking.status === 'open' && (() => {
+                      const params = new URLSearchParams({ context: 'requester' })
+                      if (booking.specialization) params.set('spec', booking.specialization)
+                      if (booking.location) params.set('location', booking.location)
+                      if (booking.format) params.set('workMode', booking.format)
+                      return (
+                        <Link
+                          href={`/directory?${params.toString()}`}
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 7,
+                            padding: '9px 18px', borderRadius: 'var(--radius-sm)',
+                            background: 'rgba(0,229,255,0.06)', border: '1px solid rgba(0,229,255,0.2)',
+                            color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600,
+                            textDecoration: 'none', fontFamily: "'DM Sans', sans-serif",
+                            marginBottom: 16, transition: 'all 0.15s',
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.12)' }}
+                          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.06)' }}
+                        >
+                          Find more interpreters for this request &#8594;
+                        </Link>
+                      )
+                    })()}
+
                     {/* Cancel button */}
                     {(booking.status === 'open' || booking.status === 'filled') && (
                       <button

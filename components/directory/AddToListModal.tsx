@@ -95,7 +95,7 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
     negativeListDesc: 'This interpreter will be flagged on your list so requesters know not to book them when you share your list.',
   },
   requester: {
-    step1Label: 'Step 1 of 2: Which list should they go on?',
+    step1Label: 'Which list should they go on?',
     tiers: [
       {
         id: 'preferred',
@@ -110,17 +110,17 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
         accentVar: 'accent2',
       },
     ],
-    showApprovals: true,
-    step2Label: 'Step 2 of 2: Approved for which assignment types?',
-    step2Desc: "Some interpreters have narrower specializations. Marking which types of assignments they're right for helps you filter correctly when sending requests.",
-    workLabel: '💼 Approved for professional / workplace assignments',
-    workDesc: 'This interpreter can be assigned to employment-related work: workplace meetings, HR conversations, job training, professional conferences, and similar settings.',
-    personalLabel: '🏥 Approved for medical and personal assignments',
-    personalDesc: 'This interpreter can be assigned to personal-context work: medical appointments, hospital visits, social services, mental health sessions, and similar settings.',
+    showApprovals: false,
+    step2Label: '',
+    step2Desc: '',
+    workLabel: '',
+    workDesc: '',
+    personalLabel: '',
+    personalDesc: '',
     noteLabel: 'Note (optional)',
     notePlaceholder: '"Excellent for high-stakes medical settings. Always arrives early and reviews materials in advance."',
     confirmLabel: 'Add to my list →',
-    requireApproval: true,
+    requireApproval: false,
     negativeListLabel: '✕ Do Not Book',
     negativeListDesc: 'This interpreter will be flagged on your list so they are not booked.',
   },
@@ -358,8 +358,66 @@ export default function AddToListModal({
             }
           }
         }
+      } else if (userRole === 'requester') {
+        // Requester → requester_roster
+        const { error: insertErr } = await supabase.from('requester_roster').insert({
+          requester_user_id: user.id,
+          interpreter_id: interpreter.id,
+          tier: negativeList ? 'dnb' : selectedTier,
+          notes: note || null,
+        });
+
+        if (insertErr) {
+          console.error('Insert error (requester_roster):', JSON.stringify(insertErr, null, 2));
+          if (insertErr.code === '23505') {
+            if (onDuplicate) {
+              onDuplicate(interpreter.name);
+              onClose();
+              return;
+            }
+            setError('This interpreter is already on your list.');
+          } else {
+            setError(`Save failed: ${insertErr.message}`);
+          }
+          setSaving(false);
+          return;
+        }
+
+        // Notify the interpreter (skip if DNB)
+        if (!negativeList) {
+          const { data: interpProfile } = await supabase
+            .from('interpreter_profiles')
+            .select('user_id')
+            .eq('id', interpreter.id)
+            .single();
+
+          if (interpProfile?.user_id) {
+            const { data: reqProfile } = await supabase
+              .from('requester_profiles')
+              .select('first_name, last_name, org_name')
+              .eq('user_id', user.id)
+              .maybeSingle();
+
+            const adderName = reqProfile?.org_name
+              || (reqProfile ? `${reqProfile.first_name || ''} ${reqProfile.last_name || ''}`.trim() : '');
+
+            sendNotification({
+              recipientUserId: interpProfile.user_id,
+              type: 'added_to_preferred_list_by_org',
+              subject: adderName
+                ? `You've been added to ${adderName}'s preferred interpreter list`
+                : "You've been added to a preferred interpreter list",
+              body: adderName
+                ? `${adderName} has added you to their preferred interpreter list on signpost.`
+                : "You've been added to a preferred interpreter list on signpost.",
+              metadata: { adder_name: adderName || undefined },
+              ctaText: 'View My Dashboard',
+              ctaUrl: 'https://signpost.community/interpreter/dashboard',
+            }).catch(err => console.error('[add-to-list] notification failed:', err));
+          }
+        }
       } else {
-        // Deaf / Requester / Default → deaf_roster
+        // Deaf / Default → deaf_roster
         const { error: insertErr } = await supabase.from('deaf_roster').insert({
           deaf_user_id: user.id,
           interpreter_id: interpreter.id,
@@ -397,20 +455,6 @@ export default function AddToListModal({
                   ? `${deafProfile.first_name || ''} ${deafProfile.last_name || ''}`.trim()
                   : '';
                 notifMetadata.adder_name = adderName || undefined;
-              } else if (userRole === 'requester') {
-                notifType = 'added_to_preferred_list_by_org';
-                const { data: reqProfile } = await supabase
-                  .from('requester_profiles')
-                  .select('first_name, last_name, organization_name')
-                  .eq('user_id', user.id)
-                  .maybeSingle();
-                if (reqProfile?.organization_name) {
-                  adderName = reqProfile.organization_name;
-                  notifMetadata.organization_name = adderName;
-                } else if (reqProfile) {
-                  adderName = `${reqProfile.first_name || ''} ${reqProfile.last_name || ''}`.trim();
-                  notifMetadata.adder_name = adderName || undefined;
-                }
               }
 
               const fallbackSubject = adderName
@@ -718,8 +762,8 @@ export default function AddToListModal({
             </div>
           )}
 
-          {/* Negative list toggle (Do Not Book / Not Recommended) */}
-          <label
+          {/* Negative list toggle (Do Not Book / Not Recommended) — hidden for requester */}
+          {userRole !== 'requester' && <label
             style={{
               display: 'flex',
               alignItems: 'flex-start',
@@ -783,9 +827,9 @@ export default function AddToListModal({
                 {cfg.negativeListDesc}
               </div>
             </div>
-          </label>
+          </label>}
 
-          {/* Step 2: Approval settings (deaf + requester only) — hidden when negative list */}
+          {/* Step 2: Approval settings (deaf only) — hidden when negative list */}
           {cfg.showApprovals && !negativeList && (
             <div>
               <div

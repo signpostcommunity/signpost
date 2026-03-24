@@ -43,6 +43,7 @@ const defaultFilters: FilterState = {
 export default function DirectoryClient({ interpreters, awayPeriods }: { interpreters: Interpreter[]; awayPeriods?: Record<string, { end_date: string; message: string; dim_profile: boolean }> }) {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [autoFilterLabels, setAutoFilterLabels] = useState<string[]>([]);
 
   // Auth state — starts null (loading), then true/false
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
@@ -134,6 +135,45 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
         });
     });
   }, []);
+
+  // Auto-populate filters from URL params (smart directory link)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const labels: string[] = [];
+    const patch: Partial<FilterState> = {};
+
+    const signLang = params.get('signLang');
+    if (signLang) { patch.signLangs = [signLang]; labels.push(signLang); }
+
+    const spokenLang = params.get('spokenLang');
+    if (spokenLang) { patch.spokenLangs = [spokenLang]; labels.push(spokenLang); }
+
+    const spec = params.get('spec');
+    if (spec) { patch.specs = [spec]; labels.push(spec); }
+
+    const location = params.get('location');
+    if (location) { patch.userLocationLabel = location; labels.push(location); }
+
+    const gender = params.get('gender');
+    if (gender) { patch.gender = gender; labels.push(gender); }
+
+    const affinity = params.get('affinity');
+    if (affinity) { patch.affinities = [affinity]; labels.push(affinity); }
+
+    if (labels.length > 0) {
+      setFilters(prev => ({ ...prev, ...patch }));
+      setAutoFilterLabels(labels);
+    }
+  }, []);
+
+  function clearAutoFilters() {
+    setFilters(defaultFilters);
+    setAutoFilterLabels([]);
+    // Clean URL params without full reload
+    const url = new URL(window.location.href);
+    ['signLang', 'spokenLang', 'spec', 'location', 'gender', 'affinity', 'workMode', 'eventCategory'].forEach(p => url.searchParams.delete(p));
+    window.history.replaceState({}, '', url.toString());
+  }
 
   // Handlers
   const openVideoPreview = (interpreter: Interpreter) => {
@@ -323,6 +363,39 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
           }}>
             Browse interpreter profiles, watch intro videos, and connect directly.
           </p>
+
+          {/* Auto-filter banner */}
+          {autoFilterLabels.length > 0 && (
+            <div style={{
+              background: 'rgba(0,229,255,0.06)',
+              border: '1px solid rgba(0,229,255,0.2)',
+              borderRadius: 10, padding: '14px 20px',
+              marginBottom: 16,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              gap: 12, flexWrap: 'wrap',
+            }}>
+              <div>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text)', fontWeight: 600, marginBottom: 3 }}>
+                  Showing interpreters matching your request: {autoFilterLabels.join(' \u00b7 ')}
+                </div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
+                  These filters were applied automatically based on your booking details. You can adjust or remove any filter.
+                </div>
+              </div>
+              <button
+                onClick={clearAutoFilters}
+                style={{
+                  background: 'none', border: '1px solid rgba(0,229,255,0.3)',
+                  borderRadius: 8, padding: '6px 14px',
+                  color: 'var(--accent)', fontSize: '0.78rem', fontWeight: 600,
+                  cursor: 'pointer', whiteSpace: 'nowrap',
+                  fontFamily: "'DM Sans', sans-serif",
+                }}
+              >
+                Clear all auto-filters
+              </button>
+            </div>
+          )}
 
           {/* Invite prompt */}
           <div style={{

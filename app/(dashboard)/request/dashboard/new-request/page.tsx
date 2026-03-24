@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 /* ── Constants ── */
 
@@ -424,6 +425,33 @@ export default function NewRequestPage() {
             </p>
           </div>
         </div>
+
+        {/* Smart directory link */}
+        {(() => {
+          const params = new URLSearchParams({ context: 'requester' })
+          if (signLanguage) params.set('signLang', signLanguage)
+          if (spokenLanguage) params.set('spokenLang', spokenLanguage)
+          if (specialization) params.set('spec', specialization)
+          if (location) params.set('location', location)
+          if (format) params.set('workMode', format)
+          return (
+            <Link
+              href={`/directory?${params.toString()}`}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 7,
+                padding: '9px 18px', borderRadius: 'var(--radius-sm)',
+                background: 'rgba(0,229,255,0.06)', border: '1px solid rgba(0,229,255,0.2)',
+                color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600,
+                textDecoration: 'none', fontFamily: "'DM Sans', sans-serif",
+                marginTop: 20, transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.12)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.06)' }}
+            >
+              Browse matching interpreters &#8594;
+            </Link>
+          )
+        })()}
 
         {/* ── Actions ── */}
         <div style={{ display: 'flex', gap: 12, marginTop: 32, marginBottom: 48 }}>
