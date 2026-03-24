@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { PageHeader } from '@/components/dashboard/interpreter/shared'
 import Toast from '@/components/ui/Toast'
@@ -2468,7 +2469,6 @@ function SettingsTab({
 function CalendarSyncSettings() {
   const [calendarToken, setCalendarToken] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
-  const [guideOpen, setGuideOpen] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
 
   useEffect(() => {
@@ -2555,63 +2555,30 @@ function CalendarSyncSettings() {
         </button>
       </div>
 
+      {/* Help page link */}
+      <Link
+        href="/help/calendar-sync"
+        style={{
+          display: 'inline-block', color: 'var(--accent)', fontSize: '0.82rem',
+          fontWeight: 600, fontFamily: "'DM Sans', sans-serif",
+          textDecoration: 'none', marginBottom: 12,
+        }}
+      >
+        How to add this to my calendar &rarr;
+      </Link>
+
       {/* Regenerate */}
       <button
         onClick={regenerateToken}
         style={{
-          background: 'none', border: 'none', cursor: 'pointer',
+          display: 'block', background: 'none', border: 'none', cursor: 'pointer',
           color: 'var(--muted)', fontSize: '0.78rem', fontWeight: 500,
-          fontFamily: "'DM Sans', sans-serif", padding: '2px 0', marginBottom: 16,
+          fontFamily: "'DM Sans', sans-serif", padding: '2px 0',
           textDecoration: 'underline', textUnderlineOffset: '3px',
         }}
       >
         Regenerate link
       </button>
-
-      {/* How to add — collapsible */}
-      <div>
-        <button
-          onClick={() => setGuideOpen(!guideOpen)}
-          aria-expanded={guideOpen}
-          style={{
-            background: 'none', border: 'none', cursor: 'pointer',
-            color: 'var(--muted)', fontSize: '0.82rem', fontWeight: 600,
-            fontFamily: "'DM Sans', sans-serif", padding: '4px 0',
-            display: 'flex', alignItems: 'center', gap: 6,
-          }}
-        >
-          How to add
-          <svg
-            width="12" height="12" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            style={{ transform: guideOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
-          >
-            <path d="M6 9l6 6 6-6" />
-          </svg>
-        </button>
-
-        {guideOpen && (
-          <div style={{
-            marginTop: 12, padding: '16px', background: 'var(--surface)',
-            border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
-            fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.7,
-            display: 'flex', flexDirection: 'column', gap: 14,
-          }}>
-            <div>
-              <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Google Calendar</div>
-              Settings &rarr; Add calendar &rarr; From URL &rarr; paste link
-            </div>
-            <div>
-              <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Apple Calendar</div>
-              File &rarr; New Calendar Subscription &rarr; paste link
-            </div>
-            <div>
-              <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Outlook</div>
-              Add calendar &rarr; Subscribe from web &rarr; paste link
-            </div>
-          </div>
-        )}
-      </div>
 
       {/* Toast */}
       {toast && (
