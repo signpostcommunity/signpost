@@ -375,7 +375,7 @@ export default function InterpretersClient() {
   }
 
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       {/* Page Header */}
       <div style={{ marginBottom: 32 }}>
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.6rem', margin: '0 0 6px', letterSpacing: '-0.03em' }}>

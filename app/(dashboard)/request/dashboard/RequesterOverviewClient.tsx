@@ -97,7 +97,7 @@ export default function RequesterOverviewClient({
   const greeting = firstName ? `Good to see you, ${firstName}.` : 'Welcome to your dashboard.'
 
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       {/* Greeting */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.6rem', margin: '0 0 6px' }}>
@@ -116,6 +116,9 @@ export default function RequesterOverviewClient({
         <StatCard num={pendingResponses} label="Pending Responses" href="/request/dashboard/inbox" />
       </div>
 
+      {/* Beta Banner */}
+      {process.env.NEXT_PUBLIC_BETA_MODE === 'true' && <BetaBanner />}
+
       {/* New Request Button */}
       <div style={{ marginBottom: 36 }}>
         <Link
@@ -133,6 +136,9 @@ export default function RequesterOverviewClient({
           New Interpreter Request
         </Link>
       </div>
+
+      {/* How Billing Works */}
+      <BillingInfoCard />
 
       {/* Recent Requests */}
       <div style={{ marginBottom: 36 }}>
@@ -228,6 +234,90 @@ export default function RequesterOverviewClient({
           .dash-page-content { padding: 24px 20px !important; }
         }
       `}</style>
+    </div>
+  )
+}
+
+function BetaBanner() {
+  const [dismissed, setDismissed] = useState(false)
+  if (dismissed) return null
+  return (
+    <div style={{
+      background: 'rgba(0,229,255,0.06)', border: '1px solid rgba(0,229,255,0.2)',
+      borderRadius: 'var(--radius-sm)', padding: '12px 18px',
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      gap: 16, marginBottom: 20,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{
+          fontSize: '0.68rem', fontWeight: 800, letterSpacing: '0.1em',
+          padding: '3px 8px', borderRadius: 4,
+          background: 'rgba(0,229,255,0.15)', color: 'var(--accent)',
+          fontFamily: "'DM Sans', sans-serif",
+        }}>
+          BETA
+        </span>
+        <span style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.5 }}>
+          {"You're using the signpost beta. Features are still being built. Your feedback shapes what comes next."}
+        </span>
+      </div>
+      <button
+        onClick={() => setDismissed(true)}
+        style={{
+          background: 'none', border: 'none', color: 'var(--muted)',
+          cursor: 'pointer', fontSize: '1rem', flexShrink: 0, padding: 4,
+        }}
+        aria-label="Dismiss"
+      >
+        &#10005;
+      </button>
+    </div>
+  )
+}
+
+function BillingInfoCard() {
+  const [expanded, setExpanded] = useState(false)
+  return (
+    <div style={{ marginBottom: 24 }}>
+      <button
+        onClick={() => setExpanded(!expanded)}
+        style={{
+          background: 'none', border: 'none', cursor: 'pointer',
+          color: 'var(--accent)', fontSize: '0.85rem', fontWeight: 600,
+          fontFamily: "'DM Sans', sans-serif", padding: 0,
+          display: 'flex', alignItems: 'center', gap: 6,
+        }}
+      >
+        <svg
+          width="12" height="12" viewBox="0 0 12 12" fill="none"
+          style={{ transform: expanded ? 'rotate(90deg)' : 'none', transition: 'transform 0.15s' }}
+        >
+          <path d="M4 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        How does signpost billing work?
+      </button>
+      {expanded && (
+        <div style={{
+          background: 'var(--card-bg)', border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-sm)', padding: '20px 24px', marginTop: 10,
+          fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.7,
+        }}>
+          <p style={{ margin: '0 0 12px' }}>
+            signpost charges a flat $15 platform fee per interpreter, per confirmed booking. This fee is charged when you accept an interpreter&apos;s rate and confirm the booking.
+          </p>
+          <p style={{ margin: '0 0 12px' }}>
+            This fee supports the signpost platform and is completely separate from the interpreter&apos;s rate. The interpreter will invoice you directly for their services using their preferred payment method.
+          </p>
+          <p style={{ margin: '0 0 12px' }}>
+            Personal interpreter requests from Deaf/DB/HH individuals are always free.
+          </p>
+          <p style={{
+            margin: 0, fontStyle: 'italic', opacity: 0.8,
+          }}>
+            During beta, platform fees are tracked but not charged.
+          </p>
+        </div>
+      )}
     </div>
   )
 }

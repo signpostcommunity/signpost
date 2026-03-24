@@ -155,7 +155,7 @@ export default function NewRequestPage() {
   const platformFee = 15.0 * interpreterCount
 
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       <div style={{ maxWidth: 680, margin: '0 auto' }}>
         {/* Header */}
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.6rem', margin: '0 0 6px' }}>

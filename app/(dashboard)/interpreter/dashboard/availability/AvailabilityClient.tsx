@@ -281,7 +281,7 @@ export default function AvailabilityClient({
 
   if (loading) {
     return (
-      <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
+      <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
         <PageHeader title="Availability" subtitle="Set your working status for each day. Requesters see this on your profile." />
         <div style={{ color: 'var(--muted)', fontSize: '0.9rem', padding: 40, textAlign: 'center' }}>Loading...</div>
       </div>
@@ -304,7 +304,7 @@ export default function AvailabilityClient({
   const orderedDays = [1, 2, 3, 4, 5, 6, 0]
 
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       <PageHeader title="Availability" subtitle="Set your working status for each day. Requesters see this on your profile." />
 
       {/* ── TIMEZONE ── */}
