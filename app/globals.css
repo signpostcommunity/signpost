@@ -531,3 +531,29 @@ body.beta-panel-open-mobile {
   overflow: hidden !important;
   touch-action: none;
 }
+
+/* ── Requester portal mobile overrides ── */
+@media (max-width: 640px) {
+  /* Stat cards stack 2-col on small screens */
+  .dash-page-content div[style*="repeat(auto-fill, minmax(160px"] {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* Quick action cards stack */
+  .dash-page-content div[style*="repeat(auto-fill, minmax(260px"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* All buttons full-width */
+  .dash-page-content .btn-primary {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  /* Reduce heading size */
+  .dash-page-content h1 {
+    font-size: 1.3rem !important;
+  }
+}

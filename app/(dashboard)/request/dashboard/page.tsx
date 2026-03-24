@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { seedRequesterData } from '@/lib/seedRequesterData'
 import RequesterOverviewClient from './RequesterOverviewClient'
 
 export const dynamic = 'force-dynamic'
@@ -29,6 +30,17 @@ export default async function RequesterDashboardPage() {
   }[] = []
 
   if (user) {
+    // Seed beta data if needed
+    const { count: seedCount } = await supabase
+      .from('bookings')
+      .select('id', { count: 'exact', head: true })
+      .eq('requester_id', user.id)
+      .eq('is_seed', true)
+
+    if ((seedCount ?? 0) === 0) {
+      await seedRequesterData(user.id)
+    }
+
     // Get requester profile
     const { data: profile } = await supabase
       .from('requester_profiles')

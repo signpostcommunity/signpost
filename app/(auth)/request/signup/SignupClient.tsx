@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 
-const TOTAL_STEPS = 5;
+const TOTAL_STEPS = 4;
 
 type RequesterType = 'organization' | 'personal_event' | null;
 
@@ -43,8 +43,6 @@ export default function RequestSignupClient() {
   const [form, setForm] = useState<FormData>(defaultForm);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [skipFirstRequest, setSkipFirstRequest] = useState(true);
-
   function update<K extends keyof FormData>(field: K, value: FormData[K]) {
     setForm(prev => ({ ...prev, [field]: value }));
   }
@@ -123,7 +121,7 @@ export default function RequestSignupClient() {
     }
 
     // Move to final step
-    setStep(5);
+    setStep(4);
     setLoading(false);
   }
 
@@ -289,7 +287,7 @@ export default function RequestSignupClient() {
             )}
 
             {/* Name row */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="signup-name-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <InputField label="First Name *" value={form.firstName} onChange={v => update('firstName', v)} placeholder="Alex" />
               <InputField label="Last Name" value={form.lastName} onChange={v => update('lastName', v)} placeholder="Rivera" />
             </div>
@@ -298,7 +296,7 @@ export default function RequestSignupClient() {
             <InputField label="Email *" type="email" value={form.email} onChange={v => update('email', v)} placeholder="you@example.com" />
 
             {/* Location */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="signup-location-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <InputField label="Country *" value={form.country} onChange={v => update('country', v)} placeholder="United States" />
               <InputField label="City / Region *" value={form.city} onChange={v => update('city', v)} placeholder="Los Angeles" />
             </div>
@@ -337,54 +335,36 @@ export default function RequestSignupClient() {
         </div>
       )}
 
-      {/* Step 3 — First Request (skip-able) */}
+      {/* Step 3 — Preview & Create */}
       {step === 3 && (
         <div>
           <h2 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '6px' }}>
-            First Request
-          </h2>
-          <p style={{ color: 'var(--muted)', marginBottom: '20px', fontSize: '0.9rem' }}>
-            You can create your first interpreter request now, or skip and do it later from your dashboard.
-          </p>
-
-          {/* Skip checkbox */}
-          <label style={{
-            display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
-            padding: '14px 16px', background: 'var(--surface)', border: '1px solid var(--border)',
-            borderRadius: 10, marginBottom: 20, fontSize: '0.88rem', color: 'var(--text)',
-          }}>
-            <input
-              type="checkbox"
-              checked={skipFirstRequest}
-              onChange={() => setSkipFirstRequest(!skipFirstRequest)}
-              style={{ accentColor: 'var(--accent)', flexShrink: 0, width: 'auto' }}
-            />
-            <span>{"I'll do this later"}</span>
-          </label>
-
-          {!skipFirstRequest && (
-            <div style={{
-              padding: 20, background: 'var(--surface)', border: '1px solid var(--border)',
-              borderRadius: 12, color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.6,
-            }}>
-              The full request form will be available in your dashboard after signup. For now, you can skip this step and create your first request there.
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Step 4 — Find Interpreters */}
-      {step === 4 && (
-        <div>
-          <h2 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '6px' }}>
-            Find Interpreters
+            Preview &amp; Create
           </h2>
           <p style={{ color: 'var(--muted)', marginBottom: '28px', fontSize: '0.9rem' }}>
-            After creating your account, browse the signpost directory to find qualified interpreters.
+            Review what you can do with your signpost account, then create it.
           </p>
+
+          {/* Your First Request info */}
+          <div style={{
+            padding: '20px 24px', background: 'var(--surface)',
+            border: '1px solid var(--border)', borderRadius: '12px', marginBottom: 16,
+          }}>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, marginBottom: '8px', fontSize: '0.95rem' }}>
+              Your First Request
+            </div>
+            <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.6, margin: '0 0 10px' }}>
+              Once your account is created, you can browse the interpreter directory and send your first booking request directly from your dashboard.
+            </p>
+            <p style={{ color: 'var(--muted)', fontSize: '0.78rem', fontStyle: 'italic', margin: 0, opacity: 0.8 }}>
+              The request form walks you through event details, language needs, and interpreter selection. Most requests take under 2 minutes.
+            </p>
+          </div>
+
+          {/* What you can do checklist */}
           <div style={{
             padding: '24px', background: 'var(--surface)',
-            border: '1px solid var(--border)', borderRadius: '12px', marginBottom: 20,
+            border: '1px solid var(--border)', borderRadius: '12px',
           }}>
             <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, marginBottom: '14px' }}>
               What you can do:
@@ -397,30 +377,19 @@ export default function RequestSignupClient() {
               'Build your preferred interpreter list',
             ].map(item => (
               <div key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8, fontSize: '0.88rem', color: 'var(--muted)' }}>
-                <span style={{ color: 'var(--accent)', marginTop: 1, flexShrink: 0 }}>✓</span>
+                <span style={{ color: 'var(--accent)', marginTop: 1, flexShrink: 0 }}>&#10003;</span>
                 {item}
               </div>
             ))}
           </div>
-          <Link
-            href="/directory?context=requester"
-            target="_blank"
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              color: 'var(--accent)', fontSize: '0.92rem', textDecoration: 'none',
-              fontWeight: 600,
-            }}
-          >
-            Browse the full directory →
-          </Link>
         </div>
       )}
 
-      {/* Step 5 — Done */}
-      {step === 5 && <DoneStep />}
+      {/* Step 4 — Done */}
+      {step === 4 && <DoneStep />}
 
       {/* Navigation */}
-      {step < 5 && (
+      {step < 4 && (
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px' }}>
           <button
             onClick={() => setStep(s => s - 1)}
@@ -435,7 +404,7 @@ export default function RequestSignupClient() {
             ← Back
           </button>
 
-          {step < 4 ? (
+          {step < 3 ? (
             <button
               onClick={() => {
                 setError('');
@@ -445,7 +414,7 @@ export default function RequestSignupClient() {
               className="btn-primary"
               style={{ opacity: canContinue() ? 1 : 0.4, padding: '10px 24px' }}
             >
-              Continue →
+              Continue &#8594;
             </button>
           ) : (
             <button
@@ -454,7 +423,7 @@ export default function RequestSignupClient() {
               className="btn-primary"
               style={{ opacity: loading ? 0.4 : 1, padding: '10px 24px' }}
             >
-              {loading ? 'Creating account...' : 'Create Account →'}
+              {loading ? 'Creating account...' : 'Create Account \u2192'}
             </button>
           )}
         </div>
@@ -469,6 +438,18 @@ export default function RequestSignupClient() {
           {error}
         </div>
       )}
+
+      {/* Mobile styles */}
+      <style>{`
+        @media (max-width: 640px) {
+          .signup-name-row {
+            grid-template-columns: 1fr !important;
+          }
+          .signup-location-row {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

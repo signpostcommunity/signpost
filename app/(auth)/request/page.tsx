@@ -7,6 +7,7 @@ import Link from 'next/link';
 export default function RequestPortalPage() {
   return (
     <div
+      className="req-landing-wrap"
       style={{
         minHeight: '100vh',
         background: 'var(--bg)',
@@ -93,6 +94,7 @@ export default function RequestPortalPage() {
 
       {/* Two-column cards */}
       <div
+        className="req-landing-cards"
         style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
@@ -250,6 +252,25 @@ export default function RequestPortalPage() {
           </Link>
         </div>
       </div>
+
+      {/* Mobile styles */}
+      <style>{`
+        @media (max-width: 640px) {
+          .req-landing-wrap {
+            padding: 24px 20px 60px !important;
+          }
+          .req-landing-wrap h1 {
+            font-size: 1.5rem !important;
+          }
+          .req-landing-cards {
+            grid-template-columns: 1fr !important;
+            min-width: 0 !important;
+          }
+          .req-landing-cards > div {
+            padding: 24px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
