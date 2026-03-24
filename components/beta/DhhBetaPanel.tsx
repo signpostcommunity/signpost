@@ -234,6 +234,12 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
         fadeTimers.current[questionKey] = setTimeout(() => {
           setJustSavedKeys(prev => { const next = new Set(prev); next.delete(questionKey); return next })
         }, 3000)
+        // Push to Monday (fire-and-forget — don't block UI)
+        fetch('/api/dhh-beta-feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'page_feedback' }),
+        }).catch(err => console.error('Monday push failed:', err))
       }
     } catch (err) {
       console.error('Failed to save beta response:', err)

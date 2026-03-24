@@ -288,6 +288,12 @@ export default function BetaFinalPage() {
             { onConflict: 'user_id' }
           )
         if (error) console.error('Failed to mark final completed:', error)
+        // Push all feedback to Monday (fire-and-forget — don't block UI)
+        fetch('/api/dhh-beta-feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'final_survey' }),
+        }).catch(err => console.error('Monday push failed:', err))
       }
       setDone(true)
     }
