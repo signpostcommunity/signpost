@@ -128,7 +128,6 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
 
   // Load existing responses for this page
   useEffect(() => {
-    if (!config) return
     async function loadResponses() {
       try {
         const supabase = createClient()
@@ -162,7 +161,7 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
       }
     }
     loadResponses()
-  }, [pathname, userId, config !== null])
+  }, [pathname, userId])
 
   // Track page visit
   useEffect(() => {
@@ -256,25 +255,63 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
   // Don't render on final page or admin
   if (pathname.startsWith('/admin') || pathname.includes('beta-final')) return null
 
+  const hasUnansweredQuestions = config
+    ? config.questions.some(q => !savedKeys.has(q.key)) || !savedKeys.has('general_feedback')
+    : !savedKeys.has('general_feedback')
+
   // ── Collapsed tab ─────────────────────────────────────────────────────────
   if (!isOpen) {
     const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
-    return (
+    return isMobile ? (
+      /* Mobile: floating feedback button */
+      <button
+        onClick={() => setIsOpen(true)}
+        aria-label="Open beta feedback"
+        style={{
+          position: 'fixed',
+          bottom: 20,
+          right: 20,
+          width: 52,
+          height: 52,
+          borderRadius: '50%',
+          background: '#7b61ff',
+          color: '#fff',
+          border: 'none',
+          cursor: 'pointer',
+          zIndex: 1000,
+          boxShadow: '0 4px 20px rgba(123,97,255,0.4)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+        {hasUnansweredQuestions && (
+          <span style={{
+            position: 'absolute', top: 2, right: 2,
+            width: 10, height: 10, borderRadius: '50%',
+            background: '#ff6b85', border: '2px solid #111118',
+          }} />
+        )}
+      </button>
+    ) : (
+      /* Desktop: side tab */
       <button
         onClick={() => setIsOpen(true)}
         aria-label="Open beta panel"
         style={{
           position: 'fixed',
           right: 0,
-          top: isMobile ? 'auto' : '50%',
-          bottom: isMobile ? 16 : 'auto',
-          transform: isMobile ? 'none' : 'translateY(-50%) rotate(90deg)',
+          top: '50%',
+          transform: 'translateY(-50%) rotate(90deg)',
           transformOrigin: 'center center',
           background: 'var(--accent2)',
           color: '#fff',
           border: 'none',
-          borderRadius: isMobile ? '8px' : '6px 6px 0 0',
-          padding: isMobile ? '8px 14px' : '8px 18px',
+          borderRadius: '6px 6px 0 0',
+          padding: '8px 18px',
           fontSize: '0.7rem',
           fontWeight: 700,
           letterSpacing: '0.1em',
@@ -282,16 +319,29 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
           cursor: 'pointer',
           zIndex: 1000,
           whiteSpace: 'nowrap',
-          boxShadow: isMobile ? '0 4px 16px rgba(0,0,0,0.4)' : '-2px 0 12px rgba(0,0,0,0.3)',
+          boxShadow: '-2px 0 12px rgba(0,0,0,0.3)',
         }}
       >
-        {isMobile ? 'Beta' : 'Beta'}
+        Beta
       </button>
     )
   }
 
   // ── Open panel ────────────────────────────────────────────────────────────
   return (
+    <>
+    {/* Mobile backdrop */}
+    <div
+      className="dhh-beta-backdrop"
+      onClick={() => setIsOpen(false)}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0,0,0,0.5)',
+        zIndex: 998,
+        display: 'none',
+      }}
+    />
     <div
       className="dhh-beta-panel"
       style={{
@@ -360,7 +410,7 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
 
       {/* Body */}
       <div style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column', gap: 16 }}>
-        {config ? (
+        {config && (
           <>
             {/* Prompts */}
             {config.prompts.map((prompt, i) => (
@@ -416,11 +466,52 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
               </div>
             ))}
           </>
-        ) : (
-          <p style={{ fontSize: '0.84rem', color: '#888', lineHeight: 1.6 }}>
-            No questions for this page. Keep exploring!
-          </p>
         )}
+
+        {/* Freeform feedback — shown on every page */}
+        <div>
+          <label
+            style={{
+              display: 'block',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              color: 'var(--muted)',
+              marginBottom: 8,
+              lineHeight: 1.5,
+            }}
+          >
+            {config ? 'Anything else?' : 'Any thoughts on this page?'}
+          </label>
+          <textarea
+            value={responses['general_feedback'] ?? ''}
+            onChange={e => setResponses(prev => ({ ...prev, general_feedback: e.target.value }))}
+            onBlur={() => saveResponse('general_feedback', responses['general_feedback'] ?? '')}
+            placeholder="What do you like? What's confusing? What's missing?"
+            rows={4}
+            style={textareaStyle}
+          />
+          <div style={{ fontSize: '0.72rem', color: '#666', marginTop: 4, minHeight: 16 }}>
+            {savingKeys.has('general_feedback') ? (
+              <span style={{ color: 'var(--accent2)' }}>Saving...</span>
+            ) : errorKeys.has('general_feedback') ? (
+              <span style={{ color: 'var(--accent3)' }}>Could not save — try again</span>
+            ) : justSavedKeys.has('general_feedback') ? (
+              <span style={{ color: '#00c875', display: 'inline-flex', alignItems: 'center', gap: 4, transition: 'opacity 0.3s' }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 13l4 4L19 7" />
+                </svg>
+                Saved
+              </span>
+            ) : savedKeys.has('general_feedback') ? (
+              <span style={{ color: '#666', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M5 13l4 4L19 7" />
+                </svg>
+                Saved
+              </span>
+            ) : null}
+          </div>
+        </div>
 
         {/* Spacer */}
         <div style={{ flex: 1 }} />
@@ -470,6 +561,9 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
 
       <style>{`
         @media (max-width: 768px) {
+          .dhh-beta-backdrop {
+            display: block !important;
+          }
           .dhh-beta-panel {
             top: auto !important;
             bottom: 0 !important;
@@ -478,14 +572,20 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
             width: 100% !important;
             max-width: 100vw !important;
             height: auto !important;
-            max-height: 70vh !important;
+            max-height: 85vh !important;
             border-left: none !important;
             border-top: 1px solid #2a2a38 !important;
             border-radius: 16px 16px 0 0 !important;
             box-shadow: 0 -4px 32px rgba(0,0,0,0.3) !important;
+            animation: betaSlideUp 0.25s ease-out;
           }
+        }
+        @keyframes betaSlideUp {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
         }
       `}</style>
     </div>
+    </>
   )
 }
