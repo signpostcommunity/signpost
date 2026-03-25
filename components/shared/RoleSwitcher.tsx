@@ -50,25 +50,39 @@ export function useUserRoles() {
       const isAdmin = up?.is_admin === true
 
       // Check interpreter_profiles
-      const { count: interpCount } = await supabase
+      const { count: interpCount, error: interpErr } = await supabase
         .from('interpreter_profiles')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', user.id)
-      if ((interpCount ?? 0) > 0) active.push('interpreter')
+      if (interpErr && interpErr.code !== 'PGRST116') {
+        // Server error (503, 500, etc.) — don't assume profile doesn't exist
+        active.push('interpreter')
+      } else if ((interpCount ?? 0) > 0) {
+        active.push('interpreter')
+      }
 
       // Check deaf_profiles
-      const { count: deafCount } = await supabase
+      const { count: deafCount, error: deafErr } = await supabase
         .from('deaf_profiles')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', user.id)
-      if ((deafCount ?? 0) > 0) active.push('deaf')
+      if (deafErr && deafErr.code !== 'PGRST116') {
+        active.push('deaf')
+      } else if ((deafCount ?? 0) > 0) {
+        active.push('deaf')
+      }
 
       // Check requester_profiles
-      const { count: reqCount } = await supabase
+      const { count: reqCount, error: reqErr } = await supabase
         .from('requester_profiles')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', user.id)
-      if ((reqCount ?? 0) > 0) active.push('requester')
+      if (reqErr && reqErr.code !== 'PGRST116') {
+        // Server error — optimistic fallback: show role as active
+        active.push('requester')
+      } else if ((reqCount ?? 0) > 0) {
+        active.push('requester')
+      }
 
       if (isAdmin) active.push('admin')
 

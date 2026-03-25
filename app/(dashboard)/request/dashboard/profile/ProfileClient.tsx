@@ -85,7 +85,7 @@ export default function ProfileClient({ profile, userEmail }: Props) {
   const [requesterType, setRequesterType] = useState('')
   const [commPrefs, setCommPrefs] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
-  const [toast, setToast] = useState('')
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
 
   // Mock payment state
   const [hasMockPayment, setHasMockPayment] = useState(false)
@@ -139,7 +139,7 @@ export default function ProfileClient({ profile, userEmail }: Props) {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      setToast('Not authenticated')
+      setToast({ message: 'Not authenticated', type: 'error' })
       setSaving(false)
       return
     }
@@ -165,9 +165,9 @@ export default function ProfileClient({ profile, userEmail }: Props) {
       .or(`user_id.eq.${user.id},id.eq.${user.id}`)
 
     if (error) {
-      setToast('Failed to save: ' + error.message)
+      setToast({ message: 'Failed to save: ' + error.message, type: 'error' })
     } else {
-      setToast('Profile updated.')
+      setToast({ message: 'Profile saved', type: 'success' })
     }
     setSaving(false)
   }
@@ -179,7 +179,7 @@ export default function ProfileClient({ profile, userEmail }: Props) {
     setCardNumber('')
     setCardExpiry('')
     setCardCvc('')
-    setToast('Payment processing is not yet active. During beta, no charges will be made.')
+    setToast({ message: 'Payment processing is not yet active. During beta, no charges will be made.', type: 'info' })
   }
 
   function handleRemoveCard() {
@@ -508,7 +508,7 @@ export default function ProfileClient({ profile, userEmail }: Props) {
         }
       `}</style>
 
-      {toast && <Toast message={toast} onClose={() => setToast('')} />}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
   )
 }
