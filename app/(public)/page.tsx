@@ -165,7 +165,7 @@ export default function HomePage() {
             style={{
               fontFamily: 'var(--font-syne)',
               fontSize: 'clamp(1.2rem, 2vw, 1.7rem)',
-              fontWeight: 800,
+              fontWeight: 700,
               letterSpacing: '-0.04em',
               lineHeight: 1.1,
             }}

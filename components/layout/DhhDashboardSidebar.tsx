@@ -377,12 +377,19 @@ export default function DhhDashboardSidebar({ userName = 'User', userInitials = 
             sign<span>post</span>
           </div>
         </Link>
-        {/* Red dot indicator for unread items */}
-        {((badges.notifications ?? 0) + (badges.inbox ?? 0)) > 0 && (
-          <span aria-label="Unread items" style={{
-            width: 8, height: 8, borderRadius: '50%',
-            background: '#ef4444', flexShrink: 0,
-          }} />
+        {/* Red dot indicator for unread items — links to inbox */}
+        {((badges.notifications ?? 0) + (badges.inbox ?? 0)) > 0 ? (
+          <Link
+            href="/dhh/dashboard/inbox"
+            aria-label="Unread notifications"
+            style={{
+              width: 8, height: 8, borderRadius: '50%',
+              background: '#ef4444', flexShrink: 0,
+              display: 'block', cursor: 'pointer',
+            }}
+          />
+        ) : (
+          <span style={{ width: 8, flexShrink: 0 }} />
         )}
       </div>
 

@@ -342,7 +342,7 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
         style={{
           position: 'fixed',
           bottom: 20,
-          right: 20,
+          left: 20,
           borderRadius: 22,
           background: BETA_ORANGE,
           color: '#fff',
@@ -535,14 +535,6 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
 
         {/* ── Guidance text ──────────────────────────────────────────────── */}
         <div style={{ borderTop: '1px solid #1e2433', paddingTop: 16, marginTop: 4 }}>
-          <p style={{
-            fontSize: '0.8rem',
-            color: '#8891a8',
-            lineHeight: 1.6,
-            margin: 0,
-          }}>
-            Your responses are saved automatically as you type.
-          </p>
           <p style={{
             fontSize: '0.8rem',
             color: '#8891a8',
