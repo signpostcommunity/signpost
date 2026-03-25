@@ -45,13 +45,7 @@ const NAV: NavGroup[] = [
         href: '/request/dashboard/new-request',
         icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>,
       },
-      {
-        label: 'Drafts',
-        href: '/request/dashboard/drafts',
-        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 2H4.5A1.5 1.5 0 003 3.5v9A1.5 1.5 0 004.5 14h7a1.5 1.5 0 001.5-1.5V5L10 2z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/><path d="M10 2v3h3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
-        badgeKey: 'drafts',
-      },
-      {
+{
         label: 'Inbox',
         href: '/request/dashboard/inbox',
         icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M2 5l6 4.5L14 5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,

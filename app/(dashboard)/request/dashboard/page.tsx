@@ -30,6 +30,29 @@ export default async function RequesterDashboardPage() {
   }[] = []
 
   if (user) {
+    // BUG 1 FIX: Auto-create requester_profiles row for multi-role users
+    const { data: existingProfile } = await supabase
+      .from('requester_profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    if (!existingProfile) {
+      const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || ''
+      const nameParts = fullName.split(' ')
+      const firstName = nameParts[0] || ''
+      const lastName = nameParts.slice(1).join(' ') || ''
+
+      await supabase.from('requester_profiles').insert({
+        id: user.id,
+        user_id: user.id,
+        name: fullName,
+        first_name: firstName,
+        last_name: lastName,
+        email: user.email || '',
+      })
+    }
+
     // Seed beta data if needed
     const { count: seedCount } = await supabase
       .from('bookings')
