@@ -4,6 +4,9 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
+// ── Beta orange ─────────────────────────────────────────────────────────────
+const BETA_ORANGE = '#f97316'
+
 // ── Route-specific content ──────────────────────────────────────────────────
 
 type PageConfig = {
@@ -84,6 +87,77 @@ const textareaStyle: React.CSSProperties = {
   boxSizing: 'border-box',
 }
 
+// ── Pencil SVG icon ─────────────────────────────────────────────────────────
+function PencilIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+      <path d="m15 5 4 4" />
+    </svg>
+  )
+}
+
+// ── Check SVG icon ──────────────────────────────────────────────────────────
+function CheckIcon({ size = 12, strokeWidth = 3 }: { size?: number; strokeWidth?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 13l4 4L19 7" />
+    </svg>
+  )
+}
+
+// ── Save row component ──────────────────────────────────────────────────────
+function SaveRow({
+  questionKey,
+  isSaving,
+  isSaved,
+  isDirty,
+  hasError,
+  onSave,
+}: {
+  questionKey: string
+  isSaving: boolean
+  isSaved: boolean
+  isDirty: boolean
+  hasError: boolean
+  onSave: () => void
+}) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6, minHeight: 28 }}>
+      <button
+        onClick={onSave}
+        disabled={isSaving}
+        style={{
+          background: 'transparent',
+          border: `1px solid ${BETA_ORANGE}`,
+          color: BETA_ORANGE,
+          borderRadius: 6,
+          padding: '4px 12px',
+          fontSize: '0.75rem',
+          fontWeight: 600,
+          cursor: isSaving ? 'not-allowed' : 'pointer',
+          fontFamily: "'DM Sans', sans-serif",
+          opacity: isSaving ? 0.6 : 1,
+          transition: 'opacity 0.2s',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        {isSaving ? 'Saving...' : 'Save'}
+      </button>
+      {hasError ? (
+        <span style={{ fontSize: '0.72rem', color: 'var(--accent3)' }}>Could not save — try again</span>
+      ) : isSaved && !isDirty ? (
+        <span style={{ fontSize: '0.72rem', color: '#00c875', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+          <CheckIcon />
+          Saved
+        </span>
+      ) : isDirty && isSaved ? (
+        <span style={{ fontSize: '0.72rem', color: '#666' }}>Unsaved changes</span>
+      ) : null}
+    </div>
+  )
+}
+
 // ── Component ───────────────────────────────────────────────────────────────
 
 export default function DhhBetaPanel({ userId }: { userId: string }) {
@@ -97,10 +171,9 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
   // Per-question response values keyed by question_key
   const [responses, setResponses] = useState<Record<string, string>>({})
   const [savedKeys, setSavedKeys] = useState<Set<string>>(new Set())
-  const [justSavedKeys, setJustSavedKeys] = useState<Set<string>>(new Set())
+  const [dirtyKeys, setDirtyKeys] = useState<Set<string>>(new Set())
   const [errorKeys, setErrorKeys] = useState<Set<string>>(new Set())
   const [savingKeys, setSavingKeys] = useState<Set<string>>(new Set())
-  const fadeTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({})
   const visitTracked = useRef(false)
 
   const config = getPageConfig(pathname)
@@ -152,9 +225,11 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
           }
           setResponses(loaded)
           setSavedKeys(saved)
+          setDirtyKeys(new Set())
         } else {
           setResponses({})
           setSavedKeys(new Set())
+          setDirtyKeys(new Set())
         }
       } catch (err) {
         console.error('Failed to load beta responses:', err)
@@ -202,7 +277,7 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
     return () => { visitTracked.current = false }
   }, [pathname, userId])
 
-  // Save response on blur
+  // Save response
   const saveResponse = useCallback(async (questionKey: string, text: string) => {
     if (!text.trim()) return
     setErrorKeys(prev => { const next = new Set(prev); next.delete(questionKey); return next })
@@ -227,12 +302,7 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
         setErrorKeys(prev => new Set(prev).add(questionKey))
       } else {
         setSavedKeys(prev => new Set(prev).add(questionKey))
-        setJustSavedKeys(prev => new Set(prev).add(questionKey))
-        // Clear any existing fade timer for this key
-        if (fadeTimers.current[questionKey]) clearTimeout(fadeTimers.current[questionKey])
-        fadeTimers.current[questionKey] = setTimeout(() => {
-          setJustSavedKeys(prev => { const next = new Set(prev); next.delete(questionKey); return next })
-        }, 3000)
+        setDirtyKeys(prev => { const next = new Set(prev); next.delete(questionKey); return next })
         // Push to Monday (fire-and-forget — don't block UI)
         fetch('/api/dhh-beta-feedback', {
           method: 'POST',
@@ -252,18 +322,20 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
     }
   }, [userId, pathname])
 
+  // Handle text change — mark as dirty
+  const handleChange = useCallback((key: string, value: string) => {
+    setResponses(prev => ({ ...prev, [key]: value }))
+    setDirtyKeys(prev => new Set(prev).add(key))
+  }, [])
+
   // Don't render on final page or admin
   if (pathname.startsWith('/admin') || pathname.includes('beta-final')) return null
 
-  const hasUnansweredQuestions = config
-    ? config.questions.some(q => !savedKeys.has(q.key)) || !savedKeys.has('general_feedback')
-    : !savedKeys.has('general_feedback')
-
-  // ── Collapsed tab ─────────────────────────────────────────────────────────
+  // ── Collapsed state ─────────────────────────────────────────────────────────
   if (!isOpen) {
     const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
     return isMobile ? (
-      /* Mobile: floating feedback button */
+      /* Mobile: orange pill with text */
       <button
         onClick={() => setIsOpen(true)}
         aria-label="Open beta feedback"
@@ -271,30 +343,22 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
           position: 'fixed',
           bottom: 20,
           right: 20,
-          width: 52,
-          height: 52,
-          borderRadius: '50%',
-          background: '#7b61ff',
+          borderRadius: 22,
+          background: BETA_ORANGE,
           color: '#fff',
           border: 'none',
           cursor: 'pointer',
           zIndex: 1000,
-          boxShadow: '0 4px 20px rgba(123,97,255,0.4)',
+          boxShadow: '0 4px 20px rgba(249,115,22,0.4)',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
+          gap: 6,
+          padding: '10px 18px',
+          fontFamily: "'DM Sans', sans-serif",
         }}
       >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        </svg>
-        {hasUnansweredQuestions && (
-          <span style={{
-            position: 'absolute', top: 2, right: 2,
-            width: 10, height: 10, borderRadius: '50%',
-            background: '#ff6b85', border: '2px solid #111118',
-          }} />
-        )}
+        <PencilIcon />
+        <span style={{ fontSize: '0.78rem', fontWeight: 600, whiteSpace: 'nowrap' }}>Beta Feedback</span>
       </button>
     ) : (
       /* Desktop: side tab */
@@ -307,7 +371,7 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
           top: '50%',
           transform: 'translateY(-50%) rotate(90deg)',
           transformOrigin: 'center center',
-          background: 'var(--accent2)',
+          background: BETA_ORANGE,
           color: '#fff',
           border: 'none',
           borderRadius: '6px 6px 0 0',
@@ -324,6 +388,42 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
       >
         Beta
       </button>
+    )
+  }
+
+  // ── Helper to render a question field with Save row ─────────────────────────
+  function renderQuestionField(key: string, label: string, placeholder: string, rows = 4) {
+    return (
+      <div key={key}>
+        <label
+          style={{
+            display: 'block',
+            fontSize: '0.8rem',
+            fontWeight: 600,
+            color: 'var(--muted)',
+            marginBottom: 8,
+            lineHeight: 1.5,
+          }}
+        >
+          {label}
+        </label>
+        <textarea
+          value={responses[key] ?? ''}
+          onChange={e => handleChange(key, e.target.value)}
+          onBlur={() => saveResponse(key, responses[key] ?? '')}
+          placeholder={placeholder}
+          rows={rows}
+          style={textareaStyle}
+        />
+        <SaveRow
+          questionKey={key}
+          isSaving={savingKeys.has(key)}
+          isSaved={savedKeys.has(key)}
+          isDirty={dirtyKeys.has(key)}
+          hasError={errorKeys.has(key)}
+          onSave={() => saveResponse(key, responses[key] ?? '')}
+        />
+      </div>
     )
   }
 
@@ -351,7 +451,7 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
         width: '320px',
         height: '100vh',
         background: '#1a1a24',
-        borderLeft: '1px solid #2a2a38',
+        borderLeft: `1px solid ${BETA_ORANGE}33`,
         zIndex: 999,
         display: 'flex',
         flexDirection: 'column',
@@ -377,7 +477,7 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span
             style={{
-              background: 'var(--accent2)',
+              background: BETA_ORANGE,
               color: '#fff',
               fontSize: '0.7rem',
               fontWeight: 700,
@@ -420,106 +520,71 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
             ))}
 
             {/* Questions */}
-            {config.questions.map((q) => (
-              <div key={q.key}>
-                <label
-                  style={{
-                    display: 'block',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    color: 'var(--muted)',
-                    marginBottom: 8,
-                    lineHeight: 1.5,
-                  }}
-                >
-                  {q.label}
-                </label>
-                <textarea
-                  value={responses[q.key] ?? ''}
-                  onChange={e => setResponses(prev => ({ ...prev, [q.key]: e.target.value }))}
-                  onBlur={() => saveResponse(q.key, responses[q.key] ?? '')}
-                  placeholder="Share your thoughts..."
-                  rows={4}
-                  style={textareaStyle}
-                />
-                <div style={{ fontSize: '0.72rem', color: '#666', marginTop: 4, minHeight: 16 }}>
-                  {savingKeys.has(q.key) ? (
-                    <span style={{ color: 'var(--accent2)' }}>Saving...</span>
-                  ) : errorKeys.has(q.key) ? (
-                    <span style={{ color: 'var(--accent3)' }}>Could not save — try again</span>
-                  ) : justSavedKeys.has(q.key) ? (
-                    <span style={{ color: '#00c875', display: 'inline-flex', alignItems: 'center', gap: 4, transition: 'opacity 0.3s' }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M5 13l4 4L19 7" />
-                      </svg>
-                      Saved
-                    </span>
-                  ) : savedKeys.has(q.key) ? (
-                    <span style={{ color: '#666', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M5 13l4 4L19 7" />
-                      </svg>
-                      Saved
-                    </span>
-                  ) : null}
-                </div>
-              </div>
-            ))}
+            {config.questions.map((q) =>
+              renderQuestionField(q.key, q.label, 'Share your thoughts...')
+            )}
           </>
         )}
 
         {/* Freeform feedback — shown on every page */}
-        <div>
-          <label
-            style={{
-              display: 'block',
-              fontSize: '0.8rem',
-              fontWeight: 600,
-              color: 'var(--muted)',
-              marginBottom: 8,
-              lineHeight: 1.5,
-            }}
-          >
-            {config ? 'Anything else?' : 'Any thoughts on this page?'}
-          </label>
-          <textarea
-            value={responses['general_feedback'] ?? ''}
-            onChange={e => setResponses(prev => ({ ...prev, general_feedback: e.target.value }))}
-            onBlur={() => saveResponse('general_feedback', responses['general_feedback'] ?? '')}
-            placeholder="What do you like? What's confusing? What's missing?"
-            rows={4}
-            style={textareaStyle}
-          />
-          <div style={{ fontSize: '0.72rem', color: '#666', marginTop: 4, minHeight: 16 }}>
-            {savingKeys.has('general_feedback') ? (
-              <span style={{ color: 'var(--accent2)' }}>Saving...</span>
-            ) : errorKeys.has('general_feedback') ? (
-              <span style={{ color: 'var(--accent3)' }}>Could not save — try again</span>
-            ) : justSavedKeys.has('general_feedback') ? (
-              <span style={{ color: '#00c875', display: 'inline-flex', alignItems: 'center', gap: 4, transition: 'opacity 0.3s' }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 13l4 4L19 7" />
-                </svg>
-                Saved
-              </span>
-            ) : savedKeys.has('general_feedback') ? (
-              <span style={{ color: '#666', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M5 13l4 4L19 7" />
-                </svg>
-                Saved
-              </span>
-            ) : null}
-          </div>
+        {renderQuestionField(
+          'general_feedback',
+          config ? 'Anything else?' : 'Any thoughts on this page?',
+          "What do you like? What's confusing? What's missing?"
+        )}
+
+        {/* ── Guidance text ──────────────────────────────────────────────── */}
+        <div style={{ borderTop: '1px solid #1e2433', paddingTop: 16, marginTop: 4 }}>
+          <p style={{
+            fontSize: '0.8rem',
+            color: '#8891a8',
+            lineHeight: 1.6,
+            margin: 0,
+          }}>
+            Your responses are saved automatically as you type.
+          </p>
+          <p style={{
+            fontSize: '0.8rem',
+            color: '#8891a8',
+            lineHeight: 1.6,
+            margin: '10px 0 0',
+          }}>
+            <span style={{ color: BETA_ORANGE, fontWeight: 600 }}>Keep exploring!</span>{' '}
+            Click around the portal — try pages like My Requests, My Interpreters, or Trusted Deaf Circle. Each page may have different feedback questions.
+          </p>
         </div>
 
-        {/* Spacer */}
-        <div style={{ flex: 1 }} />
-
-        {/* Final questions CTA */}
-        <div style={{ borderTop: '1px solid #2a2a38', paddingTop: 16 }}>
-          <p style={{ fontSize: '0.76rem', color: '#888', margin: '0 0 10px', lineHeight: 1.55 }}>
-            When you&apos;re done exploring, we have a few more questions we&apos;d love your insight on.
+        {/* ── Final survey section ───────────────────────────────────────── */}
+        <div style={{ borderTop: '1px solid #1e2433', paddingTop: 16 }}>
+          <span
+            style={{
+              fontFamily: "'Syne', sans-serif",
+              fontSize: '0.7rem',
+              fontWeight: 700,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: BETA_ORANGE,
+              display: 'block',
+              marginBottom: 10,
+            }}
+          >
+            Final Survey
+          </span>
+          <p style={{
+            fontSize: '0.8rem',
+            color: '#8891a8',
+            lineHeight: 1.6,
+            margin: '0 0 6px',
+          }}>
+            Once you&apos;ve had a chance to explore the portal — pages like My Requests, Trusted Deaf Circle, My Interpreters, and the Interpreter Directory — we&apos;d love to hear your overall thoughts.
+          </p>
+          <p style={{
+            fontSize: '0.8rem',
+            color: '#8891a8',
+            lineHeight: 1.6,
+            margin: '0 0 14px',
+          }}>
+            There&apos;s no rush. Take your time exploring first.
           </p>
           <button
             onClick={() => router.push('/dhh/dashboard/beta-final')}
@@ -527,21 +592,21 @@ export default function DhhBetaPanel({ userId }: { userId: string }) {
               display: 'block',
               width: '100%',
               textAlign: 'center',
-              background: 'var(--accent2)',
-              color: '#fff',
-              border: 'none',
+              background: 'transparent',
+              color: BETA_ORANGE,
+              border: `1px solid ${BETA_ORANGE}`,
               borderRadius: 8,
               padding: '12px 16px',
               fontSize: '0.82rem',
               fontWeight: 700,
               cursor: 'pointer',
               fontFamily: "'DM Sans', sans-serif",
-              transition: 'opacity 0.2s',
+              transition: 'background 0.2s',
             }}
-            onMouseEnter={e => { e.currentTarget.style.opacity = '0.9' }}
-            onMouseLeave={e => { e.currentTarget.style.opacity = '1' }}
+            onMouseEnter={e => { e.currentTarget.style.background = `${BETA_ORANGE}15` }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
           >
-            I&apos;m done exploring, take me to the final questions
+            Take the Final Survey &rarr;
           </button>
         </div>
       </div>
