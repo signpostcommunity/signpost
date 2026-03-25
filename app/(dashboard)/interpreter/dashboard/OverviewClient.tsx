@@ -33,7 +33,8 @@ function formatDate(dateStr: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-function formatTime(start: string, end: string): string {
+function formatTime(start: string | null, end: string | null): string {
+  if (!start || !end) return 'TBD'
   const fmt = (t: string) => {
     const [h, m] = t.split(':').map(Number)
     const ampm = h >= 12 ? 'PM' : 'AM'
@@ -45,7 +46,8 @@ function formatTime(start: string, end: string): string {
 
 /* ── Calendar helpers ── */
 
-function parseDateTimeFromBooking(dateStr: string, timeStart: string, timeEnd: string): { start: Date; end: Date } {
+function parseDateTimeFromBooking(dateStr: string, timeStart: string | null, timeEnd: string | null): { start: Date; end: Date } | null {
+  if (!timeStart || !timeEnd) return null
   const [y, mo, d] = dateStr.split('-').map(Number)
   const [sh, sm] = timeStart.split(':').map(Number)
   const [eh, em] = timeEnd.split(':').map(Number)
@@ -81,12 +83,16 @@ function CalendarDropdown({ booking, onToast }: {
   const location = booking.location || ''
 
   function addToGcal() {
-    const { start, end } = parseDateTimeFromBooking(booking.date, booking.time_start, booking.time_end)
+    const parsed = parseDateTimeFromBooking(booking.date, booking.time_start, booking.time_end)
+    if (!parsed) return
+    const { start, end } = parsed
     window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${toGoogleDateStr(start)}/${toGoogleDateStr(end)}&location=${encodeURIComponent(location)}`, '_blank')
     setOpen(false); onToast('Added to Google Calendar')
   }
   function addToIcal() {
-    const { start, end } = parseDateTimeFromBooking(booking.date, booking.time_start, booking.time_end)
+    const parsed = parseDateTimeFromBooking(booking.date, booking.time_start, booking.time_end)
+    if (!parsed) return
+    const { start, end } = parsed
     const p = (n: number) => String(n).padStart(2, '0')
     const fmt = (d: Date) => `${d.getFullYear()}${p(d.getMonth() + 1)}${p(d.getDate())}T${p(d.getHours())}${p(d.getMinutes())}00`
     const ics = ['BEGIN:VCALENDAR','VERSION:2.0','BEGIN:VEVENT',`DTSTART:${fmt(start)}`,`DTEND:${fmt(end)}`,`SUMMARY:${title}`,`LOCATION:${location}`,'END:VEVENT','END:VCALENDAR'].join('\r\n')
@@ -95,7 +101,9 @@ function CalendarDropdown({ booking, onToast }: {
     setOpen(false); onToast('iCal file downloaded')
   }
   function addToOutlook() {
-    const { start, end } = parseDateTimeFromBooking(booking.date, booking.time_start, booking.time_end)
+    const parsed = parseDateTimeFromBooking(booking.date, booking.time_start, booking.time_end)
+    if (!parsed) return
+    const { start, end } = parsed
     window.open(`https://outlook.live.com/calendar/0/action/compose?subject=${encodeURIComponent(title)}&startdt=${encodeURIComponent(toISOLocal(start))}&enddt=${encodeURIComponent(toISOLocal(end))}&location=${encodeURIComponent(location)}`, '_blank')
     setOpen(false); onToast('Added to Outlook Calendar')
   }

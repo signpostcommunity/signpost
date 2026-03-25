@@ -475,6 +475,7 @@ export default function InvoicesPage() {
                   }}>
                     <span>📅 {formatDate(b.date)}</span>
                     <span>🕐 {(() => {
+                      if (!b.time_start || !b.time_end) return 'TBD'
                       const fmt = (t: string) => { const [h, m] = t.split(':').map(Number); const ampm = h >= 12 ? 'PM' : 'AM'; const h12 = h % 12 || 12; return `${h12}:${String(m).padStart(2, '0')} ${ampm}` }
                       return `${fmt(b.time_start)} – ${fmt(b.time_end)}`
                     })()}</span>

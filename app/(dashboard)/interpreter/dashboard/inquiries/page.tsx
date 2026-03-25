@@ -46,7 +46,8 @@ function formatDate(dateStr: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-function formatTime(start: string, end: string): string {
+function formatTime(start: string | null, end: string | null): string {
+  if (!start || !end) return 'TBD'
   const fmt = (t: string) => {
     const [h, m] = t.split(':').map(Number)
     const ampm = h >= 12 ? 'PM' : 'AM'
