@@ -1716,7 +1716,7 @@ export default function ConfirmedPage() {
   })()
 
   const searchFilter = (b: Booking) =>
-    !search || [b.title, b.requester_name, b.specialization, b.location].join(' ').toLowerCase().includes(search.toLowerCase())
+    !search || [b.title || '', b.requester_name || '', b.specialization || '', b.location || ''].join(' ').toLowerCase().includes(search.toLowerCase())
 
   const dateFiltered = filterByDateRange(bookings, dateFrom, dateTo)
 

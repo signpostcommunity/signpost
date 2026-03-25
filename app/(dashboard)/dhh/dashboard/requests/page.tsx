@@ -1000,7 +1000,7 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
             <ChevronIcon expanded={expanded} />
           </button>
           <a
-            href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(booking.title || 'Interpreter Booking')}&dates=${booking.date.replace(/-/g, '')}T${booking.time_start.replace(/:/g, '')}00/${booking.date.replace(/-/g, '')}T${booking.time_end.replace(/:/g, '')}00&location=${encodeURIComponent(booking.location || '')}`}
+            href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(booking.title || 'Interpreter Booking')}&dates=${(booking.date || '').replace(/-/g, '')}T${(booking.time_start || '').replace(/:/g, '')}00/${(booking.date || '').replace(/-/g, '')}T${(booking.time_end || '').replace(/:/g, '')}00&location=${encodeURIComponent(booking.location || '')}`}
             target="_blank"
             rel="noopener noreferrer"
             onClick={e => e.stopPropagation()}
