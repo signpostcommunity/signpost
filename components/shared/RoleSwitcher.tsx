@@ -98,7 +98,38 @@ export default function RoleSwitcher({ currentRole }: { currentRole: string }) {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [open])
 
-  if (loading) return null
+  const currentRoleInfo = ROLES.find(r => r.key === currentRole)
+
+  if (loading) {
+    // Show button shell immediately so it doesn't pop in late on mobile
+    return (
+      <div style={{ padding: '14px 16px 8px', borderBottom: '1px solid var(--border)' }}>
+        <div style={{
+          fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+          fontSize: '0.58rem', letterSpacing: '0.12em',
+          textTransform: 'uppercase', color: 'var(--muted)',
+          marginBottom: 6,
+        }}>
+          Change Hats
+        </div>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          width: '100%', padding: '8px 12px',
+          background: 'var(--surface2)', border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-sm)',
+          marginBottom: 8, opacity: 0.5,
+        }}>
+          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text)', fontFamily: "'DM Sans', sans-serif" }}>
+            {currentRoleInfo?.label || currentRole}
+          </span>
+          <svg width="10" height="14" viewBox="0 0 10 14" fill="none" style={{ flexShrink: 0 }}>
+            <path d="M2 5.5L5 3L8 5.5" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M2 8.5L5 11L8 8.5" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+      </div>
+    )
+  }
 
   const otherRoles = roles.active.filter(r => r !== currentRole)
   const pendingRoles = roles.pending.filter(r => !roles.active.includes(r))
@@ -108,10 +139,8 @@ export default function RoleSwitcher({ currentRole }: { currentRole: string }) {
   )
   if (otherRoles.length === 0 && pendingRoles.length === 0 && addableRoles.length === 0) return null
 
-  const currentRoleInfo = ROLES.find(r => r.key === currentRole)
-
   return (
-    <div ref={ref} style={{ padding: '14px 16px 8px', borderBottom: '1px solid var(--border)' }}>
+    <div ref={ref} onClick={e => e.stopPropagation()} style={{ padding: '14px 16px 8px', borderBottom: '1px solid var(--border)' }}>
       {/* Label */}
       <div style={{
         fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
