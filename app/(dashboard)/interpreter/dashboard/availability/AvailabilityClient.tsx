@@ -590,7 +590,7 @@ export default function AvailabilityClient({
           existingPeriods={awayPeriods}
           onClose={() => setShowAwayModal(false)}
           onSaved={(newPeriod) => {
-            setAwayPeriods(prev => [...prev, newPeriod].sort((a, b) => a.start_date.localeCompare(b.start_date)))
+            setAwayPeriods(prev => [...prev, newPeriod].sort((a, b) => (a.start_date || '').localeCompare(b.start_date || '')))
             setShowAwayModal(false)
             showToast('Away period saved')
           }}

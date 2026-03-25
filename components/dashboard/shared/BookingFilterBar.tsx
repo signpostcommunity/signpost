@@ -117,8 +117,8 @@ export default function BookingFilterBar({
 /** Sort bookings soonest-first (ascending date). Past items after upcoming. */
 export function sortSoonestFirst<T extends { date: string }>(items: T[]): T[] {
   const today = getLocalToday()
-  const upcoming = items.filter(i => i.date >= today).sort((a, b) => a.date.localeCompare(b.date))
-  const past = items.filter(i => i.date < today).sort((a, b) => b.date.localeCompare(a.date))
+  const upcoming = items.filter(i => i.date >= today).sort((a, b) => (a.date || '').localeCompare(b.date || ''))
+  const past = items.filter(i => i.date < today).sort((a, b) => (b.date || '').localeCompare(a.date || ''))
   return [...upcoming, ...past]
 }
 
@@ -198,8 +198,8 @@ export function groupByTimeCategory<T extends { date: string }>(bookings: T[]): 
   }
 
   // Sort each group by date ascending (past: most recent first)
-  const asc = (a: T, b: T) => a.date.localeCompare(b.date)
-  const desc = (a: T, b: T) => b.date.localeCompare(a.date)
+  const asc = (a: T, b: T) => (a.date || '').localeCompare(b.date || '')
+  const desc = (a: T, b: T) => (b.date || '').localeCompare(a.date || '')
   groups.today.sort(asc)
   groups.thisWeek.sort(asc)
   groups.nextWeek.sort(asc)

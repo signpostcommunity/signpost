@@ -291,7 +291,7 @@ export default function InvoicesPage() {
 
         bookingsData = ((bData || []) as (CompletedBooking & { status: string })[])
           .filter(b => b.status === 'completed')
-          .sort((a, b) => b.date.localeCompare(a.date))
+          .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
       }
     } else if (recipientsErr) {
       console.error('[invoices] recipients fetch failed:', recipientsErr.message)

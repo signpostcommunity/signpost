@@ -83,7 +83,7 @@ export default function InterpreterPicker({
       mapped.sort((a, b) => {
         if (a.tier === 'preferred' && b.tier !== 'preferred') return -1
         if (a.tier !== 'preferred' && b.tier === 'preferred') return 1
-        return a.name.localeCompare(b.name)
+        return (a.name || '').localeCompare(b.name || '')
       })
 
       // If there are pre-selected IDs not in the roster (e.g. from directory ?interpreter= param), fetch those too

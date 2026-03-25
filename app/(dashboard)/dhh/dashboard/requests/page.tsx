@@ -1218,7 +1218,7 @@ export default function DhhRequestsListPage() {
     const bPending = isRatingPending(b, ratedInterpreters) ? 0 : 1
     if (aPending !== bPending) return aPending - bPending
     // Within same priority, sort by date (soonest first for upcoming, most recent first for past)
-    return new Date(a.date).getTime() - new Date(b.date).getTime()
+    return new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime()
   })
   const groupedBookings = groupByTimeCategory(sortedBookings)
 

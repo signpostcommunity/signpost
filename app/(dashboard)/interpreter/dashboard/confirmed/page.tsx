@@ -1640,7 +1640,7 @@ export default function ConfirmedPage() {
             status: displayStatus,
           } as unknown as Booking
         })
-        .sort((a, b) => a.date.localeCompare(b.date))
+        .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
       setBookings(data)
 
       // Fetch invoice status for all bookings
@@ -1727,7 +1727,7 @@ export default function ConfirmedPage() {
   const pastCompleted = dateFiltered
     .filter(b => b.status === 'completed' && b.date < today)
     .filter(searchFilter)
-    .sort((a, b) => b.date.localeCompare(a.date)) // most recent first
+    .sort((a, b) => (b.date || '').localeCompare(a.date || '')) // most recent first
 
   const cancelled = dateFiltered
     .filter(b => b.status === 'cancelled')
