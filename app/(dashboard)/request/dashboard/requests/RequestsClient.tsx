@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import Toast from '@/components/ui/Toast'
 
 /* ── Types ── */
 
@@ -148,7 +149,7 @@ export default function RequestsClient({
   const [cancelModalId, setCancelModalId] = useState<string | null>(null)
   const [cancelReason, setCancelReason] = useState('')
   const [cancelling, setCancelling] = useState(false)
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Debounced search
@@ -157,13 +158,6 @@ export default function RequestsClient({
     debounceRef.current = setTimeout(() => setSearch(localSearch), 300)
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
   }, [localSearch])
-
-  // Toast auto-dismiss
-  useEffect(() => {
-    if (!toast) return
-    const t = setTimeout(() => setToast(null), 4000)
-    return () => clearTimeout(t)
-  }, [toast])
 
   // Build recipient map per booking
   const recipientsByBooking = new Map<string, Recipient[]>()
@@ -215,7 +209,7 @@ export default function RequestsClient({
 
       if (bookingErr) {
         console.error('[cancel] booking update error:', bookingErr.message)
-        setToast('Failed to cancel request. Please try again.')
+        setToast({ message: 'Failed to cancel request. Please try again.', type: 'error' })
         setCancelling(false)
         return
       }
@@ -237,14 +231,14 @@ export default function RequestsClient({
         }
       }
 
-      setToast('Request cancelled.')
+      setToast({ message: 'Request cancelled.', type: 'success' })
       setCancelModalId(null)
       setCancelReason('')
       setCancelling(false)
       router.refresh()
     } catch (err) {
       console.error('[cancel] error:', err)
-      setToast('An error occurred. Please try again.')
+      setToast({ message: 'An error occurred. Please try again.', type: 'error' })
       setCancelling(false)
     }
   }
@@ -659,19 +653,7 @@ export default function RequestsClient({
         </div>
       )}
 
-      {/* Toast */}
-      {toast && (
-        <div style={{
-          position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
-          background: 'var(--surface)', border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-sm)', padding: '12px 24px',
-          color: 'var(--text)', fontSize: '0.88rem',
-          fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
-          zIndex: 2000, boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-        }}>
-          {toast}
-        </div>
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       <style>{`@media (max-width: 768px) {
         .dash-page-content { padding: 24px 20px !important; }

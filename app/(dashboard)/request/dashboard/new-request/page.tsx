@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Toast from '@/components/ui/Toast'
 
 /* ── Constants ── */
 
@@ -68,15 +69,7 @@ export default function NewRequestPage() {
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [toast, setToast] = useState<string | null>(null)
-
-  // Toast auto-dismiss
-  useEffect(() => {
-    if (toast) {
-      const t = setTimeout(() => setToast(null), 4000)
-      return () => clearTimeout(t)
-    }
-  }, [toast])
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   // Form state
   const [title, setTitle] = useState('')
@@ -147,15 +140,15 @@ export default function NewRequestPage() {
 
       const data = await res.json()
       if (!res.ok) {
-        setToast(data.error || 'Failed to submit request')
+        setToast({ message: data.error || 'Failed to submit request', type: 'error' })
         setSubmitting(false)
         return
       }
 
-      setToast(saveAsDraft ? 'Draft saved.' : 'Request submitted. Interpreters will be notified.')
+      setToast({ message: saveAsDraft ? 'Draft saved.' : 'Request submitted. Interpreters will be notified.', type: 'success' })
       setTimeout(() => router.push('/request/dashboard'), 1500)
     } catch {
-      setToast('Something went wrong. Please try again.')
+      setToast({ message: 'Something went wrong. Please try again.', type: 'error' })
       setSubmitting(false)
     }
   }
@@ -493,18 +486,7 @@ export default function NewRequestPage() {
         </div>
       </div>
 
-      {/* Toast */}
-      {toast && (
-        <div style={{
-          position: 'fixed', top: 24, left: '50%', transform: 'translateX(-50%)',
-          background: 'var(--card-bg)', border: '1px solid rgba(52,211,153,0.3)',
-          borderRadius: 'var(--radius)', padding: '14px 24px',
-          boxShadow: '0 8px 40px rgba(0,0,0,0.5)', zIndex: 9999,
-          fontSize: '0.85rem', color: '#34d399',
-        }}>
-          {toast}
-        </div>
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       <style>{`
         @media (max-width: 768px) {

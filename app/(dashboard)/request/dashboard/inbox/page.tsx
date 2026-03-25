@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { PageHeader, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import ConversationList from '@/components/messaging/ConversationList'
+import Toast from '@/components/ui/Toast'
 
 /* ── Types ── */
 
@@ -70,14 +71,7 @@ export default function RequesterInboxPage() {
   const [expandedNotifId, setExpandedNotifId] = useState<string | null>(null)
   const [decliningId, setDecliningId] = useState<string | null>(null)
   const [declining, setDeclining] = useState(false)
-  const [toast, setToast] = useState<string | null>(null)
-
-  // Toast auto-dismiss
-  useEffect(() => {
-    if (!toast) return
-    const t = setTimeout(() => setToast(null), 4000)
-    return () => clearTimeout(t)
-  }, [toast])
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   const fetchData = useCallback(async () => {
     const supabase = createClient()
@@ -218,14 +212,14 @@ export default function RequesterInboxPage() {
         .eq('id', recipientId)
 
       if (error) {
-        setToast('Failed to decline. Please try again.')
+        setToast({ message: 'Failed to decline. Please try again.', type: 'error' })
       } else {
         setRateResponses(prev => prev.filter(r => r.recipientId !== recipientId))
-        setToast('Response declined.')
+        setToast({ message: 'Response declined.', type: 'success' })
         notifyUnreadChanged()
       }
     } catch {
-      setToast('An error occurred.')
+      setToast({ message: 'An error occurred.', type: 'error' })
     }
     setDeclining(false)
     setDecliningId(null)
@@ -498,19 +492,7 @@ export default function RequesterInboxPage() {
         </div>
       )}
 
-      {/* Toast */}
-      {toast && (
-        <div style={{
-          position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
-          background: 'var(--surface)', border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-sm)', padding: '12px 24px',
-          color: 'var(--text)', fontSize: '0.88rem',
-          fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
-          zIndex: 2000, boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-        }}>
-          {toast}
-        </div>
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       <DashMobileStyles />
 

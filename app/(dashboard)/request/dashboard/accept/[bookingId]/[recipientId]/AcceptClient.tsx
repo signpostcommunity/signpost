@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import Toast from '@/components/ui/Toast'
 
 /* ── Types ── */
 
@@ -80,16 +81,10 @@ export default function AcceptClient({
   const [showDeclineForm, setShowDeclineForm] = useState(false)
   const [declineReason, setDeclineReason] = useState('')
   const [declining, setDeclining] = useState(false)
-  const [toast, setToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   const rate = recipient.response_rate ?? rateProfile?.hourly_rate ?? 0
   const currency = rateProfile?.currency || 'USD'
-
-  useEffect(() => {
-    if (!toast) return
-    const t = setTimeout(() => setToast(null), 4000)
-    return () => clearTimeout(t)
-  }, [toast])
 
   async function handleConfirm() {
     setConfirming(true)
@@ -104,7 +99,7 @@ export default function AcceptClient({
 
       if (recErr) {
         console.error('[accept] recipient update error:', recErr.message)
-        setToast('Failed to confirm booking. Please try again.')
+        setToast({ message: 'Failed to confirm booking. Please try again.', type: 'error' })
         setConfirming(false)
         return
       }
@@ -151,7 +146,7 @@ export default function AcceptClient({
         console.error('[accept] fee amount update error:', feeErr.message)
       }
 
-      setToast(`Booking confirmed. ${interpreterName} has been notified.`)
+      setToast({ message: `Booking confirmed. ${interpreterName} has been notified.`, type: 'success' })
       setShowConfirm(false)
       setConfirming(false)
 
@@ -165,7 +160,7 @@ export default function AcceptClient({
       }, 1500)
     } catch (err) {
       console.error('[accept] error:', err)
-      setToast('An error occurred. Please try again.')
+      setToast({ message: 'An error occurred. Please try again.', type: 'error' })
       setConfirming(false)
     }
   }
@@ -186,12 +181,12 @@ export default function AcceptClient({
 
       if (error) {
         console.error('[decline] error:', error.message)
-        setToast('Failed to decline. Please try again.')
+        setToast({ message: 'Failed to decline. Please try again.', type: 'error' })
         setDeclining(false)
         return
       }
 
-      setToast('Response declined.')
+      setToast({ message: 'Response declined.', type: 'success' })
       window.dispatchEvent(new Event('signpost:unread-changed'))
       setTimeout(() => {
         router.push('/request/dashboard/inbox')
@@ -199,7 +194,7 @@ export default function AcceptClient({
       }, 1500)
     } catch (err) {
       console.error('[decline] error:', err)
-      setToast('An error occurred.')
+      setToast({ message: 'An error occurred.', type: 'error' })
       setDeclining(false)
     }
   }
@@ -456,19 +451,7 @@ export default function AcceptClient({
         </div>
       )}
 
-      {/* Toast */}
-      {toast && (
-        <div style={{
-          position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
-          background: 'var(--surface)', border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-sm)', padding: '12px 24px',
-          color: 'var(--text)', fontSize: '0.88rem',
-          fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
-          zIndex: 2000, boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-        }}>
-          {toast}
-        </div>
-      )}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       <style>{`@media (max-width: 768px) {
         .dash-page-content { padding: 24px 20px !important; }
