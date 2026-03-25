@@ -496,7 +496,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
           Book Me Badges
         </div>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 20, lineHeight: 1.55 }}>
-          Add this badge to your email signature, website, or LinkedIn to make it easy to book you directly. When someone clicks the badge, it takes them straight to your signpost profile where they can send a job request directly to you.
+          Add this badge to your email signature, website, or LinkedIn to make it easy to book you directly. When someone clicks the badge, it takes them straight to your signpost profile where they can send a booking request directly to you.
         </p>
 
         {/* Badge preview */}

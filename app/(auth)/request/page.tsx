@@ -149,7 +149,7 @@ export default function RequestPortalPage() {
           </h2>
 
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {['Browse certified interpreter profiles', 'Send booking requests directly', 'No agency markup or hidden fees'].map((item) => (
+            {['Browse interpreter profiles', 'Send booking requests directly', 'No agency markup or hidden fees'].map((item) => (
               <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: 'var(--muted)' }}>
                 <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '0.85rem' }}>✓</span>
                 {item}

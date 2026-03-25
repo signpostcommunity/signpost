@@ -869,7 +869,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           {/* ── Book Me Badges ─────────────────────────────── */}
           <div style={sectionTitleStyle}>Book Me Badges</div>
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: 20, marginTop: -12, lineHeight: 1.5 }}>
-            Add this badge to your email signature, website, or LinkedIn to make it easy to book you directly. When someone clicks the badge, it takes them straight to your signpost profile where they can send a job request directly to you.
+            Add this badge to your email signature, website, or LinkedIn to make it easy to book you directly. When someone clicks the badge, it takes them straight to your signpost profile where they can send a booking request directly to you.
           </p>
           <div style={{
             background: 'var(--surface2)', border: '1px solid var(--border)',
