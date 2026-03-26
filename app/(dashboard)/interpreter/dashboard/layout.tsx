@@ -37,7 +37,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <div className="dash-layout" style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
       <DashboardSidebar userName={userName} userInitials={userInitials} photoUrl={userPhotoUrl} />
       <main className="dash-main" style={{ flex: 1, overflowY: 'auto', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        {children}
+        <div style={{ maxWidth: 960, margin: '0 auto', width: '100%' }}>
+          {children}
+        </div>
       </main>
       <style>{`
         @media (max-width: 768px) {
