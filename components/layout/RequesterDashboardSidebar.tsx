@@ -427,12 +427,7 @@ export default function RequesterDashboardSidebar({ userName = 'User', userIniti
             sign<span>post</span>
           </div>
         </Link>
-        {((badges.notifications ?? 0) + (badges.inbox ?? 0)) > 0 && (
-          <span aria-label="Unread items" style={{
-            width: 8, height: 8, borderRadius: '50%',
-            background: '#ef4444', flexShrink: 0,
-          }} />
-        )}
+        <span style={{ width: 8, flexShrink: 0 }} />
       </div>
 
       {/* Mobile drawer */}
