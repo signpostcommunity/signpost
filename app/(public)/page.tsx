@@ -86,7 +86,11 @@ export default function HomePage() {
                 marginBottom: 32,
               }}
             >
-              Finding the right interpreter shouldn&apos;t be out of your hands. Browse real profiles, watch intro videos, and connect directly. Your interpreter, your choice.
+              Finding the right interpreter shouldn&apos;t be out of your hands.
+              <br /><br />
+              View profiles, watch video intros, book directly, and track your request at every step.
+              <br /><br />
+              Full transparency, no agency markup.
             </p>
 
             <div className="hero-ctas">
