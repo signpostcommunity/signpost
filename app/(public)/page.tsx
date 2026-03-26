@@ -84,6 +84,7 @@ export default function HomePage() {
                 maxWidth: 520,
                 lineHeight: 1.7,
                 marginBottom: 32,
+                paddingLeft: '1.25rem',
               }}
             >
               Finding the right interpreter shouldn&apos;t be out of your hands.
@@ -139,11 +140,12 @@ export default function HomePage() {
       </section>
 
       {/* Feature highlights */}
+      <div style={{ background: 'var(--surface)' }}>
       <section
         style={{
           maxWidth: 1200,
           margin: '0 auto',
-          padding: '0 40px 100px',
+          padding: '64px 40px',
         }}
         className="feature-highlights-section"
       >
@@ -209,6 +211,7 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+      </div>
 
       <style>{`
         .hero-split {
