@@ -287,6 +287,8 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
   const [loading, setLoading] = useState(true)
   const [profileIncomplete, setProfileIncomplete] = useState(false)
   const [bannerDismissed, setBannerDismissed] = useState(true)
+  const [videoRequestCount, setVideoRequestCount] = useState(0)
+  const [hasIntroVideo, setHasIntroVideo] = useState(false)
 
   // Check localStorage for banner dismissal
   useEffect(() => {
@@ -325,6 +327,23 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       const missingBio = !profileData?.bio || profileData.bio.trim() === ''
       const missingCerts = !certCount || certCount === 0
       setProfileIncomplete(missingPhoto || missingBio || missingCerts)
+
+      // Check if interpreter has any intro videos
+      const { count: videoCount } = await supabase
+        .from('interpreter_videos')
+        .select('id', { count: 'exact', head: true })
+        .eq('interpreter_id', interpreterProfileId!)
+      setHasIntroVideo((videoCount ?? 0) > 0)
+
+      // Check unfulfilled video request count
+      if (!videoCount || videoCount === 0) {
+        const { count: vrCount } = await supabase
+          .from('video_requests')
+          .select('id', { count: 'exact', head: true })
+          .eq('interpreter_id', interpreterProfileId!)
+          .is('fulfilled_at', null)
+        setVideoRequestCount(vrCount ?? 0)
+      }
 
       // Pending bookings count (via booking_recipients)
       const { count: pendingCount, error: pendingCountErr } = await supabase
@@ -548,6 +567,29 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
               <path d="M18 6L6 18" /><path d="M6 6l12 12" />
             </svg>
           </button>
+        </div>
+      )}
+
+      {/* Video request demand banner */}
+      {!hasIntroVideo && videoRequestCount > 0 && !loading && (
+        <div style={{
+          background: 'rgba(0, 229, 255, 0.04)', border: '1px solid rgba(0, 229, 255, 0.15)',
+          borderRadius: 'var(--radius-sm)', padding: '12px 18px',
+          display: 'flex', alignItems: 'center', gap: 10,
+          marginBottom: 16,
+        }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#c8cdd8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="9" cy="7" r="4" stroke="#c8cdd8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="#c8cdd8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#c8cdd8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span style={{ color: '#c8cdd8', fontSize: '0.88rem', lineHeight: 1.5 }}>
+            {videoRequestCount} {videoRequestCount === 1 ? 'person has' : 'people have'} requested your intro video.{' '}
+            <a href="/interpreter/dashboard/profile" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>
+              Record yours &rarr;
+            </a>
+          </span>
         </div>
       )}
 

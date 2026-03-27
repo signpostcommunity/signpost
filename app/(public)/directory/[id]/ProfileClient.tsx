@@ -9,6 +9,7 @@ import { createClient as createBrowserClient } from '@/lib/supabase/client';
 import FlagProfileModal from '@/components/directory/FlagProfileModal';
 import AddToListModal from '@/components/directory/AddToListModal';
 import SendMessageModal from '@/components/messaging/SendMessageModal';
+import RequestVideoModal from '@/components/directory/RequestVideoModal';
 import { createClient } from '@/lib/supabase/client';
 import { groupSpecsByCategory } from '@/lib/constants/specializations';
 
@@ -57,11 +58,15 @@ export default function ProfileClient({ interpreter: i, activeAway, availability
   const [addToListOpen, setAddToListOpen] = useState(false);
   const [messageModalOpen, setMessageModalOpen] = useState(false);
   const [userRole, setUserRole] = useState<'deaf' | 'requester' | 'interpreter' | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [videoRequestModalOpen, setVideoRequestModalOpen] = useState(false);
+  const [videoAlreadyRequested, setVideoAlreadyRequested] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
+      setUserId(user.id);
       supabase
         .from('user_profiles')
         .select('role')
@@ -93,6 +98,21 @@ export default function ProfileClient({ interpreter: i, activeAway, availability
         });
     });
   }, []);
+
+  // Check if user already requested a video from this interpreter
+  useEffect(() => {
+    if (!userId) return;
+    const supabase = createClient();
+    supabase
+      .from('video_requests')
+      .select('id')
+      .eq('requester_user_id', userId)
+      .eq('interpreter_id', String(i.id))
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setVideoAlreadyRequested(true);
+      });
+  }, [userId, i.id]);
 
   function showToast(msg: string) {
     setToast(msg);
@@ -422,7 +442,21 @@ export default function ProfileClient({ interpreter: i, activeAway, availability
         >
           {/* Left: tab content */}
           <div style={{ flex: 1, minWidth: 0 }}>
-            {activeTab === 'Overview' && <OverviewTab interpreter={i} />}
+            {activeTab === 'Overview' && (
+              <OverviewTab
+                interpreter={i}
+                userRole={userRole}
+                videoAlreadyRequested={videoAlreadyRequested}
+                onRequestVideo={() => {
+                  if (!userId) {
+                    const router = window.location;
+                    window.location.href = `/dhh/login?redirect=/directory/${i.id}`;
+                    return;
+                  }
+                  setVideoRequestModalOpen(true);
+                }}
+              />
+            )}
             {activeTab === 'Credentials' && <CredentialsTab interpreter={i} />}
             {activeTab === 'Availability' && <AvailabilityTab availability={availability} />}
           </div>
@@ -577,6 +611,27 @@ export default function ProfileClient({ interpreter: i, activeAway, availability
         }}
       />
 
+      {/* Request Video modal */}
+      {userId && (
+        <RequestVideoModal
+          isOpen={videoRequestModalOpen}
+          onClose={() => setVideoRequestModalOpen(false)}
+          interpreterName={i.name}
+          interpreterId={String(i.id)}
+          userId={userId}
+          onSuccess={() => {
+            setVideoRequestModalOpen(false);
+            setVideoAlreadyRequested(true);
+            showToast('Video request sent!');
+          }}
+          onDuplicate={() => {
+            setVideoRequestModalOpen(false);
+            setVideoAlreadyRequested(true);
+            showToast("You've already requested a video from this interpreter.");
+          }}
+        />
+      )}
+
       {/* Send Message modal */}
       {messageModalOpen && i.userId && (
         <SendMessageModal
@@ -619,7 +674,12 @@ export default function ProfileClient({ interpreter: i, activeAway, availability
    Tab Components
    ═══════════════════════════════════════════════════ */
 
-function OverviewTab({ interpreter: i }: { interpreter: Interpreter }) {
+function OverviewTab({ interpreter: i, userRole, videoAlreadyRequested, onRequestVideo }: {
+  interpreter: Interpreter;
+  userRole: 'deaf' | 'requester' | 'interpreter' | null;
+  videoAlreadyRequested: boolean;
+  onRequestVideo: () => void;
+}) {
   const [videos, setVideos] = useState<{ id: string; language: string; label: string | null; video_url: string }[]>([]);
   const [activeVideoIdx, setActiveVideoIdx] = useState(0);
 
@@ -684,17 +744,70 @@ function OverviewTab({ interpreter: i }: { interpreter: Interpreter }) {
       ) : (() => {
         // Fallback to legacy single video
         const embedUrl = i.videoUrl ? getVideoEmbedUrl(i.videoUrl) : null;
-        if (!embedUrl) return null;
+        if (embedUrl) {
+          return (
+            <Section title="Introduction Video">
+              {embedUrl.includes('supabase.co/storage') ? (
+                <video controls width="100%" src={embedUrl} style={{ borderRadius: 12, border: '1px solid var(--border)', maxHeight: 420, background: '#000' }} />
+              ) : (
+                <iframe width="100%" height="315" src={embedUrl} title="Interpreter introduction video"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
+                  style={{ borderRadius: 12, border: 'none' }} />
+              )}
+            </Section>
+          );
+        }
+        // No video at all — show placeholder with request button
         return (
-          <Section title="Introduction Video">
-            {embedUrl.includes('supabase.co/storage') ? (
-              <video controls width="100%" src={embedUrl} style={{ borderRadius: 12, border: '1px solid var(--border)', maxHeight: 420, background: '#000' }} />
-            ) : (
-              <iframe width="100%" height="315" src={embedUrl} title="Interpreter introduction video"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen
-                style={{ borderRadius: 12, border: 'none' }} />
+          <div style={{
+            background: '#111118', border: '1px dashed #1e2433',
+            borderRadius: 12, padding: '40px 24px',
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            justifyContent: 'center', gap: 12, textAlign: 'center',
+          }}>
+            {/* Muted play icon */}
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style={{ opacity: 0.6 }}>
+              <circle cx="20" cy="20" r="18" stroke="#96a0b8" strokeWidth="1.5" />
+              <path d="M16 13l12 7-12 7V13z" stroke="#96a0b8" strokeWidth="1.5" strokeLinejoin="round" />
+            </svg>
+            <p style={{
+              color: '#96a0b8', fontSize: '14px', margin: 0, lineHeight: 1.5,
+            }}>
+              This interpreter hasn&apos;t added an intro video yet.
+            </p>
+            {(userRole === 'deaf' || userRole === 'requester') && (
+              videoAlreadyRequested ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                  <span style={{
+                    color: '#96a0b8', fontSize: '13.5px', fontWeight: 500,
+                    opacity: 0.7,
+                  }}>
+                    Video requested
+                  </span>
+                  <span style={{ color: '#96a0b8', fontSize: '12px', opacity: 0.5 }}>
+                    We&apos;ve let them know.
+                  </span>
+                </div>
+              ) : (
+                <button
+                  onClick={onRequestVideo}
+                  style={{
+                    background: 'none',
+                    border: '1px solid rgba(0,229,255,0.5)',
+                    color: '#00e5ff', fontSize: '13.5px',
+                    borderRadius: 10, padding: '8px 16px',
+                    cursor: 'pointer',
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontWeight: 600,
+                    transition: 'all 0.15s',
+                    marginTop: 4,
+                  }}
+                >
+                  Request an intro video
+                </button>
+              )
             )}
-          </Section>
+          </div>
         );
       })()}
 

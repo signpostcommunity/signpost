@@ -555,6 +555,12 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
 
     if (!error && data) {
       setInterpreterVideos(prev => [...prev, data])
+      // Notify video request fulfillment (fire and forget)
+      fetch('/api/video-request/fulfilled', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ interpreter_id: p.id }),
+      }).catch(() => {})
     }
     setPendingVideoUrl('')
     setPendingVideoSource('url')
