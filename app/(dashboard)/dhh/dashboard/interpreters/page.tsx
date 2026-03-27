@@ -267,10 +267,10 @@ export default function DeafDashboardPage() {
   if (roster.length === 0) {
     return (
       <div className="dhh-interp-list-page" style={{ maxWidth: 960, margin: '0 auto', padding: '60px 32px 64px' }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 4 }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 4, color: '#f0f2f8' }}>
           My Interpreter List
         </h1>
-        <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: 40 }}>
+        <p style={{ fontWeight: 400, fontSize: '15px', color: '#96a0b8', marginBottom: 40 }}>
           Your preferred, secondary tier, and do-not-book interpreters.
         </p>
         <div style={{
@@ -278,7 +278,7 @@ export default function DeafDashboardPage() {
           background: 'var(--surface)', border: '1px dashed var(--border)',
           borderRadius: 'var(--radius)',
         }}>
-          <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem', marginBottom: 10 }}>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#f0f2f8', marginBottom: 10 }}>
             You haven&apos;t added any interpreters yet.
           </div>
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: 20, maxWidth: 400, margin: '0 auto 20px' }}>
@@ -486,10 +486,10 @@ export default function DeafDashboardPage() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 4 }}>
         <div>
-          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 0 }}>
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 0, color: '#f0f2f8' }}>
             My Interpreter List
           </h1>
-          <p style={{ color: 'var(--muted)', fontSize: '0.88rem' }}>
+          <p style={{ fontWeight: 400, fontSize: '15px', color: '#96a0b8' }}>
             Your preferred, secondary tier, and do-not-book interpreters. Share your list with requesters so they always know who to contact.
           </p>
         </div>
@@ -523,8 +523,8 @@ export default function DeafDashboardPage() {
         gap: 16, flexWrap: 'wrap', marginBottom: 32,
       }}>
         <div>
-          <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 4 }}>Add an interpreter to your preferred list</div>
-          <div style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>Browse the directory and add interpreters directly from their profile.</div>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#f0f2f8', marginBottom: 4 }}>Add an interpreter to your preferred list</div>
+          <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8' }}>Browse the directory and add interpreters directly from their profile.</div>
         </div>
         <Link href="/directory" className="btn-primary" style={{ textDecoration: 'none', padding: '9px 20px', fontSize: '0.85rem' }}>
           Browse Directory &#8594;
@@ -534,10 +534,10 @@ export default function DeafDashboardPage() {
       {/* Preferred section */}
       <div style={{ marginBottom: 36 }}>
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem', marginBottom: 2 }}>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#f0f2f8', marginBottom: 2 }}>
             &#9733; Preferred Interpreters
           </div>
-          <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
+          <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8' }}>
             Contact these first. Strong fit based on my communication style and history.
           </div>
         </div>
@@ -554,10 +554,10 @@ export default function DeafDashboardPage() {
       {/* Secondary Tier section */}
       <div style={{ marginBottom: 36 }}>
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem', marginBottom: 2 }}>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#f0f2f8', marginBottom: 2 }}>
             &#10003; Secondary Tier Interpreters
           </div>
-          <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
+          <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8' }}>
             Good alternatives. Use when preferred interpreters are unavailable.
           </div>
         </div>
@@ -574,10 +574,10 @@ export default function DeafDashboardPage() {
       {/* DNB section */}
       <div style={{ marginBottom: 36 }}>
         <div style={{ marginBottom: 16 }}>
-          <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem', marginBottom: 2, color: '#ff8099' }}>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#ff8099', marginBottom: 2 }}>
             &#10005; Do Not Book
           </div>
-          <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>
+          <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8' }}>
             Visible to your requesters. Reason notes help them understand without requiring explanation.
           </div>
         </div>
@@ -631,7 +631,7 @@ export default function DeafDashboardPage() {
             >
               <h3 style={{
                 fontFamily: "'Syne', sans-serif", fontWeight: 600,
-                fontSize: '1.1rem', margin: '0 0 12px 0',
+                fontSize: '15px', color: '#f0f2f8', margin: '0 0 12px 0',
               }}>
                 Move {confirmModal.name}?
               </h3>

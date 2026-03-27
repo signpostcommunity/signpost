@@ -172,7 +172,7 @@ export default function DhhInboxPage() {
                 padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10,
                 borderBottom: '1px solid var(--border)',
               }}>
-                <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
+                <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', margin: 0, color: '#f0f2f8', flex: 1 }}>
                   Conversations
                 </h2>
               </div>
@@ -197,7 +197,7 @@ export default function DhhInboxPage() {
                 padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10,
                 borderBottom: '1px solid var(--border)',
               }}>
-                <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
+                <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', margin: 0, color: '#f0f2f8', flex: 1 }}>
                   Notifications
                 </h2>
                 {unreadNotifCount > 0 && (

@@ -69,7 +69,7 @@ export default function VideoPreviewModal({
         className="modal-dialog"
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: 'var(--surface, #0f1118)',
+          background: 'var(--surface, #16161f)',
           border: '1px solid var(--border, #1e2433)',
           borderRadius: '16px',
           maxWidth: '640px',

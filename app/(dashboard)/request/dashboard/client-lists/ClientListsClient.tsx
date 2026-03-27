@@ -212,9 +212,9 @@ function ClientCard({ client, onToggle }: { client: ClientData; onToggle: () => 
           {client.preferred.length > 0 && (
             <div style={{ marginBottom: 20 }}>
               <div style={{
-                fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
-                fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase',
-                color: 'var(--accent)', marginBottom: 10,
+                fontWeight: 600,
+                fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+                color: '#00e5ff', marginBottom: 10,
               }}>
                 Preferred ({client.preferred.length})
               </div>
@@ -230,9 +230,9 @@ function ClientCard({ client, onToggle }: { client: ClientData; onToggle: () => 
           {client.secondary.length > 0 && (
             <div style={{ marginBottom: 20 }}>
               <div style={{
-                fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
-                fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase',
-                color: '#a78bfa', marginBottom: 10,
+                fontWeight: 600,
+                fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+                color: '#00e5ff', marginBottom: 10,
               }}>
                 Secondary Tier ({client.secondary.length})
               </div>
@@ -277,8 +277,8 @@ function ClientCard({ client, onToggle }: { client: ClientData; onToggle: () => 
           background: 'rgba(255,107,133,0.03)',
         }}>
           <div style={{
-            fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
-            fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase',
+            fontWeight: 600,
+            fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase' as const,
             color: '#ff8099', marginBottom: 8,
           }}>
             Do Not Book ({client.doNotBook.length})
@@ -406,10 +406,10 @@ export default function ClientListsClient() {
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.6rem', margin: '0 0 6px', letterSpacing: '-0.03em' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
           Client Interpreter Lists
         </h1>
-        <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>
+        <p style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', margin: 0 }}>
           View your connected Deaf clients&apos; preferred interpreter lists. These are shared with you so you can book the right interpreters.
         </p>
       </div>

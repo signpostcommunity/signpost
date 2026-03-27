@@ -356,9 +356,9 @@ function DetailModal({ booking, onClose }: { booking: RecentBooking; onClose: ()
           {/* LEFT: Appointment Details */}
           <div>
             <div style={{
-              fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
-              letterSpacing: '0.1em', textTransform: 'uppercase',
-              color: 'var(--muted)', marginBottom: 12,
+              fontWeight: 600, fontSize: '12px',
+              letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+              color: '#a78bfa', marginBottom: 12,
             }}>
               Appointment Details
             </div>
@@ -432,9 +432,9 @@ function DetailModal({ booking, onClose }: { booking: RecentBooking; onClose: ()
           {/* RIGHT: Interpreters Contacted */}
           <div>
             <div style={{
-              fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
-              letterSpacing: '0.1em', textTransform: 'uppercase',
-              color: 'var(--muted)', marginBottom: 12,
+              fontWeight: 600, fontSize: '12px',
+              letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+              color: '#a78bfa', marginBottom: 12,
             }}>
               Interpreters Contacted
             </div>
@@ -842,10 +842,10 @@ export default function DeafDashboardOverview() {
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       {/* Greeting */}
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.6rem', margin: '0 0 6px' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
           Welcome back, {displayName}.
         </h1>
-        <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>Here&apos;s a snapshot of your activity on signpost.</p>
+        <p style={{ fontWeight: 400, fontSize: '15px', color: '#96a0b8', margin: 0 }}>Here&apos;s a snapshot of your activity on signpost.</p>
       </div>
 
       <PendingRolesNudge accentColor="var(--accent2)" />
@@ -868,9 +868,9 @@ export default function DeafDashboardOverview() {
         {/* LEFT: Recent Requests */}
         <div>
           <div style={{
-            fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
-            letterSpacing: '0.1em', textTransform: 'uppercase',
-            color: '#9d87ff', marginBottom: 12,
+            fontWeight: 600, fontSize: '12px',
+            letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+            color: '#a78bfa', marginBottom: 12,
           }}>
             Recent Requests
           </div>
@@ -909,9 +909,9 @@ export default function DeafDashboardOverview() {
         {/* RIGHT: Preferred Interpreters */}
         <div>
           <div style={{
-            fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
-            letterSpacing: '0.1em', textTransform: 'uppercase',
-            color: '#9d87ff', marginBottom: 12,
+            fontWeight: 600, fontSize: '12px',
+            letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+            color: '#a78bfa', marginBottom: 12,
           }}>
             Preferred Interpreters
           </div>

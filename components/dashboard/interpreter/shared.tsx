@@ -55,10 +55,10 @@ export function DemoBadge() {
 export function PageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
     <div style={{ marginBottom: 28 }}>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.6rem', margin: '0 0 6px' }}>
+      <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
         {title}
       </h1>
-      {subtitle && <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>{subtitle}</p>}
+      {subtitle && <p style={{ fontWeight: 400, fontSize: '15px', color: '#96a0b8', margin: 0 }}>{subtitle}</p>}
     </div>
   )
 }
@@ -68,8 +68,8 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <h3 style={{
-      fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem',
-      letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)',
+      fontWeight: 600, fontSize: '12px',
+      letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff',
       margin: '28px 0 14px',
     }}>
       {children}

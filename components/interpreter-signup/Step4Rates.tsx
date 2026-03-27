@@ -378,9 +378,9 @@ export default function Step4Rates({ onBack, onContinue }: {
         borderRadius: 'var(--radius-sm)', padding: '18px 20px', marginBottom: 28,
       }}>
         <div style={{
-          fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
-          letterSpacing: '0.1em', textTransform: 'uppercase',
-          color: 'var(--muted)', marginBottom: 8,
+          fontWeight: 600, fontSize: '12px',
+          letterSpacing: '0.08em', textTransform: 'uppercase',
+          color: '#00e5ff', marginBottom: 8,
         }}>
           How rate profiles work
         </div>
@@ -410,9 +410,9 @@ export default function Step4Rates({ onBack, onContinue }: {
         borderRadius: 'var(--radius-sm)', padding: '18px 20px', marginTop: 28,
       }}>
         <div style={{
-          fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
-          letterSpacing: '0.1em', textTransform: 'uppercase',
-          color: 'var(--accent)', marginBottom: 8,
+          fontWeight: 600, fontSize: '12px',
+          letterSpacing: '0.08em', textTransform: 'uppercase',
+          color: '#00e5ff', marginBottom: 8,
         }}>
           How Payment Works
         </div>

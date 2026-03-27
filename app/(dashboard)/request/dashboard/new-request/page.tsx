@@ -37,10 +37,10 @@ const labelStyle: React.CSSProperties = {
 }
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', padding: '12px 14px',
+  width: '100%', padding: '11px 14px',
   background: 'var(--surface)', border: '1px solid var(--border)',
   borderRadius: 'var(--radius-sm)', color: 'var(--text)',
-  fontSize: '0.9rem', fontFamily: "'DM Sans', sans-serif",
+  fontSize: '15px', fontFamily: "'DM Sans', sans-serif",
   outline: 'none', transition: 'border-color 0.15s',
 }
 

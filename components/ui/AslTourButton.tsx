@@ -112,7 +112,7 @@ export default function AslTourButton() {
               right: 12,
               background: 'none',
               border: 'none',
-              color: '#8891a8',
+              color: '#96a0b8',
               cursor: 'pointer',
               padding: 4,
               fontSize: 18,
@@ -123,7 +123,7 @@ export default function AslTourButton() {
               e.currentTarget.style.color = '#f0f2f8'
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = '#8891a8'
+              e.currentTarget.style.color = '#96a0b8'
             }}
           >
             &#x2715;
@@ -186,7 +186,7 @@ export default function AslTourButton() {
               padding: 0,
               margin: 0,
               fontSize: 12,
-              color: '#8891a8',
+              color: '#96a0b8',
               lineHeight: 1.8,
             }}
           >

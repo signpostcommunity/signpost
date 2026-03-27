@@ -2,16 +2,16 @@
 
 :root {
   --panel-offset: 0px;
-  --bg: #000000;
-  --surface: #0f1118;
-  --surface2: #161923;
+  --bg: #0a0a0f;
+  --surface: #16161f;
+  --surface2: #16161f;
   --border: #1e2433;
   --accent: #00e5ff;
-  --accent2: #9d87ff;
+  --accent2: #a78bfa;
   --accent3: #ff6b85;
   --text: #f0f2f8;
-  --muted: #c8cfe0;
-  --card-bg: #0d1220;
+  --muted: #96a0b8;
+  --card-bg: #111118;
   --radius: 16px;
   --radius-sm: 10px;
 }

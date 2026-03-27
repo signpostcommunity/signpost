@@ -36,19 +36,18 @@ const inputStyle: React.CSSProperties = {
 
 const labelStyle: React.CSSProperties = {
   display: 'block',
-  fontSize: '0.82rem',
+  fontSize: '13px',
   fontWeight: 500,
-  color: 'var(--muted)',
+  color: '#c8cdd8',
   marginBottom: 6,
 }
 
 const sectionTitleStyle: React.CSSProperties = {
-  fontFamily: "'DM Sans', sans-serif",
-  fontSize: '0.7rem',
-  fontWeight: 700,
-  letterSpacing: '0.1em',
+  fontWeight: 600,
+  fontSize: '12px',
+  letterSpacing: '0.08em',
   textTransform: 'uppercase',
-  color: 'var(--accent)',
+  color: '#00e5ff',
   marginBottom: 20,
 }
 
@@ -899,7 +898,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
 
             {/* ── Your link ── */}
             <div style={{ marginBottom: vanitySlug ? 24 : 0 }}>
-              <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>Your link</div>
+              <div style={{ fontSize: '12px', fontWeight: 600, color: '#00e5ff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Your link</div>
               {vanitySlug && !editingSlug ? (
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -1028,7 +1027,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                   <button
                     className="btn-primary"
                     onClick={() => {
-                      const html = `<a href="https://signpost.community/book/${vanitySlug}" style="display:inline-flex;align-items:center;gap:10px;padding:10px 16px;background:#0d1220;border:1px solid #1e2433;border-radius:10px;text-decoration:none;font-family:sans-serif"><img src="${photoUrl || ''}" alt="${displayName}" style="width:36px;height:36px;border-radius:50%;object-fit:cover" /><span><strong style="color:#f0f2f8;font-size:13px">${displayName}</strong><br/><span style="color:#00e5ff;font-size:11px;font-weight:700">Book me on signpost</span></span></a>`
+                      const html = `<a href="https://signpost.community/book/${vanitySlug}" style="display:inline-flex;align-items:center;gap:10px;padding:10px 16px;background:#111118;border:1px solid #1e2433;border-radius:10px;text-decoration:none;font-family:sans-serif"><img src="${photoUrl || ''}" alt="${displayName}" style="width:36px;height:36px;border-radius:50%;object-fit:cover" /><span><strong style="color:#f0f2f8;font-size:13px">${displayName}</strong><br/><span style="color:#00e5ff;font-size:11px;font-weight:700">Book me on signpost</span></span></a>`
                       navigator.clipboard.writeText(html)
                       setToast({ message: 'Badge HTML copied!', type: 'success' })
                     }}
@@ -1254,7 +1253,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
             Select all sign languages in which you have professional-level fluency.
           </p>
-          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>
+          <div style={{ fontWeight: 500, fontSize: '11.5px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#96a0b8', marginBottom: 10 }}>
             Most common
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 6, marginBottom: 12 }}>
@@ -1262,7 +1261,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
               <Chip key={lang} label={lang} selected={signLangs.includes(lang)} onToggle={() => toggleInList(signLangs, lang, setSignLangs)} />
             ))}
           </div>
-          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 6 }}>
+          <div style={{ fontWeight: 500, fontSize: '11.5px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#96a0b8', marginBottom: 6 }}>
             More languages by region
           </div>
           <select
@@ -1298,7 +1297,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
             Select all spoken languages in which you have professional-level fluency.
           </p>
-          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10 }}>
+          <div style={{ fontWeight: 500, fontSize: '11.5px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#96a0b8', marginBottom: 10 }}>
             Most common
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 6, marginBottom: 12 }}>
@@ -1306,7 +1305,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
               <Chip key={lang} label={lang} selected={spokenLangs.includes(lang)} onToggle={() => toggleInList(spokenLangs, lang, setSpokenLangs)} />
             ))}
           </div>
-          <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 6 }}>
+          <div style={{ fontWeight: 500, fontSize: '11.5px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#96a0b8', marginBottom: 6 }}>
             More languages by region
           </div>
           <select
@@ -1952,9 +1951,9 @@ function SkillsTab({ specs, setSpecs, specializedSkills, setSpecializedSkills, s
                   width: '100%', padding: '12px 16px',
                   background: 'none', border: 'none', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
-                  letterSpacing: '0.1em', textTransform: 'uppercase',
-                  color: selectedCount > 0 ? 'var(--accent)' : 'var(--muted)',
+                  fontSize: '11.5px', fontWeight: 500,
+                  letterSpacing: '0.06em', textTransform: 'uppercase',
+                  color: selectedCount > 0 ? '#00e5ff' : '#96a0b8',
                 }}
               >
                 <span>{category}</span>
@@ -2014,7 +2013,7 @@ function SkillsTab({ specs, setSpecs, specializedSkills, setSpecializedSkills, s
               type="checkbox"
               checked={specializedSkills.includes(skill)}
               onChange={() => toggleSkill(skill)}
-              style={{ accentColor: '#7b61ff', width: 'auto', flexShrink: 0 }}
+              style={{ accentColor: '#a78bfa', width: 'auto', flexShrink: 0 }}
             />
             {skill}
           </label>
@@ -2410,8 +2409,8 @@ function SettingsTab({
         {NOTIF_SECTIONS.map(section => (
           <div key={section.section} style={{ marginBottom: 20 }}>
             <div style={{
-              fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
-              letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)',
+              fontWeight: 600, fontSize: '12px',
+              letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff',
               marginBottom: 10, paddingBottom: 6, borderBottom: '1px solid var(--border)',
             }}>
               {section.section}
@@ -2430,7 +2429,7 @@ function SettingsTab({
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                        <span style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Email</span>
+                        <span style={{ fontSize: '11.5px', color: '#96a0b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Email</span>
                         <ToggleSwitch
                           on={notifPrefs.email_enabled && pref.email}
                           onChange={() => toggleCategory(item.key, 'email')}
@@ -2438,7 +2437,7 @@ function SettingsTab({
                         />
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                        <span style={{ fontSize: '0.7rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>SMS</span>
+                        <span style={{ fontSize: '11.5px', color: '#96a0b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>SMS</span>
                         <ToggleSwitch
                           on={notifPrefs.sms_enabled && pref.sms}
                           onChange={() => toggleCategory(item.key, 'sms')}

@@ -478,10 +478,10 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       )}
 
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.6rem', margin: '0 0 6px' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
           Welcome back, {displayName}.
         </h1>
-        <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>Here&apos;s a snapshot of your activity on signpost.</p>
+        <p style={{ fontWeight: 400, fontSize: '15px', color: '#96a0b8', margin: 0 }}>Here&apos;s a snapshot of your activity on signpost.</p>
       </div>
 
       <PendingRolesNudge accentColor="var(--accent)" />
@@ -565,9 +565,9 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 24,
       }}>
         <div style={{
-          fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
-          letterSpacing: '0.1em', textTransform: 'uppercase',
-          color: 'var(--accent)', marginBottom: 8,
+          fontWeight: 600, fontSize: '12px',
+          letterSpacing: '0.08em', textTransform: 'uppercase',
+          color: '#00e5ff', marginBottom: 8,
         }}>
           Book Me Badges
         </div>
@@ -587,7 +587,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
 
         {/* Your link */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Your link</div>
+          <div style={{ fontSize: '12px', fontWeight: 600, color: '#00e5ff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Your link</div>
           {vanitySlug ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
               <span style={{

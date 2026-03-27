@@ -461,9 +461,9 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
           textAlign: 'left', margin: '0 auto 24px', maxWidth: 480,
         }}>
           <div style={{
-            fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
-            letterSpacing: '0.1em', textTransform: 'uppercase',
-            color: 'var(--accent)', marginBottom: 14,
+            fontWeight: 600, fontSize: '12px',
+            letterSpacing: '0.08em', textTransform: 'uppercase',
+            color: '#00e5ff', marginBottom: 14,
           }}>
             Platform Agreement
           </div>

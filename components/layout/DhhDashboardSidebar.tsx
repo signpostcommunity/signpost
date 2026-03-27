@@ -212,8 +212,8 @@ function SidebarContent({ userName, userInitials, badges }: {
                       fontSize: '0.7rem', fontWeight: 700, minWidth: 18, height: 18,
                       borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center',
                       padding: '0 5px',
-                      background: 'rgba(0,229,255,0.15)',
-                      color: 'var(--accent)',
+                      background: 'rgba(167,139,250,0.15)',
+                      color: '#a78bfa',
                     }}>
                       {badgeCount}
                     </span>

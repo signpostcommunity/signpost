@@ -324,9 +324,9 @@ function AppointmentVideoSection({ booking }: { booking: BookingWithRecipients }
   }
 
   const sectionLabelStyle: React.CSSProperties = {
-    fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
-    letterSpacing: '0.1em', textTransform: 'uppercase',
-    color: 'var(--muted)', marginBottom: 8,
+    fontWeight: 600, fontSize: '12px',
+    letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+    color: '#a78bfa', marginBottom: 8,
   }
 
   const mutedSmall: React.CSSProperties = {
@@ -525,7 +525,7 @@ function ModalPill({ label, selected, onClick }: { label: string; selected: bool
       type="button"
       onClick={onClick}
       style={{
-        padding: '8px 22px', borderRadius: 100, cursor: 'pointer',
+        padding: '8px 22px', borderRadius: 10, cursor: 'pointer',
         border: selected ? '1px solid #00e5ff' : '1px solid var(--border)',
         background: selected ? '#00e5ff' : 'var(--surface2)',
         color: selected ? '#000' : 'var(--muted)',
@@ -650,8 +650,8 @@ function InlineRatingModal({ booking, ratedInterpreters, onRated, onClose }: {
       }}
     >
       <h3 style={{
-        fontFamily: "'Syne', sans-serif", fontWeight: 700,
-        fontSize: '1.1rem', color: 'var(--text)',
+        fontFamily: "'Syne', sans-serif", fontWeight: 600,
+        fontSize: '15px', color: '#f0f2f8',
         margin: '0 0 6px 0',
       }}>
         Rate your interpreters
@@ -1033,9 +1033,9 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
               {/* LEFT: Appointment Details */}
               <div>
                 <div style={{
-                  fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
-                  letterSpacing: '0.1em', textTransform: 'uppercase',
-                  color: 'var(--muted)', marginBottom: 12,
+                  fontWeight: 600, fontSize: '12px',
+                  letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+                  color: '#a78bfa', marginBottom: 12,
                 }}>
                   Appointment Details
                 </div>
@@ -1119,9 +1119,9 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
               {/* RIGHT: Interpreters Contacted */}
               <div>
                 <div style={{
-                  fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
-                  letterSpacing: '0.1em', textTransform: 'uppercase',
-                  color: 'var(--muted)', marginBottom: 12,
+                  fontWeight: 600, fontSize: '12px',
+                  letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+                  color: '#a78bfa', marginBottom: 12,
                 }}>
                   Interpreters Contacted
                 </div>

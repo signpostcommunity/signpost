@@ -134,8 +134,9 @@ export default function DeafPortalClient() {
         {/* Hero */}
         <div style={{ marginBottom: 32 }}>
           <h1 style={{
-            fontFamily: "'Syne', sans-serif", fontSize: 'clamp(1.4rem, 3vw, 2rem)',
+            fontFamily: "'Syne', sans-serif", fontSize: 'clamp(1.4rem, 3vw, 27px)',
             fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: 12,
+            color: '#f0f2f8',
           }}>
             Your portal. Your preferences.<br />
             <em style={{
@@ -146,7 +147,7 @@ export default function DeafPortalClient() {
               backgroundClip: 'text',
             }}>Your interpreters.</em>
           </h1>
-          <p style={{ color: 'var(--muted)', fontSize: '1rem', lineHeight: 1.75, maxWidth: 560 }}>
+          <p style={{ fontWeight: 400, fontSize: '15px', color: '#96a0b8', lineHeight: 1.75, maxWidth: 560 }}>
             Request interpreters directly, build your preferred interpreter list, and share your communication preferences, so every booking starts with the right context. Always free for Deaf individuals.
           </p>
         </div>
@@ -177,7 +178,7 @@ export default function DeafPortalClient() {
               </svg>
             </div>
             <div>
-              <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem' }}>New to signpost?</div>
+              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#f0f2f8' }}>New to signpost?</div>
             </div>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8, margin: 0, padding: 0 }}>
               <li style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--muted)', fontSize: '0.83rem' }}>
@@ -223,7 +224,7 @@ export default function DeafPortalClient() {
               </svg>
             </div>
             <div>
-              <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem' }}>Already have a profile?</div>
+              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#f0f2f8' }}>Already have a profile?</div>
             </div>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 8, margin: 0, padding: 0 }}>
               <li style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--muted)', fontSize: '0.83rem' }}>
@@ -258,7 +259,7 @@ export default function DeafPortalClient() {
           >
             {activeForm === 'login' ? (
               <>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.2rem', marginBottom: 20 }}>Sign in</div>
+                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px', color: '#f0f2f8', marginBottom: 20 }}>Sign in</div>
                 <GoogleSignInButton role="deaf" />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '4px 0' }}>
                   <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
@@ -300,7 +301,7 @@ export default function DeafPortalClient() {
               </>
             ) : (
               <>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.2rem', marginBottom: 20 }}>Create your free account</div>
+                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px', color: '#f0f2f8', marginBottom: 20 }}>Create your free account</div>
                 <GoogleSignInButton role="deaf" label="Sign up with Google" />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '4px 0' }}>
                   <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />

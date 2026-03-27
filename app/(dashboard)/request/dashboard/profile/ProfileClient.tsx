@@ -13,7 +13,7 @@ const inputStyle: React.CSSProperties = {
   borderRadius: 'var(--radius-sm)',
   padding: '11px 14px',
   color: 'var(--text)',
-  fontSize: '0.9rem',
+  fontSize: '15px',
   fontFamily: "'DM Sans', sans-serif",
   outline: 'none',
   boxSizing: 'border-box' as const,
@@ -21,19 +21,18 @@ const inputStyle: React.CSSProperties = {
 
 const labelStyle: React.CSSProperties = {
   display: 'block',
-  fontSize: '0.82rem',
+  fontSize: '13px',
   fontWeight: 500,
-  color: 'var(--muted)',
+  color: '#c8cdd8',
   marginBottom: 6,
 }
 
 const sectionTitleStyle: React.CSSProperties = {
-  fontFamily: "'DM Sans', sans-serif",
-  fontSize: '0.7rem',
-  fontWeight: 700,
-  letterSpacing: '0.1em',
+  fontWeight: 600,
+  fontSize: '12px',
+  letterSpacing: '0.08em',
   textTransform: 'uppercase',
-  color: 'var(--accent)',
+  color: '#00e5ff',
   marginBottom: 20,
 }
 
@@ -194,12 +193,12 @@ export default function ProfileClient({ profile, userEmail }: Props) {
       <div style={{ maxWidth: 680, margin: '0 auto' }}>
         {/* Header */}
         <h1 style={{
-          fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.6rem',
-          margin: '0 0 6px', letterSpacing: '-0.03em',
+          fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '27px',
+          color: '#f0f2f8', margin: '0 0 6px',
         }}>
           My Profile
         </h1>
-        <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: '0 0 32px' }}>
+        <p style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', margin: '0 0 32px' }}>
           Manage your account information and preferences.
         </p>
 
@@ -238,7 +237,7 @@ export default function ProfileClient({ profile, userEmail }: Props) {
                 readOnly
                 style={{ ...inputStyle, opacity: 0.6, cursor: 'not-allowed' }}
               />
-              <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: 4 }}>
+              <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', marginTop: 4 }}>
                 Email is linked to your account and cannot be changed here.
               </div>
             </div>
@@ -361,10 +360,10 @@ export default function ProfileClient({ profile, userEmail }: Props) {
 
           {!hasMockPayment && !showCardForm && (
             <div>
-              <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.6, margin: '0 0 12px' }}>
+              <p style={{ fontWeight: 400, fontSize: '14px', color: '#c8cdd8', lineHeight: 1.6, margin: '0 0 12px' }}>
                 Add a payment method to start submitting requests. You&apos;ll only be charged when you confirm an interpreter&apos;s booking.
               </p>
-              <p style={{ color: 'var(--accent)', fontSize: '0.85rem', fontWeight: 600, margin: '0 0 20px' }}>
+              <p style={{ color: 'var(--accent)', fontSize: '14px', fontWeight: 600, margin: '0 0 20px' }}>
                 $15 per interpreter, per confirmed booking.
               </p>
               <button
@@ -466,8 +465,7 @@ export default function ProfileClient({ profile, userEmail }: Props) {
           )}
 
           <p style={{
-            color: 'var(--muted)', fontSize: '0.75rem', marginTop: 16, marginBottom: 0,
-            opacity: 0.7,
+            fontWeight: 400, fontSize: '14px', color: '#96a0b8', marginTop: 16, marginBottom: 0,
           }}>
             Powered by Stripe. Payment processing coming soon. During beta, platform fees are tracked but not charged.
           </p>

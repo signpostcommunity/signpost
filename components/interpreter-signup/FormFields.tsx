@@ -15,10 +15,10 @@ export function FormSection({ children, style }: { children: ReactNode; style?: 
 export function SectionTitle({ children }: { children: ReactNode }) {
   return (
     <div style={{
-      fontFamily: "'DM Sans', sans-serif",
-      fontSize: '0.7rem', fontWeight: 700,
-      letterSpacing: '0.1em', textTransform: 'uppercase',
-      color: 'var(--accent)', marginBottom: 20,
+      fontWeight: 600,
+      fontSize: '12px',
+      letterSpacing: '0.08em', textTransform: 'uppercase',
+      color: '#00e5ff', marginBottom: 20,
     }}>
       {children}
     </div>
@@ -54,7 +54,7 @@ export function FormField({ children, style }: { children: ReactNode; style?: CS
 
 export function FieldLabel({ children, htmlFor }: { children: ReactNode; htmlFor?: string }) {
   return (
-    <label htmlFor={htmlFor} style={{ fontSize: '0.82rem', color: 'var(--muted)', fontWeight: 500 }}>
+    <label htmlFor={htmlFor} style={{ fontSize: '13px', color: '#c8cdd8', fontWeight: 500 }}>
       {children}
     </label>
   )

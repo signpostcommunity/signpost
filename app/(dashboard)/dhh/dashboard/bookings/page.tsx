@@ -269,8 +269,8 @@ function DetailModal({ booking, onClose, onToast }: {
   const isSelfRequest = !booking.requester_display
 
   const sectionLabelStyle: React.CSSProperties = {
-    fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em',
-    textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10,
+    fontWeight: 600, fontSize: '12px', letterSpacing: '0.08em',
+    textTransform: 'uppercase' as const, color: '#a78bfa', marginBottom: 10,
   }
   const detailRowStyle: React.CSSProperties = {
     display: 'flex', alignItems: 'flex-start', gap: 10,
@@ -446,7 +446,7 @@ function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast, on
               fontSize: '0.7rem', fontWeight: 600, padding: '2px 8px',
               borderRadius: 100,
               ...(booking.format === 'remote'
-                ? { background: 'rgba(123,97,255,0.15)', color: '#7b61ff', border: '1px solid rgba(123,97,255,0.25)' }
+                ? { background: 'rgba(123,97,255,0.15)', color: '#a78bfa', border: '1px solid rgba(123,97,255,0.25)' }
                 : { background: 'rgba(0,229,255,0.15)', color: '#00e5ff', border: '1px solid rgba(0,229,255,0.25)' }),
             }}>
               {booking.format === 'remote' ? 'Remote' : 'In-person'}
@@ -530,7 +530,7 @@ function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast, on
         if (!embedUrl) return null
         return (
           <div style={{ padding: '10px 0', borderTop: '1px solid var(--border)' }}>
-            <div style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 8 }}>
+            <div style={{ fontWeight: 600, fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#a78bfa', marginBottom: 8 }}>
               Context Video
             </div>
             {embedUrl.includes('supabase.co/storage') ? (
@@ -713,12 +713,11 @@ const requesterCardStyle: React.CSSProperties = {
 }
 
 const requesterSectionLabelStyle: React.CSSProperties = {
-  fontFamily: "'DM Sans', sans-serif",
-  fontSize: '0.7rem',
-  fontWeight: 700,
-  letterSpacing: '0.1em',
+  fontWeight: 600,
+  fontSize: '12px',
+  letterSpacing: '0.08em',
   textTransform: 'uppercase' as const,
-  color: '#9d87ff',
+  color: '#a78bfa',
   marginBottom: 12,
 }
 
@@ -1045,7 +1044,7 @@ export default function DhhBookingsPage() {
                       <div key={conn.id} style={requesterCardStyle}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
                           <div style={{ flex: 1, minWidth: 200 }}>
-                            <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem', color: 'var(--text)', marginBottom: 4 }}>
+                            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#f0f2f8', marginBottom: 4 }}>
                               {orgDisplay}
                             </div>
                             {conn.org_type && (
@@ -1087,7 +1086,7 @@ export default function DhhBookingsPage() {
                       <div key={conn.id} style={requesterCardStyle}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
                           <div style={{ flex: 1, minWidth: 200 }}>
-                            <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem', color: 'var(--text)', marginBottom: 4 }}>
+                            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#f0f2f8', marginBottom: 4 }}>
                               {orgDisplay}
                             </div>
                             {conn.org_type && (

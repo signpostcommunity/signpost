@@ -54,12 +54,11 @@ const cardStyle: React.CSSProperties = {
 }
 
 const sectionLabelStyle: React.CSSProperties = {
-  fontFamily: "'DM Sans', sans-serif",
-  fontSize: '0.7rem',
-  fontWeight: 700,
-  letterSpacing: '0.1em',
-  textTransform: 'uppercase',
-  color: '#9d87ff',
+  fontWeight: 600,
+  fontSize: '12px',
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase' as const,
+  color: '#a78bfa',
   marginBottom: 12,
 }
 

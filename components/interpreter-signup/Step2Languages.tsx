@@ -56,10 +56,10 @@ function LangPicker({
     <div>
       {/* Most common label */}
       <div style={{
-        fontFamily: "'DM Sans', sans-serif",
-        fontSize: '0.68rem', fontWeight: 700,
-        letterSpacing: '0.1em', textTransform: 'uppercase' as const,
-        color: 'var(--muted)', marginBottom: 10,
+        fontWeight: 500,
+        fontSize: '11.5px',
+        letterSpacing: '0.06em', textTransform: 'uppercase' as const,
+        color: '#96a0b8', marginBottom: 10,
       }}>
         Most common
       </div>
@@ -83,10 +83,10 @@ function LangPicker({
       {/* More languages by region */}
       <div style={{ marginTop: 12 }}>
         <div style={{
-          fontFamily: "'DM Sans', sans-serif",
-          fontSize: '0.68rem', fontWeight: 700,
-          letterSpacing: '0.1em', textTransform: 'uppercase' as const,
-          color: 'var(--muted)', marginBottom: 6,
+          fontWeight: 500,
+          fontSize: '11.5px',
+          letterSpacing: '0.06em', textTransform: 'uppercase' as const,
+          color: '#96a0b8', marginBottom: 6,
         }}>
           More languages by region
         </div>

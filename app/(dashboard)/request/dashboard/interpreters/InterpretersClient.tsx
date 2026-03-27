@@ -378,10 +378,10 @@ export default function InterpretersClient() {
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       {/* Page Header */}
       <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.6rem', margin: '0 0 6px', letterSpacing: '-0.03em' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
           Preferred Interpreters
         </h1>
-        <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>
+        <p style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', margin: 0 }}>
           Manage your preferred and secondary tier interpreter roster.
         </p>
       </div>
@@ -390,7 +390,7 @@ export default function InterpretersClient() {
       <div style={{ marginBottom: 36 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div>
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem', marginBottom: 2 }}>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px', color: '#f0f2f8', marginBottom: 2 }}>
               Preferred Interpreters
               <span style={{
                 marginLeft: 10, fontSize: '0.75rem', fontWeight: 600,
@@ -400,7 +400,7 @@ export default function InterpretersClient() {
                 {preferred.length}
               </span>
             </div>
-            <div style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>
+            <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8' }}>
               Your first call. These interpreters are contacted first when you submit a request.
             </div>
           </div>
@@ -494,7 +494,7 @@ export default function InterpretersClient() {
       <div style={{ marginBottom: 36 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div>
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem', marginBottom: 2 }}>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px', color: '#f0f2f8', marginBottom: 2 }}>
               Secondary Tier
               <span style={{
                 marginLeft: 10, fontSize: '0.75rem', fontWeight: 600,
@@ -504,7 +504,7 @@ export default function InterpretersClient() {
                 {secondary.length}
               </span>
             </div>
-            <div style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>
+            <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8' }}>
               Good alternatives. Contacted if your preferred interpreters aren&apos;t available.
             </div>
           </div>
@@ -615,7 +615,7 @@ export default function InterpretersClient() {
             >
               <h3 style={{
                 fontFamily: "'Syne', sans-serif", fontWeight: 600,
-                fontSize: '1.1rem', margin: '0 0 12px 0',
+                fontSize: '15px', color: '#f0f2f8', margin: '0 0 12px 0',
               }}>
                 {isRemove ? `Remove ${confirmModal.name}?` : `Move ${confirmModal.name}?`}
               </h3>

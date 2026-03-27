@@ -314,7 +314,7 @@ export default function RatesPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 10, height: 10, borderRadius: '50%', background: profile.color, flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: '0.92rem' }}>{profile.name}</div>
+                  <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#f0f2f8' }}>{profile.name}</div>
                   <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 2 }}>
                     {profile.isDefault ? 'Your default for most bookings' : 'Click to expand/collapse'}
                   </div>
@@ -346,7 +346,7 @@ export default function RatesPage() {
               <div style={{ padding: '0 22px 22px', borderTop: '1px solid var(--border)', paddingTop: 20 }}>
                 {/* Profile name */}
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: 'block', color: 'var(--muted)', fontSize: '0.75rem', marginBottom: 6 }}>Profile Name</label>
+                  <label style={{ display: 'block', color: '#c8cdd8', fontSize: '13px', fontWeight: 500, marginBottom: 6 }}>Profile Name</label>
                   <input type="text" value={profile.name} style={{ ...inputStyle, maxWidth: '50%' }}
                     onChange={e => updateProfile(profile.id, { name: e.target.value })}
                     onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
@@ -356,7 +356,7 @@ export default function RatesPage() {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
                   <div>
-                    <label style={{ display: 'block', color: 'var(--muted)', fontSize: '0.75rem', marginBottom: 6 }}>Hourly Rate</label>
+                    <label style={{ display: 'block', color: '#c8cdd8', fontSize: '13px', fontWeight: 500, marginBottom: 6 }}>Hourly Rate</label>
                     <div style={{ position: 'relative' }}>
                       <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }}>$</span>
                       <input type="text" value={profile.hourlyRate} placeholder="0.00"
@@ -368,7 +368,7 @@ export default function RatesPage() {
                     </div>
                   </div>
                   <div>
-                    <label style={{ display: 'block', color: 'var(--muted)', fontSize: '0.75rem', marginBottom: 6 }}>Currency</label>
+                    <label style={{ display: 'block', color: '#c8cdd8', fontSize: '13px', fontWeight: 500, marginBottom: 6 }}>Currency</label>
                     <select value={profile.currency} onChange={e => updateProfile(profile.id, { currency: e.target.value })} style={inputStyle}
                       onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
                       onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
@@ -384,7 +384,7 @@ export default function RatesPage() {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
                   <div>
-                    <label style={{ display: 'block', color: 'var(--muted)', fontSize: '0.75rem', marginBottom: 6 }}>Minimum Booking</label>
+                    <label style={{ display: 'block', color: '#c8cdd8', fontSize: '13px', fontWeight: 500, marginBottom: 6 }}>Minimum Booking</label>
                     <select value={profile.minBooking} onChange={e => updateProfile(profile.id, { minBooking: e.target.value })} style={inputStyle}
                       onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
                       onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
@@ -399,7 +399,7 @@ export default function RatesPage() {
                     </select>
                   </div>
                   <div>
-                    <label style={{ display: 'block', color: 'var(--muted)', fontSize: '0.75rem', marginBottom: 6 }}>Cancellation Policy</label>
+                    <label style={{ display: 'block', color: '#c8cdd8', fontSize: '13px', fontWeight: 500, marginBottom: 6 }}>Cancellation Policy</label>
                     <select value={profile.cancellationPolicy} onChange={e => updateProfile(profile.id, { cancellationPolicy: e.target.value })} style={inputStyle}
                       onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
                       onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
@@ -414,7 +414,7 @@ export default function RatesPage() {
                 </div>
 
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: 'block', color: 'var(--muted)', fontSize: '0.75rem', marginBottom: 6 }}>Late Cancellation Fee</label>
+                  <label style={{ display: 'block', color: '#c8cdd8', fontSize: '13px', fontWeight: 500, marginBottom: 6 }}>Late Cancellation Fee</label>
                   <select value={profile.lateFee} onChange={e => updateProfile(profile.id, { lateFee: e.target.value })} style={{ ...inputStyle, maxWidth: '50%' }}
                     onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
                     onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
@@ -428,7 +428,7 @@ export default function RatesPage() {
                 </div>
 
                 {/* Travel expenses */}
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 8, marginTop: 4 }}>
+                <div style={{ fontWeight: 600, fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 8, marginTop: 4 }}>
                   Travel &amp; Incidental Expenses
                 </div>
                 <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginBottom: 12, lineHeight: 1.5 }}>
@@ -456,7 +456,7 @@ export default function RatesPage() {
 
                 {/* Notes */}
                 <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: 'block', color: 'var(--muted)', fontSize: '0.75rem', marginBottom: 6 }}>Additional terms or notes (optional)</label>
+                  <label style={{ display: 'block', color: '#c8cdd8', fontSize: '13px', fontWeight: 500, marginBottom: 6 }}>Additional terms or notes (optional)</label>
                   <textarea
                     value={profile.notes}
                     onChange={e => updateProfile(profile.id, { notes: e.target.value })}

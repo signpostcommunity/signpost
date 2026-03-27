@@ -32,9 +32,8 @@ const fieldInputStyle: React.CSSProperties = {
 }
 
 const fieldLabelStyle: React.CSSProperties = {
-  display: 'block', fontSize: '0.7rem', color: 'var(--muted)',
-  fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
-  letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6,
+  display: 'block', fontSize: '13px', color: '#c8cdd8',
+  fontWeight: 500, marginBottom: 6,
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -192,8 +191,8 @@ function TierSection({ title, accentColor, members, onMoveTier, onRemove, onEdit
   return (
     <div style={{ marginBottom: 32 }}>
       <div style={{
-        fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
-        fontSize: '0.7rem', letterSpacing: '0.1em',
+        fontWeight: 600,
+        fontSize: '12px', letterSpacing: '0.08em',
         textTransform: 'uppercase', color: accentColor,
         marginBottom: 12, paddingBottom: 8,
         borderBottom: `1px solid ${accentColor}22`,

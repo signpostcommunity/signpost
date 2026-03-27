@@ -588,7 +588,7 @@ export default function AddToListModal({
         onClick={(e) => e.stopPropagation()}
         className="modal-dialog"
         style={{
-          background: 'var(--surface, #0f1118)',
+          background: 'var(--surface, #16161f)',
           border: '1px solid var(--border, #1e2433)',
           borderRadius: '16px',
           maxWidth: '520px',
@@ -702,7 +702,7 @@ export default function AddToListModal({
                       }`,
                       background: isSelected(tier)
                         ? accentBg(tier)
-                        : 'var(--card-bg, #0d1220)',
+                        : 'var(--card-bg, #111118)',
                       cursor: 'pointer',
                       transition: 'all 0.15s',
                     }}
@@ -777,7 +777,7 @@ export default function AddToListModal({
               }`,
               background: negativeList
                 ? 'rgba(255, 107, 133, 0.06)'
-                : 'var(--card-bg, #0d1220)',
+                : 'var(--card-bg, #111118)',
               cursor: 'pointer',
               transition: 'border-color 0.15s',
             }}
@@ -801,7 +801,7 @@ export default function AddToListModal({
                 }`,
                 background: negativeList
                   ? 'var(--accent3, #ff6b85)'
-                  : 'var(--surface, #0f1118)',
+                  : 'var(--surface, #16161f)',
                 cursor: 'pointer',
                 transition: 'all 0.15s',
               }}
@@ -877,7 +877,7 @@ export default function AddToListModal({
                     }`,
                     background: approveWork
                       ? 'rgba(0, 229, 255, 0.04)'
-                      : 'var(--card-bg, #0d1220)',
+                      : 'var(--card-bg, #111118)',
                     cursor: 'pointer',
                     transition: 'border-color 0.15s',
                   }}
@@ -901,7 +901,7 @@ export default function AddToListModal({
                       }`,
                       background: approveWork
                         ? 'var(--accent, #00e5ff)'
-                        : 'var(--surface, #0f1118)',
+                        : 'var(--surface, #16161f)',
                       cursor: 'pointer',
                       transition: 'all 0.15s',
                       position: 'relative',
@@ -944,7 +944,7 @@ export default function AddToListModal({
                     }`,
                     background: approvePersonal
                       ? 'rgba(157, 135, 255, 0.04)'
-                      : 'var(--card-bg, #0d1220)',
+                      : 'var(--card-bg, #111118)',
                     cursor: 'pointer',
                     transition: 'border-color 0.15s',
                   }}
@@ -968,7 +968,7 @@ export default function AddToListModal({
                       }`,
                       background: approvePersonal
                         ? 'var(--accent2, #9d87ff)'
-                        : 'var(--surface, #0f1118)',
+                        : 'var(--surface, #16161f)',
                       cursor: 'pointer',
                       transition: 'all 0.15s',
                       position: 'relative',
@@ -1020,7 +1020,7 @@ export default function AddToListModal({
               placeholder={cfg.notePlaceholder}
               style={{
                 width: '100%',
-                background: 'var(--card-bg, #0d1220)',
+                background: 'var(--card-bg, #111118)',
                 border: '1px solid var(--border, #1e2433)',
                 borderRadius: '10px',
                 padding: '12px 14px',

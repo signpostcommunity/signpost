@@ -151,10 +151,10 @@ export default function RequestSignupClient() {
       {/* Step 1 — Role Selection */}
       {step === 1 && (
         <div>
-          <h1 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '6px' }}>
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 800, color: '#f0f2f8', marginBottom: '6px' }}>
             Your Role
           </h1>
-          <p style={{ color: 'var(--muted)', marginBottom: '28px', fontSize: '0.9rem' }}>
+          <p style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', marginBottom: '28px' }}>
             Select the option that best describes you.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '12px' }}>
@@ -181,10 +181,10 @@ export default function RequestSignupClient() {
                 </svg>
               </div>
               <div>
-                <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4, fontFamily: "'DM Sans', sans-serif" }}>
+                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#f0f2f8', marginBottom: 4 }}>
                   Organization / Institution
                 </div>
-                <div style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.5 }}>
+                <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', lineHeight: 1.5 }}>
                   Schools, hospitals, courts, companies, non-profits, and other organizations that book interpreters.
                 </div>
               </div>
@@ -214,10 +214,10 @@ export default function RequestSignupClient() {
                 </svg>
               </div>
               <div>
-                <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4, fontFamily: "'DM Sans', sans-serif" }}>
+                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#f0f2f8', marginBottom: 4 }}>
                   Deaf / Hard of Hearing
                 </div>
-                <div style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.5 }}>
+                <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', lineHeight: 1.5 }}>
                   Personal interpreter requests for Deaf, DeafBlind, and Hard of Hearing individuals are free through our D/DB/HH portal.
                 </div>
               </div>
@@ -246,10 +246,10 @@ export default function RequestSignupClient() {
                 </svg>
               </div>
               <div>
-                <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4, fontFamily: "'DM Sans', sans-serif" }}>
+                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#f0f2f8', marginBottom: 4 }}>
                   Personal Event
                 </div>
-                <div style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.5 }}>
+                <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', lineHeight: 1.5 }}>
                   Weddings, parties, conferences, or other events where you need an interpreter.
                 </div>
               </div>
@@ -261,10 +261,10 @@ export default function RequestSignupClient() {
       {/* Step 2 — Account Details */}
       {step === 2 && (
         <div>
-          <h2 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '6px' }}>
+          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 800, color: '#f0f2f8', marginBottom: '6px' }}>
             Account Details
           </h2>
-          <p style={{ color: 'var(--muted)', marginBottom: '28px', fontSize: '0.9rem' }}>
+          <p style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', marginBottom: '28px' }}>
             {"We'll use this to create your signpost account."}
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -311,7 +311,7 @@ export default function RequestSignupClient() {
                     type="button"
                     onClick={() => toggleComm(pref)}
                     style={{
-                      padding: '8px 16px', borderRadius: 100,
+                      padding: '8px 16px', borderRadius: 10,
                       fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
                       transition: 'all 0.15s', fontFamily: "'DM Sans', sans-serif",
                       background: form.commPrefs.includes(pref) ? 'rgba(0,229,255,0.12)' : 'var(--surface2)',
@@ -338,10 +338,10 @@ export default function RequestSignupClient() {
       {/* Step 3 — Preview & Create */}
       {step === 3 && (
         <div>
-          <h2 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.6rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '6px' }}>
+          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 800, color: '#f0f2f8', marginBottom: '6px' }}>
             Preview &amp; Create
           </h2>
-          <p style={{ color: 'var(--muted)', marginBottom: '28px', fontSize: '0.9rem' }}>
+          <p style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', marginBottom: '28px' }}>
             Review what you can do with your signpost account, then create it.
           </p>
 
@@ -350,13 +350,13 @@ export default function RequestSignupClient() {
             padding: '20px 24px', background: 'var(--surface)',
             border: '1px solid var(--border)', borderRadius: '12px', marginBottom: 16,
           }}>
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, marginBottom: '8px', fontSize: '0.95rem' }}>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#f0f2f8', marginBottom: '8px' }}>
               Your First Request
             </div>
-            <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.6, margin: '0 0 10px' }}>
+            <p style={{ fontWeight: 400, fontSize: '14px', color: '#c8cdd8', lineHeight: 1.6, margin: '0 0 10px' }}>
               Once your account is created, you can browse the interpreter directory and send your first booking request directly from your dashboard.
             </p>
-            <p style={{ color: 'var(--muted)', fontSize: '0.78rem', fontStyle: 'italic', margin: 0, opacity: 0.8 }}>
+            <p style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', fontStyle: 'italic', margin: 0 }}>
               The request form walks you through event details, language needs, and interpreter selection. Most requests take under 2 minutes.
             </p>
           </div>
@@ -366,7 +366,7 @@ export default function RequestSignupClient() {
             padding: '24px', background: 'var(--surface)',
             border: '1px solid var(--border)', borderRadius: '12px',
           }}>
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, marginBottom: '14px' }}>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#f0f2f8', marginBottom: '14px' }}>
               What you can do:
             </div>
             {[
@@ -376,7 +376,7 @@ export default function RequestSignupClient() {
               'Send booking requests directly',
               'Build your preferred interpreter list',
             ].map(item => (
-              <div key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8, fontSize: '0.88rem', color: 'var(--muted)' }}>
+              <div key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8, fontWeight: 400, fontSize: '14px', color: '#c8cdd8' }}>
                 <span style={{ color: 'var(--accent)', marginTop: 1, flexShrink: 0 }}>&#10003;</span>
                 {item}
               </div>
@@ -497,15 +497,15 @@ function DoneStep() {
       </div>
 
       <h2 style={{
-        fontFamily: 'var(--font-syne)', fontSize: '1.6rem', fontWeight: 700,
-        letterSpacing: '-0.03em', marginBottom: 8,
+        fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 800,
+        color: '#f0f2f8', marginBottom: 8,
         opacity: show ? 1 : 0, transform: show ? 'translateY(0)' : 'translateY(10px)',
         transition: 'all 0.4s ease 0.3s',
       }}>
         {"You're all set."}
       </h2>
       <p style={{
-        color: 'var(--muted)', fontSize: '0.92rem', marginBottom: 32, lineHeight: 1.6,
+        fontWeight: 400, fontSize: '15px', color: '#96a0b8', marginBottom: 32, lineHeight: 1.6,
         opacity: show ? 1 : 0, transition: 'opacity 0.4s ease 0.4s',
       }}>
         Your signpost account has been created. Start browsing interpreters or head to your dashboard.
@@ -540,8 +540,8 @@ function DoneStep() {
 
 /* ── Shared form helpers ── */
 const labelStyle: React.CSSProperties = {
-  display: 'block', fontSize: '0.82rem', fontWeight: 500,
-  color: 'var(--muted)', marginBottom: '6px',
+  display: 'block', fontSize: '13px', fontWeight: 500,
+  color: '#c8cdd8', marginBottom: '6px',
   fontFamily: "'DM Sans', sans-serif",
 };
 

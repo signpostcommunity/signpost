@@ -37,15 +37,15 @@ const inputStyle: React.CSSProperties = {
 }
 
 const labelStyle: React.CSSProperties = {
-  display: 'block', fontSize: '0.82rem', fontWeight: 600,
-  color: 'var(--text)', marginBottom: 6,
+  display: 'block', fontSize: '13px', fontWeight: 500,
+  color: '#c8cdd8', marginBottom: 6,
 }
 
 const fieldGroupStyle: React.CSSProperties = { marginBottom: 18 }
 
 const sectionHeadingStyle: React.CSSProperties = {
-  fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem',
-  marginBottom: 16, paddingBottom: 10,
+  fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px',
+  color: '#f0f2f8', marginBottom: 16, paddingBottom: 10,
   borderBottom: '1px solid var(--border)',
 }
 
@@ -421,8 +421,8 @@ export default function DhhPreferencesPage() {
                 {/* Custom URL */}
                 <div>
                   <label style={{
-                    display: 'block', fontSize: '0.82rem', fontWeight: 600,
-                    color: 'var(--text)', marginBottom: 6,
+                    display: 'block', fontSize: '13px', fontWeight: 500,
+                    color: '#c8cdd8', marginBottom: 6,
                   }}>
                     Custom URL
                   </label>
@@ -660,11 +660,11 @@ export default function DhhPreferencesPage() {
         }}>
           <h3 style={{
             ...sectionHeadingStyle,
-            color: '#9d87ff',
+            color: '#f0f2f8',
             display: 'flex', alignItems: 'baseline', gap: 8,
           }}>
             Introduce Yourself
-            <span style={{ fontWeight: 400, fontSize: '0.82rem', color: 'var(--muted)' }}>(optional)</span>
+            <span style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8' }}>(optional)</span>
           </h3>
 
           <p style={{ fontSize: '0.84rem', color: 'var(--muted)', lineHeight: 1.7, marginTop: 0, marginBottom: 24 }}>
@@ -676,8 +676,8 @@ export default function DhhPreferencesPage() {
           {/* ── Written sub-section ── */}
           <div style={{ marginBottom: 24 }}>
             <div style={{
-              fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em',
-              textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 10,
+              fontWeight: 600, fontSize: '12px', textTransform: 'uppercase' as const,
+              letterSpacing: '0.08em', color: '#a78bfa', marginBottom: 10,
             }}>
               Written
             </div>
@@ -732,8 +732,8 @@ export default function DhhPreferencesPage() {
           {/* ── Video sub-section ── */}
           <div>
             <div style={{
-              fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em',
-              textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 4,
+              fontWeight: 600, fontSize: '12px', textTransform: 'uppercase' as const,
+              letterSpacing: '0.08em', color: '#a78bfa', marginBottom: 4,
             }}>
               Video
             </div>
@@ -851,7 +851,7 @@ export default function DhhPreferencesPage() {
                     onClick={() => toggleSigningStyle(style)}
                     style={{
                       padding: '7px 16px',
-                      borderRadius: 100,
+                      borderRadius: 10,
                       border: `1px solid ${selected ? 'rgba(157,135,255,0.5)' : 'var(--border)'}`,
                       background: selected ? 'rgba(157,135,255,0.1)' : 'var(--surface2)',
                       color: selected ? '#9d87ff' : 'var(--muted)',

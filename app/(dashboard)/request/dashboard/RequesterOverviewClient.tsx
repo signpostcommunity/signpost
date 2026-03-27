@@ -101,10 +101,10 @@ export default function RequesterOverviewClient({
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       {/* Greeting */}
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.6rem', margin: '0 0 6px' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
           {greeting}
         </h1>
-        <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>
+        <p style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', margin: 0 }}>
           Here&apos;s a snapshot of your activity on signpost.
         </p>
       </div>
@@ -144,8 +144,8 @@ export default function RequesterOverviewClient({
       {/* Recent Requests */}
       <div style={{ marginBottom: 36 }}>
         <h3 style={{
-          fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem',
-          letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)',
+          fontWeight: 600, fontSize: '12px',
+          letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff',
           margin: '0 0 14px',
         }}>
           Recent Requests
@@ -209,8 +209,8 @@ export default function RequesterOverviewClient({
       {/* Quick Actions */}
       <div>
         <h3 style={{
-          fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem',
-          letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)',
+          fontWeight: 600, fontSize: '12px',
+          letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff',
           margin: '0 0 14px',
         }}>
           Quick Actions

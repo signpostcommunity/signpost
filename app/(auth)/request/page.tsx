@@ -55,10 +55,10 @@ export default function RequestPortalPage() {
       <div style={{ marginBottom: '16px' }}>
         <h1
           style={{
-            fontFamily: 'var(--font-syne)',
-            fontSize: 'clamp(1.8rem, 3.2vw, 2.6rem)',
+            fontFamily: "'Syne', sans-serif",
+            fontSize: '27px',
             fontWeight: 800,
-            letterSpacing: '-0.03em',
+            color: '#f0f2f8',
             lineHeight: 1.05,
             margin: 0,
           }}
@@ -81,8 +81,9 @@ export default function RequestPortalPage() {
       {/* Subheadline */}
       <p
         style={{
-          color: 'var(--muted)',
-          fontSize: '1rem',
+          fontWeight: 400,
+          fontSize: '15px',
+          color: '#96a0b8',
           lineHeight: 1.6,
           marginBottom: '40px',
         }}
@@ -138,11 +139,11 @@ export default function RequestPortalPage() {
 
           <h2
             style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: '1.2rem',
+              fontFamily: "'Syne', sans-serif",
+              fontSize: '20px',
               fontWeight: 700,
+              color: '#f0f2f8',
               marginBottom: '16px',
-              letterSpacing: '-0.02em',
             }}
           >
             New to signpost?
@@ -150,8 +151,8 @@ export default function RequestPortalPage() {
 
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {['Browse interpreter profiles', 'Send booking requests directly', 'No agency markup or hidden fees'].map((item) => (
-              <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: 'var(--muted)' }}>
-                <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '0.85rem' }}>✓</span>
+              <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 400, fontSize: '14px', color: '#c8cdd8' }}>
+                <span style={{ color: 'var(--accent)', fontWeight: 700, fontSize: '14px' }}>✓</span>
                 {item}
               </li>
             ))}
@@ -213,11 +214,11 @@ export default function RequestPortalPage() {
 
           <h2
             style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: '1.2rem',
+              fontFamily: "'Syne', sans-serif",
+              fontSize: '20px',
               fontWeight: 700,
+              color: '#f0f2f8',
               marginBottom: '16px',
-              letterSpacing: '-0.02em',
             }}
           >
             Been here before?
@@ -225,8 +226,8 @@ export default function RequestPortalPage() {
 
           <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {['Manage your active requests', 'Review interpreter responses', 'Track bookings and invoices'].map((item) => (
-              <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', color: 'var(--muted)' }}>
-                <span style={{ color: 'var(--accent2)', fontWeight: 700, fontSize: '0.85rem' }}>✓</span>
+              <li key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 400, fontSize: '14px', color: '#c8cdd8' }}>
+                <span style={{ color: 'var(--accent2)', fontWeight: 700, fontSize: '14px' }}>✓</span>
                 {item}
               </li>
             ))}

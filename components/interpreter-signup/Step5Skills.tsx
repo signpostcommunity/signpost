@@ -90,9 +90,9 @@ export default function Step5Skills({ onBack, onContinue }: {
                     width: '100%', padding: '12px 16px',
                     background: 'none', border: 'none', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
-                    letterSpacing: '0.1em', textTransform: 'uppercase',
-                    color: selectedCount > 0 ? 'var(--accent)' : 'var(--muted)',
+                    fontSize: '11.5px', fontWeight: 500,
+                    letterSpacing: '0.06em', textTransform: 'uppercase',
+                    color: selectedCount > 0 ? '#00e5ff' : '#96a0b8',
                   }}
                 >
                   <span>{category}</span>
@@ -170,7 +170,7 @@ export default function Step5Skills({ onBack, onContinue }: {
                 type="checkbox"
                 checked={formData.specializedSkills.includes(skill)}
                 onChange={() => toggleSkill(skill)}
-                style={{ accentColor: '#7b61ff', width: 'auto', flexShrink: 0 }}
+                style={{ accentColor: '#a78bfa', width: 'auto', flexShrink: 0 }}
               />
               {skill}
             </label>

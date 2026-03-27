@@ -50,7 +50,7 @@ export default function Step4BioVideo({ onBack, onContinue }: {
 
         {/* Bio field 1: Background */}
         <div style={{ marginBottom: 20 }}>
-          <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 500, color: 'var(--muted)', marginBottom: 6 }}>
+          <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#c8cdd8', marginBottom: 6 }}>
             Describe your interpreting and community background <span style={{ color: 'var(--accent3)' }}>*</span>
           </label>
           <textarea
@@ -69,7 +69,7 @@ export default function Step4BioVideo({ onBack, onContinue }: {
 
         {/* Bio field 2: Specializations */}
         <div style={{ marginBottom: 20 }}>
-          <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 500, color: 'var(--muted)', marginBottom: 6 }}>
+          <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#c8cdd8', marginBottom: 6 }}>
             What settings or populations do you specialize in serving, and what draws you to that work? <span style={{ color: 'var(--accent3)' }}>*</span>
           </label>
           <textarea
@@ -88,7 +88,7 @@ export default function Step4BioVideo({ onBack, onContinue }: {
 
         {/* Bio field 3: Extra */}
         <div style={{ marginBottom: 24 }}>
-          <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 500, color: 'var(--muted)', marginBottom: 6 }}>
+          <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#c8cdd8', marginBottom: 6 }}>
             Something about my background or approach that doesn&apos;t fit neatly into a checkbox:
           </label>
           <textarea

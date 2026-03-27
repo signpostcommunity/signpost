@@ -28,21 +28,21 @@ const PERSONAL_EVENT_TYPES = [
 ]
 
 const sectionHeadingStyle: React.CSSProperties = {
-  fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem',
-  marginBottom: 16, paddingBottom: 10,
+  fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px',
+  color: '#f0f2f8', marginBottom: 16, paddingBottom: 10,
   borderBottom: '1px solid var(--border)',
 }
 
 const labelStyle: React.CSSProperties = {
-  display: 'block', fontSize: '0.82rem', fontWeight: 600,
-  color: 'var(--text)', marginBottom: 6,
+  display: 'block', fontSize: '13px', fontWeight: 500,
+  color: '#c8cdd8', marginBottom: 6,
 }
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', padding: '10px 14px',
-  background: 'var(--surface2)', border: '1px solid var(--border)',
+  width: '100%', padding: '11px 14px',
+  background: 'var(--surface)', border: '1px solid var(--border)',
   borderRadius: 'var(--radius-sm)', color: 'var(--text)',
-  fontSize: '0.88rem', fontFamily: "'DM Sans', sans-serif",
+  fontSize: '15px', fontFamily: "'DM Sans', sans-serif",
   outline: 'none',
 }
 
@@ -425,8 +425,8 @@ export default function DhhRequestPage() {
         {/* Section 5: Context Video */}
         <div style={{ marginBottom: 32 }}>
           <div style={{
-            fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em',
-            textTransform: 'uppercase', color: '#9d87ff', marginBottom: 8,
+            fontWeight: 600, fontSize: '12px', letterSpacing: '0.08em',
+            textTransform: 'uppercase' as const, color: '#a78bfa', marginBottom: 8,
           }}>
             ADD A VIDEO FOR CONTEXT (OPTIONAL)
           </div>

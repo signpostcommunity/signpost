@@ -172,11 +172,11 @@ function DeafSignupForm() {
         >
           D/DB/HH Portal
         </div>
-        <h1 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.8rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '8px' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '8px', color: '#f0f2f8' }}>
           {isAddRole ? 'Add Deaf/DB/HH Profile' : 'Create Account'}
         </h1>
         {!isAddRole && (
-          <p style={{ color: 'var(--muted)', marginBottom: '12px', fontSize: '0.9rem' }}>
+          <p style={{ fontWeight: 400, fontSize: '15px', color: '#96a0b8', marginBottom: '12px' }}>
             Already have an account?{' '}
             <Link href="/dhh/login" style={{ color: 'var(--accent2)', textDecoration: 'none' }}>
               Sign in
@@ -290,7 +290,7 @@ function AuthInput({ label, type = 'text', value, onChange, placeholder, require
   const id = label.toLowerCase().replace(/\s+/g, '-');
   return (
     <div>
-      <label htmlFor={id} style={{ display: 'block', fontSize: '0.82rem', fontWeight: 500, color: 'var(--muted)', marginBottom: '6px' }}>{label}</label>
+      <label htmlFor={id} style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#c8cdd8', marginBottom: '6px' }}>{label}</label>
       <input
         id={id}
         type={type}

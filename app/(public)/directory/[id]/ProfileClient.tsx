@@ -259,7 +259,7 @@ export default function ProfileClient({ interpreter: i, activeAway, availability
                         fontSize: '0.75rem',
                         border: '1px solid rgba(123,97,255,0.35)',
                         background: 'rgba(123,97,255,0.1)',
-                        color: '#7b61ff',
+                        color: '#a78bfa',
                       }}
                     >
                       {lang}
@@ -719,7 +719,7 @@ function OverviewTab({ interpreter: i }: { interpreter: Interpreter }) {
               <span key={a} style={{
                 padding: '6px 14px', borderRadius: 100, fontSize: '0.82rem', fontWeight: 600,
                 border: '1px solid rgba(123,97,255,0.35)', background: 'rgba(123,97,255,0.1)',
-                color: '#7b61ff',
+                color: '#a78bfa',
               }}>
                 {a}
               </span>
@@ -728,7 +728,7 @@ function OverviewTab({ interpreter: i }: { interpreter: Interpreter }) {
               <span key={r} style={{
                 padding: '6px 14px', borderRadius: 100, fontSize: '0.82rem',
                 border: '1px solid rgba(123,97,255,0.35)', background: 'rgba(123,97,255,0.1)',
-                color: '#7b61ff',
+                color: '#a78bfa',
               }}>
                 {r}
               </span>
@@ -737,7 +737,7 @@ function OverviewTab({ interpreter: i }: { interpreter: Interpreter }) {
               <span key={r} style={{
                 padding: '6px 14px', borderRadius: 100, fontSize: '0.82rem',
                 border: '1px solid rgba(123,97,255,0.35)', background: 'rgba(123,97,255,0.1)',
-                color: '#7b61ff',
+                color: '#a78bfa',
               }}>
                 {r}
               </span>

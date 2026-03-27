@@ -164,8 +164,8 @@ export default function TrustedDeafCirclePage() {
       {/* Title row with invite button */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 8 }}>
         <h1 style={{
-          fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.7rem',
-          margin: 0, color: 'var(--text)',
+          fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '27px',
+          margin: 0, color: '#f0f2f8',
         }}>
           Your trusted Deaf circle
         </h1>
@@ -175,7 +175,7 @@ export default function TrustedDeafCirclePage() {
             background: '#7b61ff',
             color: '#fff',
             border: 'none',
-            borderRadius: 100,
+            borderRadius: 10,
             padding: '9px 22px',
             fontSize: '0.84rem',
             fontWeight: 600,
@@ -194,7 +194,7 @@ export default function TrustedDeafCirclePage() {
 
       {/* Subtitle */}
       <p style={{
-        color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.6,
+        fontWeight: 400, fontSize: '15px', color: '#96a0b8', lineHeight: 1.6,
         margin: '0 0 24px',
       }}>
         Deaf-to-Deaf: Privately share interpreter lists with friends. Help each other find the interpreters you&apos;ll love... and avoid the ones you won&apos;t.
@@ -233,9 +233,9 @@ export default function TrustedDeafCirclePage() {
           {/* YOUR CIRCLE section */}
           <section style={{ marginBottom: 40 }}>
             <h2 style={{
-              fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem',
-              color: 'var(--muted)', margin: '0 0 14px', textTransform: 'uppercase',
-              letterSpacing: '0.1em',
+              fontWeight: 600, fontSize: '12px',
+              color: '#a78bfa', margin: '0 0 14px', textTransform: 'uppercase' as const,
+              letterSpacing: '0.08em',
             }}>
               YOUR CIRCLE {accepted.length > 0 && `(${accepted.length})`}
             </h2>
@@ -251,7 +251,7 @@ export default function TrustedDeafCirclePage() {
                   onClick={() => setShowInviteModal(true)}
                   style={{
                     background: '#7b61ff', color: '#fff', border: 'none',
-                    borderRadius: 100, padding: '9px 22px', fontSize: '0.84rem',
+                    borderRadius: 10, padding: '9px 22px', fontSize: '0.84rem',
                     fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
                   }}
                 >
@@ -326,9 +326,9 @@ export default function TrustedDeafCirclePage() {
           {(pendingSent.length > 0 || pendingReceived.length > 0) && (
             <section>
               <h2 style={{
-                fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem',
-                color: 'var(--muted)', margin: '0 0 14px', textTransform: 'uppercase',
-                letterSpacing: '0.1em',
+                fontWeight: 600, fontSize: '12px',
+                color: '#a78bfa', margin: '0 0 14px', textTransform: 'uppercase' as const,
+                letterSpacing: '0.08em',
               }}>
                 PENDING INVITES
               </h2>
@@ -337,8 +337,8 @@ export default function TrustedDeafCirclePage() {
               {pendingReceived.length > 0 && (
                 <div style={{ marginBottom: 16 }}>
                   <h3 style={{
-                    fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.78rem',
-                    color: 'var(--muted)', margin: '0 0 8px',
+                    fontWeight: 500, fontSize: '11.5px', textTransform: 'uppercase' as const,
+                    letterSpacing: '0.06em', color: '#96a0b8', margin: '0 0 8px',
                   }}>
                     Received
                   </h3>
@@ -399,8 +399,8 @@ export default function TrustedDeafCirclePage() {
               {pendingSent.length > 0 && (
                 <div>
                   <h3 style={{
-                    fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.78rem',
-                    color: 'var(--muted)', margin: '0 0 8px',
+                    fontWeight: 500, fontSize: '11.5px', textTransform: 'uppercase' as const,
+                    letterSpacing: '0.06em', color: '#96a0b8', margin: '0 0 8px',
                   }}>
                     Sent
                   </h3>
@@ -557,8 +557,8 @@ function InviteModal({ email, setEmail, loading, error, onSubmit, onClose }: {
         }}
       >
         <h2 style={{
-          fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.15rem',
-          margin: '0 0 8px', color: 'var(--text)',
+          fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px',
+          margin: '0 0 8px', color: '#f0f2f8',
         }}>
           Invite someone to your Deaf circle
         </h2>
@@ -570,8 +570,8 @@ function InviteModal({ email, setEmail, loading, error, onSubmit, onClose }: {
         </p>
 
         <label htmlFor="invite-email" style={{
-          display: 'block', fontSize: '0.82rem', fontWeight: 600,
-          color: 'var(--muted)', marginBottom: 6,
+          display: 'block', fontSize: '13px', fontWeight: 500,
+          color: '#c8cdd8', marginBottom: 6,
         }}>
           Email address
         </label>
@@ -655,8 +655,8 @@ function ViewListModal({ userName, roster, loading, tierBadge, onClose }: {
     return (
       <div style={{ marginBottom: 24 }}>
         <h3 style={{
-          fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.92rem',
-          margin: '0 0 10px', color: 'var(--text)',
+          fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px',
+          margin: '0 0 10px', color: '#f0f2f8',
         }}>
           {title}
         </h3>
@@ -753,8 +753,8 @@ function ViewListModal({ userName, roster, loading, tierBadge, onClose }: {
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <h2 style={{
-            fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.15rem',
-            margin: 0, color: 'var(--text)',
+            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px',
+            margin: 0, color: '#f0f2f8',
           }}>
             {userName}&apos;s interpreter list
           </h2>
