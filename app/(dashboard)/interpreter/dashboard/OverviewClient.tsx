@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { BetaBanner, SectionLabel, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import PendingRolesNudge from '@/components/shared/PendingRolesNudge'
+import BookMeBadge from '@/components/interpreter/BookMeBadge'
 
 /* ── Types ── */
 
@@ -698,6 +699,66 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
             </div>
           )}
 
+          {/* Book Me Badge visual preview */}
+          {!badgeNudgeDismissed && interpreterProfileId ? (
+            <div style={{
+              background: 'var(--card-bg)', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius)', padding: '24px', marginBottom: 14,
+              position: 'relative',
+            }}>
+              <button
+                onClick={() => {
+                  localStorage.setItem('signpost_bookme_badge_dismissed', '1')
+                  setBadgeNudgeDismissed(true)
+                }}
+                aria-label="Dismiss badge preview"
+                style={{
+                  position: 'absolute', top: 12, right: 12,
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: 'var(--muted)', padding: 4,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 6L6 18" /><path d="M6 6l12 12" />
+                </svg>
+              </button>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: '#00e5ff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+                Your Book Me Badge
+              </div>
+              <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.5, margin: '0 0 16px' }}>
+                Add this to your email signature, website, or LinkedIn. When someone clicks it, they go straight to your profile to book you.
+              </p>
+              <BookMeBadge
+                interpreterProfileId={interpreterProfileId}
+                displayName={displayName}
+              />
+              <div style={{ marginTop: 16, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                <Link
+                  href="/interpreter/dashboard/profile"
+                  style={{
+                    display: 'inline-block', background: 'var(--accent)', color: '#0a0a0f',
+                    borderRadius: 10, padding: '10px 20px', fontSize: '14.5px', fontWeight: 600,
+                    textDecoration: 'none', fontFamily: "'DM Sans', sans-serif",
+                  }}
+                >
+                  Set up your badge
+                </Link>
+              </div>
+            </div>
+          ) : badgeNudgeDismissed && interpreterProfileId ? (
+            <div style={{ marginBottom: 14 }}>
+              <Link
+                href="/interpreter/dashboard/profile"
+                style={{ color: 'var(--muted)', fontSize: '0.85rem', textDecoration: 'none' }}
+              >
+                Your Book Me badge is on your profile page.{' '}
+                <span style={{ color: 'var(--accent)', fontWeight: 600 }}>View it &rarr;</span>
+              </Link>
+            </div>
+          ) : null}
+
           {/* Video request demand banner */}
           {!hasIntroVideo && videoRequestCount > 0 && (
             <div style={{
@@ -742,39 +803,6 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                 onClick={() => {
                   localStorage.setItem('signpost_calendar_sync_dismissed', '1')
                   setCalSyncDismissed(true)
-                }}
-                style={{
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  color: 'var(--muted)', fontSize: '0.85rem', fontFamily: "'DM Sans', sans-serif",
-                  padding: '2px 4px', flexShrink: 0,
-                }}
-              >
-                Dismiss
-              </button>
-            </div>
-          )}
-
-          {/* Book Me Badge nudge */}
-          {!badgeNudgeDismissed && (
-            <div style={{
-              border: '1px dashed rgba(0,229,255,0.2)', borderRadius: 12,
-              padding: '14px 20px', background: 'rgba(0,229,255,0.03)', marginBottom: 14,
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-              flexWrap: 'wrap',
-            }}>
-              <span style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.5 }}>
-                Your Book Me badge is ready. Share it in your email signature to get direct bookings.{' '}
-                <Link
-                  href="/interpreter/dashboard/profile"
-                  style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}
-                >
-                  Set it up &rarr;
-                </Link>
-              </span>
-              <button
-                onClick={() => {
-                  localStorage.setItem('signpost_bookme_badge_dismissed', '1')
-                  setBadgeNudgeDismissed(true)
                 }}
                 style={{
                   background: 'none', border: 'none', cursor: 'pointer',
