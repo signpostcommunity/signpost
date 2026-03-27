@@ -42,12 +42,19 @@ export async function GET(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
-    const { data: profile, error } = await supabase
-      .from('interpreter_profiles')
-      .select('name, first_name, last_name, photo_url, sign_languages, draft_data')
-      .eq('id', id)
-      .single()
+    const [profileResult, certsResult] = await Promise.all([
+      supabase
+        .from('interpreter_profiles')
+        .select('name, first_name, last_name, photo_url, sign_languages')
+        .eq('id', id)
+        .single(),
+      supabase
+        .from('interpreter_certifications')
+        .select('name')
+        .eq('interpreter_id', id),
+    ])
 
+    const { data: profile, error } = profileResult
     if (error || !profile) {
       return new Response('Not found', { status: 404 })
     }
@@ -57,16 +64,10 @@ export async function GET(
       [profile.first_name, profile.last_name].filter(Boolean).join(' ') ||
       'Interpreter'
 
-    // Extract certs from draft_data
-    const draftData = (profile.draft_data || {}) as Record<string, unknown>
-    const certs = Array.isArray(draftData.certifications)
-      ? draftData.certifications
-          .filter(
-            (c: Record<string, unknown>) =>
-              c && typeof c.name === 'string' && c.name.trim()
-          )
-          .map((c: Record<string, unknown>) => c.name as string)
-      : []
+    // Get certification names from interpreter_certifications table
+    const certs = (certsResult.data || [])
+      .filter((c: { name: string | null }) => c.name && c.name.trim())
+      .map((c: { name: string | null }) => c.name as string)
 
     // Build subtitle: sign language abbreviation + certs
     const langAbbrev = (profile.sign_languages || []).map((l: string) => {
@@ -121,7 +122,7 @@ export async function GET(
           </linearGradient>`
 
     const avatarElements = avatarDataUri
-      ? `<image href="${avatarDataUri}" x="18" y="18" width="94" height="94" clip-path="url(#avatar-clip)" preserveAspectRatio="xMidYMid slice" />
+      ? `<image xlink:href="${avatarDataUri}" x="18" y="18" width="94" height="94" clip-path="url(#avatar-clip)" preserveAspectRatio="xMidYMid slice" />
         <circle cx="65" cy="65" r="47" fill="none" stroke="#00e5ff" stroke-width="2" />`
       : `<circle cx="65" cy="65" r="47" fill="url(#avatar-grad)" />
         <circle cx="65" cy="65" r="47" fill="none" stroke="#00e5ff" stroke-width="2" />
@@ -169,7 +170,7 @@ export async function GET(
     return new Response(Buffer.from(pngBuffer), {
       headers: {
         'Content-Type': 'image/png',
-        'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+        'Cache-Control': 'public, max-age=300, s-maxage=3600',
       },
     })
   } catch (err: unknown) {
