@@ -247,7 +247,7 @@ export default function AboutPage() {
 
             {/* CTA */}
             <div style={{ textAlign: 'center', padding: '48px 20px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)' }}>
-              <h2 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.4rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 12, color: 'var(--text)' }}>
+              <h2 style={{ fontFamily: 'var(--font-syne)', fontSize: '1.4rem', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 12, color: 'var(--text)' }}>
                 Ready to get started?
               </h2>
               <p style={{ color: 'var(--muted)', marginBottom: 24, fontSize: '0.9rem' }}>
@@ -273,7 +273,7 @@ export default function AboutPage() {
           >
             <h2 style={{
               fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.4rem, 2.5vw, 1.8rem)',
-              fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.3, marginBottom: 24,
+              fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.3, marginBottom: 24,
               color: 'var(--text)',
             }}>
               Our Accessibility Commitment
@@ -323,7 +323,7 @@ export default function AboutPage() {
           >
             <h2 style={{
               fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.4rem, 2.5vw, 1.8rem)',
-              fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.3, marginBottom: 24,
+              fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.3, marginBottom: 24,
               color: 'var(--text)',
             }}>
               Our Social Commitment
@@ -384,7 +384,7 @@ export default function AboutPage() {
           >
             <h2 style={{
               fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.4rem, 2.5vw, 1.8rem)',
-              fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.3, marginBottom: 32,
+              fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.3, marginBottom: 32,
               color: 'var(--text)',
             }}>
               Frequently Asked Questions
@@ -473,7 +473,7 @@ export default function AboutPage() {
           >
             <h2 style={{
               fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.4rem, 2.5vw, 1.8rem)',
-              fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.3, marginBottom: 8,
+              fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.3, marginBottom: 8,
               color: 'var(--text)',
             }}>
               Contact Us

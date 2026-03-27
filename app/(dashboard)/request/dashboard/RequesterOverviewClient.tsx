@@ -251,7 +251,7 @@ function BetaBanner() {
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <span style={{
-          fontSize: '0.68rem', fontWeight: 800, letterSpacing: '0.1em',
+          fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.1em',
           padding: '3px 8px', borderRadius: 4,
           background: 'rgba(0,229,255,0.15)', color: 'var(--accent)',
           fontFamily: "'DM Sans', sans-serif",

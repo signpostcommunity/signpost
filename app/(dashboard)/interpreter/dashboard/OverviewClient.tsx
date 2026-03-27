@@ -285,12 +285,46 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
   const [pendingBookings, setPendingBookings] = useState<Booking[]>([])
   const [confirmedBookings, setConfirmedBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
+  const [profileIncomplete, setProfileIncomplete] = useState(false)
+  const [bannerDismissed, setBannerDismissed] = useState(true)
+
+  // Check localStorage for banner dismissal
+  useEffect(() => {
+    const dismissedAt = localStorage.getItem('signpost_profile_banner_dismissed')
+    if (dismissedAt) {
+      const dismissedTime = parseInt(dismissedAt, 10)
+      const sevenDays = 7 * 24 * 60 * 60 * 1000
+      if (Date.now() - dismissedTime < sevenDays) {
+        setBannerDismissed(true)
+        return
+      }
+      localStorage.removeItem('signpost_profile_banner_dismissed')
+    }
+    setBannerDismissed(false)
+  }, [])
 
   useEffect(() => {
     if (!interpreterProfileId) { setLoading(false); return }
 
     async function fetchData() {
       const supabase = createClient()
+
+      // Check profile completeness (photo_url, bio, certifications)
+      const { data: profileData } = await supabase
+        .from('interpreter_profiles')
+        .select('photo_url, bio')
+        .eq('id', interpreterProfileId!)
+        .single()
+
+      const { count: certCount } = await supabase
+        .from('interpreter_certifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('interpreter_id', interpreterProfileId!)
+
+      const missingPhoto = !profileData?.photo_url
+      const missingBio = !profileData?.bio || profileData.bio.trim() === ''
+      const missingCerts = !certCount || certCount === 0
+      setProfileIncomplete(missingPhoto || missingBio || missingCerts)
 
       // Pending bookings count (via booking_recipients)
       const { count: pendingCount, error: pendingCountErr } = await supabase
@@ -472,6 +506,48 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
           >
             Resume signup →
           </a>
+        </div>
+      )}
+
+      {/* Incomplete profile banner */}
+      {profileIncomplete && !bannerDismissed && !hasDraftProfile && !loading && (
+        <div style={{
+          background: 'rgba(0, 229, 255, 0.06)', border: '1px solid rgba(0, 229, 255, 0.2)',
+          borderRadius: 12, padding: '16px 20px', marginBottom: 24,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+          flexWrap: 'wrap',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+            <span style={{ color: 'var(--text)', fontSize: '0.9rem', lineHeight: 1.5 }}>
+              Your profile isn&apos;t complete yet. A complete profile helps clients find and trust you.
+            </span>
+            <a
+              href="/interpreter/dashboard/profile"
+              style={{
+                color: 'var(--accent)', fontWeight: 600, fontSize: '0.85rem',
+                textDecoration: 'none', whiteSpace: 'nowrap',
+              }}
+            >
+              Complete your profile &rarr;
+            </a>
+          </div>
+          <button
+            onClick={() => {
+              localStorage.setItem('signpost_profile_banner_dismissed', String(Date.now()))
+              setBannerDismissed(true)
+            }}
+            aria-label="Dismiss banner"
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--muted)', padding: 4, flexShrink: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6L6 18" /><path d="M6 6l12 12" />
+            </svg>
+          </button>
         </div>
       )}
 

@@ -9,6 +9,7 @@ import { PageHeader, DashMobileStyles } from '@/components/dashboard/interpreter
 import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
 import { generateSlug, validateSlug } from '@/lib/slugUtils'
+import { resizeImage } from '@/lib/imageUtils'
 import { QRCodeSVG } from 'qrcode.react'
 
 const SIGNING_STYLES = [
@@ -163,22 +164,33 @@ export default function DhhPreferencesPage() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    if (file.size > 2 * 1024 * 1024) {
-      showToast('File must be under 2 MB')
-      return
-    }
-
     setUploading(true)
+
+    let uploadFile = file
+    if (file.size > 2 * 1024 * 1024) {
+      try {
+        uploadFile = await resizeImage(file, 2)
+        if (uploadFile.size > 2 * 1024 * 1024) {
+          showToast('Image is too large even after resizing. Please use a smaller photo.')
+          setUploading(false)
+          return
+        }
+      } catch {
+        showToast('Could not resize image. Please use a smaller photo.')
+        setUploading(false)
+        return
+      }
+    }
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setUploading(false); return }
 
-    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+    const ext = uploadFile.name.split('.').pop()?.toLowerCase() || 'jpg'
     const path = `${user.id}/avatar.${ext}`
 
     const { error: uploadError } = await supabase.storage
       .from('avatars')
-      .upload(path, file, { upsert: true })
+      .upload(path, uploadFile, { upsert: true })
 
     if (uploadError) {
       showToast('Upload failed — please try again')
@@ -561,7 +573,7 @@ export default function DhhPreferencesPage() {
                 style={{ display: 'none' }}
               />
               <p style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: 4, marginBottom: 0 }}>
-                Max 2 MB. JPG or PNG.
+                JPG or PNG. Large photos are auto-resized.
               </p>
             </div>
           </div>

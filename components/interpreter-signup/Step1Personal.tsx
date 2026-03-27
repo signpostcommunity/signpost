@@ -12,6 +12,7 @@ import LocationPicker from '@/components/shared/LocationPicker'
 import { useDialCode } from '@/components/shared/PhoneWithDialCode'
 import { createClient } from '@/lib/supabase/client'
 import { generateSlug, validateSlug } from '@/lib/slugUtils'
+import { resizeImage } from '@/lib/imageUtils'
 
 const REGIONS = [
   { label: '🌍 Worldwide', color: '#00e5ff' },
@@ -105,13 +106,24 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
     const file = e.target.files?.[0]
     if (!file) return
 
-    if (file.size > 2 * 1024 * 1024) {
-      setUploadMsg({ text: 'File must be under 2 MB.', type: 'error' })
-      return
-    }
-
     setUploading(true)
     setUploadMsg(null)
+
+    let uploadFile = file
+    if (file.size > 2 * 1024 * 1024) {
+      try {
+        uploadFile = await resizeImage(file, 2)
+        if (uploadFile.size > 2 * 1024 * 1024) {
+          setUploadMsg({ text: 'Image is too large even after resizing. Please use a smaller photo.', type: 'error' })
+          setUploading(false)
+          return
+        }
+      } catch {
+        setUploadMsg({ text: 'Could not resize image. Please use a smaller photo.', type: 'error' })
+        setUploading(false)
+        return
+      }
+    }
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       setUploading(false)
@@ -119,12 +131,12 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
       return
     }
 
-    const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+    const ext = uploadFile.name.split('.').pop()?.toLowerCase() || 'jpg'
     const path = `${user.id}/${Date.now()}.${ext}`
 
     const { error: uploadError } = await supabase.storage
       .from('avatars')
-      .upload(path, file, { upsert: true })
+      .upload(path, uploadFile, { upsert: true })
 
     if (uploadError) {
       setUploading(false)
@@ -223,7 +235,7 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
               {uploading ? 'Uploading...' : formData.avatarUrl ? 'Change photo' : 'Upload photo'}
             </button>
             <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: 6 }}>
-              JPG, PNG, or WebP. Max 2 MB.
+              JPG, PNG, or WebP. Large photos are auto-resized.
             </div>
             {uploadMsg && (
               <div style={{

@@ -498,7 +498,7 @@ function ForwardToTeamModal({ booking, interpreterId, onClose, onForwarded }: {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     transition: 'all 0.15s',
                   }}>
-                    {isSelected && <span style={{ color: '#000', fontSize: '0.7rem', fontWeight: 800 }}>✓</span>}
+                    {isSelected && <span style={{ color: '#000', fontSize: '0.7rem', fontWeight: 700 }}>✓</span>}
                   </div>
                   {m.photo_url ? (
                     <img src={m.photo_url} alt={`${m.first_name} ${m.last_name}`} style={{
