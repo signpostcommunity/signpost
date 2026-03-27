@@ -197,6 +197,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
   const [hasIntroVideo, setHasIntroVideo] = useState(false)
   const [calSyncDismissed, setCalSyncDismissed] = useState(true)
   const [badgeNudgeDismissed, setBadgeNudgeDismissed] = useState(true)
+  const [viewing, setViewing] = useState<string | null>(null)
 
   // Check localStorage for banner dismissals
   useEffect(() => {
@@ -230,15 +231,20 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         .eq('id', interpreterProfileId!)
         .single()
 
-      const { count: certCount } = await supabase
-        .from('interpreter_certifications')
-        .select('id', { count: 'exact', head: true })
-        .eq('interpreter_id', interpreterProfileId!)
+      const [{ count: certCount }, { count: signLangCount }, { count: spokenLangCount }, { count: specCount }] = await Promise.all([
+        supabase.from('interpreter_certifications').select('id', { count: 'exact', head: true }).eq('interpreter_id', interpreterProfileId!),
+        supabase.from('interpreter_sign_languages').select('id', { count: 'exact', head: true }).eq('interpreter_id', interpreterProfileId!),
+        supabase.from('interpreter_spoken_languages').select('id', { count: 'exact', head: true }).eq('interpreter_id', interpreterProfileId!),
+        supabase.from('interpreter_specializations').select('id', { count: 'exact', head: true }).eq('interpreter_id', interpreterProfileId!),
+      ])
 
       const missingPhoto = !profileData?.photo_url
       const missingBio = !profileData?.bio || profileData.bio.trim() === ''
       const missingCerts = !certCount || certCount === 0
-      setProfileIncomplete(missingPhoto || missingBio || missingCerts)
+      const missingSignLangs = !signLangCount || signLangCount === 0
+      const missingSpokenLangs = !spokenLangCount || spokenLangCount === 0
+      const missingSpecs = !specCount || specCount === 0
+      setProfileIncomplete(missingPhoto || missingBio || missingCerts || missingSignLangs || missingSpokenLangs || missingSpecs)
 
       // Check if interpreter has any intro videos
       const { count: videoCount } = await supabase
@@ -465,12 +471,173 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       )}
 
       {/* Stats */}
-      <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16, marginBottom: 38, alignItems: 'stretch' }}>
+      <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16, marginBottom: 28, alignItems: 'stretch' }}>
         <StatCard num={newInquiries} label="New Inquiries" href="/interpreter/dashboard/inquiries" />
         <StatCard num={confirmedThisMonth} label="Confirmed This Month" href="/interpreter/dashboard/confirmed" />
         <StatCard num={teamCount} label="Interpreters in Your Preferred Team" href="/interpreter/dashboard/team" />
         <StatCard num={daysAvailable} label="Days Available This Week" href="/interpreter/dashboard/availability" />
       </div>
+
+      {/* ── Unified banners — above two-column grid ── */}
+      {!hasDraftProfile && !loading && (
+        <div style={{ marginBottom: 28 }}>
+          {/* Profile completeness banner */}
+          {profileIncomplete && !bannerDismissed && (
+            <div style={{
+              background: '#111118', border: '1px solid #1e2433', borderLeft: '4px solid #f59e0b',
+              borderRadius: 10, padding: '16px 20px', marginBottom: 12,
+              display: 'flex', alignItems: 'center', gap: 16,
+            }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+                <path d="M12 9v4m0 4h.01M12 2L2 22h20L12 2z" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '14px', color: '#f0f2f8' }}>
+                  Your profile is incomplete
+                </div>
+                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 400, fontSize: '13px', color: '#96a0b8', marginTop: 2 }}>
+                  Complete your profile so clients can find and contact you.
+                </div>
+              </div>
+              <Link
+                href="/interpreter/dashboard/profile"
+                style={{
+                  fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: '13px',
+                  color: '#f59e0b', textDecoration: 'none', whiteSpace: 'nowrap', marginLeft: 'auto', flexShrink: 0,
+                }}
+              >
+                Complete Profile &rarr;
+              </Link>
+            </div>
+          )}
+
+          {/* Book Me badge banner with mini preview */}
+          {interpreterProfileId && !hasDraftProfile && (
+            <div style={{
+              background: '#111118', border: '1px solid #1e2433', borderLeft: '4px solid #00e5ff',
+              borderRadius: 10, padding: '16px 20px', marginBottom: 12,
+              display: 'flex', alignItems: 'center', gap: 16,
+            }}>
+              {/* Mini badge preview */}
+              <div style={{
+                width: 120, height: 32, borderRadius: 8, overflow: 'hidden', flexShrink: 0,
+              }}>
+                <div style={{ transform: 'scale(0.24)', transformOrigin: 'top left', width: 500, height: 130 }}>
+                  <BookMeBadge interpreterProfileId={interpreterProfileId} displayName={displayName} />
+                </div>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '14px', color: '#f0f2f8' }}>
+                  Your &ldquo;Book Me&rdquo; badge and custom URL are live.
+                </div>
+                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 400, fontSize: '13px', color: '#96a0b8', marginTop: 2 }}>
+                  Share your badge on social media, your website, or email signature.
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, marginLeft: 'auto' }}>
+                <Link
+                  href={vanitySlug ? `/directory/${interpreterProfileId}` : '/interpreter/dashboard/profile'}
+                  style={{
+                    fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: '13px',
+                    color: '#00e5ff', textDecoration: 'none', whiteSpace: 'nowrap',
+                  }}
+                >
+                  View Badge &rarr;
+                </Link>
+                <span style={{ color: '#96a0b8', fontSize: '13px' }}>&middot;</span>
+                <Link
+                  href="/interpreter/dashboard/profile"
+                  style={{
+                    fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: '13px',
+                    color: '#00e5ff', textDecoration: 'none', whiteSpace: 'nowrap',
+                  }}
+                >
+                  Customize &rarr;
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* Calendar Sync banner */}
+          {calendarToken && !calSyncDismissed && (
+            <div style={{
+              background: '#111118', border: '1px solid #1e2433', borderLeft: '4px solid #96a0b8',
+              borderRadius: 10, padding: '16px 20px', marginBottom: 12,
+              display: 'flex', alignItems: 'center', gap: 16,
+            }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+                <rect x="3" y="4" width="18" height="18" rx="2" stroke="#96a0b8" strokeWidth="1.5"/>
+                <path d="M3 10h18M8 2v4M16 2v4" stroke="#96a0b8" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '14px', color: '#f0f2f8' }}>
+                  Calendar Sync
+                </div>
+                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 400, fontSize: '13px', color: '#96a0b8', marginTop: 2 }}>
+                  Subscribe so confirmed bookings appear in your calendar automatically.
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, marginLeft: 'auto' }}>
+                <Link
+                  href="/interpreter/dashboard/availability"
+                  style={{
+                    fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: '13px',
+                    color: '#96a0b8', textDecoration: 'none', whiteSpace: 'nowrap',
+                  }}
+                >
+                  Set Up &rarr;
+                </Link>
+                <button
+                  onClick={() => {
+                    localStorage.setItem('signpost_calendar_sync_dismissed', '1')
+                    setCalSyncDismissed(true)
+                  }}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: '#96a0b8', fontSize: '13px', fontFamily: "'DM Sans', sans-serif",
+                    fontWeight: 500, padding: '2px 4px', flexShrink: 0,
+                  }}
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Video request demand banner */}
+          {!hasIntroVideo && videoRequestCount > 0 && (
+            <div style={{
+              background: '#111118', border: '1px solid #1e2433', borderLeft: '4px solid #00e5ff',
+              borderRadius: 10, padding: '16px 20px', marginBottom: 12,
+              display: 'flex', alignItems: 'center', gap: 16,
+            }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="9" cy="7" r="4" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '14px', color: '#f0f2f8' }}>
+                  {videoRequestCount} {videoRequestCount === 1 ? 'person has' : 'people have'} requested your intro video
+                </div>
+                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 400, fontSize: '13px', color: '#96a0b8', marginTop: 2 }}>
+                  An intro video helps clients feel confident booking you.
+                </div>
+              </div>
+              <Link
+                href="/interpreter/dashboard/profile"
+                style={{
+                  fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: '13px',
+                  color: '#00e5ff', textDecoration: 'none', whiteSpace: 'nowrap', marginLeft: 'auto', flexShrink: 0,
+                }}
+              >
+                Record yours &rarr;
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Two-column grid: Left = actionable, Right = context */}
       {!hasDraftProfile && !loading && (
@@ -522,9 +689,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                         Accept &amp; Send Rate
                       </button>
                     </Link>
-                    <Link href="/interpreter/dashboard/inquiries" style={{ textDecoration: 'none' }}>
-                      <GhostButton>View Details</GhostButton>
-                    </Link>
+                    <GhostButton onClick={() => setViewing(inq.id)}>View Details</GhostButton>
                     <Link href="/interpreter/dashboard/inquiries" style={{ textDecoration: 'none' }}>
                       <GhostButton danger>Decline</GhostButton>
                     </Link>
@@ -654,168 +819,92 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         </div>
       )}
 
-      {/* Dismissible banners — full width, below the grid */}
-      {!hasDraftProfile && !loading && (
-        <div style={{ marginTop: 32 }}>
-          {/* Profile completeness banner */}
-          {profileIncomplete && !bannerDismissed && (
-            <div style={{
-              background: 'rgba(0, 229, 255, 0.06)', border: '1px solid rgba(0, 229, 255, 0.2)',
-              borderRadius: 12, padding: '16px 20px', marginBottom: 14,
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-              flexWrap: 'wrap',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
-                <span style={{ color: 'var(--text)', fontSize: '0.9rem', lineHeight: 1.5 }}>
-                  Your profile isn&apos;t complete yet. A complete profile helps clients find and trust you.
+      {/* ── View Details Modal ── */}
+      {viewing && (() => {
+        const bk = pendingBookings.find(b => b.id === viewing)
+        if (!bk) return null
+        const isRemote = bk.format === 'remote'
+        const sectionLabelSt: React.CSSProperties = { fontSize: '13px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 14 }
+        const detailRowSt: React.CSSProperties = { display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.55, marginBottom: 6 }
+        const iconSt: React.CSSProperties = { color: 'var(--muted)', flexShrink: 0, marginTop: 2 }
+        const sectionSt: React.CSSProperties = { padding: '16px 0', borderBottom: '1px solid var(--border)' }
+        return (
+          <div role="presentation" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }} onClick={() => setViewing(null)}>
+            <div className="modal-dialog" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', width: '90%', maxWidth: 560, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '90vh' }} onClick={e => e.stopPropagation()}>
+              <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid var(--border)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                  <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>{bk.title || 'Booking Request'}</h3>
+                  <button onClick={() => setViewing(null)} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem', flexShrink: 0 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
+                  </button>
+                </div>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.78rem', fontWeight: 600, padding: '3px 10px', borderRadius: 20, background: 'rgba(255,165,0,0.12)', color: '#f97316', border: '1px solid rgba(249,115,22,0.25)' }}>
+                  Awaiting Response
                 </span>
-                <a
-                  href="/interpreter/dashboard/profile"
-                  style={{
-                    color: 'var(--accent)', fontWeight: 600, fontSize: '0.85rem',
-                    textDecoration: 'none', whiteSpace: 'nowrap',
-                  }}
-                >
-                  Complete your profile &rarr;
-                </a>
               </div>
-              <button
-                onClick={() => {
-                  localStorage.setItem('signpost_profile_banner_dismissed', String(Date.now()))
-                  setBannerDismissed(true)
-                }}
-                aria-label="Dismiss banner"
-                style={{
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  color: 'var(--muted)', padding: 4, flexShrink: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 6L6 18" /><path d="M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          )}
-
-          {/* Book Me Badge visual preview */}
-          {!badgeNudgeDismissed && interpreterProfileId ? (
-            <div style={{
-              background: 'var(--card-bg)', border: '1px solid var(--border)',
-              borderRadius: 'var(--radius)', padding: '24px', marginBottom: 14,
-              position: 'relative',
-            }}>
-              <button
-                onClick={() => {
-                  localStorage.setItem('signpost_bookme_badge_dismissed', '1')
-                  setBadgeNudgeDismissed(true)
-                }}
-                aria-label="Dismiss badge preview"
-                style={{
-                  position: 'absolute', top: 12, right: 12,
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  color: 'var(--muted)', padding: 4,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 6L6 18" /><path d="M6 6l12 12" />
-                </svg>
-              </button>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: '#00e5ff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
-                Your Book Me Badge
+              <div style={{ padding: '0 28px 8px', overflowY: 'auto', maxHeight: '62vh' }}>
+                <div style={sectionSt}>
+                  <div style={sectionLabelSt}>Date &amp; Time</div>
+                  <div style={detailRowSt}>
+                    <svg style={iconSt} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <rect x="1" y="2" width="12" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                      <path d="M1 5.5h12M4.5 1v2M9.5 1v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                    </svg>
+                    <div>
+                      <div>{formatDate(bk.date)}</div>
+                      <div style={{ fontWeight: 600 }}>{formatTime(bk.time_start, bk.time_end)}</div>
+                      {bk.recurrence && bk.recurrence !== 'one-time' && (
+                        <div style={{ color: 'var(--muted)', fontSize: '0.82rem' }}>Recurring</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div style={sectionSt}>
+                  <div style={sectionLabelSt}>Location</div>
+                  <div style={detailRowSt}>
+                    {isRemote ? (
+                      <svg style={iconSt} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <rect x="1" y="1" width="12" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                        <path d="M4 12h6M7 10v2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                      </svg>
+                    ) : (
+                      <svg style={iconSt} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M7 1C4.79 1 3 2.79 3 5C3 8.5 7 13 7 13C7 13 11 8.5 11 5C11 2.79 9.21 1 7 1ZM7 7C5.9 7 5 6.1 5 5C5 3.9 5.9 3 7 3C8.1 3 9 3.9 9 5C9 6.1 8.1 7 7 7Z" fill="currentColor"/>
+                      </svg>
+                    )}
+                    <div>{isRemote ? 'Remote' : (bk.location || 'Location TBD')}</div>
+                  </div>
+                </div>
+                <div style={sectionSt}>
+                  <div style={sectionLabelSt}>Requester</div>
+                  <div style={detailRowSt}>
+                    <svg style={iconSt} width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <circle cx="7" cy="4.5" r="2.5" stroke="currentColor" strokeWidth="1.2"/>
+                      <path d="M2 13c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+                    </svg>
+                    <div><div style={{ fontWeight: 600 }}>{bk.requester_name || 'Name withheld'}</div></div>
+                  </div>
+                </div>
+                {(bk.notes || bk.specialization) && (
+                  <div style={sectionSt}>
+                    <div style={sectionLabelSt}>Job Context</div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65 }}>
+                      {bk.notes || `${bk.specialization} appointment — no additional context provided.`}
+                    </div>
+                  </div>
+                )}
+                <div style={{ padding: '16px 0' }}>
+                  <div style={sectionLabelSt}>Attachments &amp; Materials</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>None provided</div>
+                </div>
               </div>
-              <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.5, margin: '0 0 16px' }}>
-                Add this to your email signature, website, or LinkedIn. When someone clicks it, they go straight to your profile to book you.
-              </p>
-              <BookMeBadge
-                interpreterProfileId={interpreterProfileId}
-                displayName={displayName}
-              />
-              <div style={{ marginTop: 16, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-                <Link
-                  href="/interpreter/dashboard/profile"
-                  style={{
-                    display: 'inline-block', background: 'var(--accent)', color: '#0a0a0f',
-                    borderRadius: 10, padding: '10px 20px', fontSize: '14.5px', fontWeight: 600,
-                    textDecoration: 'none', fontFamily: "'DM Sans', sans-serif",
-                  }}
-                >
-                  Set up your badge
-                </Link>
+              <div style={{ padding: '16px 28px', borderTop: '1px solid var(--border)', display: 'flex', gap: 10, alignItems: 'center' }}>
+                <GhostButton onClick={() => setViewing(null)}>Close</GhostButton>
               </div>
             </div>
-          ) : badgeNudgeDismissed && interpreterProfileId ? (
-            <div style={{ marginBottom: 14 }}>
-              <Link
-                href="/interpreter/dashboard/profile"
-                style={{ color: 'var(--muted)', fontSize: '0.85rem', textDecoration: 'none' }}
-              >
-                Your Book Me badge is on your profile page.{' '}
-                <span style={{ color: 'var(--accent)', fontWeight: 600 }}>View it &rarr;</span>
-              </Link>
-            </div>
-          ) : null}
-
-          {/* Video request demand banner */}
-          {!hasIntroVideo && videoRequestCount > 0 && (
-            <div style={{
-              background: 'rgba(0, 229, 255, 0.04)', border: '1px solid rgba(0, 229, 255, 0.15)',
-              borderRadius: 'var(--radius-sm)', padding: '12px 18px',
-              display: 'flex', alignItems: 'center', gap: 10,
-              marginBottom: 14,
-            }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#c8cdd8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                <circle cx="9" cy="7" r="4" stroke="#c8cdd8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="#c8cdd8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#c8cdd8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <span style={{ color: '#c8cdd8', fontSize: '0.88rem', lineHeight: 1.5 }}>
-                {videoRequestCount} {videoRequestCount === 1 ? 'person has' : 'people have'} requested your intro video.{' '}
-                <a href="/interpreter/dashboard/profile" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>
-                  Record yours &rarr;
-                </a>
-              </span>
-            </div>
-          )}
-
-          {/* Calendar Sync nudge */}
-          {calendarToken && !calSyncDismissed && (
-            <div style={{
-              border: '1px dashed rgba(0,229,255,0.2)', borderRadius: 12,
-              padding: '14px 20px', background: 'rgba(0,229,255,0.03)', marginBottom: 14,
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-              flexWrap: 'wrap',
-            }}>
-              <span style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.5 }}>
-                Calendar Sync — Subscribe so confirmed bookings appear in your calendar automatically.{' '}
-                <Link
-                  href="/interpreter/dashboard/availability"
-                  style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}
-                >
-                  Set up &rarr;
-                </Link>
-              </span>
-              <button
-                onClick={() => {
-                  localStorage.setItem('signpost_calendar_sync_dismissed', '1')
-                  setCalSyncDismissed(true)
-                }}
-                style={{
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  color: 'var(--muted)', fontSize: '0.85rem', fontFamily: "'DM Sans', sans-serif",
-                  padding: '2px 4px', flexShrink: 0,
-                }}
-              >
-                Dismiss
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+          </div>
+        )
+      })()}
 
       {/* Toast */}
       {toast && (
