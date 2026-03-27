@@ -9,7 +9,7 @@ export default async function DirectoryPage() {
 
   const { data: rows } = await supabase
     .from('interpreter_profiles')
-    .select('id, name, first_name, last_name, city, country, state, sign_languages, spoken_languages, specializations, specialized_skills, regions, rating, review_count, available, avatar_color, bio, video_url, interpreter_type, status, photo_url, draft_data, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, latitude, longitude, interpreter_certifications(name, issuing_body, year, verification_url)')
+    .select('id, name, first_name, last_name, city, country, state, sign_languages, spoken_languages, specializations, specialized_skills, regions, rating, review_count, available, avatar_color, bio, video_url, interpreter_type, status, photo_url, draft_data, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, latitude, longitude, interpreter_certifications(name, issuing_body, year, verification_url), interpreter_videos(video_url)')
     .eq('status', 'approved')
     .order('photo_url', { ascending: false, nullsFirst: false })
     .order('name', { ascending: true });
@@ -71,7 +71,9 @@ export default async function DirectoryPage() {
       color: r.avatar_color || 'linear-gradient(135deg,#7b61ff,#00e5ff)',
       regions: r.regions || [],
       bio: r.bio || '',
-      videoUrl: r.video_url || undefined,
+      videoUrl: ((r as Record<string, unknown>).interpreter_videos as Array<{ video_url: string }> | undefined)?.length
+        ? ((r as Record<string, unknown>).interpreter_videos as Array<{ video_url: string }>)[0].video_url
+        : undefined,
       gender: (r.gender_identity as 'male' | 'female' | 'nonbinary' | null) || null,
       isDeafInterpreter: r.interpreter_type === 'Deaf Interpreter',
       affinities,

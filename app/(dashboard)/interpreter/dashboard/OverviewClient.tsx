@@ -232,10 +232,10 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         .single()
 
       const [{ count: certCount }, { count: signLangCount }, { count: spokenLangCount }, { count: specCount }] = await Promise.all([
-        supabase.from('interpreter_certifications').select('id', { count: 'exact', head: true }).eq('interpreter_id', interpreterProfileId!),
-        supabase.from('interpreter_sign_languages').select('id', { count: 'exact', head: true }).eq('interpreter_id', interpreterProfileId!),
-        supabase.from('interpreter_spoken_languages').select('id', { count: 'exact', head: true }).eq('interpreter_id', interpreterProfileId!),
-        supabase.from('interpreter_specializations').select('id', { count: 'exact', head: true }).eq('interpreter_id', interpreterProfileId!),
+        supabase.from('interpreter_certifications').select('id', { count: 'exact' }).limit(1).eq('interpreter_id', interpreterProfileId!),
+        supabase.from('interpreter_sign_languages').select('id', { count: 'exact' }).limit(1).eq('interpreter_id', interpreterProfileId!),
+        supabase.from('interpreter_spoken_languages').select('id', { count: 'exact' }).limit(1).eq('interpreter_id', interpreterProfileId!),
+        supabase.from('interpreter_specializations').select('id', { count: 'exact' }).limit(1).eq('interpreter_id', interpreterProfileId!),
       ])
 
       const missingPhoto = !profileData?.photo_url
@@ -249,7 +249,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       // Check if interpreter has any intro videos
       const { count: videoCount } = await supabase
         .from('interpreter_videos')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .eq('interpreter_id', interpreterProfileId!)
       setHasIntroVideo((videoCount ?? 0) > 0)
 
@@ -257,7 +257,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       if (!videoCount || videoCount === 0) {
         const { count: vrCount } = await supabase
           .from('video_requests')
-          .select('id', { count: 'exact', head: true })
+          .select('id', { count: 'exact' }).limit(1)
           .eq('interpreter_id', interpreterProfileId!)
           .is('fulfilled_at', null)
         setVideoRequestCount(vrCount ?? 0)
@@ -266,7 +266,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       // Pending bookings count (via booking_recipients)
       const { count: pendingCount, error: pendingCountErr } = await supabase
         .from('booking_recipients')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .eq('interpreter_id', interpreterProfileId!)
         .in('status', ['sent', 'viewed', 'responded'])
 
@@ -355,7 +355,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       // Preferred team count — table may not exist
       const { count: teamC, error: teamErr } = await supabase
         .from('interpreter_preferred_team')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .eq('interpreter_id', interpreterProfileId!)
 
       if (!teamErr) setTeamCount(teamC ?? 0)
@@ -520,9 +520,9 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
             }}>
               {/* Mini badge preview */}
               <div style={{
-                width: 120, height: 32, borderRadius: 8, overflow: 'hidden', flexShrink: 0,
+                width: 430, height: 130, borderRadius: 8, overflow: 'hidden', flexShrink: 0,
               }}>
-                <div style={{ transform: 'scale(0.24)', transformOrigin: 'top left', width: 500, height: 130 }}>
+                <div style={{ transform: 'scale(0.80)', transformOrigin: 'top left', width: 540, height: 240 }}>
                   <BookMeBadge interpreterProfileId={interpreterProfileId} displayName={displayName} />
                 </div>
               </div>
@@ -534,17 +534,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                   Share your badge on social media, your website, or email signature.
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, marginLeft: 'auto' }}>
-                <Link
-                  href={vanitySlug ? `/directory/${interpreterProfileId}` : '/interpreter/dashboard/profile'}
-                  style={{
-                    fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: '13px',
-                    color: '#00e5ff', textDecoration: 'none', whiteSpace: 'nowrap',
-                  }}
-                >
-                  View Badge &rarr;
-                </Link>
-                <span style={{ color: '#96a0b8', fontSize: '13px' }}>&middot;</span>
+              <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0, marginLeft: 'auto' }}>
                 <Link
                   href="/interpreter/dashboard/profile"
                   style={{
@@ -552,7 +542,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                     color: '#00e5ff', textDecoration: 'none', whiteSpace: 'nowrap',
                   }}
                 >
-                  Customize &rarr;
+                  View and customize &rarr;
                 </Link>
               </div>
             </div>
