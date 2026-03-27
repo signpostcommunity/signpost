@@ -135,7 +135,7 @@ export default function DeafPortalClient() {
         <div style={{ marginBottom: 32 }}>
           <h1 style={{
             fontFamily: "'Syne', sans-serif", fontSize: 'clamp(1.4rem, 3vw, 27px)',
-            fontWeight: 800, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: 12,
+            fontWeight: 775, letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: 12,
             color: '#f0f2f8',
           }}>
             Your portal. Your preferences.<br />

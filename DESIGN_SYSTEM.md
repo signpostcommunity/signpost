@@ -73,14 +73,14 @@ Nothing on the site goes below 12px. Ever.
 ### Level 1: Page headline
 
 - Font: Syne
-- Weight: **800**
+- Weight: **775**
 - Size: **27px**
 - Color: #f0f2f8
 - Letter-spacing: -0.02em
 - Usage: ONE per page. The main "where am I" title.
 - Examples: "My Profile", "My Requests", "About signpost"
 
-**This is the ONLY place font-weight 800 is used anywhere on the site.**
+**This is the ONLY place font-weight 775 is used anywhere on the site.**
 
 ### Level 2: Section heading
 
@@ -141,7 +141,7 @@ For **form field labels** (First Name, City, etc.): sentence case, 13px, weight 
 
 | Weight | Where | Never use for |
 |--------|-------|---------------|
-| 800 | Level 1 page headlines ONLY | Anything else |
+| 775 | Level 1 page headlines ONLY | Anything else |
 | 700 | Level 2 section headings | Card titles, form labels |
 | 600 | Level 3 card headings, Level 4 form labels | Body text, sub-labels |
 | 500 | Level 5 sub-labels, form field labels | Headlines, section headings |

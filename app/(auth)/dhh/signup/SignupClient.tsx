@@ -172,7 +172,7 @@ function DeafSignupForm() {
         >
           D/DB/HH Portal
         </div>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: '8px', color: '#f0f2f8' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 775, letterSpacing: '-0.03em', marginBottom: '8px', color: '#f0f2f8' }}>
           {isAddRole ? 'Add Deaf/DB/HH Profile' : 'Create Account'}
         </h1>
         {!isAddRole && (

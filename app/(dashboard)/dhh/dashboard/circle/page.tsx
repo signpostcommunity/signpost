@@ -164,7 +164,7 @@ export default function TrustedDeafCirclePage() {
       {/* Title row with invite button */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 8 }}>
         <h1 style={{
-          fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '27px',
+          fontFamily: "'Syne', sans-serif", fontWeight: 775, fontSize: '27px',
           margin: 0, color: '#f0f2f8',
         }}>
           Your trusted Deaf circle

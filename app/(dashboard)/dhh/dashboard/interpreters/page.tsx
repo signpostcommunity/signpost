@@ -267,7 +267,7 @@ export default function DeafDashboardPage() {
   if (roster.length === 0) {
     return (
       <div className="dhh-interp-list-page" style={{ maxWidth: 960, margin: '0 auto', padding: '60px 32px 64px' }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 4, color: '#f0f2f8' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 775, letterSpacing: '-0.03em', marginBottom: 4, color: '#f0f2f8' }}>
           My Interpreter List
         </h1>
         <p style={{ fontWeight: 400, fontSize: '15px', color: '#96a0b8', marginBottom: 40 }}>
@@ -486,7 +486,7 @@ export default function DeafDashboardPage() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 4 }}>
         <div>
-          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 0, color: '#f0f2f8' }}>
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 775, letterSpacing: '-0.03em', marginBottom: 0, color: '#f0f2f8' }}>
             My Interpreter List
           </h1>
           <p style={{ fontWeight: 400, fontSize: '15px', color: '#96a0b8' }}>

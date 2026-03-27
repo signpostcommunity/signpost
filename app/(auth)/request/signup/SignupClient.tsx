@@ -151,7 +151,7 @@ export default function RequestSignupClient() {
       {/* Step 1 — Role Selection */}
       {step === 1 && (
         <div>
-          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 800, color: '#f0f2f8', marginBottom: '6px' }}>
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 775, color: '#f0f2f8', marginBottom: '6px' }}>
             Your Role
           </h1>
           <p style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', marginBottom: '28px' }}>
@@ -261,7 +261,7 @@ export default function RequestSignupClient() {
       {/* Step 2 — Account Details */}
       {step === 2 && (
         <div>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 800, color: '#f0f2f8', marginBottom: '6px' }}>
+          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 775, color: '#f0f2f8', marginBottom: '6px' }}>
             Account Details
           </h2>
           <p style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', marginBottom: '28px' }}>
@@ -338,7 +338,7 @@ export default function RequestSignupClient() {
       {/* Step 3 — Preview & Create */}
       {step === 3 && (
         <div>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 800, color: '#f0f2f8', marginBottom: '6px' }}>
+          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 775, color: '#f0f2f8', marginBottom: '6px' }}>
             Preview &amp; Create
           </h2>
           <p style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', marginBottom: '28px' }}>
@@ -497,7 +497,7 @@ function DoneStep() {
       </div>
 
       <h2 style={{
-        fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 800,
+        fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 775,
         color: '#f0f2f8', marginBottom: 8,
         opacity: show ? 1 : 0, transform: show ? 'translateY(0)' : 'translateY(10px)',
         transition: 'all 0.4s ease 0.3s',

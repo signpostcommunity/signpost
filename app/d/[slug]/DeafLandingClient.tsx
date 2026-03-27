@@ -131,7 +131,7 @@ export default function DeafLandingClient({ deafProfile }: { deafProfile: DeafPr
           <h1 style={{
             fontFamily: "'Syne', sans-serif",
             fontSize: '2rem',
-            fontWeight: 800,
+            fontWeight: 775,
             letterSpacing: '-0.03em',
             color: 'var(--text)',
             marginBottom: 8,

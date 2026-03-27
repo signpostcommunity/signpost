@@ -69,7 +69,7 @@ export default function AboutPage() {
         <div className="about-tab-header" style={{ width: '100%', padding: '0 40px' }}>
           <h1 style={{
             fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.4rem, 2.5vw, 1.8rem)',
-            fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.3,
+            fontWeight: 775, letterSpacing: '-0.03em', lineHeight: 1.3,
             color: 'var(--text)', marginBottom: 32,
           }}>
             About signpost

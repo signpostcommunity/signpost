@@ -842,7 +842,7 @@ export default function DeafDashboardOverview() {
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       {/* Greeting */}
       <div style={{ marginBottom: 30 }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 775, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
           Welcome back, {displayName}.
         </h1>
         <p style={{ fontWeight: 400, fontSize: '15px', color: '#96a0b8', margin: 0 }}>Here&apos;s a snapshot of your activity on signpost.</p>

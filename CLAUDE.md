@@ -375,7 +375,7 @@ Users can hold multiple roles simultaneously. The sidebar includes a "Change Hat
 
 Every prompt that modifies UI must include this verification step:
 - Confirm all new/modified elements follow DESIGN_SYSTEM.md
-- No font-weight 800 except Level 1 page headlines
+- No font-weight 775 except Level 1 page headlines (800 is reserved for logo/wordmark only)
 - No text colors outside the approved palette
 - No font sizes below 12px
 - Card backgrounds: #111118 only

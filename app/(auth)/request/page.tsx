@@ -57,7 +57,7 @@ export default function RequestPortalPage() {
           style={{
             fontFamily: "'Syne', sans-serif",
             fontSize: '27px',
-            fontWeight: 800,
+            fontWeight: 775,
             color: '#f0f2f8',
             lineHeight: 1.05,
             margin: 0,

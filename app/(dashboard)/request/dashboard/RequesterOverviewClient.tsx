@@ -101,7 +101,7 @@ export default function RequesterOverviewClient({
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       {/* Greeting */}
       <div style={{ marginBottom: 30 }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 775, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
           {greeting}
         </h1>
         <p style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', margin: 0 }}>

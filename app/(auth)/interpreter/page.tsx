@@ -52,7 +52,7 @@ export default function InterpreterPage() {
           style={{
             fontFamily: 'var(--font-syne)',
             fontSize: 'clamp(1.8rem, 3.2vw, 2.6rem)',
-            fontWeight: 800,
+            fontWeight: 775,
             letterSpacing: '-0.03em',
             lineHeight: 1.05,
             margin: 0,
