@@ -77,22 +77,24 @@ export default function HomePage() {
               </em>
             </h1>
 
-            <p
+            <div
               style={{
-                fontSize: '1rem',
-                color: 'var(--muted)',
                 maxWidth: 520,
-                lineHeight: 2.0,
-                marginBottom: 32,
-                paddingLeft: '1.25rem',
+                lineHeight: 1.85,
+                marginBottom: 28,
+                marginLeft: 18,
               }}
             >
-              Finding the right interpreter shouldn&apos;t be out of your hands.
-              <br />
-              View profiles, watch video intros, book directly, and track your request at every step.
-              <br />
-              Full transparency, no agency markup.
-            </p>
+              <span style={{ display: 'block', color: '#f0f2f8', fontSize: 16, fontWeight: 500 }}>
+                Finding the right interpreter shouldn&apos;t be out of your hands.
+              </span>
+              <span style={{ display: 'block', color: '#b0b6c8', fontSize: 15, fontWeight: 400 }}>
+                View profiles, watch video intros, book directly, and track your request at every step.
+              </span>
+              <span style={{ display: 'block', color: '#00e5ff', fontSize: 15, fontWeight: 600 }}>
+                Full transparency, no agency markup.
+              </span>
+            </div>
 
             <div className="hero-ctas">
               <Link
@@ -103,44 +105,48 @@ export default function HomePage() {
                 Need an interpreter?<br />Submit a request →
               </Link>
 
-              <Link
-                href="/dhh"
-                className="btn-large hero-deaf-btn"
-                style={{
-                  width: '100%',
-                  textAlign: 'center',
-                  display: 'block',
-                  background: 'none',
-                  border: '1.5px solid rgba(157,135,255,0.35)',
-                  color: 'var(--accent2)',
-                  textDecoration: 'none',
-                }}
-              >
-                Deaf, DeafBlind, or Hard of Hearing?<br />Create your free account →
-              </Link>
+              <div className="hero-secondary-ctas">
+                <Link
+                  href="/dhh"
+                  className="btn-large hero-deaf-btn"
+                  style={{
+                    width: '100%',
+                    textAlign: 'center',
+                    display: 'block',
+                    background: 'none',
+                    border: '1.5px solid rgba(157,135,255,0.35)',
+                    textDecoration: 'none',
+                    padding: '12px 16px',
+                  }}
+                >
+                  <span style={{ display: 'block', color: '#f0f2f8', fontSize: 15, fontWeight: 600 }}>Deaf, DeafBlind, or Hard of Hearing?</span>
+                  <span style={{ display: 'block', color: 'var(--accent2)', fontSize: 13, fontWeight: 400 }}>Create your free account →</span>
+                </Link>
 
-              <Link
-                href="/interpreter"
-                className="btn-large hero-interp-btn"
-                style={{
-                  width: '100%',
-                  textAlign: 'center',
-                  display: 'block',
-                  background: 'none',
-                  border: '1.5px solid rgba(0,229,255,0.35)',
-                  color: 'var(--accent)',
-                  textDecoration: 'none',
-                }}
-              >
-                For Interpreters<br />Create your free account →
-              </Link>
+                <Link
+                  href="/interpreter"
+                  className="btn-large hero-interp-btn"
+                  style={{
+                    width: '100%',
+                    textAlign: 'center',
+                    display: 'block',
+                    background: 'none',
+                    border: '1.5px solid rgba(0,229,255,0.35)',
+                    textDecoration: 'none',
+                    padding: '12px 16px',
+                  }}
+                >
+                  <span style={{ display: 'block', color: '#f0f2f8', fontSize: 15, fontWeight: 600 }}>For interpreters</span>
+                  <span style={{ display: 'block', color: 'var(--accent)', fontSize: 13, fontWeight: 400 }}>Create your free account →</span>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Feature highlights */}
-      <div style={{ background: 'var(--surface)' }}>
+      <div style={{ background: '#111118', borderTop: '1px solid #1e2433' }}>
       <section
         style={{
           maxWidth: 1200,
@@ -227,9 +233,14 @@ export default function HomePage() {
         }
         .hero-ctas {
           display: flex;
-          gap: 12px;
-          flex-wrap: wrap;
+          flex-direction: column;
+          gap: 16px;
           max-width: 360px;
+        }
+        .hero-secondary-ctas {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
         }
         .hero-deaf-btn:hover {
           border-color: rgba(157,135,255,0.7) !important;
