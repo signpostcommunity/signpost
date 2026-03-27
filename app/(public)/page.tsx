@@ -41,12 +41,12 @@ export default function HomePage() {
           {/* Image column */}
           <div className="hero-logo-col">
             <Image
-              src="/hero.jpg"
+              src="/Logotransparent.png"
               alt="signpost"
               width={370}
               height={370}
               className="hero-logo-img"
-              style={{ width: '100%', maxWidth: 370, height: 'auto', borderRadius: 12 }}
+              style={{ width: '100%', maxWidth: 370, height: 'auto' }}
               priority
             />
           </div>
