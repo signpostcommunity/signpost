@@ -13,7 +13,7 @@ export async function seedRequesterData(requesterId: string): Promise<{ success:
     // Check if seed data already exists
     const { count } = await supabase
       .from('bookings')
-      .select('id', { count: 'exact', head: true })
+      .select('id', { count: 'exact' }).limit(1)
       .eq('requester_id', requesterId)
       .eq('is_seed', true)
 

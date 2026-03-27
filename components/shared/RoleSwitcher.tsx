@@ -52,7 +52,7 @@ export function useUserRoles() {
       // Check interpreter_profiles
       const { count: interpCount, error: interpErr } = await supabase
         .from('interpreter_profiles')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .eq('user_id', user.id)
       if (interpErr && interpErr.code !== 'PGRST116') {
         // Server error (503, 500, etc.) — don't assume profile doesn't exist
@@ -64,7 +64,7 @@ export function useUserRoles() {
       // Check deaf_profiles
       const { count: deafCount, error: deafErr } = await supabase
         .from('deaf_profiles')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .eq('user_id', user.id)
       if (deafErr && deafErr.code !== 'PGRST116') {
         active.push('deaf')
@@ -75,7 +75,7 @@ export function useUserRoles() {
       // Check requester_profiles
       const { count: reqCount, error: reqErr } = await supabase
         .from('requester_profiles')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .eq('user_id', user.id)
       if (reqErr && reqErr.code !== 'PGRST116') {
         // Server error — optimistic fallback: show role as active

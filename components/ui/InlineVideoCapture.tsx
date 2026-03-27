@@ -296,13 +296,14 @@ export default function InlineVideoCapture({
 
   const btnPill: React.CSSProperties = {
     background: accentColor,
-    color: '#fff',
+    color: '#0a0a0f',
     border: 'none',
-    borderRadius: 24,
+    borderRadius: 10,
     padding: '12px 28px',
     fontFamily: "'DM Sans', sans-serif",
     fontWeight: 600,
     fontSize: '0.9rem',
+    fontStyle: 'normal',
     cursor: uploading ? 'wait' : 'pointer',
     opacity: uploading ? 0.6 : 1,
     transition: 'opacity 0.15s',

@@ -94,6 +94,10 @@ function InviteModal({ onClose, onSaved, interpreterId, interpreterFullName }: {
     setSaving(false)
     if (insertErr) {
       console.error('Invite insert error:', insertErr)
+      if (insertErr.code === '23503') {
+        setError('This interpreter is no longer available.')
+        return
+      }
       setError(`Failed to save: ${insertErr.message}`)
       return
     }

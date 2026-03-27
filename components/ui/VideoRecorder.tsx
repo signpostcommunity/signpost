@@ -305,13 +305,14 @@ export default function VideoRecorder({
 
   const btnPrimary: React.CSSProperties = {
     background: accentColor,
-    color: '#000',
+    color: '#0a0a0f',
     border: 'none',
-    borderRadius: 8,
+    borderRadius: 10,
     padding: '10px 20px',
     fontFamily: "'DM Sans', sans-serif",
     fontWeight: 600,
     fontSize: '0.88rem',
+    fontStyle: 'normal',
     cursor: uploading ? 'wait' : 'pointer',
     opacity: uploading ? 0.6 : 1,
     transition: 'opacity 0.15s',
@@ -462,7 +463,7 @@ export default function VideoRecorder({
                         style={{
                           ...btnPrimary,
                           padding: '12px 32px',
-                          borderRadius: 100,
+                          borderRadius: 10,
                           fontSize: '0.92rem',
                           opacity: cameraReady ? 1 : 0.4,
                         }}

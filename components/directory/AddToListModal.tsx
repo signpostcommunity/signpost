@@ -317,6 +317,11 @@ export default function AddToListModal({
 
           if (insertErr) {
             console.error('Insert error (interpreter_preferred_team):', insertErr);
+            if (insertErr.code === '23503') {
+              setError('This interpreter is no longer available.');
+              setSaving(false);
+              return;
+            }
             setError(`Save failed: ${insertErr.message}`);
             setSaving(false);
             return;
@@ -369,6 +374,11 @@ export default function AddToListModal({
 
         if (insertErr) {
           console.error('Insert error (requester_roster):', JSON.stringify(insertErr, null, 2));
+          if (insertErr.code === '23503') {
+            setError('This interpreter is no longer available.');
+            setSaving(false);
+            return;
+          }
           if (insertErr.code === '23505') {
             if (onDuplicate) {
               onDuplicate(interpreter.name);
@@ -489,6 +499,11 @@ export default function AddToListModal({
             do_not_book: negativeList,
           });
 
+          if (insertErr.code === '23503') {
+            setError('This interpreter is no longer available.');
+            setSaving(false);
+            return;
+          }
           if (insertErr.code === '23505') {
             // Duplicate — close modal and show toast instead of inline error
             if (onDuplicate) {

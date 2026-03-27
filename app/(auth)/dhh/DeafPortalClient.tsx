@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton';
+import { syncNameFields } from '@/lib/nameSync';
 
 type FormType = 'signup' | 'login' | null;
 
@@ -49,17 +50,21 @@ export default function DeafPortalClient() {
     }
 
     const userId = authData.user.id;
-    const fullName = `${firstName} ${lastName}`.trim();
+    const { normalizeProfileFields } = await import('@/lib/normalize');
+    const norm = normalizeProfileFields({ first_name: firstName, last_name: lastName });
+    const normFirst = (norm.first_name as string) || firstName;
+    const normLast = (norm.last_name as string) || lastName;
+    const fullName = `${normFirst} ${normLast}`.trim();
 
     await supabase.from('user_profiles').insert({ id: userId, role: 'deaf' });
-    await supabase.from('deaf_profiles').insert({
+    // TODO: Tech debt — remove deaf_profiles.name column, derive from first_name + last_name
+    await supabase.from('deaf_profiles').insert(syncNameFields({
       id: userId,
       user_id: userId,
-      name: fullName,
-      first_name: firstName,
-      last_name: lastName,
+      first_name: normFirst,
+      last_name: normLast,
       email: signupEmail,
-    });
+    }));
 
     // BETA: seed demo bookings + roster for new Deaf account
     try {

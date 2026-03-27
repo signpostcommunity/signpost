@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { seedRequesterData } from '@/lib/seedRequesterData'
+import { syncNameFields } from '@/lib/nameSync'
 import RequesterOverviewClient from './RequesterOverviewClient'
 
 export const dynamic = 'force-dynamic'
@@ -38,25 +39,28 @@ export default async function RequesterDashboardPage() {
       .maybeSingle()
 
     if (!existingProfile) {
-      const fullName = user.user_metadata?.full_name || user.email?.split('@')[0] || ''
-      const nameParts = fullName.split(' ')
-      const firstName = nameParts[0] || ''
-      const lastName = nameParts.slice(1).join(' ') || ''
+      const { normalizeProfileFields } = await import('@/lib/normalize')
+      const fullNameRaw = user.user_metadata?.full_name || user.email?.split('@')[0] || ''
+      const nameParts = fullNameRaw.split(' ')
+      const norm = normalizeProfileFields({ first_name: nameParts[0] || '', last_name: nameParts.slice(1).join(' ') || '' })
+      const firstName = (norm.first_name as string) || nameParts[0] || ''
+      const lastName = (norm.last_name as string) || nameParts.slice(1).join(' ') || ''
+      const fullName = `${firstName} ${lastName}`.trim() || fullNameRaw
 
-      await supabase.from('requester_profiles').insert({
+      // TODO: Tech debt — remove requester_profiles.name column, derive from first_name + last_name
+      await supabase.from('requester_profiles').insert(syncNameFields({
         id: user.id,
         user_id: user.id,
-        name: fullName,
         first_name: firstName,
         last_name: lastName,
         email: user.email || '',
-      })
+      }))
     }
 
     // Seed beta data if needed
     const { count: seedCount } = await supabase
       .from('bookings')
-      .select('id', { count: 'exact', head: true })
+      .select('id', { count: 'exact' }).limit(1)
       .eq('requester_id', user.id)
       .eq('is_seed', true)
 
@@ -81,7 +85,7 @@ export default async function RequesterDashboardPage() {
     // Active requests (status = 'open')
     const { count: activeCount } = await supabase
       .from('bookings')
-      .select('id', { count: 'exact', head: true })
+      .select('id', { count: 'exact' }).limit(1)
       .eq('requester_id', user.id)
       .eq('status', 'open')
 
@@ -90,7 +94,7 @@ export default async function RequesterDashboardPage() {
     // Confirmed bookings (status = 'filled')
     const { count: filledCount } = await supabase
       .from('bookings')
-      .select('id', { count: 'exact', head: true })
+      .select('id', { count: 'exact' }).limit(1)
       .eq('requester_id', user.id)
       .eq('status', 'filled')
 
@@ -99,7 +103,7 @@ export default async function RequesterDashboardPage() {
     // Interpreters on roster
     const { count: rCount } = await supabase
       .from('requester_roster')
-      .select('id', { count: 'exact', head: true })
+      .select('id', { count: 'exact' }).limit(1)
       .eq('requester_user_id', user.id)
 
     rosterCount = rCount ?? 0
@@ -116,7 +120,7 @@ export default async function RequesterDashboardPage() {
       const bookingIds = userBookings.map(b => b.id)
       const { count: pendingCount } = await supabase
         .from('booking_recipients')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .in('booking_id', bookingIds)
         .in('status', ['sent', 'viewed'])
 

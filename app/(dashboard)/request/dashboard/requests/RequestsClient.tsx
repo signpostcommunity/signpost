@@ -413,6 +413,24 @@ export default function RequestsClient({
                         <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
                           Platform fee: ${feeAmount.toFixed(2)}
                         </span>
+                        {booking.platform_fee_status === 'failed' && (
+                          <span style={{
+                            fontSize: '0.72rem', fontWeight: 600, color: '#ef4444',
+                            background: 'rgba(239,68,68,0.1)', padding: '2px 8px',
+                            borderRadius: 6,
+                          }}>
+                            Fee unpaid
+                          </span>
+                        )}
+                        {booking.platform_fee_status === 'credited' && (
+                          <span style={{
+                            fontSize: '0.72rem', fontWeight: 600, color: '#22c55e',
+                            background: 'rgba(34,197,94,0.1)', padding: '2px 8px',
+                            borderRadius: 6,
+                          }}>
+                            Credit applied
+                          </span>
+                        )}
                       </div>
                     </div>
                     <svg

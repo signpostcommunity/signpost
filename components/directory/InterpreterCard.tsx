@@ -90,32 +90,34 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
             </svg>
           )}
 
-          {/* Intro video button */}
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onVideoPreview?.(i);
-            }}
-            style={{
-              position: 'absolute',
-              bottom: 10,
-              right: 10,
-              background: 'rgba(0,0,0,0.45)',
-              border: '1px solid rgba(255,255,255,0.25)',
-              borderRadius: '20px',
-              padding: '5px 12px',
-              color: '#fff',
-              fontSize: '0.72rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '5px',
-              backdropFilter: 'blur(4px)',
-            }}
-          >
-            ▶ Intro
-          </button>
+          {/* Intro video button — only show when interpreter has a video */}
+          {i.videoUrl && (
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onVideoPreview?.(i);
+              }}
+              style={{
+                position: 'absolute',
+                bottom: 10,
+                right: 10,
+                background: 'rgba(0,0,0,0.45)',
+                border: '1px solid rgba(255,255,255,0.25)',
+                borderRadius: '20px',
+                padding: '5px 12px',
+                color: '#fff',
+                fontSize: '0.72rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                backdropFilter: 'blur(4px)',
+              }}
+            >
+              ▶ Intro
+            </button>
+          )}
         </div>
 
         {/* Card body */}

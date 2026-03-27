@@ -26,7 +26,8 @@ export const SPECIALIZATION_CATEGORIES: Record<string, string[]> = {
     "Higher education lecture",
     "Parent-teacher conference",
     "Tutoring / Academic support",
-    "Interpreting for D/HH Academics (Higher Ed)"
+    "Interpreting for D/HH Academics (Higher Ed)",
+    "Interpreting for D/HH Teachers (Elementary/Secondary)"
   ],
   "Workplace & Professional": [
     "Staff meeting / All-hands",

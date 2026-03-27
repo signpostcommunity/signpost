@@ -7,13 +7,23 @@ export default async function AdminDashboardPage() {
   const supabase = await createClient()
 
   // Fetch stats
-  const [usersRes, interpretersRes, deafRes, feedbackRes, flagsRes] = await Promise.all([
-    supabase.from('user_profiles').select('id', { count: 'exact', head: true }),
-    supabase.from('interpreter_profiles').select('id', { count: 'exact', head: true }).neq('status', 'draft'),
-    supabase.from('deaf_profiles').select('id', { count: 'exact', head: true }),
-    supabase.from('beta_feedback').select('id', { count: 'exact', head: true }),
-    supabase.from('profile_flags').select('id', { count: 'exact', head: true }),
+  const [usersRes, interpretersRes, deafRes, feedbackRes, flagsRes, chargedRes, failedRes, creditsRes] = await Promise.all([
+    supabase.from('user_profiles').select('id', { count: 'exact' }).limit(1),
+    supabase.from('interpreter_profiles').select('id', { count: 'exact' }).limit(1).neq('status', 'draft'),
+    supabase.from('deaf_profiles').select('id', { count: 'exact' }).limit(1),
+    supabase.from('beta_feedback').select('id', { count: 'exact' }).limit(1),
+    supabase.from('profile_flags').select('id', { count: 'exact' }).limit(1),
+    supabase.from('bookings').select('platform_fee_amount').eq('platform_fee_status', 'charged'),
+    supabase.from('bookings').select('platform_fee_amount').eq('platform_fee_status', 'failed'),
+    supabase.from('booking_credits').select('amount').eq('status', 'available'),
   ])
+
+  const charged = chargedRes.data || []
+  const failed = failedRes.data || []
+  const credits = creditsRes.data || []
+  const totalCollected = charged.reduce((sum: number, b: { platform_fee_amount: number | null }) => sum + (b.platform_fee_amount || 0), 0)
+  const totalFailed = failed.reduce((sum: number, b: { platform_fee_amount: number | null }) => sum + (b.platform_fee_amount || 0), 0)
+  const totalCredits = credits.reduce((sum: number, c: { amount: number | null }) => sum + (c.amount || 0), 0)
 
   // Recent signups
   const { data: recentUsers } = await supabase
@@ -56,6 +66,11 @@ export default async function AdminDashboardPage() {
         deafUsers: deafRes.count ?? 0,
         betaFeedback: feedbackRes.count ?? 0,
         profileFlags: flagsRes.count ?? 0,
+      }}
+      paymentStats={{
+        feesCollected: { count: charged.length, total: totalCollected },
+        feesFailed: { count: failed.length, total: totalFailed },
+        creditsOutstanding: { count: credits.length, total: totalCredits },
       }}
       recentUsers={recentUsers || []}
       recentFlags={flagsWithNames}

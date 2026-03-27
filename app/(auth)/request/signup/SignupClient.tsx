@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { syncNameFields } from '@/lib/nameSync';
 
 const TOTAL_STEPS = 4;
 
@@ -99,26 +100,36 @@ export default function RequestSignupClient() {
     }
 
     // 3. Create requester_profiles row
-    const { error: rpError } = await supabase.from('requester_profiles').insert({
+    const { normalizeProfileFields } = await import('@/lib/normalize');
+    const norm = normalizeProfileFields({ first_name: form.firstName, last_name: form.lastName, city: form.city, country_name: form.country });
+    const normFirst = (norm.first_name as string) || form.firstName;
+    const normLast = (norm.last_name as string) || form.lastName;
+    const normDisplayName = `${normFirst} ${normLast}`.trim() || form.email;
+    // TODO: Tech debt — remove requester_profiles.name column, derive from first_name + last_name
+    const { error: rpError } = await supabase.from('requester_profiles').insert(syncNameFields({
       id: userId,
       user_id: userId,
-      name: displayName,
+      first_name: normFirst,
+      last_name: normLast,
       email: form.email,
-      first_name: form.firstName,
-      last_name: form.lastName,
       phone: form.phone || null,
-      country_name: form.country,
-      city: form.city,
+      country_name: (norm.country_name as string) || form.country,
+      city: (norm.city as string) || form.city,
       org_name: form.requesterType === 'organization' ? form.orgName : null,
       org_type: form.requesterType === 'organization' ? form.orgType : null,
       requester_type: form.requesterType,
       comm_prefs: JSON.stringify(form.commPrefs),
-    });
+    }));
     if (rpError) {
       setError('Failed to create requester profile: ' + rpError.message);
       setLoading(false);
       return;
     }
+
+    // Create Stripe customer (fire-and-forget — not blocking signup)
+    fetch('/api/stripe/customer', { method: 'POST' }).catch(() => {
+      // Stripe customer will be created lazily on first payment settings visit
+    });
 
     // Move to final step
     setStep(4);

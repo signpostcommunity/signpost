@@ -10,6 +10,7 @@ import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
 import { generateSlug, validateSlug } from '@/lib/slugUtils'
 import { resizeImage } from '@/lib/imageUtils'
+import { syncNameFields } from '@/lib/nameSync'
 import { QRCodeSVG } from 'qrcode.react'
 
 const SIGNING_STYLES = [
@@ -220,10 +221,10 @@ export default function DhhPreferencesPage() {
       notes: commNotes,
     }
 
-    const updates = {
+    // TODO: Tech debt — remove deaf_profiles.name column, derive from first_name + last_name
+    const updates = syncNameFields({
       first_name: firstName.trim(),
       last_name: lastName.trim(),
-      name: `${firstName.trim()} ${lastName.trim()}`.trim(),
       email: email.trim(),
       pronouns: pronouns.trim(),
       country,
@@ -236,7 +237,7 @@ export default function DhhPreferencesPage() {
       share_intro_video_before_confirm: shareVideoBefore,
       comm_prefs: commPrefs,
       updated_at: new Date().toISOString(),
-    }
+    })
 
     const { error } = await supabase
       .from('deaf_profiles')

@@ -18,6 +18,7 @@ import { useDialCode } from '@/components/shared/PhoneWithDialCode'
 import { generateSlug, validateSlug } from '@/lib/slugUtils'
 import { resizeImage } from '@/lib/imageUtils'
 import BookMeBadge from '@/components/interpreter/BookMeBadge'
+import { syncNameFields } from '@/lib/nameSync'
 
 // ── Shared styles ────────────────────────────────────────────────────────────
 
@@ -578,6 +579,8 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
 
   async function saveFields(fields: Record<string, unknown>) {
     setSaving(true)
+    const { normalizeProfileFields } = await import('@/lib/normalize')
+    fields = normalizeProfileFields(fields)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setSaving(false); return }
@@ -608,9 +611,13 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       .eq('user_id', user.id)
       .maybeSingle()
 
+    // Task 4: Keep name in sync with first_name + last_name
+    // TODO: Tech debt — remove interpreter_profiles.name column, derive display name from first_name + last_name
+    const normFirst = (fields.first_name as string) || firstName
+    const normLast = (fields.last_name as string) || lastName
     const payload = {
       user_id: user.id,
-      name: [firstName, lastName].filter(Boolean).join(' ') || userEmail,
+      name: [normFirst, normLast].filter(Boolean).join(' ') || userEmail,
       // BETA: auto-approve profiles. Revert to 'draft' when admin review flow is built.
       status: 'approved' as const,
       ...fields,
@@ -746,15 +753,18 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
 
     // If no row found, create one
     if (!dbError && (!dbData || dbData.length === 0)) {
+      // TODO: Tech debt — remove interpreter_profiles.name column, derive from first_name + last_name
       const insertResult = await supabase
         .from('interpreter_profiles')
-        .insert({
+        .insert(syncNameFields({
           user_id: user.id,
+          first_name: firstName,
+          last_name: lastName,
           name: [firstName, lastName].filter(Boolean).join(' ') || userEmail,
           photo_url: publicUrl,
           status: 'approved',
           updated_at: new Date().toISOString(),
-        })
+        }))
         .select()
       dbData = insertResult.data;
       dbError = insertResult.error;
@@ -783,6 +793,46 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const initials = `${initialsSource[0] || ''}${(lastName || p.last_name || '')[0] || ''}`.toUpperCase() || '?'
 
   return (
+    <>
+    {/* Sticky preview bar — stays visible while scrolling the profile form */}
+    {p.id && (
+      <div style={{
+        background: '#111118',
+        borderBottom: '1px solid #1e2433',
+        padding: '10px 20px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        position: 'sticky',
+        top: 57,
+        zIndex: 10,
+      }}>
+        <span style={{
+          fontFamily: "'Inter', 'DM Sans', sans-serif",
+          fontWeight: 500,
+          fontSize: 14,
+          color: '#f0f2f8',
+        }}>
+          {displayName}
+        </span>
+        <a
+          href={`/directory/${p.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            fontFamily: "'Inter', 'DM Sans', sans-serif",
+            fontWeight: 500,
+            fontSize: 13,
+            color: 'var(--accent)',
+            textDecoration: 'none',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+          onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
+        >
+          Preview Profile →
+        </a>
+      </div>
+    )}
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
         <PageHeader
@@ -1641,6 +1691,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
+    </>
   )
 }
 

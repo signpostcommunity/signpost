@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton';
 import LocationPicker from '@/components/shared/LocationPicker';
 import { generateSlug } from '@/lib/slugUtils';
+import { syncNameFields } from '@/lib/nameSync';
 
 function DeafSignupForm() {
   const router = useRouter();
@@ -82,20 +83,25 @@ function DeafSignupForm() {
         });
       }
 
-      const firstName = name.split(' ')[0] || '';
-      const lastNameVal = name.split(' ').slice(1).join(' ') || '';
+      const firstNameRaw = name.split(' ')[0] || '';
+      const lastNameRaw = name.split(' ').slice(1).join(' ') || '';
+      const { normalizeProfileFields } = await import('@/lib/normalize');
+      const norm = normalizeProfileFields({ first_name: firstNameRaw, last_name: lastNameRaw, city, state, country_name: country });
+      const firstName = (norm.first_name as string) || firstNameRaw;
+      const lastNameVal = (norm.last_name as string) || lastNameRaw;
+      const normName = `${firstName} ${lastNameVal}`.trim();
 
-      await supabase.from('deaf_profiles').insert({
+      // TODO: Tech debt — remove deaf_profiles.name column, derive from first_name + last_name
+      await supabase.from('deaf_profiles').insert(syncNameFields({
         id: userId,
         user_id: userId,
-        name,
         first_name: firstName,
         last_name: lastNameVal,
         email,
-        country_name: country,
-        state,
-        city,
-      });
+        country_name: (norm.country_name as string) || country,
+        state: (norm.state as string) || state,
+        city: (norm.city as string) || city,
+      }));
 
       // Auto-generate vanity slug
       const baseSlug = generateSlug(firstName, lastNameVal).slice(0, 50);

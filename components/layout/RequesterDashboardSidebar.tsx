@@ -295,14 +295,14 @@ export default function RequesterDashboardSidebar({ userName = 'User', userIniti
       // Pending bookings count (All Requests badge)
       const { count: requestsCount } = await supabase
         .from('bookings')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .eq('requester_id', user.id)
         .eq('status', 'open')
 
       // Unread notifications count
       const { count: notifCount } = await supabase
         .from('notifications')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .eq('recipient_user_id', user.id)
         .eq('channel', 'in_app')
         .neq('status', 'read')
@@ -342,7 +342,7 @@ export default function RequesterDashboardSidebar({ userName = 'User', userIniti
         const bookingIds = userBookings.map(b => b.id)
         const { count: rateCount } = await supabase
           .from('booking_recipients')
-          .select('id', { count: 'exact', head: true })
+          .select('id', { count: 'exact' }).limit(1)
           .in('booking_id', bookingIds)
           .eq('status', 'responded')
         pendingRateResponses = rateCount ?? 0
@@ -351,21 +351,21 @@ export default function RequesterDashboardSidebar({ userName = 'User', userIniti
       // Preferred interpreters count
       const { count: prefCount } = await supabase
         .from('requester_roster')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .eq('requester_user_id', user.id)
         .eq('tier', 'preferred')
 
       // Secondary interpreters count
       const { count: secCount } = await supabase
         .from('requester_roster')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .eq('requester_user_id', user.id)
         .eq('tier', 'secondary')
 
       // Client interpreter lists count (active connections)
       const { count: clientListsCount } = await supabase
         .from('dhh_requester_connections')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .eq('requester_id', user.id)
         .eq('status', 'active')
 

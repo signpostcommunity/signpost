@@ -48,6 +48,12 @@ interface Stats {
   profileFlags: number
 }
 
+interface PaymentStats {
+  feesCollected: { count: number; total: number }
+  feesFailed: { count: number; total: number }
+  creditsOutstanding: { count: number; total: number }
+}
+
 interface RecentUser {
   id: string
   role: string
@@ -65,10 +71,12 @@ interface RecentFlag {
 
 export default function AdminOverviewClient({
   stats,
+  paymentStats,
   recentUsers,
   recentFlags,
 }: {
   stats: Stats
+  paymentStats: PaymentStats
   recentUsers: RecentUser[]
   recentFlags: RecentFlag[]
 }) {
@@ -185,6 +193,59 @@ export default function AdminOverviewClient({
               ))}
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Payment stats */}
+      <div style={{ marginTop: 40 }}>
+        <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1rem', fontWeight: 700, marginBottom: 16 }}>
+          Platform Fees
+        </h2>
+        <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+          <div style={{
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)', padding: '20px 24px',
+          }}>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
+              Fees Collected
+            </div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.8rem', fontWeight: 700, color: '#22c55e' }}>
+              ${paymentStats.feesCollected.total.toFixed(2)}
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 4 }}>
+              {paymentStats.feesCollected.count} booking{paymentStats.feesCollected.count !== 1 ? 's' : ''}
+            </div>
+          </div>
+
+          <div style={{
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)', padding: '20px 24px',
+          }}>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
+              Fees Failed / Pending
+            </div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.8rem', fontWeight: 700, color: paymentStats.feesFailed.count > 0 ? '#ef4444' : 'var(--muted)' }}>
+              ${paymentStats.feesFailed.total.toFixed(2)}
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 4 }}>
+              {paymentStats.feesFailed.count} booking{paymentStats.feesFailed.count !== 1 ? 's' : ''}
+            </div>
+          </div>
+
+          <div style={{
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)', padding: '20px 24px',
+          }}>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
+              Credits Outstanding
+            </div>
+            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.8rem', fontWeight: 700, color: ORANGE }}>
+              ${paymentStats.creditsOutstanding.total.toFixed(2)}
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 4 }}>
+              {paymentStats.creditsOutstanding.count} credit{paymentStats.creditsOutstanding.count !== 1 ? 's' : ''}
+            </div>
+          </div>
         </div>
       </div>
 

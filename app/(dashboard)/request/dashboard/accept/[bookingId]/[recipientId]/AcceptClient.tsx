@@ -114,36 +114,36 @@ export default function AcceptClient({
         console.error('[accept] booking status update error:', bookingStatusErr.message)
       }
 
-      // 3. Update platform_fee_status
-      const { error: feeStatusErr } = await supabase
-        .from('bookings')
-        .update({ platform_fee_status: 'pending' })
-        .eq('id', booking.id)
-
-      if (feeStatusErr) {
-        console.error('[accept] fee status update error:', feeStatusErr.message)
-      }
-
-      // 4. Update platform_fee_amount and interpreters_confirmed
-      // Get current confirmed count
+      // 3. Update interpreters_confirmed count
       const { data: allRecs } = await supabase
         .from('booking_recipients')
         .select('id, status')
         .eq('booking_id', booking.id)
 
       const confirmedCount = (allRecs || []).filter(r => r.status === 'confirmed').length
-      const newFeeAmount = 15 * confirmedCount
 
-      const { error: feeErr } = await supabase
+      const { error: countErr } = await supabase
         .from('bookings')
-        .update({
-          platform_fee_amount: newFeeAmount,
-          interpreters_confirmed: confirmedCount,
-        })
+        .update({ interpreters_confirmed: confirmedCount })
         .eq('id', booking.id)
 
-      if (feeErr) {
-        console.error('[accept] fee amount update error:', feeErr.message)
+      if (countErr) {
+        console.error('[accept] confirmed count update error:', countErr.message)
+      }
+
+      // 4. Charge $15 platform fee (non-blocking — booking still confirms on failure)
+      try {
+        const chargeRes = await fetch('/api/stripe/charge-platform-fee', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bookingId: booking.id }),
+        })
+        const chargeData = await chargeRes.json()
+        if (chargeData.status === 'failed') {
+          console.warn('[accept] Platform fee charge failed — requester notified')
+        }
+      } catch (chargeErr) {
+        console.error('[accept] Platform fee charge error:', chargeErr)
       }
 
       setToast({ message: `Booking confirmed. ${interpreterName} has been notified.`, type: 'success' })
@@ -301,8 +301,8 @@ export default function AcceptClient({
               $15.00
             </span>
           </div>
-          <div style={{ marginTop: 8, fontSize: '0.75rem', color: '#666', fontStyle: 'italic' }}>
-            Payment processing coming soon — not charged during beta
+          <div style={{ marginTop: 8, fontSize: '0.75rem', color: '#96a0b8', fontStyle: 'italic' }}>
+            Charged to your payment method on file when you confirm
           </div>
         </div>
       </Section>

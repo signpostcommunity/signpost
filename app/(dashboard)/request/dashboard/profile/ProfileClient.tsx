@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Toast from '@/components/ui/Toast'
+import PaymentMethodSection from '@/components/dashboard/requester/PaymentMethodSection'
 
 /* ── Shared styles ── */
 
@@ -62,8 +63,6 @@ const ORG_TYPES = [
 
 const COMM_OPTIONS = ['Email', 'Text/SMS', 'Video Phone', 'Phone Call']
 
-const MOCK_PAYMENT_KEY = 'signpost_mock_payment'
-
 /* ── Main Component ── */
 
 interface Props {
@@ -85,13 +84,6 @@ export default function ProfileClient({ profile, userEmail }: Props) {
   const [commPrefs, setCommPrefs] = useState<string[]>([])
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
-
-  // Mock payment state
-  const [hasMockPayment, setHasMockPayment] = useState(false)
-  const [showCardForm, setShowCardForm] = useState(false)
-  const [cardNumber, setCardNumber] = useState('')
-  const [cardExpiry, setCardExpiry] = useState('')
-  const [cardCvc, setCardCvc] = useState('')
 
   // Load profile data
   useEffect(() => {
@@ -118,11 +110,6 @@ export default function ProfileClient({ profile, userEmail }: Props) {
       }
     }
 
-    // Load mock payment from localStorage
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem(MOCK_PAYMENT_KEY)
-      if (saved === 'true') setHasMockPayment(true)
-    }
   }, [profile])
 
   function toggleComm(pref: string) {
@@ -143,18 +130,22 @@ export default function ProfileClient({ profile, userEmail }: Props) {
       return
     }
 
-    const displayName = `${firstName} ${lastName}`.trim()
+    const { normalizeProfileFields } = await import('@/lib/normalize')
+    const norm = normalizeProfileFields({ first_name: firstName, last_name: lastName, city, state, country_name: countryName || country })
+    const normFirst = (norm.first_name as string) || firstName
+    const normLast = (norm.last_name as string) || lastName
+    const displayName = `${normFirst} ${normLast}`.trim()
 
     const { error } = await supabase
       .from('requester_profiles')
       .update({
-        first_name: firstName,
-        last_name: lastName,
+        first_name: normFirst,
+        last_name: normLast,
         name: displayName,
         phone: phone || null,
-        country_name: countryName || country,
-        city: city || null,
-        state: state || null,
+        country_name: (norm.country_name as string) || countryName || country,
+        city: (norm.city as string) || city || null,
+        state: (norm.state as string) || state || null,
         org_name: orgName || null,
         org_type: orgType || null,
         requester_type: requesterType || null,
@@ -169,21 +160,6 @@ export default function ProfileClient({ profile, userEmail }: Props) {
       setToast({ message: 'Profile saved', type: 'success' })
     }
     setSaving(false)
-  }
-
-  function handleSaveCard() {
-    localStorage.setItem(MOCK_PAYMENT_KEY, 'true')
-    setHasMockPayment(true)
-    setShowCardForm(false)
-    setCardNumber('')
-    setCardExpiry('')
-    setCardCvc('')
-    setToast({ message: 'Payment processing is not yet active. During beta, no charges will be made.', type: 'info' })
-  }
-
-  function handleRemoveCard() {
-    localStorage.removeItem(MOCK_PAYMENT_KEY)
-    setHasMockPayment(false)
   }
 
   const isOrg = requesterType === 'organization'
@@ -354,122 +330,10 @@ export default function ProfileClient({ profile, userEmail }: Props) {
           </div>
         </div>
 
-        {/* Section 5 — Payment Method (MOCKED) */}
-        <div style={cardStyle}>
-          <div style={sectionTitleStyle}>Payment Method</div>
-
-          {!hasMockPayment && !showCardForm && (
-            <div>
-              <p style={{ fontWeight: 400, fontSize: '14px', color: '#c8cdd8', lineHeight: 1.6, margin: '0 0 12px' }}>
-                Add a payment method to start submitting requests. You&apos;ll only be charged when you confirm an interpreter&apos;s booking.
-              </p>
-              <p style={{ color: 'var(--accent)', fontSize: '14px', fontWeight: 600, margin: '0 0 20px' }}>
-                $15 per interpreter, per confirmed booking.
-              </p>
-              <button
-                onClick={() => setShowCardForm(true)}
-                className="btn-primary"
-                style={{ padding: '10px 22px', fontSize: '0.88rem' }}
-              >
-                Add Payment Method
-              </button>
-            </div>
-          )}
-
-          {showCardForm && !hasMockPayment && (
-            <div style={{
-              background: 'var(--surface2)', border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-sm)', padding: '20px',
-            }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                <div>
-                  <label style={labelStyle}>Card Number</label>
-                  <input
-                    value={cardNumber}
-                    onChange={e => setCardNumber(e.target.value)}
-                    onFocus={handleFocus}
-                    onBlur={handleBlur}
-                    style={inputStyle}
-                    placeholder="1234 1234 1234 1234"
-                  />
-                </div>
-                <div className="profile-card-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                  <div>
-                    <label style={labelStyle}>Expiry Date</label>
-                    <input
-                      value={cardExpiry}
-                      onChange={e => setCardExpiry(e.target.value)}
-                      onFocus={handleFocus}
-                      onBlur={handleBlur}
-                      style={inputStyle}
-                      placeholder="MM / YY"
-                    />
-                  </div>
-                  <div>
-                    <label style={labelStyle}>CVC</label>
-                    <input
-                      value={cardCvc}
-                      onChange={e => setCardCvc(e.target.value)}
-                      onFocus={handleFocus}
-                      onBlur={handleBlur}
-                      style={inputStyle}
-                      placeholder="CVC"
-                    />
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-                  <button
-                    onClick={handleSaveCard}
-                    className="btn-primary"
-                    style={{ padding: '10px 22px', fontSize: '0.88rem' }}
-                  >
-                    Save Card
-                  </button>
-                  <button
-                    onClick={() => setShowCardForm(false)}
-                    style={{
-                      background: 'none', border: '1px solid var(--border)',
-                      borderRadius: 8, padding: '10px 18px', color: 'var(--muted)',
-                      fontSize: '0.88rem', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {hasMockPayment && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <svg width="28" height="20" viewBox="0 0 28 20" fill="none">
-                  <rect x="1" y="1" width="26" height="18" rx="3" stroke="var(--muted)" strokeWidth="1.2" />
-                  <rect x="1" y="5" width="26" height="4" fill="var(--border)" />
-                </svg>
-                <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.92rem', letterSpacing: '0.05em' }}>
-                  &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; 4242
-                </span>
-              </div>
-              <button
-                onClick={handleRemoveCard}
-                style={{
-                  background: 'none', border: 'none', color: 'var(--accent3)',
-                  fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
-                  fontFamily: "'DM Sans', sans-serif",
-                }}
-              >
-                Remove
-              </button>
-            </div>
-          )}
-
-          <p style={{
-            fontWeight: 400, fontSize: '14px', color: '#96a0b8', marginTop: 16, marginBottom: 0,
-          }}>
-            Powered by Stripe. Payment processing coming soon. During beta, platform fees are tracked but not charged.
-          </p>
-        </div>
+        {/* Section 5 — Payment Method */}
+        <PaymentMethodSection
+          onToast={(msg, type) => setToast({ message: msg, type })}
+        />
 
         {/* Sticky save button */}
         <div style={{

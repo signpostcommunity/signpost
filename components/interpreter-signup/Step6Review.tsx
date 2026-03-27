@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
+import { syncNameFields } from '@/lib/nameSync'
 import { useForm } from './FormContext'
 import { StepWrapper, FormSection, SectionTitle, FormNav } from './FormFields'
 
@@ -89,20 +90,30 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
       }
 
       // Upsert interpreter_profiles — BETA: auto-approve, no admin review
-      const { data: profileRow, error: profileError } = await supabase.from('interpreter_profiles').upsert({
+      const { normalizeProfileFields } = await import('@/lib/normalize')
+      const normalizedFields = normalizeProfileFields({
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        city: formData.city,
+        state: formData.state,
+        country: formData.country,
+      })
+      const normFirst = (normalizedFields.first_name as string) || formData.firstName
+      const normLast = (normalizedFields.last_name as string) || formData.lastName
+      // TODO: Tech debt — remove interpreter_profiles.name column, derive from first_name + last_name
+      const { data: profileRow, error: profileError } = await supabase.from('interpreter_profiles').upsert(syncNameFields({
         user_id: userId,
-        name: [formData.firstName, formData.lastName].filter(Boolean).join(' ') || formData.email || 'Interpreter',
+        first_name: normFirst,
+        last_name: normLast,
         status: 'approved',
         draft_step: null,
         draft_data: formData,
-        first_name: formData.firstName,
-        last_name: formData.lastName,
         pronouns: formData.pronouns || null,
         email: formData.email,
         phone: formData.phone,
-        country: formData.country,
-        city: formData.city,
-        state: formData.state,
+        country: normalizedFields.country as string || formData.country,
+        city: normalizedFields.city as string || formData.city,
+        state: normalizedFields.state as string || formData.state,
         bio: formData.bio,
         bio_specializations: formData.bioSpecializations,
         bio_extra: formData.bioExtra,
@@ -148,7 +159,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         },
         submitted_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' }).select('id').single()
+      }), { onConflict: 'user_id' }).select('id').single()
 
       if (profileError) {
         console.error('[signup] Failed to save profile fields:', profileError.code, profileError.message, profileError.details)

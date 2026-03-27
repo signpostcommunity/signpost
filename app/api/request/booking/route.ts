@@ -28,12 +28,20 @@ export async function POST(request: NextRequest) {
 
     const admin = getSupabaseAdmin()
 
-    // Get requester name
+    // Get requester profile (includes payment method check)
     const { data: reqProfile } = await admin
       .from('requester_profiles')
-      .select('name, org_name')
+      .select('name, org_name, stripe_default_payment_method_id')
       .eq('id', user.id)
       .maybeSingle()
+
+    // Gate: require payment method for non-draft submissions
+    if (!saveAsDraft && !reqProfile?.stripe_default_payment_method_id) {
+      return NextResponse.json(
+        { error: 'A payment method is required to submit requests. Add one in your profile settings.' },
+        { status: 402 }
+      )
+    }
 
     const requesterName = reqProfile?.org_name || reqProfile?.name || 'Requester'
 

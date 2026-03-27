@@ -2,7 +2,10 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getSupabaseAdmin } from '@/lib/supabase/admin';
 import { generateSlug } from '@/lib/slugUtils';
+import { getStripe } from '@/lib/stripe';
+import { syncNameFields } from '@/lib/nameSync';
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -68,17 +71,20 @@ export async function GET(request: NextRequest) {
     const { data: existing } = await supabase
       .from('deaf_profiles').select('id').eq('id', user.id).maybeSingle();
     if (!existing) {
+      const { normalizeProfileFields } = await import('@/lib/normalize');
       const nameParts = displayName.split(' ');
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || '';
-      await supabase.from('deaf_profiles').insert({
+      const norm = normalizeProfileFields({ first_name: nameParts[0] || '', last_name: nameParts.slice(1).join(' ') || '' });
+      const firstName = (norm.first_name as string) || nameParts[0] || '';
+      const lastName = (norm.last_name as string) || nameParts.slice(1).join(' ') || '';
+      const normName = `${firstName} ${lastName}`.trim() || displayName;
+      // TODO: Tech debt — remove deaf_profiles.name column, derive from first_name + last_name
+      await supabase.from('deaf_profiles').insert(syncNameFields({
         id: user.id,
         user_id: user.id,
-        name: displayName,
         first_name: firstName,
         last_name: lastName,
         email: user.email || '',
-      });
+      }));
 
       // Auto-generate vanity slug
       const baseSlug = generateSlug(firstName, lastName).slice(0, 50);
@@ -117,21 +123,40 @@ export async function GET(request: NextRequest) {
   }
 
   // Requester — create minimal profile and redirect to dashboard
-  const displayName = user.user_metadata?.full_name ?? user.email ?? 'User';
-  const { data: existing } = await supabase
+  const reqDisplayName = user.user_metadata?.full_name ?? user.email ?? 'User';
+  const { data: existingReq } = await supabase
     .from('requester_profiles').select('id').eq('id', user.id).maybeSingle();
-  if (!existing) {
-    const nameParts = displayName.split(' ');
-    const firstName = nameParts[0] || '';
-    const lastName = nameParts.slice(1).join(' ') || '';
-    await supabase.from('requester_profiles').insert({
+  if (!existingReq) {
+    const { normalizeProfileFields: normReqFields } = await import('@/lib/normalize');
+    const reqParts = reqDisplayName.split(' ');
+    const reqNorm = normReqFields({ first_name: reqParts[0] || '', last_name: reqParts.slice(1).join(' ') || '' });
+    const reqFirst = (reqNorm.first_name as string) || reqParts[0] || '';
+    const reqLast = (reqNorm.last_name as string) || reqParts.slice(1).join(' ') || '';
+    const reqNormName = `${reqFirst} ${reqLast}`.trim() || reqDisplayName;
+    // TODO: Tech debt — remove requester_profiles.name column, derive from first_name + last_name
+    await supabase.from('requester_profiles').insert(syncNameFields({
       id: user.id,
       user_id: user.id,
-      name: displayName,
-      first_name: firstName,
-      last_name: lastName,
+      first_name: reqFirst,
+      last_name: reqLast,
       email: user.email || '',
-    });
+    }));
+
+    // Create Stripe customer for new requester (non-blocking)
+    try {
+      const stripe = getStripe();
+      const customer = await stripe.customers.create({
+        email: user.email || undefined,
+        name: reqNormName,
+        metadata: { supabase_user_id: user.id, requester_profile_id: user.id },
+      });
+      const admin = getSupabaseAdmin();
+      await admin.from('requester_profiles')
+        .update({ stripe_customer_id: customer.id })
+        .eq('user_id', user.id);
+    } catch (e) {
+      console.error('Failed to create Stripe customer on OAuth signup:', e);
+    }
   }
   return NextResponse.redirect(`${origin}/request/dashboard`);
 }

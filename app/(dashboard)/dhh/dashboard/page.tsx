@@ -663,11 +663,11 @@ export default function DeafDashboardOverview() {
     ] = await Promise.all([
       supabase
         .from('booking_dhh_clients')
-        .select('booking_id', { count: 'exact', head: true })
+        .select('booking_id', { count: 'exact' }).limit(1)
         .eq('dhh_user_id', user.id),
       supabase
         .from('deaf_roster')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .eq('deaf_user_id', deafProfileId)
         .in('tier', ['preferred', 'approved'])
         .or('do_not_book.is.null,do_not_book.eq.false'),
@@ -696,14 +696,14 @@ export default function DeafDashboardOverview() {
           // Count confirmed recipients on those bookings
           const { count: confirmedCount } = await supabase
             .from('booking_recipients')
-            .select('id', { count: 'exact', head: true })
+            .select('id', { count: 'exact' }).limit(1)
             .in('booking_id', pastIds)
             .eq('status', 'confirmed')
 
           // Count ratings already submitted by this user for those bookings
           const { count: ratedCount } = await supabase
             .from('interpreter_ratings')
-            .select('id', { count: 'exact', head: true })
+            .select('id', { count: 'exact' }).limit(1)
             .eq('deaf_user_id', user.id)
             .in('booking_id', pastIds)
 
@@ -714,7 +714,7 @@ export default function DeafDashboardOverview() {
       })() as Promise<{ count: number; error: null }>,
       supabase
         .from('trusted_deaf_circle')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .or(`inviter_id.eq.${user.id},invitee_id.eq.${user.id}`)
         .eq('status', 'accepted'),
       supabase

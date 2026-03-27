@@ -299,7 +299,7 @@ export default function DhhDashboardSidebar({ userName = 'User', userInitials = 
 
       const { count: rosterCount } = await supabase
         .from('deaf_roster')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .eq('deaf_user_id', deafUserId)
         .in('tier', ['preferred', 'approved'])
         .neq('do_not_book', true)
@@ -307,7 +307,7 @@ export default function DhhDashboardSidebar({ userName = 'User', userInitials = 
       // Unread notifications count (in_app only)
       const { count: notifCount } = await supabase
         .from('notifications')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .eq('recipient_user_id', user.id)
         .eq('channel', 'in_app')
         .neq('status', 'read')
@@ -315,7 +315,7 @@ export default function DhhDashboardSidebar({ userName = 'User', userInitials = 
       // Unread messages count
       const { count: inboxCount } = await supabase
         .from('messages')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .eq('is_read', false)
 
       setBadges({

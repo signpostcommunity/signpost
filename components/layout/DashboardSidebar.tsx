@@ -241,7 +241,7 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
       // Pending inquiries count (via booking_recipients)
       const { count: inquiriesCount, error: inqErr } = await supabase
         .from('booking_recipients')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .eq('interpreter_id', profile.id)
         .in('status', ['sent', 'viewed', 'responded'])
 
@@ -250,7 +250,7 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
       // Confirmed bookings count (via booking_recipients)
       const { count: confirmedCount, error: confErr } = await supabase
         .from('booking_recipients')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .eq('interpreter_id', profile.id)
         .eq('status', 'confirmed')
 
@@ -259,7 +259,7 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
       // Unread messages count
       const { count: inboxCount, error: inboxErr } = await supabase
         .from('messages')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .eq('interpreter_id', profile.id)
         .eq('is_read', false)
 
@@ -268,7 +268,7 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
       // Draft invoices count
       const { count: invoiceDraftsCount, error: invErr } = await supabase
         .from('invoices')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .eq('interpreter_id', profile.id)
         .eq('status', 'draft')
 
@@ -277,7 +277,7 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
       // Unread notifications count (in_app only, exclude failed/pending email rows)
       const { count: notifCount, error: notifErr } = await supabase
         .from('notifications')
-        .select('id', { count: 'exact', head: true })
+        .select('id', { count: 'exact' }).limit(1)
         .eq('recipient_user_id', user.id)
         .eq('channel', 'in_app')
         .neq('status', 'read')

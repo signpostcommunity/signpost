@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Toast from '@/components/ui/Toast'
@@ -68,6 +68,21 @@ const errorStyle: React.CSSProperties = {
 export default function NewRequestPage() {
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
+  const [hasPaymentMethod, setHasPaymentMethod] = useState<boolean | null>(null)
+
+  // Check if requester has a payment method on file
+  useEffect(() => {
+    async function checkPaymentMethod() {
+      try {
+        const res = await fetch('/api/stripe/payment-method')
+        const data = await res.json()
+        setHasPaymentMethod(!!data.paymentMethod)
+      } catch {
+        setHasPaymentMethod(false)
+      }
+    }
+    checkPaymentMethod()
+  }, [])
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
@@ -115,6 +130,13 @@ export default function NewRequestPage() {
 
   async function handleSubmit(saveAsDraft: boolean) {
     if (!saveAsDraft && !validate()) return
+
+    // Gate: require payment method for non-draft submissions
+    if (!saveAsDraft && !hasPaymentMethod) {
+      setToast({ message: 'Add a payment method to submit requests.', type: 'error' })
+      return
+    }
+
     setSubmitting(true)
 
     try {
@@ -453,6 +475,28 @@ export default function NewRequestPage() {
             </Link>
           )
         })()}
+
+        {/* Payment method gate warning */}
+        {hasPaymentMethod === false && (
+          <div style={{
+            marginTop: 24,
+            padding: '14px 18px',
+            background: 'rgba(239,68,68,0.06)',
+            border: '1px solid rgba(239,68,68,0.2)',
+            borderRadius: 'var(--radius-sm)',
+            fontSize: '14px',
+            color: '#c8cdd8',
+            lineHeight: 1.6,
+          }}>
+            <Link
+              href="/request/dashboard/profile"
+              style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'underline' }}
+            >
+              Add a payment method
+            </Link>
+            {' '}to submit requests. You&apos;ll only be charged when a booking is confirmed.
+          </div>
+        )}
 
         {/* ── Actions ── */}
         <div style={{ display: 'flex', gap: 12, marginTop: 32, marginBottom: 48 }}>

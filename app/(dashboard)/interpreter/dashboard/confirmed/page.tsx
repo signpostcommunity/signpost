@@ -214,11 +214,24 @@ function CancelModal({ booking, onClose, onCancelled }: {
         recipientUserId: booking.requester_id,
         type: 'booking_cancelled',
         subject: `Booking cancelled: ${booking.title || 'Booking'}`,
-        body: `The interpreter has cancelled the booking for ${booking.title || 'Booking'} on ${dateStr}. Reason: ${finalReason}`,
+        body: `The interpreter has cancelled the booking for ${booking.title || 'Booking'} on ${dateStr}. Reason: ${finalReason}. A $15 credit has been applied to your account for your next booking.`,
         metadata: { booking_id: booking.id },
         ctaText: 'View Details',
         ctaUrl: 'https://signpost.community/request/dashboard',
       }).catch(err => console.error('[confirmed] requester cancel notification failed:', err))
+    }
+
+    // Issue $15 booking credit to the requester (interpreter-initiated cancellation)
+    if (booking.requester_id) {
+      fetch('/api/stripe/booking-credit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingId: booking.id,
+          requesterId: booking.requester_id,
+          reason: 'interpreter_cancellation',
+        }),
+      }).catch(err => console.error('[confirmed] credit issuance failed:', err))
     }
 
     onCancelled(subOption === 'help')
