@@ -73,7 +73,7 @@ export default function ClientListsPage() {
             {isOpen && (
               <div style={{ padding: '20px 22px', borderTop: '1px solid var(--border)' }}>
                 {/* Preferred */}
-                <div style={{ fontWeight: 600, fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 12 }}>
+                <div style={{ fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 12 }}>
                   ★ Preferred Interpreters
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
@@ -83,7 +83,7 @@ export default function ClientListsPage() {
                 </div>
 
                 {/* Secondary */}
-                <div style={{ fontWeight: 600, fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 12 }}>
+                <div style={{ fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 12 }}>
                   ✓ Secondary Tier
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

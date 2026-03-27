@@ -425,7 +425,7 @@ export default function DhhRequestPage() {
         {/* Section 5: Context Video */}
         <div style={{ marginBottom: 32 }}>
           <div style={{
-            fontWeight: 600, fontSize: '12px', letterSpacing: '0.08em',
+            fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em',
             textTransform: 'uppercase' as const, color: '#a78bfa', marginBottom: 8,
           }}>
             ADD A VIDEO FOR CONTEXT (OPTIONAL)

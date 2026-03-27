@@ -324,7 +324,7 @@ function AppointmentVideoSection({ booking }: { booking: BookingWithRecipients }
   }
 
   const sectionLabelStyle: React.CSSProperties = {
-    fontWeight: 600, fontSize: '12px',
+    fontWeight: 600, fontSize: '13px',
     letterSpacing: '0.08em', textTransform: 'uppercase' as const,
     color: '#a78bfa', marginBottom: 8,
   }
@@ -1033,7 +1033,7 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
               {/* LEFT: Appointment Details */}
               <div>
                 <div style={{
-                  fontWeight: 600, fontSize: '12px',
+                  fontWeight: 600, fontSize: '13px',
                   letterSpacing: '0.08em', textTransform: 'uppercase' as const,
                   color: '#a78bfa', marginBottom: 12,
                 }}>
@@ -1119,7 +1119,7 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
               {/* RIGHT: Interpreters Contacted */}
               <div>
                 <div style={{
-                  fontWeight: 600, fontSize: '12px',
+                  fontWeight: 600, fontSize: '13px',
                   letterSpacing: '0.08em', textTransform: 'uppercase' as const,
                   color: '#a78bfa', marginBottom: 12,
                 }}>

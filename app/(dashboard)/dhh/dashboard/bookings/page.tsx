@@ -269,7 +269,7 @@ function DetailModal({ booking, onClose, onToast }: {
   const isSelfRequest = !booking.requester_display
 
   const sectionLabelStyle: React.CSSProperties = {
-    fontWeight: 600, fontSize: '12px', letterSpacing: '0.08em',
+    fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em',
     textTransform: 'uppercase' as const, color: '#a78bfa', marginBottom: 10,
   }
   const detailRowStyle: React.CSSProperties = {
@@ -530,7 +530,7 @@ function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast, on
         if (!embedUrl) return null
         return (
           <div style={{ padding: '10px 0', borderTop: '1px solid var(--border)' }}>
-            <div style={{ fontWeight: 600, fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#a78bfa', marginBottom: 8 }}>
+            <div style={{ fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase' as const, color: '#a78bfa', marginBottom: 8 }}>
               Context Video
             </div>
             {embedUrl.includes('supabase.co/storage') ? (
@@ -714,7 +714,7 @@ const requesterCardStyle: React.CSSProperties = {
 
 const requesterSectionLabelStyle: React.CSSProperties = {
   fontWeight: 600,
-  fontSize: '12px',
+  fontSize: '13px',
   letterSpacing: '0.08em',
   textTransform: 'uppercase' as const,
   color: '#a78bfa',

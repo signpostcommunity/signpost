@@ -217,7 +217,7 @@ export function groupByTimeCategory<T extends { date: string }>(bookings: T[]): 
 
 /** Section header style for time categories */
 export const timeCategoryHeaderStyle: React.CSSProperties = {
-  fontSize: '11.5px',
+  fontSize: '12px',
   fontWeight: 500,
   letterSpacing: '0.06em',
   textTransform: 'uppercase',

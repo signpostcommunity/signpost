@@ -144,7 +144,7 @@ export default function RequesterOverviewClient({
       {/* Recent Requests */}
       <div style={{ marginBottom: 36 }}>
         <h3 style={{
-          fontWeight: 600, fontSize: '12px',
+          fontWeight: 600, fontSize: '13px',
           letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff',
           margin: '0 0 14px',
         }}>
@@ -209,7 +209,7 @@ export default function RequesterOverviewClient({
       {/* Quick Actions */}
       <div>
         <h3 style={{
-          fontWeight: 600, fontSize: '12px',
+          fontWeight: 600, fontSize: '13px',
           letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff',
           margin: '0 0 14px',
         }}>

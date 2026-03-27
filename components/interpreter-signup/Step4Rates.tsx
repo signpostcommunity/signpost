@@ -378,7 +378,7 @@ export default function Step4Rates({ onBack, onContinue }: {
         borderRadius: 'var(--radius-sm)', padding: '18px 20px', marginBottom: 28,
       }}>
         <div style={{
-          fontWeight: 600, fontSize: '12px',
+          fontWeight: 600, fontSize: '13px',
           letterSpacing: '0.08em', textTransform: 'uppercase',
           color: '#00e5ff', marginBottom: 8,
         }}>
@@ -410,7 +410,7 @@ export default function Step4Rates({ onBack, onContinue }: {
         borderRadius: 'var(--radius-sm)', padding: '18px 20px', marginTop: 28,
       }}>
         <div style={{
-          fontWeight: 600, fontSize: '12px',
+          fontWeight: 600, fontSize: '13px',
           letterSpacing: '0.08em', textTransform: 'uppercase',
           color: '#00e5ff', marginBottom: 8,
         }}>

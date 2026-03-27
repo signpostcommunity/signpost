@@ -68,7 +68,7 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <h3 style={{
-      fontWeight: 600, fontSize: '12px',
+      fontWeight: 600, fontSize: '13px',
       letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff',
       margin: '28px 0 14px',
     }}>

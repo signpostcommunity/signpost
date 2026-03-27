@@ -233,7 +233,7 @@ export default function TrustedDeafCirclePage() {
           {/* YOUR CIRCLE section */}
           <section style={{ marginBottom: 40 }}>
             <h2 style={{
-              fontWeight: 600, fontSize: '12px',
+              fontWeight: 600, fontSize: '13px',
               color: '#a78bfa', margin: '0 0 14px', textTransform: 'uppercase' as const,
               letterSpacing: '0.08em',
             }}>
@@ -326,7 +326,7 @@ export default function TrustedDeafCirclePage() {
           {(pendingSent.length > 0 || pendingReceived.length > 0) && (
             <section>
               <h2 style={{
-                fontWeight: 600, fontSize: '12px',
+                fontWeight: 600, fontSize: '13px',
                 color: '#a78bfa', margin: '0 0 14px', textTransform: 'uppercase' as const,
                 letterSpacing: '0.08em',
               }}>
@@ -337,7 +337,7 @@ export default function TrustedDeafCirclePage() {
               {pendingReceived.length > 0 && (
                 <div style={{ marginBottom: 16 }}>
                   <h3 style={{
-                    fontWeight: 500, fontSize: '11.5px', textTransform: 'uppercase' as const,
+                    fontWeight: 500, fontSize: '12px', textTransform: 'uppercase' as const,
                     letterSpacing: '0.06em', color: '#96a0b8', margin: '0 0 8px',
                   }}>
                     Received
@@ -399,7 +399,7 @@ export default function TrustedDeafCirclePage() {
               {pendingSent.length > 0 && (
                 <div>
                   <h3 style={{
-                    fontWeight: 500, fontSize: '11.5px', textTransform: 'uppercase' as const,
+                    fontWeight: 500, fontSize: '12px', textTransform: 'uppercase' as const,
                     letterSpacing: '0.06em', color: '#96a0b8', margin: '0 0 8px',
                   }}>
                     Sent

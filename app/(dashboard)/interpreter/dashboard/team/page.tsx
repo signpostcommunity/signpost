@@ -192,7 +192,7 @@ function TierSection({ title, accentColor, members, onMoveTier, onRemove, onEdit
     <div style={{ marginBottom: 32 }}>
       <div style={{
         fontWeight: 600,
-        fontSize: '12px', letterSpacing: '0.08em',
+        fontSize: '13px', letterSpacing: '0.08em',
         textTransform: 'uppercase', color: accentColor,
         marginBottom: 12, paddingBottom: 8,
         borderBottom: `1px solid ${accentColor}22`,

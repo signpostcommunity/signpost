@@ -170,7 +170,7 @@ export default function AslTourButton() {
               background: 'rgba(123,97,255,0.12)',
               border: '1px solid rgba(123,97,255,0.25)',
               color: '#a78bfa',
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: 500,
               padding: '3px 10px',
               borderRadius: 100,

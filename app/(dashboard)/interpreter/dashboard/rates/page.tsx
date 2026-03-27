@@ -428,7 +428,7 @@ export default function RatesPage() {
                 </div>
 
                 {/* Travel expenses */}
-                <div style={{ fontWeight: 600, fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 8, marginTop: 4 }}>
+                <div style={{ fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 8, marginTop: 4 }}>
                   Travel &amp; Incidental Expenses
                 </div>
                 <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginBottom: 12, lineHeight: 1.5 }}>

@@ -282,7 +282,7 @@ function DetailModal({ booking, onClose }: {
   const isRemote = booking.format === 'remote'
 
   const sectionLabelStyle: React.CSSProperties = {
-    fontSize: '12px', fontWeight: 600, letterSpacing: '0.08em',
+    fontSize: '13px', fontWeight: 600, letterSpacing: '0.08em',
     textTransform: 'uppercase', color: '#00e5ff', marginBottom: 10,
   }
   const detailRowStyle: React.CSSProperties = {

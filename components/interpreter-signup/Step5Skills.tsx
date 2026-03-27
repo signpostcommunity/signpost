@@ -90,7 +90,7 @@ export default function Step5Skills({ onBack, onContinue }: {
                     width: '100%', padding: '12px 16px',
                     background: 'none', border: 'none', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    fontSize: '11.5px', fontWeight: 500,
+                    fontSize: '12px', fontWeight: 500,
                     letterSpacing: '0.06em', textTransform: 'uppercase',
                     color: selectedCount > 0 ? '#00e5ff' : '#96a0b8',
                   }}

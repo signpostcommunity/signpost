@@ -55,7 +55,7 @@ const cardStyle: React.CSSProperties = {
 
 const sectionLabelStyle: React.CSSProperties = {
   fontWeight: 600,
-  fontSize: '12px',
+  fontSize: '13px',
   letterSpacing: '0.08em',
   textTransform: 'uppercase' as const,
   color: '#a78bfa',

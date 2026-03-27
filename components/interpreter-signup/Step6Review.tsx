@@ -461,7 +461,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
           textAlign: 'left', margin: '0 auto 24px', maxWidth: 480,
         }}>
           <div style={{
-            fontWeight: 600, fontSize: '12px',
+            fontWeight: 600, fontSize: '13px',
             letterSpacing: '0.08em', textTransform: 'uppercase',
             color: '#00e5ff', marginBottom: 14,
           }}>

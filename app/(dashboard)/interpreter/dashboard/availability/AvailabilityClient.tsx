@@ -314,7 +314,7 @@ export default function AvailabilityClient({
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12,
       }}>
         <div>
-          <div style={{ fontWeight: 600, fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 4 }}>Your Timezone</div>
+          <div style={{ fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 4 }}>Your Timezone</div>
           <div style={{ fontSize: '0.9rem' }}>Pacific Time (UTC-8)</div>
         </div>
         <GhostButton>Change Timezone</GhostButton>
@@ -326,7 +326,7 @@ export default function AvailabilityClient({
         borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 20,
       }}>
         <div style={{
-          fontWeight: 600, fontSize: '12px',
+          fontWeight: 600, fontSize: '13px',
           letterSpacing: '0.08em', textTransform: 'uppercase',
           color: '#00e5ff', marginBottom: 16,
         }}>
@@ -472,7 +472,7 @@ export default function AvailabilityClient({
         borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 20,
       }}>
         <div style={{
-          fontWeight: 600, fontSize: '12px',
+          fontWeight: 600, fontSize: '13px',
           letterSpacing: '0.08em', textTransform: 'uppercase',
           color: '#00e5ff', marginBottom: 16,
         }}>

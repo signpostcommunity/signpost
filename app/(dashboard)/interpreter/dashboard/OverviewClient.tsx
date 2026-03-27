@@ -565,7 +565,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 24,
       }}>
         <div style={{
-          fontWeight: 600, fontSize: '12px',
+          fontWeight: 600, fontSize: '13px',
           letterSpacing: '0.08em', textTransform: 'uppercase',
           color: '#00e5ff', marginBottom: 8,
         }}>
@@ -587,7 +587,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
 
         {/* Your link */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: '12px', fontWeight: 600, color: '#00e5ff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Your link</div>
+          <div style={{ fontSize: '13px', fontWeight: 600, color: '#00e5ff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Your link</div>
           {vanitySlug ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
               <span style={{

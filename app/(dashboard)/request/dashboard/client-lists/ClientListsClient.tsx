@@ -213,7 +213,7 @@ function ClientCard({ client, onToggle }: { client: ClientData; onToggle: () => 
             <div style={{ marginBottom: 20 }}>
               <div style={{
                 fontWeight: 600,
-                fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+                fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase' as const,
                 color: '#00e5ff', marginBottom: 10,
               }}>
                 Preferred ({client.preferred.length})
@@ -231,7 +231,7 @@ function ClientCard({ client, onToggle }: { client: ClientData; onToggle: () => 
             <div style={{ marginBottom: 20 }}>
               <div style={{
                 fontWeight: 600,
-                fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+                fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase' as const,
                 color: '#00e5ff', marginBottom: 10,
               }}>
                 Secondary Tier ({client.secondary.length})
@@ -278,7 +278,7 @@ function ClientCard({ client, onToggle }: { client: ClientData; onToggle: () => 
         }}>
           <div style={{
             fontWeight: 600,
-            fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+            fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase' as const,
             color: '#ff8099', marginBottom: 8,
           }}>
             Do Not Book ({client.doNotBook.length})

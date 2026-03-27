@@ -676,7 +676,7 @@ export default function DhhPreferencesPage() {
           {/* ── Written sub-section ── */}
           <div style={{ marginBottom: 24 }}>
             <div style={{
-              fontWeight: 600, fontSize: '12px', textTransform: 'uppercase' as const,
+              fontWeight: 600, fontSize: '13px', textTransform: 'uppercase' as const,
               letterSpacing: '0.08em', color: '#a78bfa', marginBottom: 10,
             }}>
               Written
@@ -732,7 +732,7 @@ export default function DhhPreferencesPage() {
           {/* ── Video sub-section ── */}
           <div>
             <div style={{
-              fontWeight: 600, fontSize: '12px', textTransform: 'uppercase' as const,
+              fontWeight: 600, fontSize: '13px', textTransform: 'uppercase' as const,
               letterSpacing: '0.08em', color: '#a78bfa', marginBottom: 4,
             }}>
               Video

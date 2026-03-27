@@ -356,7 +356,7 @@ function DetailModal({ booking, onClose }: { booking: RecentBooking; onClose: ()
           {/* LEFT: Appointment Details */}
           <div>
             <div style={{
-              fontWeight: 600, fontSize: '12px',
+              fontWeight: 600, fontSize: '13px',
               letterSpacing: '0.08em', textTransform: 'uppercase' as const,
               color: '#a78bfa', marginBottom: 12,
             }}>
@@ -432,7 +432,7 @@ function DetailModal({ booking, onClose }: { booking: RecentBooking; onClose: ()
           {/* RIGHT: Interpreters Contacted */}
           <div>
             <div style={{
-              fontWeight: 600, fontSize: '12px',
+              fontWeight: 600, fontSize: '13px',
               letterSpacing: '0.08em', textTransform: 'uppercase' as const,
               color: '#a78bfa', marginBottom: 12,
             }}>
@@ -868,7 +868,7 @@ export default function DeafDashboardOverview() {
         {/* LEFT: Recent Requests */}
         <div>
           <div style={{
-            fontWeight: 600, fontSize: '12px',
+            fontWeight: 600, fontSize: '13px',
             letterSpacing: '0.08em', textTransform: 'uppercase' as const,
             color: '#a78bfa', marginBottom: 12,
           }}>
@@ -909,7 +909,7 @@ export default function DeafDashboardOverview() {
         {/* RIGHT: Preferred Interpreters */}
         <div>
           <div style={{
-            fontWeight: 600, fontSize: '12px',
+            fontWeight: 600, fontSize: '13px',
             letterSpacing: '0.08em', textTransform: 'uppercase' as const,
             color: '#a78bfa', marginBottom: 12,
           }}>

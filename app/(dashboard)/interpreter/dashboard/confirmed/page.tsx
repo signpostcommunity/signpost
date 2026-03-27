@@ -581,7 +581,7 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
   }, [booking.id, currentInterpreterId])
 
   const sectionLabelStyle: React.CSSProperties = {
-    fontSize: '12px', fontWeight: 600, letterSpacing: '0.08em',
+    fontSize: '13px', fontWeight: 600, letterSpacing: '0.08em',
     textTransform: 'uppercase', color: '#00e5ff', marginBottom: 10,
   }
   const detailRowStyle: React.CSSProperties = {
@@ -1228,7 +1228,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
         <div style={{ padding: '0 28px 16px', overflowY: 'auto', maxHeight: '64vh' }}>
           {/* Job details (read-only) */}
           <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
-            <div style={{ fontWeight: 600, fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 10 }}>Job Details</div>
+            <div style={{ fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 10 }}>Job Details</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6 }}>
               <div style={{ fontWeight: 600 }}>{booking.title || 'Booking'}</div>
               <div style={{ color: 'var(--muted)' }}>{formatDate(booking.date)} · {formatTime(booking.time_start, booking.time_end)}</div>
@@ -1238,7 +1238,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
 
           {/* Billing recipient */}
           <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
-            <div style={{ fontWeight: 600, fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 10 }}>Bill To</div>
+            <div style={{ fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 10 }}>Bill To</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div>
                 <label style={labelSt}>Requester Name</label>
@@ -1257,7 +1257,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
 
           {/* Time & Rate */}
           <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
-            <div style={{ fontWeight: 600, fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 10 }}>Time &amp; Rate</div>
+            <div style={{ fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 10 }}>Time &amp; Rate</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
               <div>
                 <label style={labelSt}>Start Time</label>
@@ -1288,7 +1288,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
 
           {/* Additional Costs */}
           <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
-            <div style={{ fontWeight: 600, fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 10 }}>Additional Costs</div>
+            <div style={{ fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 10 }}>Additional Costs</div>
             {additionalCosts.map((cost, i) => (
               <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'flex-end' }}>
                 <div style={{ flex: 1 }}>
@@ -1357,7 +1357,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
 
           {/* Payment Terms */}
           <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
-            <div style={{ fontWeight: 600, fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 10 }}>Payment Terms</div>
+            <div style={{ fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 10 }}>Payment Terms</div>
             <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
               <select value={paymentTerms} onChange={e => setPaymentTerms(e.target.value)} style={{ ...inputSt, maxWidth: 200 }}
                 onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
@@ -1374,7 +1374,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
 
           {/* Payment Methods */}
           <div style={{ padding: '16px 0' }}>
-            <div style={{ fontWeight: 600, fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 10 }}>Payment Methods</div>
+            <div style={{ fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 10 }}>Payment Methods</div>
             {paymentMethods.length > 0 ? (
               <div style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.8 }}>
                 {paymentMethods.map((pm, i) => (

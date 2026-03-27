@@ -44,7 +44,7 @@ const labelStyle: React.CSSProperties = {
 
 const sectionTitleStyle: React.CSSProperties = {
   fontWeight: 600,
-  fontSize: '12px',
+  fontSize: '13px',
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
   color: '#00e5ff',
@@ -898,7 +898,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
 
             {/* ── Your link ── */}
             <div style={{ marginBottom: vanitySlug ? 24 : 0 }}>
-              <div style={{ fontSize: '12px', fontWeight: 600, color: '#00e5ff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Your link</div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: '#00e5ff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Your link</div>
               {vanitySlug && !editingSlug ? (
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
@@ -1253,7 +1253,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
             Select all sign languages in which you have professional-level fluency.
           </p>
-          <div style={{ fontWeight: 500, fontSize: '11.5px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#96a0b8', marginBottom: 10 }}>
+          <div style={{ fontWeight: 500, fontSize: '12px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#96a0b8', marginBottom: 10 }}>
             Most common
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 6, marginBottom: 12 }}>
@@ -1261,7 +1261,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
               <Chip key={lang} label={lang} selected={signLangs.includes(lang)} onToggle={() => toggleInList(signLangs, lang, setSignLangs)} />
             ))}
           </div>
-          <div style={{ fontWeight: 500, fontSize: '11.5px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#96a0b8', marginBottom: 6 }}>
+          <div style={{ fontWeight: 500, fontSize: '12px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#96a0b8', marginBottom: 6 }}>
             More languages by region
           </div>
           <select
@@ -1297,7 +1297,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
             Select all spoken languages in which you have professional-level fluency.
           </p>
-          <div style={{ fontWeight: 500, fontSize: '11.5px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#96a0b8', marginBottom: 10 }}>
+          <div style={{ fontWeight: 500, fontSize: '12px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#96a0b8', marginBottom: 10 }}>
             Most common
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 6, marginBottom: 12 }}>
@@ -1305,7 +1305,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
               <Chip key={lang} label={lang} selected={spokenLangs.includes(lang)} onToggle={() => toggleInList(spokenLangs, lang, setSpokenLangs)} />
             ))}
           </div>
-          <div style={{ fontWeight: 500, fontSize: '11.5px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#96a0b8', marginBottom: 6 }}>
+          <div style={{ fontWeight: 500, fontSize: '12px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#96a0b8', marginBottom: 6 }}>
             More languages by region
           </div>
           <select
@@ -1951,7 +1951,7 @@ function SkillsTab({ specs, setSpecs, specializedSkills, setSpecializedSkills, s
                   width: '100%', padding: '12px 16px',
                   background: 'none', border: 'none', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  fontSize: '11.5px', fontWeight: 500,
+                  fontSize: '12px', fontWeight: 500,
                   letterSpacing: '0.06em', textTransform: 'uppercase',
                   color: selectedCount > 0 ? '#00e5ff' : '#96a0b8',
                 }}
@@ -2409,7 +2409,7 @@ function SettingsTab({
         {NOTIF_SECTIONS.map(section => (
           <div key={section.section} style={{ marginBottom: 20 }}>
             <div style={{
-              fontWeight: 600, fontSize: '12px',
+              fontWeight: 600, fontSize: '13px',
               letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff',
               marginBottom: 10, paddingBottom: 6, borderBottom: '1px solid var(--border)',
             }}>
@@ -2429,7 +2429,7 @@ function SettingsTab({
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                        <span style={{ fontSize: '11.5px', color: '#96a0b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Email</span>
+                        <span style={{ fontSize: '12px', color: '#96a0b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Email</span>
                         <ToggleSwitch
                           on={notifPrefs.email_enabled && pref.email}
                           onChange={() => toggleCategory(item.key, 'email')}
@@ -2437,7 +2437,7 @@ function SettingsTab({
                         />
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                        <span style={{ fontSize: '11.5px', color: '#96a0b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>SMS</span>
+                        <span style={{ fontSize: '12px', color: '#96a0b8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>SMS</span>
                         <ToggleSwitch
                           on={notifPrefs.sms_enabled && pref.sms}
                           onChange={() => toggleCategory(item.key, 'sms')}

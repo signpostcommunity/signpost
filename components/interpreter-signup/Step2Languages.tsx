@@ -57,7 +57,7 @@ function LangPicker({
       {/* Most common label */}
       <div style={{
         fontWeight: 500,
-        fontSize: '11.5px',
+        fontSize: '12px',
         letterSpacing: '0.06em', textTransform: 'uppercase' as const,
         color: '#96a0b8', marginBottom: 10,
       }}>
@@ -84,7 +84,7 @@ function LangPicker({
       <div style={{ marginTop: 12 }}>
         <div style={{
           fontWeight: 500,
-          fontSize: '11.5px',
+          fontSize: '12px',
           letterSpacing: '0.06em', textTransform: 'uppercase' as const,
           color: '#96a0b8', marginBottom: 6,
         }}>
