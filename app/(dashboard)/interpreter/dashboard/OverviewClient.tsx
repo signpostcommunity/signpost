@@ -5,8 +5,6 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { BetaBanner, SectionLabel, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import PendingRolesNudge from '@/components/shared/PendingRolesNudge'
-import BookMeBadge from '@/components/interpreter/BookMeBadge'
-import CalendarSyncCard from '@/components/dashboard/interpreter/CalendarSyncCard'
 
 /* ── Types ── */
 
@@ -24,6 +22,15 @@ interface Booking {
   notes: string | null
   status: string
   is_seed: boolean | null
+}
+
+interface TeamMember {
+  id: string
+  first_name: string | null
+  last_name: string | null
+  tier: string | null
+  photo_url: string | null
+  avatar_color: string | null
 }
 
 /* ── Date formatting helpers ── */
@@ -159,108 +166,6 @@ function StatCard({ num, label, href }: { num: number; label: string; href: stri
   )
 }
 
-/* ── Book Me Badge Actions (buttons + collapsible guide, used inside combined card) ── */
-
-function BookMeBadgeActions({ interpreterProfileId, displayName, onToast }: {
-  interpreterProfileId: string; displayName: string; onToast: (m: string) => void
-}) {
-  const [guideOpen, setGuideOpen] = useState(false)
-
-  const badgeUrl = `https://signpost.community/api/badge/${interpreterProfileId}`
-  const profileUrl = `https://signpost.community/directory/${interpreterProfileId}`
-  const embedHtml = `<a href="${profileUrl}"><img src="${badgeUrl}" alt="Book ${displayName} on signpost" width="500" style="border-radius:16px;border:0;"></a>`
-
-  function copyBadgeEmbed() {
-    navigator.clipboard.writeText(embedHtml)
-    onToast('Badge copied! Paste it in your email signature.')
-  }
-
-  function copyImageLink() {
-    navigator.clipboard.writeText(badgeUrl)
-    onToast('Image link copied!')
-  }
-
-  const linkStyle: React.CSSProperties = {
-    color: 'var(--accent)', textDecoration: 'none', fontWeight: 600,
-  }
-
-  return (
-    <>
-      {/* Buttons */}
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
-        <button
-          onClick={copyBadgeEmbed}
-          className="btn-primary"
-          style={{ fontSize: '0.82rem', padding: '10px 20px' }}
-        >
-          Copy badge for email
-        </button>
-        <button
-          onClick={copyImageLink}
-          style={{
-            background: 'none', border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-sm)', padding: '10px 20px',
-            color: 'var(--muted)', fontSize: '0.82rem', fontWeight: 600,
-            cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
-            transition: 'border-color 0.15s',
-          }}
-        >
-          Copy badge image link
-        </button>
-      </div>
-
-      {/* How to add — collapsible */}
-      <button
-        onClick={() => setGuideOpen(!guideOpen)}
-        aria-expanded={guideOpen}
-        style={{
-          background: 'none', border: 'none', cursor: 'pointer',
-          color: 'var(--muted)', fontSize: '0.82rem', fontWeight: 600,
-          fontFamily: "'DM Sans', sans-serif", padding: '4px 0',
-          display: 'flex', alignItems: 'center', gap: 6,
-        }}
-      >
-        How to add your badge
-        <svg
-          width="12" height="12" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-          style={{ transform: guideOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}
-        >
-          <path d="M6 9l6 6 6-6" />
-        </svg>
-      </button>
-
-      {guideOpen && (
-        <div style={{
-          marginTop: 12, padding: '16px', background: 'var(--surface)',
-          border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
-          fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.7,
-          display: 'flex', flexDirection: 'column', gap: 14,
-        }}>
-          <div>
-            <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Gmail</div>
-            <a href="https://mail.google.com/mail/u/0/#settings/general" target="_blank" rel="noopener noreferrer" style={linkStyle}>
-              Go to your signature settings
-            </a>
-            . Scroll down to &quot;Signature,&quot; click in the signature box, paste, and click &quot;Save changes&quot; at the bottom of the page.
-          </div>
-          <div>
-            <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>LinkedIn</div>
-            <a href="https://www.linkedin.com/in/me" target="_blank" rel="noopener noreferrer" style={linkStyle}>
-              Go to your LinkedIn profile
-            </a>
-            . Add the badge image to your Featured section or About section.
-          </div>
-          <div>
-            <div style={{ fontWeight: 700, color: 'var(--text)', marginBottom: 4 }}>Other email providers</div>
-            Look for &quot;Signature&quot; in your email settings, paste the badge, and save.
-          </div>
-        </div>
-      )}
-    </>
-  )
-}
-
 /* ── Main Component ── */
 
 interface OverviewClientProps {
@@ -277,20 +182,22 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
   const displayName = firstName || 'there'
   const hasDraftProfile = profileStatus === 'draft'
   const [toast, setToast] = useState<string | null>(null)
-  const [currentCalendarToken, setCurrentCalendarToken] = useState(calendarToken)
   const [newInquiries, setNewInquiries] = useState(0)
   const [confirmedThisMonth, setConfirmedThisMonth] = useState(0)
   const [teamCount, setTeamCount] = useState(0)
   const [daysAvailable, setDaysAvailable] = useState(0)
   const [pendingBookings, setPendingBookings] = useState<Booking[]>([])
   const [confirmedBookings, setConfirmedBookings] = useState<Booking[]>([])
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
   const [loading, setLoading] = useState(true)
   const [profileIncomplete, setProfileIncomplete] = useState(false)
   const [bannerDismissed, setBannerDismissed] = useState(true)
   const [videoRequestCount, setVideoRequestCount] = useState(0)
   const [hasIntroVideo, setHasIntroVideo] = useState(false)
+  const [calSyncDismissed, setCalSyncDismissed] = useState(true)
+  const [badgeNudgeDismissed, setBadgeNudgeDismissed] = useState(true)
 
-  // Check localStorage for banner dismissal
+  // Check localStorage for banner dismissals
   useEffect(() => {
     const dismissedAt = localStorage.getItem('signpost_profile_banner_dismissed')
     if (dismissedAt) {
@@ -298,11 +205,15 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       const sevenDays = 7 * 24 * 60 * 60 * 1000
       if (Date.now() - dismissedTime < sevenDays) {
         setBannerDismissed(true)
-        return
+      } else {
+        localStorage.removeItem('signpost_profile_banner_dismissed')
+        setBannerDismissed(false)
       }
-      localStorage.removeItem('signpost_profile_banner_dismissed')
+    } else {
+      setBannerDismissed(false)
     }
-    setBannerDismissed(false)
+    setCalSyncDismissed(!!localStorage.getItem('signpost_calendar_sync_dismissed'))
+    setBadgeNudgeDismissed(!!localStorage.getItem('signpost_bookme_badge_dismissed'))
   }, [])
 
   useEffect(() => {
@@ -453,6 +364,30 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         setDaysAvailable(uniqueDays.size)
       }
 
+      // Preferred team members (compact list for right column, max 5)
+      const { data: teamData, error: teamDataErr } = await supabase
+        .from('interpreter_preferred_team')
+        .select('id, first_name, last_name, tier, interpreter_profiles:member_interpreter_id(photo_url, avatar_color)')
+        .eq('interpreter_id', interpreterProfileId!)
+        .order('id', { ascending: false })
+        .limit(5)
+
+      if (!teamDataErr && teamData) {
+        // Normalize nested join (Supabase returns array for FK joins)
+        const normalized: TeamMember[] = teamData.map((m: Record<string, unknown>) => {
+          const profile = Array.isArray(m.interpreter_profiles) ? m.interpreter_profiles[0] : m.interpreter_profiles
+          return {
+            id: m.id as string,
+            first_name: m.first_name as string | null,
+            last_name: m.last_name as string | null,
+            tier: m.tier as string | null,
+            photo_url: (profile as Record<string, unknown> | null)?.photo_url as string | null ?? null,
+            avatar_color: (profile as Record<string, unknown> | null)?.avatar_color as string | null ?? null,
+          }
+        })
+        setTeamMembers(normalized)
+      }
+
       setLoading(false)
     }
     fetchData()
@@ -528,71 +463,6 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         </div>
       )}
 
-      {/* Incomplete profile banner */}
-      {profileIncomplete && !bannerDismissed && !hasDraftProfile && !loading && (
-        <div style={{
-          background: 'rgba(0, 229, 255, 0.06)', border: '1px solid rgba(0, 229, 255, 0.2)',
-          borderRadius: 12, padding: '16px 20px', marginBottom: 24,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-          flexWrap: 'wrap',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
-            <span style={{ color: 'var(--text)', fontSize: '0.9rem', lineHeight: 1.5 }}>
-              Your profile isn&apos;t complete yet. A complete profile helps clients find and trust you.
-            </span>
-            <a
-              href="/interpreter/dashboard/profile"
-              style={{
-                color: 'var(--accent)', fontWeight: 600, fontSize: '0.85rem',
-                textDecoration: 'none', whiteSpace: 'nowrap',
-              }}
-            >
-              Complete your profile &rarr;
-            </a>
-          </div>
-          <button
-            onClick={() => {
-              localStorage.setItem('signpost_profile_banner_dismissed', String(Date.now()))
-              setBannerDismissed(true)
-            }}
-            aria-label="Dismiss banner"
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--muted)', padding: 4, flexShrink: 0,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 6L6 18" /><path d="M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      )}
-
-      {/* Video request demand banner */}
-      {!hasIntroVideo && videoRequestCount > 0 && !loading && (
-        <div style={{
-          background: 'rgba(0, 229, 255, 0.04)', border: '1px solid rgba(0, 229, 255, 0.15)',
-          borderRadius: 'var(--radius-sm)', padding: '12px 18px',
-          display: 'flex', alignItems: 'center', gap: 10,
-          marginBottom: 16,
-        }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#c8cdd8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            <circle cx="9" cy="7" r="4" stroke="#c8cdd8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="#c8cdd8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#c8cdd8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          <span style={{ color: '#c8cdd8', fontSize: '0.88rem', lineHeight: 1.5 }}>
-            {videoRequestCount} {videoRequestCount === 1 ? 'person has' : 'people have'} requested your intro video.{' '}
-            <a href="/interpreter/dashboard/profile" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>
-              Record yours &rarr;
-            </a>
-          </span>
-        </div>
-      )}
-
       {/* Stats */}
       <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16, marginBottom: 38, alignItems: 'stretch' }}>
         <StatCard num={newInquiries} label="New Inquiries" href="/interpreter/dashboard/inquiries" />
@@ -601,178 +471,322 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         <StatCard num={daysAvailable} label="Days Available This Week" href="/interpreter/dashboard/availability" />
       </div>
 
-      {/* Book Me Badges — single combined section */}
-      <div style={{
-        background: 'var(--card-bg)', border: '1px solid var(--border)',
-        borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 24,
-      }}>
-        <div style={{
-          fontWeight: 600, fontSize: '13px',
-          letterSpacing: '0.08em', textTransform: 'uppercase',
-          color: '#00e5ff', marginBottom: 8,
+      {/* Two-column grid: Left = actionable, Right = context */}
+      {!hasDraftProfile && !loading && (
+        <div className="dashboard-grid" style={{
+          display: 'grid',
+          gridTemplateColumns: '3fr 2fr',
+          gap: '32px',
+          alignItems: 'flex-start',
         }}>
-          Book Me Badges
-        </div>
-        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 20, lineHeight: 1.55 }}>
-          Add this badge to your email signature, website, or LinkedIn to make it easy to book you directly. When someone clicks the badge, it takes them straight to your signpost profile where they can send a booking request directly to you.
-        </p>
-
-        {/* Badge preview */}
-        {interpreterProfileId && !hasDraftProfile && (
-          <div style={{ marginBottom: 20 }}>
-            <BookMeBadge
-              interpreterProfileId={interpreterProfileId}
-              displayName={[firstName, lastName].filter(Boolean).join(' ') || 'Interpreter'}
-            />
-          </div>
-        )}
-
-        {/* Your link */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: '#00e5ff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Your link</div>
-          {vanitySlug ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-              <span style={{
-                fontSize: '0.88rem', fontWeight: 600, color: 'var(--accent)',
-                fontFamily: "'DM Sans', sans-serif", wordBreak: 'break-all',
+          {/* Left column — actionable */}
+          <div>
+            {/* Pending Inquiries */}
+            <SectionLabel>Pending Inquiries</SectionLabel>
+            {pendingBookings.length === 0 ? (
+              <div style={{
+                background: 'var(--card-bg)', border: '1px solid var(--border)',
+                borderRadius: 'var(--radius)', padding: '32px 24px',
+                color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center',
               }}>
-                signpost.community/book/{vanitySlug}
+                No pending inquiries. They&apos;ll appear here when clients reach out.
+              </div>
+            ) : (
+              pendingBookings.map(inq => (
+                <div key={inq.id} style={{
+                  background: 'var(--card-bg)', border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 12,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'DM Sans', sans-serif" }}>{inq.title || 'Booking Request'}</div>
+                      <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>
+                        From: {inq.requester_name || 'Unknown'} · {inq.specialization || 'General'}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                      {inq.is_seed && <DemoBadge />}
+                      <StatusBadge status="pending" />
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--muted)', padding: '10px 0', borderTop: '1px solid var(--border)' }}>
+                    <span>📅 {formatDate(inq.date)}</span>
+                    <span>🕐 {formatTime(inq.time_start, inq.time_end)}</span>
+                    <span>📍 {inq.location || 'TBD'}</span>
+                    <span>{inq.format === 'remote' ? 'Remote' : 'On-site'}</span>
+                  </div>
+                  <div className="dash-card-actions" style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
+                    <Link href="/interpreter/dashboard/inquiries">
+                      <button className="btn-primary" style={{ fontSize: '0.82rem', padding: '8px 18px' }}>
+                        Accept &amp; Send Rate
+                      </button>
+                    </Link>
+                    <Link href="/interpreter/dashboard/inquiries" style={{ textDecoration: 'none' }}>
+                      <GhostButton>View Details</GhostButton>
+                    </Link>
+                    <Link href="/interpreter/dashboard/inquiries" style={{ textDecoration: 'none' }}>
+                      <GhostButton danger>Decline</GhostButton>
+                    </Link>
+                  </div>
+                </div>
+              ))
+            )}
+
+            {/* Upcoming Confirmed */}
+            <SectionLabel>Upcoming Confirmed</SectionLabel>
+            {confirmedBookings.length === 0 ? (
+              <div style={{
+                background: 'var(--card-bg)', border: '1px solid var(--border)',
+                borderRadius: 'var(--radius)', padding: '32px 24px',
+                color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center',
+              }}>
+                No upcoming confirmed bookings.
+              </div>
+            ) : (
+              confirmedBookings.map(booking => (
+                <div key={booking.id} style={{
+                  background: 'var(--card-bg)', border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 12,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'DM Sans', sans-serif" }}>{booking.title || 'Confirmed Booking'}</div>
+                      <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>{booking.requester_name || 'Client'} · {booking.specialization || 'General'}</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                      {booking.is_seed && <DemoBadge />}
+                      <StatusBadge status="confirmed" />
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--muted)', padding: '10px 0', borderTop: '1px solid var(--border)' }}>
+                    <span>📅 {formatDate(booking.date)}</span>
+                    <span>🕐 {formatTime(booking.time_start, booking.time_end)}</span>
+                    <span>📍 {booking.location || 'TBD'}</span>
+                  </div>
+                  <div style={{ marginTop: 12 }}>
+                    <CalendarDropdown booking={booking} onToast={showToast} />
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Right column — context */}
+          <div>
+            <SectionLabel>Preferred Team</SectionLabel>
+            {teamMembers.length === 0 ? (
+              <div style={{
+                background: 'var(--card-bg)', border: '1px solid var(--border)',
+                borderRadius: 'var(--radius)', padding: '24px 20px',
+                color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center', lineHeight: 1.6,
+              }}>
+                Build your preferred team.{' '}
+                <Link href="/directory" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>
+                  Browse the directory &rarr;
+                </Link>
+              </div>
+            ) : (
+              <div style={{
+                background: 'var(--card-bg)', border: '1px solid var(--border)',
+                borderRadius: 'var(--radius)', padding: '16px 20px',
+              }}>
+                {teamMembers.map((member, i) => {
+                  const name = [member.first_name, member.last_name].filter(Boolean).join(' ') || 'Team Member'
+                  const initials = (member.first_name?.[0] || '') + (member.last_name?.[0] || '')
+                  const tierLabel = member.tier === 'preferred' ? 'Top Choice' : 'Secondary'
+                  return (
+                    <div key={member.id} style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '10px 0',
+                      borderTop: i > 0 ? '1px solid var(--border)' : 'none',
+                    }}>
+                      {member.photo_url ? (
+                        <img
+                          src={member.photo_url} alt=""
+                          style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                        />
+                      ) : (
+                        <div style={{
+                          width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+                          background: member.avatar_color || 'linear-gradient(135deg, #00e5ff, #9d87ff)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+                          fontSize: '0.72rem', color: '#fff',
+                        }}>
+                          {initials.toUpperCase()}
+                        </div>
+                      )}
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)', fontFamily: "'DM Sans', sans-serif" }}>
+                          {name}
+                        </div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+                          {tierLabel}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+                {teamCount > 5 && (
+                  <div style={{ paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+                    <Link
+                      href="/interpreter/dashboard/team"
+                      style={{ color: 'var(--accent)', fontSize: '0.85rem', fontWeight: 600, textDecoration: 'none' }}
+                    >
+                      View all ({teamCount}) &rarr;
+                    </Link>
+                  </div>
+                )}
+                {teamCount > 0 && teamCount <= 5 && (
+                  <div style={{ paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+                    <Link
+                      href="/interpreter/dashboard/team"
+                      style={{ color: 'var(--accent)', fontSize: '0.85rem', fontWeight: 600, textDecoration: 'none' }}
+                    >
+                      View all &rarr;
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Dismissible banners — full width, below the grid */}
+      {!hasDraftProfile && !loading && (
+        <div style={{ marginTop: 32 }}>
+          {/* Profile completeness banner */}
+          {profileIncomplete && !bannerDismissed && (
+            <div style={{
+              background: 'rgba(0, 229, 255, 0.06)', border: '1px solid rgba(0, 229, 255, 0.2)',
+              borderRadius: 12, padding: '16px 20px', marginBottom: 14,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+              flexWrap: 'wrap',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+                <span style={{ color: 'var(--text)', fontSize: '0.9rem', lineHeight: 1.5 }}>
+                  Your profile isn&apos;t complete yet. A complete profile helps clients find and trust you.
+                </span>
+                <a
+                  href="/interpreter/dashboard/profile"
+                  style={{
+                    color: 'var(--accent)', fontWeight: 600, fontSize: '0.85rem',
+                    textDecoration: 'none', whiteSpace: 'nowrap',
+                  }}
+                >
+                  Complete your profile &rarr;
+                </a>
+              </div>
+              <button
+                onClick={() => {
+                  localStorage.setItem('signpost_profile_banner_dismissed', String(Date.now()))
+                  setBannerDismissed(true)
+                }}
+                aria-label="Dismiss banner"
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: 'var(--muted)', padding: 4, flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 6L6 18" /><path d="M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          )}
+
+          {/* Video request demand banner */}
+          {!hasIntroVideo && videoRequestCount > 0 && (
+            <div style={{
+              background: 'rgba(0, 229, 255, 0.04)', border: '1px solid rgba(0, 229, 255, 0.15)',
+              borderRadius: 'var(--radius-sm)', padding: '12px 18px',
+              display: 'flex', alignItems: 'center', gap: 10,
+              marginBottom: 14,
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="#c8cdd8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx="9" cy="7" r="4" stroke="#c8cdd8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="#c8cdd8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#c8cdd8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span style={{ color: '#c8cdd8', fontSize: '0.88rem', lineHeight: 1.5 }}>
+                {videoRequestCount} {videoRequestCount === 1 ? 'person has' : 'people have'} requested your intro video.{' '}
+                <a href="/interpreter/dashboard/profile" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>
+                  Record yours &rarr;
+                </a>
+              </span>
+            </div>
+          )}
+
+          {/* Calendar Sync nudge */}
+          {calendarToken && !calSyncDismissed && (
+            <div style={{
+              border: '1px dashed rgba(0,229,255,0.2)', borderRadius: 12,
+              padding: '14px 20px', background: 'rgba(0,229,255,0.03)', marginBottom: 14,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+              flexWrap: 'wrap',
+            }}>
+              <span style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.5 }}>
+                Calendar Sync — Subscribe so confirmed bookings appear in your calendar automatically.{' '}
+                <Link
+                  href="/interpreter/dashboard/availability"
+                  style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}
+                >
+                  Set up &rarr;
+                </Link>
               </span>
               <button
                 onClick={() => {
-                  navigator.clipboard.writeText(`https://signpost.community/book/${vanitySlug}`)
-                  showToast('Copied to clipboard!')
+                  localStorage.setItem('signpost_calendar_sync_dismissed', '1')
+                  setCalSyncDismissed(true)
                 }}
                 style={{
-                  background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.3)',
-                  color: 'var(--accent)', borderRadius: 8, padding: '6px 14px',
-                  fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
-                  fontFamily: "'DM Sans', sans-serif",
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: 'var(--muted)', fontSize: '0.85rem', fontFamily: "'DM Sans', sans-serif",
+                  padding: '2px 4px', flexShrink: 0,
                 }}
               >
-                Copy link
+                Dismiss
               </button>
             </div>
-          ) : (
-            <Link
-              href="/interpreter/dashboard/profile"
-              style={{ color: 'var(--accent)', fontSize: '0.9rem', fontWeight: 600, textDecoration: 'none' }}
-            >
-              Set up your Book Me link →
-            </Link>
+          )}
+
+          {/* Book Me Badge nudge */}
+          {!badgeNudgeDismissed && (
+            <div style={{
+              border: '1px dashed rgba(0,229,255,0.2)', borderRadius: 12,
+              padding: '14px 20px', background: 'rgba(0,229,255,0.03)', marginBottom: 14,
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+              flexWrap: 'wrap',
+            }}>
+              <span style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.5 }}>
+                Your Book Me badge is ready. Share it in your email signature to get direct bookings.{' '}
+                <Link
+                  href="/interpreter/dashboard/profile"
+                  style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}
+                >
+                  Set it up &rarr;
+                </Link>
+              </span>
+              <button
+                onClick={() => {
+                  localStorage.setItem('signpost_bookme_badge_dismissed', '1')
+                  setBadgeNudgeDismissed(true)
+                }}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: 'var(--muted)', fontSize: '0.85rem', fontFamily: "'DM Sans', sans-serif",
+                  padding: '2px 4px', flexShrink: 0,
+                }}
+              >
+                Dismiss
+              </button>
+            </div>
           )}
         </div>
-
-        {/* Action buttons */}
-        {interpreterProfileId && !hasDraftProfile && (
-          <BookMeBadgeActions
-            interpreterProfileId={interpreterProfileId}
-            displayName={[firstName, lastName].filter(Boolean).join(' ') || 'Interpreter'}
-            onToast={showToast}
-          />
-        )}
-      </div>
-
-      {/* Calendar Sync */}
-      {!hasDraftProfile && currentCalendarToken && (
-        <CalendarSyncCard
-          calendarToken={currentCalendarToken}
-          onTokenChange={setCurrentCalendarToken}
-          onToast={showToast}
-        />
-      )}
-
-      {!hasDraftProfile && !loading && (
-        <>
-          {/* Pending Inquiries */}
-          <SectionLabel>Pending Inquiries</SectionLabel>
-          {pendingBookings.length === 0 ? (
-            <div style={{
-              background: 'var(--card-bg)', border: '1px solid var(--border)',
-              borderRadius: 'var(--radius)', padding: '32px 24px',
-              color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center',
-            }}>
-              No pending inquiries yet. They&apos;ll appear here when clients reach out.
-            </div>
-          ) : (
-            pendingBookings.map(inq => (
-              <div key={inq.id} style={{
-                background: 'var(--card-bg)', border: '1px solid var(--border)',
-                borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 12,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'DM Sans', sans-serif" }}>{inq.title || 'Booking Request'}</div>
-                    <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>
-                      From: {inq.requester_name || 'Unknown'} · {inq.specialization || 'General'}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-                    {inq.is_seed && <DemoBadge />}
-                    <StatusBadge status="pending" />
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--muted)', padding: '10px 0', borderTop: '1px solid var(--border)' }}>
-                  <span>📅 {formatDate(inq.date)}</span>
-                  <span>🕐 {formatTime(inq.time_start, inq.time_end)}</span>
-                  <span>📍 {inq.location || 'TBD'}</span>
-                  <span>{inq.format === 'remote' ? 'Remote' : 'On-site'}</span>
-                </div>
-                <div className="dash-card-actions" style={{ display: 'flex', gap: 10, marginTop: 14, flexWrap: 'wrap' }}>
-                  <Link href="/interpreter/dashboard/inquiries">
-                    <button className="btn-primary" style={{ fontSize: '0.82rem', padding: '8px 18px' }}>
-                      Accept &amp; Send Rate
-                    </button>
-                  </Link>
-                  <Link href="/interpreter/dashboard/inquiries" style={{ textDecoration: 'none' }}>
-                    <GhostButton>View Details</GhostButton>
-                  </Link>
-                  <Link href="/interpreter/dashboard/inquiries" style={{ textDecoration: 'none' }}>
-                    <GhostButton danger>Decline</GhostButton>
-                  </Link>
-                </div>
-              </div>
-            ))
-          )}
-
-          {/* Upcoming Confirmed */}
-          <SectionLabel>Upcoming Confirmed</SectionLabel>
-          {confirmedBookings.length === 0 ? (
-            <div style={{
-              background: 'var(--card-bg)', border: '1px solid var(--border)',
-              borderRadius: 'var(--radius)', padding: '32px 24px',
-              color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center',
-            }}>
-              No confirmed bookings yet.
-            </div>
-          ) : (
-            confirmedBookings.map(booking => (
-              <div key={booking.id} style={{
-                background: 'var(--card-bg)', border: '1px solid var(--border)',
-                borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 12,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'DM Sans', sans-serif" }}>{booking.title || 'Confirmed Booking'}</div>
-                    <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>{booking.requester_name || 'Client'} · {booking.specialization || 'General'}</div>
-                  </div>
-                  <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-                    {booking.is_seed && <DemoBadge />}
-                    <StatusBadge status="confirmed" />
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--muted)', padding: '10px 0', borderTop: '1px solid var(--border)' }}>
-                  <span>📅 {formatDate(booking.date)}</span>
-                  <span>🕐 {formatTime(booking.time_start, booking.time_end)}</span>
-                  <span>📍 {booking.location || 'TBD'}</span>
-                </div>
-                <div style={{ marginTop: 12 }}>
-                  <CalendarDropdown booking={booking} onToast={showToast} />
-                </div>
-              </div>
-            ))
-          )}
-        </>
       )}
 
       {/* Toast */}

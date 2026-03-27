@@ -230,6 +230,7 @@ export function DashMobileStyles() {
     <style>{`
       @media (max-width: 768px) {
         .dash-page-content { padding: 24px 20px !important; }
+        .dashboard-grid { grid-template-columns: 1fr !important; }
         .request-card { padding: 16px 16px !important; }
         .request-card-header,
         .dash-card-header {
