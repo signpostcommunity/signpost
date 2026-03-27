@@ -82,15 +82,15 @@ export default function HomePage() {
                 fontSize: '1rem',
                 color: 'var(--muted)',
                 maxWidth: 520,
-                lineHeight: 1.7,
+                lineHeight: 2.0,
                 marginBottom: 32,
                 paddingLeft: '1.25rem',
               }}
             >
               Finding the right interpreter shouldn&apos;t be out of your hands.
-              <br /><br />
+              <br />
               View profiles, watch video intros, book directly, and track your request at every step.
-              <br /><br />
+              <br />
               Full transparency, no agency markup.
             </p>
 
