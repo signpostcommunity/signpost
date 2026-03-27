@@ -30,7 +30,7 @@ export default function HomePage() {
       {/* Hero */}
       <section
         style={{
-          padding: '60px 64px 32px',
+          padding: '60px 64px 52px',
           maxWidth: 1200,
           margin: '0 auto',
           position: 'relative',
@@ -43,10 +43,10 @@ export default function HomePage() {
             <Image
               src="/hero.jpg"
               alt="signpost"
-              width={480}
-              height={480}
+              width={370}
+              height={370}
               className="hero-logo-img"
-              style={{ width: '100%', maxWidth: 480, height: 'auto', borderRadius: 12 }}
+              style={{ width: '100%', maxWidth: 370, height: 'auto', borderRadius: 12 }}
               priority
             />
           </div>
@@ -60,7 +60,7 @@ export default function HomePage() {
                 fontWeight: 800,
                 lineHeight: 1.05,
                 letterSpacing: '-0.04em',
-                marginBottom: 20,
+                marginBottom: 30,
               }}
             >
               We are<br />
@@ -81,7 +81,7 @@ export default function HomePage() {
               style={{
                 maxWidth: 520,
                 lineHeight: 1.85,
-                marginBottom: 28,
+                marginBottom: 34,
                 marginLeft: 18,
               }}
             >
@@ -258,12 +258,12 @@ export default function HomePage() {
         @media (max-width: 760px) {
           .hero-split { grid-template-columns: 1fr; text-align: center; }
           .hero-logo-col { order: -1; }
-          .hero-logo-img { max-width: 340px !important; }
+          .hero-logo-img { max-width: 260px !important; }
           .hero-ctas { justify-content: center; max-width: 100%; }
         }
         @media (max-width: 480px) {
           .hero-section { padding: 40px 16px !important; }
-          .hero-logo-img { max-width: 260px !important; margin: 0 auto; display: block; }
+          .hero-logo-img { max-width: 200px !important; margin: 0 auto; display: block; }
           .hero-ctas { flex-direction: column; align-items: center; }
           .hero-ctas a { max-width: 100%; }
           .feature-highlights-section { padding: 0 16px 60px !important; }
@@ -271,7 +271,7 @@ export default function HomePage() {
         }
         @media (max-width: 390px) {
           .hero-section { padding: 32px 16px !important; }
-          .hero-logo-img { max-width: 220px !important; }
+          .hero-logo-img { max-width: 170px !important; }
         }
       `}</style>
     </div>
