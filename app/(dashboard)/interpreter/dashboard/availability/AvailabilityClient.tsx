@@ -310,7 +310,7 @@ export default function AvailabilityClient({
       {/* ── TIMEZONE ── */}
       <div style={{
         background: 'var(--card-bg)', border: '1px solid var(--border)',
-        borderRadius: 'var(--radius)', padding: '18px 22px', marginBottom: 20,
+        borderRadius: 'var(--radius)', padding: '18px 22px', marginBottom: 34,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12,
       }}>
         <div>
@@ -323,7 +323,7 @@ export default function AvailabilityClient({
       {/* ── AWAY PERIODS ── */}
       <div style={{
         background: 'var(--card-bg)', border: '1px solid var(--border)',
-        borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 20,
+        borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 34,
       }}>
         <div style={{
           fontWeight: 600, fontSize: '13px',
@@ -469,7 +469,7 @@ export default function AvailabilityClient({
       {/* ── WEEKLY SCHEDULE ── */}
       <div style={{
         background: 'var(--card-bg)', border: '1px solid var(--border)',
-        borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 20,
+        borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 34,
       }}>
         <div style={{
           fontWeight: 600, fontSize: '13px',

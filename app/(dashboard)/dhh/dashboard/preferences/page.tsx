@@ -45,7 +45,7 @@ const fieldGroupStyle: React.CSSProperties = { marginBottom: 18 }
 
 const sectionHeadingStyle: React.CSSProperties = {
   fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px',
-  color: '#f0f2f8', marginBottom: 16, paddingBottom: 10,
+  color: '#f0f2f8', marginBottom: 14, paddingBottom: 10,
   borderBottom: '1px solid var(--border)',
 }
 
@@ -337,7 +337,7 @@ export default function DhhPreferencesPage() {
         {/* ── My Interpreter Request Link ── */}
         {vanitySlug && (
           <div style={{
-            marginBottom: 40,
+            marginBottom: 34,
             background: 'rgba(0,229,255,0.03)',
             border: '1px solid rgba(0,229,255,0.15)',
             borderRadius: 'var(--radius)',
@@ -530,7 +530,7 @@ export default function DhhPreferencesPage() {
         )}
 
         {/* ── Profile Section ── */}
-        <div style={{ marginBottom: 40 }}>
+        <div style={{ marginBottom: 34 }}>
           <h3 style={sectionHeadingStyle}>Profile</h3>
 
           {/* Photo */}
@@ -652,7 +652,7 @@ export default function DhhPreferencesPage() {
 
         {/* ── Introduce Yourself Section ── */}
         <div style={{
-          marginBottom: 40,
+          marginBottom: 34,
           background: 'rgba(157,135,255,0.03)',
           border: '1px solid rgba(157,135,255,0.15)',
           borderRadius: 'var(--radius)',
@@ -832,7 +832,7 @@ export default function DhhPreferencesPage() {
         </div>
 
         {/* ── Communication Preferences Section ── */}
-        <div style={{ marginBottom: 40 }}>
+        <div style={{ marginBottom: 34 }}>
           <h3 style={sectionHeadingStyle}>Communication preferences</h3>
           <p style={{ fontSize: '0.84rem', color: 'var(--muted)', marginBottom: 24, lineHeight: 1.6 }}>
             This information is shared with interpreters when you make a request, and when you are tagged in a request (interpreter is requested by someone else). It helps them prepare and decide if they&apos;re a good match.

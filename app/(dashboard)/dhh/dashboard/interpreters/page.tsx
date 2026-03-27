@@ -533,7 +533,7 @@ export default function DeafDashboardPage() {
 
       {/* Preferred section */}
       <div style={{ marginBottom: 36 }}>
-        <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 14 }}>
           <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#f0f2f8', marginBottom: 2 }}>
             &#9733; Preferred Interpreters
           </div>
@@ -553,7 +553,7 @@ export default function DeafDashboardPage() {
 
       {/* Secondary Tier section */}
       <div style={{ marginBottom: 36 }}>
-        <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 14 }}>
           <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#f0f2f8', marginBottom: 2 }}>
             &#10003; Secondary Tier Interpreters
           </div>
@@ -573,7 +573,7 @@ export default function DeafDashboardPage() {
 
       {/* DNB section */}
       <div style={{ marginBottom: 36 }}>
-        <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 14 }}>
           <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#ff8099', marginBottom: 2 }}>
             &#10005; Do Not Book
           </div>

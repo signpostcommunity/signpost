@@ -496,7 +496,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         </div>
       )}
 
-      <div style={{ marginBottom: 28 }}>
+      <div style={{ marginBottom: 30 }}>
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
           Welcome back, {displayName}.
         </h1>
@@ -594,7 +594,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       )}
 
       {/* Stats */}
-      <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16, marginBottom: 32, alignItems: 'stretch' }}>
+      <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16, marginBottom: 38, alignItems: 'stretch' }}>
         <StatCard num={newInquiries} label="New Inquiries" href="/interpreter/dashboard/inquiries" />
         <StatCard num={confirmedThisMonth} label="Confirmed This Month" href="/interpreter/dashboard/confirmed" />
         <StatCard num={teamCount} label="Interpreters in Your Preferred Team" href="/interpreter/dashboard/team" />

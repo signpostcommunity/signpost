@@ -231,7 +231,7 @@ export default function TrustedDeafCirclePage() {
       ) : (
         <>
           {/* YOUR CIRCLE section */}
-          <section style={{ marginBottom: 40 }}>
+          <section style={{ marginBottom: 34 }}>
             <h2 style={{
               fontWeight: 600, fontSize: '13px',
               color: '#a78bfa', margin: '0 0 14px', textTransform: 'uppercase' as const,

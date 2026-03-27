@@ -41,7 +41,7 @@ const cardStyle: React.CSSProperties = {
   border: '1px solid var(--border)',
   borderRadius: 'var(--radius)',
   padding: '28px',
-  marginBottom: 20,
+  marginBottom: 34,
 }
 
 function handleFocus(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {

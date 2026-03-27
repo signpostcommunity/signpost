@@ -29,7 +29,7 @@ const PERSONAL_EVENT_TYPES = [
 
 const sectionHeadingStyle: React.CSSProperties = {
   fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px',
-  color: '#f0f2f8', marginBottom: 16, paddingBottom: 10,
+  color: '#f0f2f8', marginBottom: 14, paddingBottom: 10,
   borderBottom: '1px solid var(--border)',
 }
 

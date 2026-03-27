@@ -841,7 +841,7 @@ export default function DeafDashboardOverview() {
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       {/* Greeting */}
-      <div style={{ marginBottom: 28 }}>
+      <div style={{ marginBottom: 30 }}>
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
           Welcome back, {displayName}.
         </h1>
@@ -851,7 +851,7 @@ export default function DeafDashboardOverview() {
       <PendingRolesNudge accentColor="var(--accent2)" />
 
       {/* Stat cards + request link */}
-      <div className="dhh-top-columns" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 24, marginBottom: 32, alignItems: 'stretch' }}>
+      <div className="dhh-top-columns" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 24, marginBottom: 38, alignItems: 'stretch' }}>
         <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, alignItems: 'stretch' }}>
           <StatCard num={activeRequests} label="Active Requests" href="/dhh/dashboard/requests" />
           <StatCard num={prefCount} label="Preferred Interpreters" href="/dhh/dashboard/interpreters" />
@@ -870,7 +870,7 @@ export default function DeafDashboardOverview() {
           <div style={{
             fontWeight: 600, fontSize: '13px',
             letterSpacing: '0.08em', textTransform: 'uppercase' as const,
-            color: '#a78bfa', marginBottom: 12,
+            color: '#a78bfa', marginBottom: 14,
           }}>
             Recent Requests
           </div>
@@ -911,7 +911,7 @@ export default function DeafDashboardOverview() {
           <div style={{
             fontWeight: 600, fontSize: '13px',
             letterSpacing: '0.08em', textTransform: 'uppercase' as const,
-            color: '#a78bfa', marginBottom: 12,
+            color: '#a78bfa', marginBottom: 14,
           }}>
             Preferred Interpreters
           </div>

@@ -162,7 +162,7 @@ export default function NewRequestPage() {
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.6rem', margin: '0 0 6px' }}>
           New Interpreter Request
         </h1>
-        <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: '0 0 8px' }}>
+        <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: '0 0 26px' }}>
           Fill out the details below to request an interpreter for your event.
         </p>
 

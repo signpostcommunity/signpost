@@ -34,7 +34,7 @@ export default function CalendarSyncCard({ calendarToken, onTokenChange, onToast
       <div style={{
         fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
         letterSpacing: '0.1em', textTransform: 'uppercase',
-        color: 'var(--accent)', marginBottom: 8,
+        color: 'var(--accent)', marginBottom: 14,
       }}>
         Calendar Sync
       </div>

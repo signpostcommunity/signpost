@@ -100,7 +100,7 @@ export default function RequesterOverviewClient({
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       {/* Greeting */}
-      <div style={{ marginBottom: 28 }}>
+      <div style={{ marginBottom: 30 }}>
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
           {greeting}
         </h1>
@@ -110,7 +110,7 @@ export default function RequesterOverviewClient({
       </div>
 
       {/* Stat Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16, marginBottom: 32, alignItems: 'stretch' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16, marginBottom: 38, alignItems: 'stretch' }}>
         <StatCard num={activeRequests} label="Active Requests" href="/request/dashboard/requests" />
         <StatCard num={confirmedBookings} label="Confirmed Bookings" href="/request/dashboard/requests" />
         <StatCard num={rosterCount} label="Interpreters on Roster" href="/request/dashboard/interpreters" />
@@ -142,7 +142,7 @@ export default function RequesterOverviewClient({
       <BillingInfoCard />
 
       {/* Recent Requests */}
-      <div style={{ marginBottom: 36 }}>
+      <div style={{ marginBottom: 34 }}>
         <h3 style={{
           fontWeight: 600, fontSize: '13px',
           letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff',
@@ -207,7 +207,7 @@ export default function RequesterOverviewClient({
       </div>
 
       {/* Quick Actions */}
-      <div>
+      <div style={{ marginTop: 2 }}>
         <h3 style={{
           fontWeight: 600, fontSize: '13px',
           letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff',

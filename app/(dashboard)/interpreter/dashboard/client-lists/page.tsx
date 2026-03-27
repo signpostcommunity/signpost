@@ -76,7 +76,7 @@ export default function ClientListsPage() {
                 <div style={{ fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 12 }}>
                   ★ Preferred Interpreters
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 34 }}>
                   {list.preferred.map(interp => (
                     <InterpRow key={interp.name} interp={interp} />
                   ))}

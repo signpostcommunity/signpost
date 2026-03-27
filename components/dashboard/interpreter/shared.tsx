@@ -70,7 +70,7 @@ export function SectionLabel({ children }: { children: React.ReactNode }) {
     <h3 style={{
       fontWeight: 600, fontSize: '13px',
       letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff',
-      margin: '28px 0 14px',
+      margin: '34px 0 14px',
     }}>
       {children}
     </h3>

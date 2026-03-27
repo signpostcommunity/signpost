@@ -904,7 +904,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
 
             {/* ── Your link ── */}
             <div style={{ marginBottom: vanitySlug ? 24 : 0 }}>
-              <div style={{ fontSize: '13px', fontWeight: 600, color: '#00e5ff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>Your link</div>
+              <div style={{ fontSize: '13px', fontWeight: 600, color: '#00e5ff', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>Your link</div>
               {vanitySlug && !editingSlug ? (
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>

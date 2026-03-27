@@ -464,7 +464,7 @@ export default function AcceptClient({
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ marginBottom: 28 }}>
+    <div style={{ marginBottom: 34 }}>
       <h2 style={{
         fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem',
         letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)',
