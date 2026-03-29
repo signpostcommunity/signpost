@@ -8,6 +8,7 @@ import { useState } from 'react';
 
 const TABS = [
   { id: 'about', label: 'About Us' },
+  { id: 'pricing', label: 'Pricing' },
   { id: 'accessibility', label: 'Accessibility' },
   { id: 'social', label: 'Social Commitment' },
   { id: 'faq', label: 'FAQ' },
@@ -260,6 +261,61 @@ export default function AboutPage() {
                 <Link href="/request" style={{ display: 'inline-block', padding: '14px 24px', background: 'none', border: '1px solid var(--border)', borderRadius: '10px', color: 'var(--text)', textDecoration: 'none', fontSize: '0.95rem' }}>
                   Request an Interpreter
                 </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Tab: Pricing */}
+          <div
+            role="tabpanel"
+            id="panel-pricing"
+            aria-labelledby="tab-pricing"
+            hidden={activeTab !== 'pricing'}
+          >
+            <h2 style={{
+              fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.4rem, 2.5vw, 1.8rem)',
+              fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.3, marginBottom: 32,
+              color: 'var(--text)',
+            }}>
+              Pricing
+            </h2>
+
+            <div style={{
+              padding: 28, background: 'var(--surface)', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius)', marginBottom: 24,
+            }}>
+              <h3 style={{
+                fontFamily: 'var(--font-syne)', fontWeight: 600, fontSize: '15px',
+                color: 'var(--text)', marginBottom: 16,
+              }}>
+                Platform Fee
+              </h3>
+              <div style={{ fontSize: '14px', lineHeight: 1.7, color: '#c8cdd8' }}>
+                <p style={{ margin: '0 0 16px' }}>
+                  signpost charges a $15 platform fee per interpreter, per confirmed booking. This fee is charged to the requester when a booking is confirmed. Booking requests for personal events submitted by Deaf/DB/HH individuals are always free.
+                </p>
+                <p style={{ margin: '0 0 24px' }}>
+                  Each booking covers a single event or session (maximum 24 hours). For multi-day events, submit a separate request for each day.
+                </p>
+
+                <div style={{
+                  fontFamily: 'var(--font-syne)', fontWeight: 600, fontSize: '15px',
+                  color: 'var(--text)', marginBottom: 14,
+                }}>
+                  Examples
+                </div>
+                <div style={{ color: '#96a0b8', fontSize: '14px', lineHeight: 1.7 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
+                    <div>1 interpreter for a 2-hour meeting: 1 booking = $15</div>
+                    <div>2 interpreters for a full-day conference: 2 bookings = $30</div>
+                    <div>2 interpreters for a 3-day event: 6 bookings (2 x 3 days) = $90</div>
+                    <div>Weekly recurring appointment, 1 interpreter: $15 per week</div>
+                  </div>
+                </div>
+
+                <p style={{ margin: 0, borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+                  The platform fee is signpost&apos;s only charge. Interpreters set their own rates and invoice clients directly. signpost never takes a percentage of interpreter pay.
+                </p>
               </div>
             </div>
           </div>

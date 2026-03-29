@@ -327,7 +327,7 @@ export default function UsersClient({ users, currentUserId }: { users: User[]; c
       {/* Toast */}
       {toast && (
         <div style={{
-          position: 'fixed', bottom: 24, right: 24, zIndex: 1100,
+          position: 'fixed', top: 24, right: 24, zIndex: 1100,
           padding: '12px 20px', borderRadius: 8,
           background: toast.startsWith('Error') ? 'rgba(255,107,133,0.9)' : 'rgba(0,229,255,0.9)',
           color: toast.startsWith('Error') ? '#fff' : '#000',

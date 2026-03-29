@@ -78,39 +78,74 @@ function InterpreterTierCard({
       }}
     >
       {/* Avatar */}
-      {i.photo_url ? (
-        <img
-          src={i.photo_url}
-          alt=""
-          style={{
-            width: 48,
-            height: 48,
-            borderRadius: '50%',
-            objectFit: 'cover',
-            flexShrink: 0,
-          }}
-        />
+      {isDnb ? (
+        i.photo_url ? (
+          <img
+            src={i.photo_url}
+            alt=""
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: '50%',
+              objectFit: 'cover',
+              flexShrink: 0,
+            }}
+          />
+        ) : (
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: '50%',
+              flexShrink: 0,
+              background: 'linear-gradient(135deg, #7b61ff, #00e5ff)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontFamily: "'DM Sans', sans-serif",
+              fontWeight: 700,
+              fontSize: '0.88rem',
+              color: '#fff',
+            }}
+          >
+            {initials}
+          </div>
+        )
       ) : (
-        <div
-          style={{
-            width: 48,
-            height: 48,
-            borderRadius: '50%',
-            flexShrink: 0,
-            background: tier === 'preferred'
-              ? 'linear-gradient(135deg, #00e5ff, #9d87ff)'
-              : 'linear-gradient(135deg, #7b61ff, #00e5ff)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontFamily: "'DM Sans', sans-serif",
-            fontWeight: 700,
-            fontSize: '0.88rem',
-            color: '#fff',
-          }}
-        >
-          {initials}
-        </div>
+        <Link href={`/directory/${i.id}`} style={{ flexShrink: 0, cursor: 'pointer' }}>
+          {i.photo_url ? (
+            <img
+              src={i.photo_url}
+              alt=""
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: '50%',
+                objectFit: 'cover',
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: '50%',
+                background: tier === 'preferred'
+                  ? 'linear-gradient(135deg, #00e5ff, #9d87ff)'
+                  : 'linear-gradient(135deg, #7b61ff, #00e5ff)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontFamily: "'DM Sans', sans-serif",
+                fontWeight: 700,
+                fontSize: '0.88rem',
+                color: '#fff',
+              }}
+            >
+              {initials}
+            </div>
+          )}
+        </Link>
       )}
 
       {/* Info */}
@@ -123,6 +158,7 @@ function InterpreterTierCard({
           ) : (
             <Link
               href={`/directory/${i.id}`}
+              className="interp-name-link"
               style={{
                 fontFamily: "'DM Sans', sans-serif",
                 fontWeight: 600,
@@ -287,7 +323,7 @@ export default function RecommendedInterpreters({ dhhUserId }: { dhhUserId: stri
         </button>
         {notifyToast && (
           <div style={{
-            position: 'fixed', bottom: 28, left: '50%', transform: 'translateX(-50%)', zIndex: 2000,
+            position: 'fixed', top: 28, left: '50%', transform: 'translateX(-50%)', zIndex: 2000,
             background: 'var(--card-bg)', border: '1px solid rgba(52,211,153,0.3)',
             borderRadius: 'var(--radius)', padding: '12px 24px', fontSize: '0.88rem',
             color: '#34d399', boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
@@ -366,6 +402,10 @@ export default function RecommendedInterpreters({ dhhUserId }: { dhhUserId: stri
           ))}
         </div>
       )}
+
+      <style>{`
+        .interp-name-link:hover { text-decoration: underline !important; }
+      `}</style>
     </div>
   )
 }

@@ -73,9 +73,10 @@ function InterpreterCard({ interp, onMoveTier, onRemove, onEditNote, targetTierL
       <div style={{ flex: 1, minWidth: 0 }}>
         <Link
           href={`/directory/${interp.interpreter_id}?context=requester`}
+          className="interp-name-link"
           style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text)', textDecoration: 'none' }}
-          onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)' }}
-          onMouseLeave={e => { e.currentTarget.style.color = 'var(--text)' }}
+          onMouseEnter={e => { e.currentTarget.style.textDecoration = 'underline' }}
+          onMouseLeave={e => { e.currentTarget.style.textDecoration = 'none' }}
         >
           {interp.name}
         </Link>

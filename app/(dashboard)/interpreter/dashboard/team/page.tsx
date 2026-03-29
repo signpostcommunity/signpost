@@ -583,8 +583,8 @@ function TeamCard({ member, onMoveTier, onRemove, onEdit, onMessage, moveLabel }
       <div style={{ flex: 1, minWidth: 0 }}>
         {profileHref ? (
           <Link href={profileHref} onClick={e => e.stopPropagation()} style={{ fontWeight: 600, fontSize: '0.92rem', color: 'var(--text)', textDecoration: 'none' }}
-            onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent)' }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text)' }}
+            onMouseEnter={e => { e.currentTarget.style.textDecoration = 'underline' }}
+            onMouseLeave={e => { e.currentTarget.style.textDecoration = 'none' }}
           >{fullName}</Link>
         ) : (
           <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>{fullName}</div>

@@ -110,7 +110,7 @@ function isCurrentlyActive(start: string, end: string): boolean {
 function Toast({ message }: { message: string }) {
   return (
     <div style={{
-      position: 'fixed', bottom: 24, right: 24, zIndex: 9999,
+      position: 'fixed', top: 24, right: 24, zIndex: 9999,
       background: '#1a1a2e', border: '1px solid var(--accent)',
       borderRadius: 'var(--radius-sm)', padding: '10px 18px',
       color: 'var(--accent)', fontSize: '0.85rem', fontWeight: 600,

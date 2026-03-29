@@ -756,26 +756,28 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                       padding: '10px 0',
                       borderTop: i > 0 ? '1px solid var(--border)' : 'none',
                     }}>
-                      {member.photo_url ? (
-                        <img
-                          src={member.photo_url} alt=""
-                          style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-                        />
-                      ) : (
-                        <div style={{
-                          width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                          background: member.avatar_color || 'linear-gradient(135deg, #00e5ff, #9d87ff)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
-                          fontSize: '0.72rem', color: '#fff',
-                        }}>
-                          {initials.toUpperCase()}
-                        </div>
-                      )}
+                      <Link href={`/directory/${member.id}`} style={{ flexShrink: 0, cursor: 'pointer' }}>
+                        {member.photo_url ? (
+                          <img
+                            src={member.photo_url} alt=""
+                            style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }}
+                          />
+                        ) : (
+                          <div style={{
+                            width: 32, height: 32, borderRadius: '50%',
+                            background: member.avatar_color || 'linear-gradient(135deg, #00e5ff, #9d87ff)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+                            fontSize: '0.72rem', color: '#fff',
+                          }}>
+                            {initials.toUpperCase()}
+                          </div>
+                        )}
+                      </Link>
                       <div style={{ minWidth: 0, flex: 1 }}>
-                        <div style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)', fontFamily: "'DM Sans', sans-serif" }}>
+                        <Link href={`/directory/${member.id}`} className="interp-name-link" style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", textDecoration: 'none', display: 'block' }}>
                           {name}
-                        </div>
+                        </Link>
                         <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
                           {tierLabel}
                         </div>
@@ -908,6 +910,9 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       )}
 
       <DashMobileStyles />
+      <style>{`
+        .interp-name-link:hover { text-decoration: underline !important; }
+      `}</style>
     </div>
   )
 }

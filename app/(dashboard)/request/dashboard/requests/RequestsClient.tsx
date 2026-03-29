@@ -491,9 +491,14 @@ export default function RequestsClient({
                               }}>
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                                    <span style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)' }}>
+                                    <Link
+                                      href={`/directory/${rec.interpreter_id}`}
+                                      style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)', textDecoration: 'none' }}
+                                      onMouseEnter={e => { e.currentTarget.style.textDecoration = 'underline' }}
+                                      onMouseLeave={e => { e.currentTarget.style.textDecoration = 'none' }}
+                                    >
                                       {interpName}
-                                    </span>
+                                    </Link>
                                     <span style={{
                                       fontSize: '0.7rem', fontWeight: 600, color: recipientStatusColor(rec.status),
                                       fontFamily: "'DM Sans', sans-serif",

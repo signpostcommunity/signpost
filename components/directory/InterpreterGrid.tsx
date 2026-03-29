@@ -76,13 +76,13 @@ export default function InterpreterGrid({ interpreters, onVideoPreview, onAddToL
       </div>
 
       <style>{`
-        @media (max-width: 1024px) {
+        @media (max-width: 1199px) {
           .interp-grid { grid-template-columns: repeat(3, 1fr) !important; }
         }
-        @media (max-width: 640px) {
+        @media (max-width: 767px) {
           .interp-grid { grid-template-columns: repeat(2, 1fr) !important; }
         }
-        @media (max-width: 420px) {
+        @media (max-width: 479px) {
           .interp-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
         }
       `}</style>

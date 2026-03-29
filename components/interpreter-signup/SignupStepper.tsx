@@ -124,7 +124,7 @@ export default function SignupStepper() {
       {/* Draft saved toast */}
       {draftToast && (
         <div style={{
-          position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
+          position: 'fixed', top: 24, left: '50%', transform: 'translateX(-50%)',
           background: '#00c875', color: '#000', padding: '12px 24px',
           borderRadius: 10, fontWeight: 600, fontSize: '0.9rem', zIndex: 500,
           boxShadow: '0 8px 32px rgba(0,0,0,0.4)',

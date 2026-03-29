@@ -12,7 +12,7 @@ export default async function DirectoryPage() {
     .select('id, name, first_name, last_name, city, country, state, sign_languages, spoken_languages, specializations, specialized_skills, regions, rating, review_count, available, avatar_color, bio, video_url, interpreter_type, status, photo_url, draft_data, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, latitude, longitude, interpreter_certifications(name, issuing_body, year, verification_url), interpreter_videos(video_url)')
     .eq('status', 'approved')
     .order('photo_url', { ascending: false, nullsFirst: false })
-    .order('name', { ascending: true });
+    .order('last_name', { ascending: true, nullsFirst: false });
 
   const interpreters: Interpreter[] = (rows || []).map((r) => {
     const fullName = r.name || [r.first_name, r.last_name].filter(Boolean).join(' ') || 'Interpreter';
