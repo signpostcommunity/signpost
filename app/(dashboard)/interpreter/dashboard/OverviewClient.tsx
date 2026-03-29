@@ -534,17 +534,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                   Share your badge on social media, your website, or email signature.
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginLeft: 'auto' }}>
-                <Link
-                  href={`/directory/${interpreterProfileId}`}
-                  style={{
-                    fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: '13px',
-                    color: '#00e5ff', textDecoration: 'none', whiteSpace: 'nowrap',
-                  }}
-                >
-                  View Badge &rarr;
-                </Link>
-                <span style={{ color: '#96a0b8', fontSize: '13px' }}>&middot;</span>
+              <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0, marginLeft: 'auto' }}>
                 <Link
                   href="/interpreter/dashboard/profile"
                   style={{
@@ -552,7 +542,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                     color: '#00e5ff', textDecoration: 'none', whiteSpace: 'nowrap',
                   }}
                 >
-                  Customize &rarr;
+                  View and customize &rarr;
                 </Link>
               </div>
             </div>
