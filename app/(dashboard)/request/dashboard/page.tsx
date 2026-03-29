@@ -68,77 +68,37 @@ export default async function RequesterDashboardPage() {
       await seedRequesterData(user.id)
     }
 
-    // Get requester profile
-    const { data: profile } = await supabase
-      .from('requester_profiles')
-      .select('first_name, last_name, org_name')
-      .or(`user_id.eq.${user.id},id.eq.${user.id}`)
-      .maybeSingle()
+    // Fetch profile, stats, and recent bookings in parallel — allSettled so one failure doesn't crash the page
+    const [profileRes, activeRes, filledRes, rosterRes, bookingsRes, recentRes] = await Promise.allSettled([
+      supabase.from('requester_profiles').select('first_name, last_name, org_name').or(`user_id.eq.${user.id},id.eq.${user.id}`).maybeSingle(),
+      supabase.from('bookings').select('id', { count: 'exact' }).limit(1).eq('requester_id', user.id).eq('status', 'open'),
+      supabase.from('bookings').select('id', { count: 'exact' }).limit(1).eq('requester_id', user.id).eq('status', 'filled'),
+      supabase.from('requester_roster').select('id', { count: 'exact' }).limit(1).eq('requester_user_id', user.id),
+      supabase.from('bookings').select('id').eq('requester_id', user.id).in('status', ['open', 'filled']),
+      supabase.from('bookings').select('id, title, date, time_start, time_end, status, interpreter_count, event_category').eq('requester_id', user.id).neq('status', 'draft').order('date', { ascending: false }).limit(5),
+    ])
 
-    if (profile?.first_name) {
-      firstName = profile.first_name
-    }
-    if (profile?.org_name) {
-      orgName = profile.org_name
-    }
+    const profile = profileRes.status === 'fulfilled' ? profileRes.value.data : null
+    if (profile?.first_name) firstName = profile.first_name
+    if (profile?.org_name) orgName = profile.org_name
 
-    // Active requests (status = 'open')
-    const { count: activeCount } = await supabase
-      .from('bookings')
-      .select('id', { count: 'exact' }).limit(1)
-      .eq('requester_id', user.id)
-      .eq('status', 'open')
+    activeRequests = (activeRes.status === 'fulfilled' ? activeRes.value.count : null) ?? 0
+    confirmedBookings = (filledRes.status === 'fulfilled' ? filledRes.value.count : null) ?? 0
+    rosterCount = (rosterRes.status === 'fulfilled' ? rosterRes.value.count : null) ?? 0
 
-    activeRequests = activeCount ?? 0
-
-    // Confirmed bookings (status = 'filled')
-    const { count: filledCount } = await supabase
-      .from('bookings')
-      .select('id', { count: 'exact' }).limit(1)
-      .eq('requester_id', user.id)
-      .eq('status', 'filled')
-
-    confirmedBookings = filledCount ?? 0
-
-    // Interpreters on roster
-    const { count: rCount } = await supabase
-      .from('requester_roster')
-      .select('id', { count: 'exact' }).limit(1)
-      .eq('requester_user_id', user.id)
-
-    rosterCount = rCount ?? 0
-
-    // Pending responses: booking_recipients with status='sent' for user's bookings
-    // Two-step: get user's booking IDs, then count pending recipients
-    const { data: userBookings } = await supabase
-      .from('bookings')
-      .select('id')
-      .eq('requester_id', user.id)
-      .in('status', ['open', 'filled'])
-
+    // Pending responses: count recipients with status='sent' for user's active bookings
+    const userBookings = bookingsRes.status === 'fulfilled' ? bookingsRes.value.data : null
     if (userBookings && userBookings.length > 0) {
-      const bookingIds = userBookings.map(b => b.id)
       const { count: pendingCount } = await supabase
         .from('booking_recipients')
         .select('id', { count: 'exact' }).limit(1)
-        .in('booking_id', bookingIds)
+        .in('booking_id', userBookings.map(b => b.id))
         .in('status', ['sent', 'viewed'])
-
       pendingResponses = pendingCount ?? 0
     }
 
-    // Recent 5 bookings
-    const { data: recent } = await supabase
-      .from('bookings')
-      .select('id, title, date, time_start, time_end, status, interpreter_count, event_category')
-      .eq('requester_id', user.id)
-      .neq('status', 'draft')
-      .order('date', { ascending: false })
-      .limit(5)
-
-    if (recent) {
-      recentBookings = recent
-    }
+    const recent = recentRes.status === 'fulfilled' ? recentRes.value.data : null
+    if (recent) recentBookings = recent
   }
 
   return (

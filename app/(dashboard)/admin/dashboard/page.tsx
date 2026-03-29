@@ -6,8 +6,8 @@ export const dynamic = 'force-dynamic'
 export default async function AdminDashboardPage() {
   const supabase = await createClient()
 
-  // Fetch stats
-  const [usersRes, interpretersRes, deafRes, feedbackRes, flagsRes, chargedRes, failedRes, creditsRes] = await Promise.all([
+  // Fetch stats — use allSettled so one failure doesn't crash the page
+  const [usersRes, interpretersRes, deafRes, feedbackRes, flagsRes, chargedRes, failedRes, creditsRes] = await Promise.allSettled([
     supabase.from('user_profiles').select('id', { count: 'exact' }).limit(1),
     supabase.from('interpreter_profiles').select('id', { count: 'exact' }).limit(1).neq('status', 'draft'),
     supabase.from('deaf_profiles').select('id', { count: 'exact' }).limit(1),
@@ -18,9 +18,10 @@ export default async function AdminDashboardPage() {
     supabase.from('booking_credits').select('amount').eq('status', 'available'),
   ])
 
-  const charged = chargedRes.data || []
-  const failed = failedRes.data || []
-  const credits = creditsRes.data || []
+  const val = <T,>(r: PromiseSettledResult<T>) => r.status === 'fulfilled' ? r.value : null
+  const charged = val(chargedRes)?.data || []
+  const failed = val(failedRes)?.data || []
+  const credits = val(creditsRes)?.data || []
   const totalCollected = charged.reduce((sum: number, b: { platform_fee_amount: number | null }) => sum + (b.platform_fee_amount || 0), 0)
   const totalFailed = failed.reduce((sum: number, b: { platform_fee_amount: number | null }) => sum + (b.platform_fee_amount || 0), 0)
   const totalCredits = credits.reduce((sum: number, c: { amount: number | null }) => sum + (c.amount || 0), 0)
@@ -61,11 +62,11 @@ export default async function AdminDashboardPage() {
   return (
     <AdminOverviewClient
       stats={{
-        totalUsers: usersRes.count ?? 0,
-        interpreters: interpretersRes.count ?? 0,
-        deafUsers: deafRes.count ?? 0,
-        betaFeedback: feedbackRes.count ?? 0,
-        profileFlags: flagsRes.count ?? 0,
+        totalUsers: val(usersRes)?.count ?? 0,
+        interpreters: val(interpretersRes)?.count ?? 0,
+        deafUsers: val(deafRes)?.count ?? 0,
+        betaFeedback: val(feedbackRes)?.count ?? 0,
+        profileFlags: val(flagsRes)?.count ?? 0,
       }}
       paymentStats={{
         feesCollected: { count: charged.length, total: totalCollected },

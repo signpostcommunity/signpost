@@ -11,11 +11,12 @@ export default async function OverviewPage() {
   let activeAwayPeriod: { end_date: string; message: string } | null = null
 
   if (user) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('interpreter_profiles')
       .select('id, first_name, last_name, status, vanity_slug, calendar_token')
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
+    if (error) console.error('Failed to load interpreter profile:', error.message)
     profile = data
 
     if (profile?.id) {

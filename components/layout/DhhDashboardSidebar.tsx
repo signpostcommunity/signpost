@@ -134,6 +134,7 @@ function SidebarContent({ userName, userInitials, badges }: {
       <div style={{ padding: '24px 20px 16px', borderBottom: '1px solid var(--border)' }}>
         <Link
           href="/dhh/dashboard/preferences"
+          prefetch={false}
           style={{
             display: 'flex', alignItems: 'center', gap: 12,
             textDecoration: 'none', color: 'inherit', cursor: 'pointer',
@@ -183,6 +184,7 @@ function SidebarContent({ userName, userInitials, badges }: {
                 <Link
                   key={item.href}
                   href={item.href}
+                  prefetch={false}
                   onClick={() => {
                     window.scrollTo({ top: 0, behavior: 'instant' })
                     document.querySelector('.dash-main')?.scrollTo({ top: 0, behavior: 'instant' })

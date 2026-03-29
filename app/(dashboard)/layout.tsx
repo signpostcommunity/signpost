@@ -13,11 +13,12 @@ export default async function DashboardRootLayout({ children }: { children: Reac
   // Query user_profiles for reliable role (user_metadata may not be set)
   let role = user?.user_metadata?.role || 'interpreter';
   if (user) {
-    const { data: profile } = await supabase
+    const { data: profile, error } = await supabase
       .from('user_profiles')
       .select('role')
       .eq('id', user.id)
-      .single();
+      .maybeSingle();
+    if (error) console.error('Failed to load user role:', error.message);
     if (profile?.role) role = profile.role;
   }
   const portalPath = role === 'deaf' ? '/dhh/dashboard' : role === 'requester' || role === 'org' ? '/request/dashboard' : '/interpreter/dashboard';
