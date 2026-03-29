@@ -520,9 +520,9 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
             }}>
               {/* Mini badge preview */}
               <div style={{
-                width: 430, height: 130, borderRadius: 8, overflow: 'hidden', flexShrink: 0,
+                width: 270, height: 80, borderRadius: 8, overflow: 'hidden', flexShrink: 0,
               }}>
-                <div style={{ transform: 'scale(0.80)', transformOrigin: 'top left', width: 540, height: 240 }}>
+                <div style={{ transform: 'scale(0.50)', transformOrigin: 'top left', width: 540, height: 240 }}>
                   <BookMeBadge interpreterProfileId={interpreterProfileId} displayName={displayName} />
                 </div>
               </div>
@@ -534,7 +534,17 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                   Share your badge on social media, your website, or email signature.
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0, marginLeft: 'auto' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0, marginLeft: 'auto' }}>
+                <Link
+                  href={`/directory/${interpreterProfileId}`}
+                  style={{
+                    fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: '13px',
+                    color: '#00e5ff', textDecoration: 'none', whiteSpace: 'nowrap',
+                  }}
+                >
+                  View Badge &rarr;
+                </Link>
+                <span style={{ color: '#96a0b8', fontSize: '13px' }}>&middot;</span>
                 <Link
                   href="/interpreter/dashboard/profile"
                   style={{
@@ -542,14 +552,14 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                     color: '#00e5ff', textDecoration: 'none', whiteSpace: 'nowrap',
                   }}
                 >
-                  View and customize &rarr;
+                  Customize &rarr;
                 </Link>
               </div>
             </div>
           )}
 
           {/* Calendar Sync banner */}
-          {calendarToken && !calSyncDismissed && (
+          {!calendarToken && !calSyncDismissed && (
             <div style={{
               background: '#111118', border: '1px solid #1e2433', borderLeft: '4px solid #96a0b8',
               borderRadius: 10, padding: '16px 20px', marginBottom: 12,
