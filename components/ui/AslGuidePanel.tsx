@@ -54,10 +54,32 @@ export default function AslGuidePanel() {
   const [showNudge, setShowNudge] = useState(false)
   const [isAnimating, setIsAnimating] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
+  const [clipAvailability, setClipAvailability] = useState<Record<string, boolean>>({})
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const clipListRef = useRef<HTMLDivElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
+
+  // Check which video files exist on mount
+  useEffect(() => {
+    let cancelled = false
+    async function checkAvailability() {
+      const results: Record<string, boolean> = {}
+      await Promise.all(
+        ASL_GUIDE_CLIPS.map(async (clip) => {
+          try {
+            const res = await fetch(getVideoUrl(clip.slug), { method: 'HEAD' })
+            results[clip.slug] = res.ok
+          } catch {
+            results[clip.slug] = false
+          }
+        })
+      )
+      if (!cancelled) setClipAvailability(results)
+    }
+    checkAvailability()
+    return () => { cancelled = true }
+  }, [])
 
   // Check nudge on mount
   useEffect(() => {
@@ -105,6 +127,7 @@ export default function AslGuidePanel() {
   }, [])
 
   const selectClip = useCallback((clip: AslGuideClip) => {
+    if (clipAvailability[clip.slug] === false) return
     setCurrentClip(clip)
     setUserSelectedClip(true)
     setVideoError(false)
@@ -112,7 +135,7 @@ export default function AslGuidePanel() {
     if (videoRef.current) {
       videoRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
-  }, [])
+  }, [clipAvailability])
 
   const dismissNudge = useCallback(() => {
     setShowNudge(false)
@@ -346,11 +369,13 @@ export default function AslGuidePanel() {
               <div ref={clipListRef}>
                 {ASL_GUIDE_CLIPS.map(clip => {
                   const isActive = clip.slug === currentClip.slug
+                  const isAvailable = clipAvailability[clip.slug] !== false
                   return (
                     <button
                       key={clip.slug}
                       data-active={isActive}
                       onClick={() => selectClip(clip)}
+                      disabled={!isAvailable}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -362,26 +387,26 @@ export default function AslGuidePanel() {
                         borderRight: 'none',
                         borderBottom: 'none',
                         borderLeft: isActive ? '3px solid #a78bfa' : '3px solid transparent',
-                        cursor: 'pointer',
+                        cursor: isAvailable ? 'pointer' : 'default',
                         textAlign: 'left',
                         transition: 'background 0.1s ease',
                       }}
                       onMouseEnter={e => {
-                        if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.03)'
+                        if (!isActive && isAvailable) e.currentTarget.style.background = 'rgba(255,255,255,0.03)'
                       }}
                       onMouseLeave={e => {
-                        if (!isActive) e.currentTarget.style.background = 'transparent'
+                        if (!isActive) e.currentTarget.style.background = isActive ? 'rgba(167,139,250,0.06)' : 'transparent'
                       }}
                     >
                       <div style={{ flexShrink: 0 }}>
-                        <PlayIcon size={12} color={isActive ? '#a78bfa' : '#96a0b8'} />
+                        <PlayIcon size={12} color={isActive ? '#a78bfa' : isAvailable ? '#96a0b8' : '#555'} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{
                           fontFamily: 'Inter, sans-serif',
                           fontWeight: 500,
                           fontSize: 13,
-                          color: isActive ? '#f0f2f8' : '#c8cdd8',
+                          color: isActive ? '#f0f2f8' : isAvailable ? '#c8cdd8' : '#555',
                           whiteSpace: 'nowrap',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
@@ -392,6 +417,8 @@ export default function AslGuidePanel() {
                       <div style={{ flexShrink: 0, fontFamily: 'Inter, sans-serif', fontSize: 11 }}>
                         {isActive ? (
                           <span style={{ color: '#a78bfa' }}>Playing</span>
+                        ) : !isAvailable ? (
+                          <span style={{ color: '#a78bfa', fontStyle: 'italic', fontSize: 10 }}>Coming soon</span>
                         ) : (
                           <span style={{ color: '#96a0b8' }}>{clip.durationLabel}</span>
                         )}
