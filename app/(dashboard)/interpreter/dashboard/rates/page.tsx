@@ -28,7 +28,7 @@ const DEFAULT_PROFILES: RateProfile[] = [
   {
     id: 'rp-1', name: 'Standard Rate', color: '#00e5ff', isDefault: true,
     hourlyRate: '', currency: 'USD — US Dollar', minBooking: 'No minimum',
-    cancellationPolicy: '48 hours notice required', lateFee: 'No fee',
+    cancellationPolicy: '48 hours notice required', lateFee: '100% of booking fee',
     notes: '', travel: [],
   },
 ]
@@ -89,7 +89,7 @@ export default function RatesPage() {
         currency: r.currency ? `${r.currency} — ${r.currency === 'USD' ? 'US Dollar' : r.currency === 'GBP' ? 'British Pound' : r.currency === 'EUR' ? 'Euro' : r.currency === 'CAD' ? 'Canadian Dollar' : r.currency === 'AUD' ? 'Australian Dollar' : r.currency}` : 'USD — US Dollar',
         minBooking: r.min_booking ? `${r.min_booking / 60} hour${r.min_booking > 60 ? 's' : ''}` : 'No minimum',
         cancellationPolicy: r.cancellation_policy || '48 hours notice required',
-        lateFee: r.late_cancel_fee ? `${r.late_cancel_fee}` : 'No fee',
+        lateFee: r.late_cancel_fee == null ? 'No fee' : r.late_cancel_fee === 100 ? '100% of booking fee' : r.late_cancel_fee === 50 ? '50% of booking fee' : `${r.late_cancel_fee}`,
         notes: r.additional_terms || '',
         travel: (r.travel_expenses as string[]) || [],
       })))
@@ -106,7 +106,7 @@ export default function RatesPage() {
     console.log('RATES SEED - seeding defaults for interpreter_id:', profile.id)
 
     const defaults = [
-      { interpreter_id: profile.id, label: 'Standard Rate', color: '#00e5ff', is_default: true, hourly_rate: null, currency: 'USD', min_booking: null, cancellation_policy: '48 hours notice required', late_cancel_fee: null, travel_expenses: [], additional_terms: null },
+      { interpreter_id: profile.id, label: 'Standard Rate', color: '#00e5ff', is_default: true, hourly_rate: null, currency: 'USD', min_booking: null, cancellation_policy: '48 hours notice required', late_cancel_fee: 100, travel_expenses: [], additional_terms: null },
     ]
     const { data: seeded, error: seedError } = await supabase
       .from('interpreter_rate_profiles')
@@ -128,7 +128,7 @@ export default function RatesPage() {
         currency: r.currency ? `${r.currency} — ${r.currency === 'USD' ? 'US Dollar' : r.currency}` : 'USD — US Dollar',
         minBooking: r.min_booking ? `${r.min_booking / 60} hour${r.min_booking > 60 ? 's' : ''}` : 'No minimum',
         cancellationPolicy: r.cancellation_policy || '48 hours notice required',
-        lateFee: r.late_cancel_fee ? `${r.late_cancel_fee}` : 'No fee',
+        lateFee: r.late_cancel_fee == null ? 'No fee' : r.late_cancel_fee === 100 ? '100% of booking fee' : r.late_cancel_fee === 50 ? '50% of booking fee' : `${r.late_cancel_fee}`,
         notes: r.additional_terms || '',
         travel: (r.travel_expenses as string[]) || [],
       })))
@@ -258,7 +258,7 @@ export default function RatesPage() {
         currency: 'USD',
         min_booking: null,
         cancellation_policy: '48 hours notice required',
-        late_cancel_fee: null,
+        late_cancel_fee: 100,
         travel_expenses: [],
         additional_terms: null,
       })
