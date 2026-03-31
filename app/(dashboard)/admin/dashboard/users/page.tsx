@@ -8,14 +8,14 @@ export default async function AdminUsersPage() {
   const supabase = await createClient()
   const { data: { user: currentUser } } = await supabase.auth.getUser()
 
-  // Fetch all user profiles
-  const { data: users } = await supabase
+  // Use admin client to bypass RLS (admin page needs all rows)
+  const admin = getSupabaseAdmin()
+
+  // Fetch all user profiles via admin (user_profiles RLS can block non-own rows)
+  const { data: users } = await admin
     .from('user_profiles')
     .select('id, role, email, created_at, is_admin, suspended')
     .order('created_at', { ascending: false })
-
-  // Use admin client to bypass RLS (admin page needs all rows)
-  const admin = getSupabaseAdmin()
 
   // Fetch auth.users emails via admin client (user_profiles.email may be null)
   let authEmailMap = new Map<string, string>()
@@ -49,18 +49,19 @@ export default async function AdminUsersPage() {
     .from('deaf_profiles')
     .select('id, user_id, first_name, last_name')
 
-  // Fetch requester profiles for name (id references user_profiles.id directly)
+  // Fetch requester profiles for name
   const { data: requesterProfiles } = await admin
     .from('requester_profiles')
-    .select('id, name')
+    .select('id, user_id, name')
 
   // Build enriched user list
   const interpMap = new Map((interpreters || []).map(i => [i.user_id, i]))
   const deafMap = new Map((deafProfiles || []).map(d => [d.user_id || d.id, d]))
-  const requesterMap = new Map((requesterProfiles || []).map(r => [r.id, r]))
+  const requesterMap = new Map((requesterProfiles || []).map(r => [r.user_id || r.id, r]))
 
   const enrichedUsers = (users || []).map(u => {
-    let name = u.email?.split('@')[0] || 'Unknown'
+    const fallbackEmail = u.email || authEmailMap.get(u.id) || ''
+    let name = fallbackEmail.split('@')[0] || 'Unknown'
     let status = 'active'
     let profileId: string | null = null
 
