@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 const TABS = [
   { id: 'about', label: 'About Us' },
@@ -53,7 +54,9 @@ const faqItems = [
 ];
 
 export default function AboutPage() {
-  const [activeTab, setActiveTab] = useState<TabId>('about');
+  const searchParams = useSearchParams();
+  const initialTab = TABS.some(t => t.id === searchParams.get('tab')) ? searchParams.get('tab') as TabId : 'about';
+  const [activeTab, setActiveTab] = useState<TabId>(initialTab);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [contactSubmitted, setContactSubmitted] = useState(false);
@@ -271,6 +274,7 @@ export default function AboutPage() {
             id="panel-pricing"
             aria-labelledby="tab-pricing"
             hidden={activeTab !== 'pricing'}
+            style={{ maxWidth: 760 }}
           >
             <h2 style={{
               fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.4rem, 2.5vw, 1.8rem)',

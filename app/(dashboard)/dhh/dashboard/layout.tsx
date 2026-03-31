@@ -1,5 +1,5 @@
 import DhhDashboardSidebar from '@/components/layout/DhhDashboardSidebar'
-import AslTourButton from '@/components/ui/AslTourButton'
+import AslGuidePanel from '@/components/ui/AslGuidePanel'
 import DhhBetaWelcomeModal from '@/components/beta/DhhBetaWelcomeModal'
 import DhhBetaPanel from '@/components/beta/DhhBetaPanel'
 import { createClient } from '@/lib/supabase/server'
@@ -36,7 +36,7 @@ export default async function DhhDashboardLayout({ children }: { children: React
             {children}
           </div>
         </main>
-        <AslTourButton />
+        <AslGuidePanel />
         {user && <DhhBetaWelcomeModal userId={user.id} />}
         <style>{`
           @media (max-width: 768px) {

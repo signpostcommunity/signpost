@@ -1,4 +1,5 @@
 import DashboardSidebar from '@/components/layout/DashboardSidebar'
+import AslGuidePanel from '@/components/ui/AslGuidePanel'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -41,6 +42,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           {children}
         </div>
       </main>
+      <AslGuidePanel />
       <style>{`
         @media (max-width: 768px) {
           .dash-layout { flex-direction: column !important; }

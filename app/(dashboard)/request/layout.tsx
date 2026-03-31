@@ -1,4 +1,5 @@
 import RequesterDashboardSidebar from '@/components/layout/RequesterDashboardSidebar'
+import RequesterBetaPanel from '@/components/beta/RequesterBetaPanel'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function RequesterDashboardLayout({ children }: { children: React.ReactNode }) {
@@ -33,18 +34,21 @@ export default async function RequesterDashboardLayout({ children }: { children:
   }
 
   return (
-    <div className="dash-layout" style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
-      <RequesterDashboardSidebar userName={userName} userInitials={userInitials} userSubtitle={userSubtitle} />
-      <main className="dash-main" style={{ flex: 1, overflowY: 'auto', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        <div style={{ maxWidth: 960, margin: '0 auto', width: '100%' }}>
-          {children}
-        </div>
-      </main>
-      <style>{`
-        @media (max-width: 768px) {
-          .dash-layout { flex-direction: column !important; }
-        }
-      `}</style>
-    </div>
+    <>
+      <div className="dash-layout" style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
+        <RequesterDashboardSidebar userName={userName} userInitials={userInitials} userSubtitle={userSubtitle} />
+        <main className="dash-main" style={{ flex: 1, overflowY: 'auto', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ maxWidth: 960, margin: '0 auto', width: '100%' }}>
+            {children}
+          </div>
+        </main>
+        <style>{`
+          @media (max-width: 768px) {
+            .dash-layout { flex-direction: column !important; }
+          }
+        `}</style>
+      </div>
+      {user && <RequesterBetaPanel userId={user.id} />}
+    </>
   )
 }

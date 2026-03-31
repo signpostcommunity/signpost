@@ -75,7 +75,8 @@ export default function PoliciesPage() {
           Interpreters set their own rates, cancellation policies, and booking terms through their profile. These terms are visible to requesters before a booking is confirmed. By confirming a booking, both parties agree to the interpreter&apos;s posted terms for that engagement.
         </p>
         <p style={body}>
-          signpost charges a platform fee on bookings processed through the platform. The current fee structure is displayed during the booking process. signpost reserves the right to adjust platform fees with 30 days&apos; notice to active users.
+          signpost charges a platform fee on bookings processed through the platform. The current fee structure is displayed during the booking process. See our full pricing details and examples on the{' '}
+          <a href="/about?tab=pricing" style={{ color: 'var(--accent)', textDecoration: 'none' }}>About page</a>. signpost reserves the right to adjust platform fees with 30 days&apos; notice to active users.
         </p>
         <p style={body}>
           <strong style={{ color: 'var(--text)' }}>Platform Booking Policy:</strong> When an organization or requester first connects with an interpreter through signpost, future bookings with that organization should continue through the platform. This is how signpost sustains itself as a free resource for the Deaf community and for interpreters. Routing bookings outside signpost to avoid the platform fee is a violation of these terms and may result in account suspension or removal. This policy does not apply to clients or organizations the interpreter worked with before joining signpost, or to Deaf/DB/HH individuals the interpreter already knows personally or professionally.

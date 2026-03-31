@@ -1,7 +1,7 @@
 import Nav from '@/components/layout/Nav';
 import Footer from '@/components/layout/Footer';
 import BetaFeedbackPanel from '@/components/beta/BetaFeedbackPanel';
-import AslTourButton from '@/components/ui/AslTourButton';
+import AslGuidePanel from '@/components/ui/AslGuidePanel';
 import { createClient } from '@/lib/supabase/server';
 
 const BETA_UI_ENABLED = false;
@@ -19,7 +19,7 @@ export default async function PublicLayout({ children }: { children: React.React
       </div>
       {/* Beta UI hidden — re-enable when Deaf/DB/HH beta launches */}
       {BETA_UI_ENABLED && process.env.NEXT_PUBLIC_BETA_MODE === 'true' && <BetaFeedbackPanel />}
-      <AslTourButton />
+      <AslGuidePanel />
     </>
   );
 }
