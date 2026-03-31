@@ -221,9 +221,16 @@ const tests: TestDef[] = [
     check: 'gt0',
   },
   {
-    name: 'D4: Outsider sees 0 deaf_roster entries',
-    table: 'deaf_roster', role: 'deaf', type: 'negative',
+    name: 'D4: Deaf user sees own deaf_roster entries',
+    table: 'deaf_roster', role: 'deaf', type: 'positive',
     userId: ADAM,
+    sql: `SELECT count(*) FROM deaf_roster`,
+    check: 'gt0',
+  },
+  {
+    name: 'D4b: Interpreter cannot see deaf_roster',
+    table: 'deaf_roster', role: 'interpreter', type: 'negative',
+    userId: JENNY,
     sql: `SELECT count(*) FROM deaf_roster`,
     check: 'eq0',
   },
