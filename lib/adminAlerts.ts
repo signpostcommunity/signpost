@@ -1,6 +1,7 @@
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { sendEmail } from '@/lib/email'
 import { emailTemplate } from '@/lib/email-template'
+import { sendSms } from '@/lib/sms'
 
 export type AdminAlertType =
   | 'new_flag'
@@ -62,14 +63,12 @@ export async function sendAdminAlert(options: AlertOptions): Promise<void> {
         }
       }
 
-      // Send SMS if opted in (only if Telnyx is configured)
+      // Send SMS if opted in
       if (alertPref.sms && adminUser.admin_phone) {
-        if (process.env.TELNYX_API_KEY) {
-          // TODO: implement when Telnyx is live
-          console.log(`[adminAlerts] SMS would be sent to ${adminUser.admin_phone}: ${options.smsMessage}`)
-        } else {
-          console.log(`[adminAlerts] SMS requested for ${adminUser.id} but Telnyx not configured`)
-        }
+        sendSms({
+          to: adminUser.admin_phone,
+          message: options.smsMessage,
+        }).catch(e => console.error('[admin-alert] SMS failed:', e))
       }
     }
   } catch (e) {
