@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { sanitizeText } from '@/lib/sanitize'
 
 export const dynamic = 'force-dynamic'
 
@@ -19,9 +20,9 @@ export async function POST(request: NextRequest) {
       ratingMetNeeds,
       ratingProfessional,
       wouldBookAgain,
-      feedbackText,
       sharedWithInterpreter,
     } = body
+    const feedbackText = body.feedbackText ? sanitizeText(body.feedbackText) : null
 
     if (!bookingId || !interpreterId || !ratingMetNeeds || !ratingProfessional || !wouldBookAgain) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { sanitizeText } from '@/lib/sanitize'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,13 +15,19 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     const {
-      title, date, timeStart, timeEnd, timezone,
-      format, location, eventType, eventCategory,
-      interpreterCount, description, interpreterIds,
+      date, timeStart, timeEnd, timezone,
+      format, eventType, eventCategory,
+      interpreterCount, interpreterIds,
       forDhhUserId, // Optional: DHH user ID from connection system
-      specialization, recurrence, notes,
+      specialization, recurrence,
       saveAsDraft, // Optional: save as draft instead of submitting
+      bookingId, // Optional: existing draft ID to update in-place
     } = body
+    // Sanitize user-provided text fields
+    const title = body.title ? sanitizeText(body.title) : null
+    const location = body.location ? sanitizeText(body.location) : null
+    const description = body.description ? sanitizeText(body.description) : null
+    const notes = body.notes ? sanitizeText(body.notes) : null
 
     if (!saveAsDraft && (!title || !date || !timeStart || !timeEnd || !format)) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -50,38 +57,71 @@ export async function POST(request: NextRequest) {
 
     const count = interpreterCount || (interpreterIds?.length || 1)
 
-    // Create the booking
-    const { data: booking, error: insertError } = await admin
-      .from('bookings')
-      .insert({
-        requester_id: user.id,
-        status: saveAsDraft ? 'draft' : 'open',
-        request_type: 'professional',
-        title: title || null,
-        date: date || null,
-        time_start: timeStart || null,
-        time_end: timeEnd || null,
-        timezone: timezone || 'America/Los_Angeles',
-        format: dbFormat || null,
-        location: location || null,
-        event_type: eventType || null,
-        event_category: eventCategory || null,
-        specialization: specialization || null,
-        recurrence: recurrence || 'one-time',
-        interpreter_count: count,
-        description: description || null,
-        notes: notes || null,
-        requester_name: requesterName,
-        platform_fee_amount: 15.0 * count,
-        platform_fee_status: 'pending',
-        is_seed: false,
-      })
-      .select('id')
-      .single()
+    const bookingData = {
+      requester_id: user.id,
+      status: saveAsDraft ? 'draft' : 'open',
+      request_type: 'professional' as const,
+      title: title || null,
+      date: date || null,
+      time_start: timeStart || null,
+      time_end: timeEnd || null,
+      timezone: timezone || 'America/Los_Angeles',
+      format: dbFormat || null,
+      location: location || null,
+      event_type: eventType || null,
+      event_category: eventCategory || null,
+      specialization: specialization || null,
+      recurrence: recurrence || 'one-time',
+      interpreter_count: count,
+      description: description || null,
+      notes: notes || null,
+      requester_name: requesterName,
+      platform_fee_amount: 15.0 * count,
+      platform_fee_status: 'pending',
+      is_seed: false,
+    }
 
-    if (insertError) {
-      console.error('[request/booking] booking insert failed:', insertError.message)
-      return NextResponse.json({ error: `Failed to create booking: ${insertError.message}` }, { status: 500 })
+    let booking: { id: string }
+
+    // If updating an existing draft, update in-place instead of creating new
+    if (bookingId && saveAsDraft) {
+      const { data: existing, error: checkErr } = await admin
+        .from('bookings')
+        .select('id, status, requester_id')
+        .eq('id', bookingId)
+        .eq('requester_id', user.id)
+        .eq('status', 'draft')
+        .maybeSingle()
+
+      if (checkErr || !existing) {
+        console.error('[request/booking] draft lookup failed:', checkErr?.message || 'not found')
+        return NextResponse.json({ error: 'Draft not found or already submitted' }, { status: 404 })
+      }
+
+      const { error: updateErr } = await admin
+        .from('bookings')
+        .update(bookingData)
+        .eq('id', bookingId)
+
+      if (updateErr) {
+        console.error('[request/booking] draft update failed:', updateErr.message)
+        return NextResponse.json({ error: `Failed to update draft: ${updateErr.message}` }, { status: 500 })
+      }
+
+      booking = { id: bookingId }
+    } else {
+      const { data: newBooking, error: insertError } = await admin
+        .from('bookings')
+        .insert(bookingData)
+        .select('id')
+        .single()
+
+      if (insertError) {
+        console.error('[request/booking] booking insert failed:', insertError.message)
+        return NextResponse.json({ error: `Failed to create booking: ${insertError.message}` }, { status: 500 })
+      }
+
+      booking = newBooking
     }
 
     // If booking is for a connected DHH user, add them to booking_dhh_clients

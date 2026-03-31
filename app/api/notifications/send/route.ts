@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createNotification } from '@/lib/notifications-server'
+import { sanitizeText } from '@/lib/sanitize'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,7 +14,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { recipientUserId, subject, body, type, metadata, ctaText, ctaUrl, channel } = await request.json()
+    const raw = await request.json()
+    const recipientUserId = raw.recipientUserId
+    const subject = raw.subject ? sanitizeText(raw.subject) : ''
+    const body = raw.body ? sanitizeText(raw.body) : ''
+    const { type, metadata, ctaText, ctaUrl, channel } = raw
 
     if (!recipientUserId || !subject || !body || !type) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })

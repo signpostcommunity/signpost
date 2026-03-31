@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { sanitizeText } from '@/lib/sanitize'
 
 export const dynamic = 'force-dynamic'
 
@@ -50,7 +51,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const updates: Record<string, unknown> = {}
-    if (contextVideoUrl !== undefined) updates.context_video_url = contextVideoUrl
+    if (contextVideoUrl !== undefined) updates.context_video_url = contextVideoUrl ? sanitizeText(contextVideoUrl) : null
     if (contextVideoVisibleBeforeAccept !== undefined) updates.context_video_visible_before_accept = contextVideoVisibleBeforeAccept
 
     const { error: updateError } = await admin

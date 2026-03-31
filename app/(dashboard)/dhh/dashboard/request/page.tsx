@@ -140,6 +140,8 @@ export default function DhhRequestPage() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null)
+  const [draftId, setDraftId] = useState<string | null>(null)
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
 
   // Form state
   const [title, setTitle] = useState('')
@@ -180,6 +182,47 @@ export default function DhhRequestPage() {
     }
     init()
   }, [])
+
+  async function handleSaveDraft() {
+    if (saveState === 'saving') return
+    setSaveState('saving')
+    try {
+      const res = await fetch('/api/dhh/request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: title.trim() || null,
+          date: date || null,
+          timeStart: timeStart || null,
+          timeEnd: timeEnd || null,
+          timezone,
+          format,
+          location: format === 'remote' ? 'Remote' : location.trim() || null,
+          eventType: eventType || null,
+          eventCategory: eventType ? 'Personal & Life Events' : null,
+          interpreterCount,
+          description: description.trim() || null,
+          interpreterIds: selectedInterpreters.length > 0 ? selectedInterpreters : [],
+          contextVideoUrl: contextVideoUrl || null,
+          contextVideoVisibleBeforeAccept: contextVideoVisible,
+          saveAsDraft: true,
+          bookingId: draftId,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setSaveState('error')
+        setTimeout(() => setSaveState('idle'), 3000)
+        return
+      }
+      if (data.bookingIds?.[0]) setDraftId(data.bookingIds[0])
+      setSaveState('saved')
+      setTimeout(() => setSaveState('idle'), 2000)
+    } catch {
+      setSaveState('error')
+      setTimeout(() => setSaveState('idle'), 3000)
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -519,21 +562,48 @@ export default function DhhRequestPage() {
           <CommPrefsDisplay commPrefs={commPrefs as Record<string, unknown> & { signing_style?: string; preferred_domains?: string[]; cdi_preferred?: boolean; team_interpreting?: string; notes?: string } | null} editable />
         </div>
 
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={submitting}
-          style={{
-            width: '100%', padding: '14px 24px',
-            background: submitting ? 'var(--surface2)' : 'linear-gradient(135deg, #9d87ff, #7b61ff)',
-            border: 'none', borderRadius: 'var(--radius-sm)',
-            color: '#fff', fontSize: '1rem', fontWeight: 700,
-            fontFamily: "'DM Sans', sans-serif", cursor: submitting ? 'not-allowed' : 'pointer',
-            transition: 'all 0.2s', opacity: submitting ? 0.6 : 1,
-          }}
-        >
-          {submitting ? 'Sending...' : 'Send Request'}
-        </button>
+        {/* Actions */}
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button
+            type="submit"
+            disabled={submitting}
+            style={{
+              flex: 1, padding: '14px 24px',
+              background: submitting ? 'var(--surface2)' : 'linear-gradient(135deg, #9d87ff, #7b61ff)',
+              border: 'none', borderRadius: 'var(--radius-sm)',
+              color: '#fff', fontSize: '1rem', fontWeight: 700,
+              fontFamily: "'DM Sans', sans-serif", cursor: submitting ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s', opacity: submitting ? 0.6 : 1,
+            }}
+          >
+            {submitting ? 'Sending...' : 'Send Request'}
+          </button>
+          <button
+            type="button"
+            disabled={submitting || saveState === 'saving'}
+            onClick={handleSaveDraft}
+            style={{
+              background: 'none',
+              border: `1px solid ${saveState === 'saved' ? 'rgba(52,211,153,0.4)' : saveState === 'error' ? 'rgba(255,107,133,0.4)' : 'var(--border)'}`,
+              borderRadius: 'var(--radius-sm)', padding: '14px 24px',
+              color: saveState === 'saved' ? '#34d399' : saveState === 'error' ? '#ff6b85' : 'var(--muted)',
+              fontSize: '0.88rem', fontWeight: 600,
+              cursor: (submitting || saveState === 'saving') ? 'not-allowed' : 'pointer',
+              fontFamily: "'DM Sans', sans-serif",
+              transition: 'all 0.2s',
+              opacity: (submitting || saveState === 'saving') ? 0.6 : 1,
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {saveState === 'saved' && (
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <path d="M3 8l3.5 3.5L13 5" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+            {{ idle: 'Save as Draft', saving: 'Saving...', saved: 'Saved', error: 'Save failed' }[saveState]}
+          </button>
+        </div>
       </form>
 
       {/* Toast */}

@@ -70,6 +70,8 @@ export default function NewRequestPage() {
   const [submitting, setSubmitting] = useState(false)
   const [hasPaymentMethod, setHasPaymentMethod] = useState<boolean | null>(null)
   const paymentNoticeRef = useRef<HTMLDivElement>(null)
+  const [draftId, setDraftId] = useState<string | null>(null)
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
 
   // Check if requester has a payment method on file
   useEffect(() => {
@@ -129,17 +131,56 @@ export default function NewRequestPage() {
     return Object.keys(errs).length === 0
   }
 
-  async function handleSubmit(saveAsDraft: boolean) {
-    if (!saveAsDraft && !validate()) return
+  function buildPayload() {
+    return {
+      title: title || null,
+      date: date || null,
+      timeStart: timeStart || null,
+      timeEnd: timeEnd || null,
+      format,
+      location: format === 'in_person' ? location : remotePlatform,
+      eventCategory: eventCategory || null,
+      specialization: specialization || null,
+      recurrence: recurrence.toLowerCase().replace('-', '_'),
+      interpreterCount,
+      description: `Sign language: ${signLanguage}. Spoken language: ${spokenLanguage}.`,
+      notes: notes || null,
+    }
+  }
+
+  async function handleSaveDraft() {
+    if (saveState === 'saving') return
+    setSaveState('saving')
+    try {
+      const res = await fetch('/api/request/booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...buildPayload(), saveAsDraft: true, bookingId: draftId }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setSaveState('error')
+        setTimeout(() => setSaveState('idle'), 3000)
+        return
+      }
+      if (data.bookingId) setDraftId(data.bookingId)
+      setSaveState('saved')
+      setTimeout(() => setSaveState('idle'), 2000)
+    } catch {
+      setSaveState('error')
+      setTimeout(() => setSaveState('idle'), 3000)
+    }
+  }
+
+  async function handleSubmit() {
+    if (!validate()) return
 
     // Gate: require payment method for non-draft submissions
-    if (!saveAsDraft && !hasPaymentMethod) {
+    if (!hasPaymentMethod) {
       setToast({ message: 'Add a payment method before submitting requests.', type: 'error' })
-      // Scroll to and highlight the payment method notice
       if (paymentNoticeRef.current) {
         paymentNoticeRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
         paymentNoticeRef.current.style.animation = 'none'
-        // Force reflow to restart animation
         void paymentNoticeRef.current.offsetWidth
         paymentNoticeRef.current.style.animation = 'pulse-highlight 1.5s ease-out'
       }
@@ -152,21 +193,7 @@ export default function NewRequestPage() {
       const res = await fetch('/api/request/booking', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: title || null,
-          date: date || null,
-          timeStart: timeStart || null,
-          timeEnd: timeEnd || null,
-          format,
-          location: format === 'in_person' ? location : remotePlatform,
-          eventCategory: eventCategory || null,
-          specialization: specialization || null,
-          recurrence: recurrence.toLowerCase().replace('-', '_'),
-          interpreterCount,
-          description: `Sign language: ${signLanguage}. Spoken language: ${spokenLanguage}.`,
-          notes: notes || null,
-          saveAsDraft,
-        }),
+        body: JSON.stringify({ ...buildPayload(), saveAsDraft: false, bookingId: draftId }),
       })
 
       const data = await res.json()
@@ -176,7 +203,7 @@ export default function NewRequestPage() {
         return
       }
 
-      setToast({ message: saveAsDraft ? 'Draft saved.' : 'Request submitted. Interpreters will be notified.', type: 'success' })
+      setToast({ message: 'Request submitted. Interpreters will be notified.', type: 'success' })
       setTimeout(() => router.push('/request/dashboard'), 1500)
     } catch {
       setToast({ message: 'Something went wrong. Please try again.', type: 'error' })
@@ -516,7 +543,7 @@ export default function NewRequestPage() {
           <button
             className="btn-primary"
             disabled={submitting}
-            onClick={() => handleSubmit(false)}
+            onClick={() => handleSubmit()}
             style={{
               padding: '14px 32px', fontSize: '0.92rem', fontWeight: 700,
               opacity: submitting ? 0.6 : 1, cursor: submitting ? 'not-allowed' : 'pointer',
@@ -526,19 +553,27 @@ export default function NewRequestPage() {
           </button>
           <button
             type="button"
-            disabled={submitting}
-            onClick={() => handleSubmit(true)}
+            disabled={submitting || saveState === 'saving'}
+            onClick={handleSaveDraft}
             style={{
-              background: 'none', border: '1px solid var(--border)',
+              background: 'none',
+              border: `1px solid ${saveState === 'saved' ? 'rgba(52,211,153,0.4)' : saveState === 'error' ? 'rgba(255,107,133,0.4)' : 'var(--border)'}`,
               borderRadius: 'var(--radius-sm)', padding: '14px 24px',
-              color: 'var(--muted)', fontSize: '0.88rem', fontWeight: 600,
-              cursor: submitting ? 'not-allowed' : 'pointer',
+              color: saveState === 'saved' ? '#34d399' : saveState === 'error' ? '#ff6b85' : 'var(--muted)',
+              fontSize: '0.88rem', fontWeight: 600,
+              cursor: (submitting || saveState === 'saving') ? 'not-allowed' : 'pointer',
               fontFamily: "'DM Sans', sans-serif",
-              transition: 'border-color 0.15s',
-              opacity: submitting ? 0.6 : 1,
+              transition: 'all 0.2s',
+              opacity: (submitting || saveState === 'saving') ? 0.6 : 1,
+              display: 'inline-flex', alignItems: 'center', gap: 6,
             }}
           >
-            Save as Draft
+            {saveState === 'saved' && (
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                <path d="M3 8l3.5 3.5L13 5" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+            {{ idle: 'Save as Draft', saving: 'Saving...', saved: 'Saved', error: 'Save failed' }[saveState]}
           </button>
         </div>
       </div>

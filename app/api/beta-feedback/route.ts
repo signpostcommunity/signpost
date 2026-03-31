@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { sanitizeText } from '@/lib/sanitize'
 
 const BOARD_ID = 18402840319
 const MONDAY_API = 'https://api.monday.com/v2'
@@ -80,26 +81,26 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Concatenate all per-page open notes with page labels
+    // Sanitize and concatenate all per-page open notes with page labels
     const allNotes = (pageFeedback || [])
       .filter(f => f.openNotes)
-      .map(f => `[${f.page}] ${f.openNotes}`)
+      .map(f => `[${f.page}] ${sanitizeText(f.openNotes)}`)
       .join('\n')
 
-    // Concatenate all per-page specific answers with page labels
+    // Sanitize and concatenate all per-page specific answers with page labels
     const allSpecific = (pageFeedback || [])
       .filter(f => f.specificAnswer)
-      .map(f => `[${f.page}] ${f.specificAnswer}`)
+      .map(f => `[${f.page}] ${sanitizeText(f.specificAnswer)}`)
       .join('\n')
 
     // Format end-of-session answers as structured text
     const endOfSessionLines: string[] = []
 
-    if (professionalNeeds) endOfSessionLines.push(`Professional needs: ${professionalNeeds}`)
-    if (whatsWorkingMissing) endOfSessionLines.push(`What's working/missing: ${whatsWorkingMissing}`)
+    if (professionalNeeds) endOfSessionLines.push(`Professional needs: ${sanitizeText(professionalNeeds)}`)
+    if (whatsWorkingMissing) endOfSessionLines.push(`What's working/missing: ${sanitizeText(whatsWorkingMissing)}`)
     if (likelihood) endOfSessionLines.push(`Likelihood to use: ${likelihood}`)
     if (usedMobile) endOfSessionLines.push(`Used mobile: ${usedMobile}`)
-    if (mobileFeedback) endOfSessionLines.push(`Mobile feedback: ${mobileFeedback}`)
+    if (mobileFeedback) endOfSessionLines.push(`Mobile feedback: ${sanitizeText(mobileFeedback)}`)
     if (starRatingFeel) endOfSessionLines.push(`Star rating feel: ${starRatingFeel}`)
     if (whoShouldRate?.length) endOfSessionLines.push(`Who should rate: ${whoShouldRate.join(', ')}`)
     if (dhhRatingCategories) endOfSessionLines.push(`D/HH rating categories: ${dhhRatingCategories}`)
@@ -109,7 +110,7 @@ export async function POST(request: NextRequest) {
     if (invoicingCompare) endOfSessionLines.push(`Invoicing compare: ${invoicingCompare}`)
     if (premiumInterest) endOfSessionLines.push(`Premium interest: ${premiumInterest}`)
     if (premiumPrice) endOfSessionLines.push(`Premium price: ${premiumPrice}`)
-    if (dreamPlatform) endOfSessionLines.push(`Dream platform: ${dreamPlatform}`)
+    if (dreamPlatform) endOfSessionLines.push(`Dream platform: ${sanitizeText(dreamPlatform)}`)
 
     const endOfSession = endOfSessionLines.join('\n')
 

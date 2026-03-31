@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { sanitizeText } from '@/lib/sanitize'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,7 +13,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { recipientId, body, subject, attachments } = await request.json()
+    const raw = await request.json()
+    const recipientId = raw.recipientId
+    const body = sanitizeText(raw.body || '')
+    const subject = raw.subject ? sanitizeText(raw.subject) : null
+    const attachments = raw.attachments
     if (!recipientId || !body) {
       return NextResponse.json({ error: 'recipientId and body are required' }, { status: 400 })
     }
