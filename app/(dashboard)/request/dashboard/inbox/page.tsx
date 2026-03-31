@@ -297,13 +297,13 @@ export default function RequesterInboxPage() {
               {rateResponses.length > 0 && (
                 <div style={{ marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {rateResponses.map(resp => (
-                    <div key={resp.recipientId} style={{
+                    <div key={resp.recipientId} className="req-rate-card" style={{
                       background: 'rgba(0,229,255,0.04)',
                       border: '1px solid rgba(0,229,255,0.2)',
                       borderRadius: 'var(--radius)', padding: '18px 22px',
                     }}>
-                      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
-                        <div>
+                      <div className="req-rate-card-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
+                        <div style={{ minWidth: 0 }}>
                           <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)', marginBottom: 4 }}>
                             {resp.interpreterName} responded to your request
                           </div>
@@ -315,7 +315,7 @@ export default function RequesterInboxPage() {
                           fontSize: '0.7rem', fontWeight: 700, padding: '3px 10px',
                           borderRadius: 100, border: '1px solid rgba(0,229,255,0.3)',
                           color: 'var(--accent)', fontFamily: "'DM Sans', sans-serif",
-                          whiteSpace: 'nowrap',
+                          whiteSpace: 'nowrap', flexShrink: 0,
                         }}>
                           Action Required
                         </span>
@@ -499,6 +499,11 @@ export default function RequesterInboxPage() {
       <style>{`
         @media (max-width: 640px) {
           .dash-page-content { height: auto !important; min-height: calc(100vh - 80px); }
+          .req-rate-card { padding: 14px 16px !important; }
+          .req-rate-card-header { flex-direction: column !important; }
+        }
+        @media (max-width: 480px) {
+          .dash-page-content { padding: 20px 16px !important; }
         }
       `}</style>
     </div>

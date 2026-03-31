@@ -225,7 +225,7 @@ export default function AcceptClient({
 
       {/* Section 1 — Booking Summary */}
       <Section title="Booking Summary">
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 28px' }}>
+        <div className="req-accept-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 28px' }}>
           <DetailRow label="Title" value={booking.title || 'Untitled Request'} />
           <DetailRow label="Date & Time" value={`${formatDate(booking.date)} · ${formatTime(booking.time_start, booking.time_end)}`} />
           <DetailRow label="Location" value={booking.location || 'Not specified'} />
@@ -241,7 +241,7 @@ export default function AcceptClient({
 
       {/* Section 2 — Interpreter's Rate & Terms */}
       <Section title={`${interpreterName}'s Rate & Terms`}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 28px' }}>
+        <div className="req-accept-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 28px' }}>
           <DetailRow label="Hourly Rate" value={`$${rate}/${currency === 'USD' ? 'hr' : currency}`} accent />
           {rateProfile?.min_booking && (
             <DetailRow label="Minimum Booking" value={`${rateProfile.min_booking} hour${rateProfile.min_booking > 1 ? 's' : ''}`} />
@@ -308,7 +308,7 @@ export default function AcceptClient({
       </Section>
 
       {/* Section 4 — Actions */}
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 32, marginBottom: 40, alignItems: 'center' }}>
+      <div className="req-accept-actions" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 32, marginBottom: 40, alignItems: 'center' }}>
         <button
           onClick={() => setShowConfirm(true)}
           className="btn-primary"
@@ -420,15 +420,16 @@ export default function AcceptClient({
               <strong style={{ color: 'var(--accent)' }}>${rate}/hr</strong>?
               A <strong style={{ color: 'var(--text)' }}>$15 platform fee</strong> will apply.
             </p>
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <div className="req-modal-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <button
                 onClick={() => setShowConfirm(false)}
                 disabled={confirming}
                 style={{
                   background: 'none', border: '1px solid var(--border)',
-                  color: 'var(--muted)', padding: '10px 20px',
+                  color: 'var(--muted)', padding: '11px 20px',
                   borderRadius: 'var(--radius-sm)', fontSize: '0.85rem',
                   fontFamily: "'DM Sans', sans-serif", cursor: 'pointer',
+                  minHeight: 44,
                 }}
               >
                 Cancel
@@ -438,10 +439,11 @@ export default function AcceptClient({
                 disabled={confirming}
                 className="btn-primary"
                 style={{
-                  padding: '10px 24px', fontSize: '0.85rem',
+                  padding: '11px 24px', fontSize: '0.85rem',
                   fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
                   cursor: confirming ? 'not-allowed' : 'pointer',
                   opacity: confirming ? 0.6 : 1, border: 'none',
+                  minHeight: 44,
                 }}
               >
                 {confirming ? 'Confirming...' : 'Yes, Confirm Booking'}
@@ -453,9 +455,22 @@ export default function AcceptClient({
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-      <style>{`@media (max-width: 768px) {
-        .dash-page-content { padding: 24px 20px !important; }
-      }`}</style>
+      <style>{`
+        @media (max-width: 768px) {
+          .dash-page-content { padding: 24px 20px !important; }
+        }
+        @media (max-width: 640px) {
+          .req-accept-grid { grid-template-columns: 1fr !important; }
+          .req-accept-actions { flex-direction: column !important; align-items: stretch !important; }
+          .req-accept-actions button,
+          .req-accept-actions a { width: 100% !important; text-align: center !important; box-sizing: border-box !important; }
+          .req-modal-actions { flex-direction: column !important; }
+          .req-modal-actions button { width: 100% !important; }
+        }
+        @media (max-width: 480px) {
+          .dash-page-content { padding: 20px 16px !important; }
+        }
+      `}</style>
     </div>
   )
 }

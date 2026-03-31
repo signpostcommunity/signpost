@@ -389,7 +389,7 @@ export default function InterpretersClient() {
 
       {/* ── Preferred Section ── */}
       <div style={{ marginBottom: 36 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div className="req-section-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div>
             <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px', color: '#f0f2f8', marginBottom: 2 }}>
               Preferred Interpreters
@@ -493,7 +493,7 @@ export default function InterpretersClient() {
 
       {/* ── Secondary Tier Section ── */}
       <div style={{ marginBottom: 36 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div className="req-section-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div>
             <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px', color: '#f0f2f8', marginBottom: 2 }}>
               Secondary Tier
@@ -626,13 +626,14 @@ export default function InterpretersClient() {
                   : `Move ${confirmModal.name} to ${tierLabel}?`
                 }
               </p>
-              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+              <div className="req-modal-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                 <button
                   onClick={() => setConfirmModal(null)}
                   style={{
                     background: 'transparent', border: '1px solid var(--border)',
-                    borderRadius: 8, padding: '8px 20px', color: 'var(--muted)',
+                    borderRadius: 10, padding: '11px 20px', color: 'var(--muted)',
                     fontSize: '0.85rem', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                    minHeight: 44,
                   }}
                 >
                   Cancel
@@ -641,9 +642,10 @@ export default function InterpretersClient() {
                   onClick={confirmAction}
                   style={{
                     background: isRemove ? '#ff6b85' : 'var(--accent)',
-                    border: 'none', borderRadius: 8, padding: '8px 20px',
+                    border: 'none', borderRadius: 10, padding: '11px 20px',
                     color: isRemove ? '#fff' : '#000', fontSize: '0.85rem',
                     fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                    minHeight: 44,
                   }}
                 >
                   {isRemove ? 'Remove' : 'Move'}
@@ -659,6 +661,16 @@ export default function InterpretersClient() {
       <style>{`
         @media (max-width: 768px) {
           .dash-page-content { padding: 24px 20px !important; }
+          .req-section-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 12px !important;
+          }
+          .req-modal-actions { flex-direction: column !important; }
+          .req-modal-actions button { width: 100% !important; }
+        }
+        @media (max-width: 480px) {
+          .dash-page-content { padding: 20px 16px !important; }
         }
       `}</style>
     </div>

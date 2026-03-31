@@ -212,7 +212,7 @@ export default function NewRequestPage() {
           {errors.eventCategory && <div style={errorStyle}>{errors.eventCategory}</div>}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 20 }}>
+        <div className="req-date-time-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 20 }}>
           <div>
             <label style={labelStyle}>Date *</label>
             <input type="date" value={date} onChange={e => setDate(e.target.value)} style={inputStyle} />
@@ -403,7 +403,7 @@ export default function NewRequestPage() {
           background: 'var(--card-bg)', border: '1px solid var(--border)',
           borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 20,
         }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 24px', fontSize: '0.85rem', marginBottom: 16 }}>
+          <div className="req-review-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 24px', fontSize: '0.85rem', marginBottom: 16 }}>
             <div>
               <span style={{ color: 'var(--muted)' }}>Event: </span>
               <span style={{ color: 'var(--text)', fontWeight: 600 }}>{title || '—'}</span>
@@ -499,7 +499,7 @@ export default function NewRequestPage() {
         )}
 
         {/* ── Actions ── */}
-        <div style={{ display: 'flex', gap: 12, marginTop: 32, marginBottom: 48 }}>
+        <div className="req-form-actions" style={{ display: 'flex', gap: 12, marginTop: 32, marginBottom: 48 }}>
           <button
             className="btn-primary"
             disabled={submitting}
@@ -536,10 +536,14 @@ export default function NewRequestPage() {
         @media (max-width: 768px) {
           .dash-page-content { padding: 24px 20px !important; }
         }
+        @media (max-width: 640px) {
+          .req-date-time-grid { grid-template-columns: 1fr !important; }
+          .req-review-grid { grid-template-columns: 1fr !important; }
+          .req-form-actions { flex-direction: column !important; }
+          .req-form-actions button { width: 100% !important; text-align: center !important; }
+        }
         @media (max-width: 480px) {
-          .dash-page-content div[style*="grid-template-columns: 1fr 1fr 1fr"] {
-            grid-template-columns: 1fr !important;
-          }
+          .dash-page-content { padding: 20px 16px !important; }
         }
       `}</style>
     </div>

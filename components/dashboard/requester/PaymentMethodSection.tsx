@@ -314,10 +314,10 @@ export default function PaymentMethodSection({ onToast }: PaymentMethodSectionPr
       {/* Saved payment method display */}
       {paymentMethod && !showForm && (
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div className="pm-card-display" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
               <CardBrandIcon brand={paymentMethod.brand} />
-              <div>
+              <div style={{ minWidth: 0 }}>
                 <span style={{
                   fontFamily: "'DM Sans', sans-serif",
                   fontSize: '15px',
@@ -326,7 +326,7 @@ export default function PaymentMethodSection({ onToast }: PaymentMethodSectionPr
                 }}>
                   {brandDisplayName(paymentMethod.brand)} ending in {paymentMethod.last4}
                 </span>
-                <span style={{
+                <span className="pm-expiry" style={{
                   fontFamily: "'DM Sans', sans-serif",
                   fontSize: '13px',
                   color: '#96a0b8',
@@ -345,6 +345,7 @@ export default function PaymentMethodSection({ onToast }: PaymentMethodSectionPr
                   background: 'none', border: 'none', color: '#96a0b8',
                   fontSize: '13px', fontWeight: 500, cursor: 'pointer',
                   fontFamily: "'DM Sans', sans-serif",
+                  minHeight: 44, minWidth: 44,
                 }}
               >
                 Update
@@ -355,6 +356,7 @@ export default function PaymentMethodSection({ onToast }: PaymentMethodSectionPr
                   background: 'none', border: 'none', color: '#96a0b8',
                   fontSize: '13px', fontWeight: 500, cursor: 'pointer',
                   fontFamily: "'DM Sans', sans-serif",
+                  minHeight: 44, minWidth: 44,
                 }}
               >
                 Remove
@@ -428,6 +430,12 @@ export default function PaymentMethodSection({ onToast }: PaymentMethodSectionPr
       }}>
         Powered by Stripe. Your card details are securely stored by Stripe and never touch our servers.
       </p>
+
+      <style>{`
+        @media (max-width: 640px) {
+          .pm-expiry { display: block !important; margin-left: 0 !important; margin-top: 2px !important; }
+        }
+      `}</style>
     </div>
   )
 }

@@ -451,7 +451,7 @@ export default function RequestsClient({
                     padding: '24px',
                   }}>
                     {/* Full event details */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 32px', marginBottom: 24 }}>
+                    <div className="req-detail-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 32px', marginBottom: 24 }}>
                       <DetailRow label="Date & Time" value={`${formatDate(booking.date)} · ${formatTime(booking.time_start, booking.time_end)}`} />
                       <DetailRow label="Location" value={booking.location || 'Not specified'} />
                       <DetailRow label="Format" value={booking.format ? booking.format.replace('_', '-') : 'Not specified'} />
@@ -644,15 +644,16 @@ export default function RequestsClient({
               onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
               onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
             />
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <div className="req-modal-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <button
                 onClick={() => { setCancelModalId(null); setCancelReason('') }}
                 disabled={cancelling}
                 style={{
                   background: 'none', border: '1px solid var(--border)',
-                  color: 'var(--muted)', padding: '9px 20px',
+                  color: 'var(--muted)', padding: '11px 20px',
                   borderRadius: 'var(--radius-sm)', fontSize: '0.85rem',
                   fontFamily: "'DM Sans', sans-serif", cursor: 'pointer',
+                  minHeight: 44,
                 }}
               >
                 Keep Request
@@ -662,11 +663,12 @@ export default function RequestsClient({
                 disabled={cancelling}
                 style={{
                   background: 'rgba(255,107,133,0.15)', border: '1px solid rgba(255,107,133,0.4)',
-                  color: 'var(--accent3)', padding: '9px 20px',
+                  color: 'var(--accent3)', padding: '11px 20px',
                   borderRadius: 'var(--radius-sm)', fontSize: '0.85rem',
                   fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
                   cursor: cancelling ? 'not-allowed' : 'pointer',
                   opacity: cancelling ? 0.6 : 1,
+                  minHeight: 44,
                 }}
               >
                 {cancelling ? 'Cancelling...' : 'Yes, Cancel'}
@@ -678,9 +680,19 @@ export default function RequestsClient({
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-      <style>{`@media (max-width: 768px) {
-        .dash-page-content { padding: 24px 20px !important; }
-      }`}</style>
+      <style>{`
+        @media (max-width: 768px) {
+          .dash-page-content { padding: 24px 20px !important; }
+        }
+        @media (max-width: 640px) {
+          .req-detail-grid { grid-template-columns: 1fr !important; }
+          .req-modal-actions { flex-direction: column !important; }
+          .req-modal-actions button { width: 100% !important; }
+        }
+        @media (max-width: 480px) {
+          .dash-page-content { padding: 20px 16px !important; }
+        }
+      `}</style>
     </div>
   )
 }

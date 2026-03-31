@@ -358,6 +358,9 @@ export default function ProfileClient({ profile, userEmail }: Props) {
 
       {/* Mobile styles */}
       <style>{`
+        @media (max-width: 768px) {
+          .dash-page-content { padding: 24px 20px !important; }
+        }
         @media (max-width: 640px) {
           .profile-name-row,
           .profile-location-row,
@@ -365,8 +368,8 @@ export default function ProfileClient({ profile, userEmail }: Props) {
             grid-template-columns: 1fr !important;
           }
         }
-        @media (max-width: 768px) {
-          .dash-page-content { padding: 24px 20px !important; }
+        @media (max-width: 480px) {
+          .dash-page-content { padding: 20px 16px !important; }
         }
       `}</style>
 

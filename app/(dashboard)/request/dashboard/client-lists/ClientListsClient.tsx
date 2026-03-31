@@ -443,6 +443,9 @@ export default function ClientListsClient() {
         @media (max-width: 768px) {
           .dash-page-content { padding: 24px 20px !important; }
         }
+        @media (max-width: 480px) {
+          .dash-page-content { padding: 20px 16px !important; }
+        }
       `}</style>
     </div>
   )

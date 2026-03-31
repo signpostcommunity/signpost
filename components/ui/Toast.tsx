@@ -47,7 +47,7 @@ export default function Toast({ message, type = 'success', onClose, duration = 3
         boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
         opacity: visible ? 1 : 0,
         transition: 'opacity 0.3s, transform 0.3s',
-        maxWidth: 320,
+        maxWidth: 'min(320px, calc(100vw - 32px))',
       }}
     >
       <span style={{ color: c.color, fontSize: '0.9rem' }}>{message}</span>
@@ -60,8 +60,14 @@ export default function Toast({ message, type = 'success', onClose, duration = 3
           color: 'var(--muted)',
           cursor: 'pointer',
           fontSize: '0.9rem',
-          padding: '0 4px',
+          padding: '8px',
           marginLeft: '4px',
+          minWidth: 32,
+          minHeight: 32,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
         }}
       >
         <span aria-hidden="true">✕</span>
