@@ -529,7 +529,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                   Your &ldquo;Book Me&rdquo; badge and custom URL are live.
                 </div>
                 <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 400, fontSize: '13px', color: '#96a0b8', marginTop: 2 }}>
-                  Share your badge on social media, your website, or email signature.
+                  Share your badge in your email signature, on your LinkedIn page, or anywhere your clients find you. Your custom link leads directly to a booking page specific to you.
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0, marginLeft: 'auto' }}>
