@@ -80,6 +80,16 @@ const NAV: NavGroup[] = [
       },
     ],
   },
+  {
+    section: 'Account',
+    items: [
+      {
+        label: 'Settings',
+        href: '/admin/dashboard/settings',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2" stroke="currentColor" strokeWidth="1.3"/><path d="M13.5 8a5.5 5.5 0 01-.3 1.8l1.3.8-.8 1.4-1.3-.8a5.5 5.5 0 01-1.5 1l.2 1.5h-1.6l.2-1.5a5.5 5.5 0 01-1.5-1l-1.3.8-.8-1.4 1.3-.8A5.5 5.5 0 012.5 8c0-.6.1-1.2.3-1.8l-1.3-.8.8-1.4 1.3.8a5.5 5.5 0 011.5-1L4.9 2.3h1.6l-.2 1.5a5.5 5.5 0 011.5 1l1.3-.8.8 1.4-1.3.8c.2.6.3 1.2.3 1.8z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/></svg>,
+      },
+    ],
+  },
 ]
 
 function LogoutButton() {

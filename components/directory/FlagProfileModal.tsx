@@ -16,10 +16,11 @@ interface FlagProfileModalProps {
   isOpen: boolean
   onClose: () => void
   interpreterProfileId: string
+  interpreterName?: string
   onSuccess: () => void
 }
 
-export default function FlagProfileModal({ isOpen, onClose, interpreterProfileId, onSuccess }: FlagProfileModalProps) {
+export default function FlagProfileModal({ isOpen, onClose, interpreterProfileId, interpreterName, onSuccess }: FlagProfileModalProps) {
   const [selectedReason, setSelectedReason] = useState<string | null>(null)
   const [details, setDetails] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -73,6 +74,19 @@ export default function FlagProfileModal({ isOpen, onClose, interpreterProfileId
       setSubmitting(false)
       return
     }
+
+    // Fire admin alert (non-blocking)
+    fetch('/api/admin/alert-trigger', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'new_flag',
+        interpreterName: interpreterName || null,
+        reason: selectedReason,
+        details: selectedReason === 'Other concern' && details.trim() ? details.trim() : null,
+        reporterEmail: user.email,
+      }),
+    }).catch(() => {}) // fire-and-forget
 
     setSubmitting(false)
     setSelectedReason(null)

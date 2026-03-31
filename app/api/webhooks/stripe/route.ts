@@ -3,6 +3,7 @@ import { getStripe } from '@/lib/stripe'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { sendEmail } from '@/lib/email'
 import { emailTemplate } from '@/lib/email-template'
+import { sendAdminAlert } from '@/lib/adminAlerts'
 import type Stripe from 'stripe'
 
 export async function POST(req: NextRequest) {
@@ -92,6 +93,28 @@ export async function POST(req: NextRequest) {
             }).catch(e => console.error('[stripe-webhook] email failed:', e))
           }
         }
+
+        // Admin alert: payment failed
+        const bookingTitle = pi.metadata?.booking_title || 'Untitled booking'
+        const requesterEmail = pi.metadata?.requester_email || 'Unknown'
+        const stripeError = pi.last_payment_error?.message || 'No details available'
+        sendAdminAlert({
+          type: 'payment_failed',
+          emailSubject: '[signpost] Platform fee payment failed',
+          emailBody: [
+            'A $15 platform fee payment failed on signpost.',
+            '',
+            `Booking: ${bookingTitle}`,
+            `Requester: ${requesterEmail}`,
+            `Error: ${stripeError}`,
+            '',
+            'The booking was still confirmed. The requester has been notified to update their payment method.',
+            '',
+            'Review: https://signpost.community/admin/dashboard/bookings',
+          ].join('\n'),
+          smsMessage: `[signpost] Payment failed: $15 fee for ${bookingTitle}. Requester: ${requesterEmail}. Review at signpost.community/admin/dashboard/bookings`,
+        }).catch(e => console.error('[stripe-webhook] admin alert failed:', e))
+
         break
       }
 
@@ -99,7 +122,10 @@ export async function POST(req: NextRequest) {
         const dispute = event.data.object as Stripe.Dispute
         console.warn('[stripe-webhook] Dispute created:', dispute.id, 'amount:', dispute.amount)
 
-        // Notify admin
+        const disputeAmount = `$${(dispute.amount / 100).toFixed(2)}`
+        const disputeReason = dispute.reason || 'Not specified'
+
+        // Notify admin (legacy direct email — kept for backwards compat)
         await sendEmail({
           to: 'hello@signpost.community',
           subject: `Stripe dispute created: ${dispute.id}`,
@@ -107,14 +133,31 @@ export async function POST(req: NextRequest) {
             heading: 'Stripe dispute alert',
             body: `
               <p>A dispute has been created for charge ${dispute.charge}.</p>
-              <p>Amount: $${(dispute.amount / 100).toFixed(2)}</p>
-              <p>Reason: ${dispute.reason || 'Not specified'}</p>
+              <p>Amount: ${disputeAmount}</p>
+              <p>Reason: ${disputeReason}</p>
               <p>Please review in the Stripe dashboard.</p>
             `,
             ctaText: 'Open Stripe Dashboard',
             ctaUrl: 'https://dashboard.stripe.com/disputes',
           }),
         }).catch(e => console.error('[stripe-webhook] admin email failed:', e))
+
+        // Admin alert: dispute opened (per-admin preferences)
+        sendAdminAlert({
+          type: 'dispute_opened',
+          emailSubject: '[signpost] Stripe dispute opened',
+          emailBody: [
+            'A payment dispute has been opened on signpost.',
+            '',
+            `Amount: ${disputeAmount}`,
+            `Reason: ${disputeReason}`,
+            '',
+            'Action required: respond in the Stripe dashboard within the deadline.',
+            'Stripe dashboard: https://dashboard.stripe.com',
+          ].join('\n'),
+          smsMessage: `[signpost] Dispute opened: ${disputeAmount}. Respond in Stripe dashboard ASAP.`,
+        }).catch(e => console.error('[stripe-webhook] admin dispute alert failed:', e))
+
         break
       }
 
