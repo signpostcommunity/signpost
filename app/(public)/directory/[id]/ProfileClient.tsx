@@ -901,8 +901,104 @@ function OverviewTab({ interpreter: i, userRole, videoAlreadyRequested, onReques
           );
         })()}
       </Section>
+
+      {/* Mentorship — interpreter-only */}
+      {userRole === 'interpreter' && (i.mentorshipOffering || i.mentorshipSeeking) && (
+        <MentorshipSection interpreter={i} />
+      )}
     </div>
   );
+}
+
+function MentorshipSection({ interpreter: i }: { interpreter: Interpreter }) {
+  const paidLabel = i.mentorshipPaid === 'pro_bono' ? 'Pro bono'
+    : i.mentorshipPaid === 'paid' ? 'Paid'
+    : i.mentorshipPaid === 'either' ? 'Open to discussing'
+    : null
+
+  return (
+    <Section title="Mentorship">
+      {i.mentorshipOffering && (
+        <div style={{ marginBottom: i.mentorshipSeeking ? 24 : 0 }}>
+          <div style={{
+            fontSize: '0.82rem', fontWeight: 600, color: 'var(--accent)',
+            marginBottom: 10,
+          }}>
+            Offering mentorship
+          </div>
+          {i.mentorshipTypes && i.mentorshipTypes.length > 0 && (
+            <div style={{ marginBottom: 10 }}>
+              <span style={{ fontSize: '0.78rem', color: 'var(--muted)', marginRight: 8 }}>Areas:</span>
+              {i.mentorshipTypes.map(t => (
+                <span
+                  key={t}
+                  style={{
+                    display: 'inline-block', fontSize: '0.78rem', padding: '2px 10px',
+                    borderRadius: 100, background: 'rgba(0,229,255,0.08)',
+                    border: '1px solid rgba(0,229,255,0.2)', color: 'var(--accent)',
+                    marginRight: 6, marginBottom: 4,
+                  }}
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
+          {paidLabel && (
+            <div style={{ fontSize: '0.82rem', color: 'var(--muted)', marginBottom: 8 }}>
+              Compensation: {paidLabel}
+            </div>
+          )}
+          {i.mentorshipBioOffering && (
+            <div style={{
+              fontSize: '0.85rem', color: '#c8cdd8', lineHeight: 1.6,
+              background: 'var(--surface2)', borderRadius: 'var(--radius-sm)',
+              padding: '12px 16px', marginBottom: 10,
+            }}>
+              {i.mentorshipBioOffering}
+            </div>
+          )}
+        </div>
+      )}
+      {i.mentorshipSeeking && (
+        <div>
+          <div style={{
+            fontSize: '0.82rem', fontWeight: 600, color: 'var(--accent)',
+            marginBottom: 10,
+          }}>
+            Seeking mentorship
+          </div>
+          {i.mentorshipTypes && i.mentorshipTypes.length > 0 && !i.mentorshipOffering && (
+            <div style={{ marginBottom: 10 }}>
+              <span style={{ fontSize: '0.78rem', color: 'var(--muted)', marginRight: 8 }}>Looking for:</span>
+              {i.mentorshipTypes.map(t => (
+                <span
+                  key={t}
+                  style={{
+                    display: 'inline-block', fontSize: '0.78rem', padding: '2px 10px',
+                    borderRadius: 100, background: 'rgba(0,229,255,0.08)',
+                    border: '1px solid rgba(0,229,255,0.2)', color: 'var(--accent)',
+                    marginRight: 6, marginBottom: 4,
+                  }}
+                >
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
+          {i.mentorshipBioSeeking && (
+            <div style={{
+              fontSize: '0.85rem', color: '#c8cdd8', lineHeight: 1.6,
+              background: 'var(--surface2)', borderRadius: 'var(--radius-sm)',
+              padding: '12px 16px',
+            }}>
+              {i.mentorshipBioSeeking}
+            </div>
+          )}
+        </div>
+      )}
+    </Section>
+  )
 }
 
 function CredentialsTab({ interpreter: i }: { interpreter: Interpreter }) {
