@@ -1,3 +1,7 @@
+// TODO: Trusted Circle rating sharing toggle — add when Trusted Circle settings page is built.
+// When enabled, circle connections can see the sharer's interpreter ratings.
+// Default: OFF. Requires conditional join on interpreter_ratings in circle roster API.
+
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'

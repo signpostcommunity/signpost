@@ -33,7 +33,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Not authorized to view this list' }, { status: 403 })
     }
 
-    // Step 1: Fetch the roster entries directly
+    // Step 1: Fetch the roster entries directly.
+    // Ratings are intentionally excluded from shared list views.
+    // Tier placement (preferred / approved) communicates preference without exposing private ratings.
     const { data: rosterRows, error: rosterError } = await admin
       .from('deaf_roster')
       .select('id, interpreter_id, tier, notes')

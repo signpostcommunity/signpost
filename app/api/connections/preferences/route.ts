@@ -38,7 +38,9 @@ export async function GET(request: NextRequest) {
     .eq('id', dhhUserId)
     .single()
 
-  // Fetch roster entries
+  // Fetch roster entries.
+  // Ratings are intentionally excluded from shared list views.
+  // Tier placement (preferred / approved) communicates preference without exposing private ratings.
   const { data: rosterEntries, error: rosterError } = await admin
     .from('deaf_roster')
     .select('id, interpreter_id, tier, approve_work, approve_personal, notes, do_not_book')
