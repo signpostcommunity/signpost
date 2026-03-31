@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { SectionLabel, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import PendingRolesNudge from '@/components/shared/PendingRolesNudge'
 import BookMeBadge from '@/components/interpreter/BookMeBadge'
+import SendMessageModal from '@/components/messaging/SendMessageModal'
 
 /* ── Types ── */
 
@@ -809,6 +810,9 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         </div>
       )}
 
+      {/* ── Suggested Mentors ── */}
+      <SuggestedMentors interpreterProfileId={interpreterProfileId} />
+
       {/* ── View Details Modal ── */}
       {viewing && (() => {
         const bk = pendingBookings.find(b => b.id === viewing)
@@ -912,5 +916,202 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         .interp-name-link:hover { text-decoration: underline !important; }
       `}</style>
     </div>
+  )
+}
+
+/* ── Suggested Mentors Component ── */
+
+interface MentorSuggestion {
+  id: string
+  user_id: string
+  first_name: string | null
+  last_name: string | null
+  photo_url: string | null
+  avatar_color: string | null
+  years_experience: string | null
+  mentorship_types: string[] | null
+  mentorship_paid: string | null
+  mentorship_bio_offering: string | null
+  mentorship_bio_seeking: string | null
+  name: string
+  score: number
+}
+
+function SuggestedMentors({ interpreterProfileId }: { interpreterProfileId: string | null }) {
+  const [suggestions, setSuggestions] = useState<MentorSuggestion[]>([])
+  const [loading, setLoading] = useState(true)
+  const [messageTarget, setMessageTarget] = useState<MentorSuggestion | null>(null)
+  const [seekerBio, setSeekerBio] = useState('')
+
+  useEffect(() => {
+    if (!interpreterProfileId) { setLoading(false); return }
+
+    async function fetchSuggestions() {
+      try {
+        const res = await fetch('/api/interpreter/mentorship/suggestions')
+        if (res.ok) {
+          const data = await res.json()
+          setSuggestions(data.suggestions || [])
+        }
+      } catch {
+        // Silent fail
+      }
+
+      // Also fetch seeker's own bio for pre-fill
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data } = await supabase
+          .from('interpreter_profiles')
+          .select('mentorship_bio_seeking')
+          .eq('user_id', user.id)
+          .maybeSingle()
+        if (data?.mentorship_bio_seeking) setSeekerBio(data.mentorship_bio_seeking)
+      }
+      setLoading(false)
+    }
+
+    fetchSuggestions()
+  }, [interpreterProfileId])
+
+  if (loading || suggestions.length === 0) return null
+
+  function getPaidLabel(paid: string | null): string {
+    if (paid === 'pro_bono') return 'Pro bono'
+    if (paid === 'paid') return 'Paid'
+    if (paid === 'either') return 'Open to discussing'
+    return ''
+  }
+
+  function buildPrefillMessage(mentor: MentorSuggestion): string {
+    const types = (mentor.mentorship_types || []).join(', ')
+    if (mentor.mentorship_paid === 'paid') {
+      return `Hi ${mentor.first_name || mentor.name}, I'm interested in your paid mentorship${types ? ` in ${types}` : ''}. I'd love to learn about your rates and format.${seekerBio ? ` ${seekerBio}` : ''}`
+    }
+    return `Hi ${mentor.first_name || mentor.name}, I'm interested in mentorship${types ? ` in ${types}` : ''}.${seekerBio ? ` ${seekerBio}` : ''}`
+  }
+
+  return (
+    <>
+      <div style={{ marginTop: 36 }}>
+        <SectionLabel>Suggested Mentors</SectionLabel>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: 14,
+            marginTop: 16,
+          }}
+        >
+          {suggestions.map(mentor => {
+            const initials = mentor.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+            return (
+              <div
+                key={mentor.id}
+                style={{
+                  background: 'var(--card-bg)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius)',
+                  padding: 20,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 12,
+                }}
+              >
+                {/* Header: photo + name + experience */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  {mentor.photo_url ? (
+                    <img
+                      src={mentor.photo_url}
+                      alt={mentor.name}
+                      style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }}
+                    />
+                  ) : (
+                    <div style={{
+                      width: 40, height: 40, borderRadius: '50%',
+                      background: mentor.avatar_color || 'linear-gradient(135deg,#7b61ff,#00e5ff)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '0.75rem', fontWeight: 700, color: '#fff',
+                    }}>
+                      {initials}
+                    </div>
+                  )}
+                  <div>
+                    <Link
+                      href={`/directory/${mentor.id}`}
+                      style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text)', textDecoration: 'none' }}
+                    >
+                      {mentor.name}
+                    </Link>
+                    {mentor.years_experience && (
+                      <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+                        {mentor.years_experience} years experience
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Mentorship types as tags */}
+                {mentor.mentorship_types && mentor.mentorship_types.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                    {mentor.mentorship_types.slice(0, 4).map(t => (
+                      <span
+                        key={t}
+                        style={{
+                          fontSize: '0.68rem', padding: '2px 8px', borderRadius: 100,
+                          background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.2)',
+                          color: 'var(--accent)',
+                        }}
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Compensation */}
+                {mentor.mentorship_paid && (
+                  <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
+                    {getPaidLabel(mentor.mentorship_paid)}
+                  </div>
+                )}
+
+                {/* Bio offering (truncated) */}
+                {mentor.mentorship_bio_offering && (
+                  <div style={{
+                    fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.5,
+                    display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                  }}>
+                    {mentor.mentorship_bio_offering}
+                  </div>
+                )}
+
+                {/* Request Mentorship button */}
+                <button
+                  onClick={(e) => { e.preventDefault(); setMessageTarget(mentor) }}
+                  className="btn-primary"
+                  style={{ marginTop: 'auto', fontSize: '0.82rem', padding: '8px 16px' }}
+                >
+                  Request Mentorship
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Message modal for mentorship request */}
+      {messageTarget && (
+        <SendMessageModal
+          recipientId={messageTarget.user_id}
+          recipientName={messageTarget.name}
+          recipientPhoto={messageTarget.photo_url}
+          initialSubject="Mentorship inquiry"
+          initialBody={buildPrefillMessage(messageTarget)}
+          onClose={() => setMessageTarget(null)}
+          onSent={() => setMessageTarget(null)}
+        />
+      )}
+    </>
   )
 }

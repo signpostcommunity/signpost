@@ -10,6 +10,8 @@ interface SendMessageModalProps {
   recipientPhoto: string | null
   onClose: () => void
   onSent: () => void
+  initialSubject?: string
+  initialBody?: string
 }
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain', 'text/csv']
@@ -32,9 +34,9 @@ function getGradient(name: string): string {
   return gradients[hash % gradients.length]
 }
 
-export default function SendMessageModal({ recipientId, recipientName, recipientPhoto, onClose, onSent }: SendMessageModalProps) {
-  const [subject, setSubject] = useState('')
-  const [body, setBody] = useState('')
+export default function SendMessageModal({ recipientId, recipientName, recipientPhoto, onClose, onSent, initialSubject, initialBody }: SendMessageModalProps) {
+  const [subject, setSubject] = useState(initialSubject || '')
+  const [body, setBody] = useState(initialBody || '')
   const [files, setFiles] = useState<File[]>([])
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
