@@ -1,6 +1,8 @@
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { sendEmail } from '@/lib/email'
 import { emailTemplate, EmailContentBlock } from '@/lib/email-template'
+import { sendSms } from '@/lib/sms'
+import { smsTemplates } from '@/lib/sms-templates'
 
 export type NotificationType =
   | 'welcome' | 'profile_approved' | 'profile_denied'
@@ -44,6 +46,37 @@ function getPreferenceCategoryKey(type: NotificationType): string {
 function truncate(text: string, maxLen: number): string {
   if (text.length <= maxLen) return text
   return text.substring(0, maxLen) + '...'
+}
+
+/** Generate an SMS message for a given notification type using metadata. */
+function getSmsMessage(type: NotificationType, metadata: Record<string, unknown>): string | null {
+  const date = (metadata.booking_date as string) || (metadata.date as string) || ''
+  const time = (metadata.booking_time as string) || (metadata.time as string) || ''
+  const location = (metadata.booking_location as string) || (metadata.location as string) || ''
+  const interpreterName = (metadata.interpreter_name as string) || ''
+  const senderName = (metadata.sender_name as string) || ''
+
+  switch (type) {
+    case 'new_request':
+      return smsTemplates.newRequest(date, time, location || 'TBD')
+    case 'booking_confirmed': {
+      const recipientRole = (metadata.recipient_role as string) || ''
+      if (recipientRole === 'interpreter') {
+        return smsTemplates.bookingConfirmed(date, time, location || 'TBD')
+      }
+      return smsTemplates.bookingConfirmedRequester(interpreterName || 'Your interpreter', date)
+    }
+    case 'booking_cancelled':
+    case 'cancelled_by_requester':
+    case 'cancelled_by_you':
+      return smsTemplates.bookingCancelled(date, time)
+    case 'rate_response':
+      return smsTemplates.interpreterResponded(interpreterName || 'An interpreter')
+    case 'new_message':
+      return smsTemplates.newMessage(senderName || 'Someone')
+    default:
+      return null
+  }
 }
 
 /** Determine the correct preferences URL for a given role. */
@@ -589,6 +622,58 @@ export async function createNotification(params: CreateNotificationParams) {
           error: errorMsg,
         })
       }
+    }
+  }
+
+  // 3. Send SMS (fire-and-forget, never blocks)
+  if (channel === 'email' || channel === 'both') {
+    try {
+      // Look up notification phone and SMS preference
+      let smsPhone: string | null = null
+      let smsEnabled = false
+
+      // Check interpreter_profiles first
+      const { data: interpProfile } = await admin
+        .from('interpreter_profiles')
+        .select('notification_phone, notification_preferences')
+        .eq('user_id', params.recipientUserId)
+        .maybeSingle()
+
+      if (interpProfile?.notification_phone) {
+        smsPhone = interpProfile.notification_phone
+        const prefs = interpProfile.notification_preferences as {
+          sms_enabled?: boolean
+          categories?: Record<string, { sms?: boolean }>
+        } | null
+        const globalSms = prefs?.sms_enabled !== false
+        const prefKey = getPreferenceCategoryKey(params.type)
+        const categorySms = prefs?.categories?.[prefKey]?.sms !== false
+        smsEnabled = globalSms && categorySms
+      }
+
+      // Fallback: check requester_profiles phone
+      if (!smsPhone) {
+        const { data: reqProfile } = await admin
+          .from('requester_profiles')
+          .select('phone')
+          .eq('user_id', params.recipientUserId)
+          .maybeSingle()
+
+        if (reqProfile?.phone) {
+          smsPhone = reqProfile.phone
+          smsEnabled = true // Requesters opt in by having a phone number
+        }
+      }
+
+      if (smsEnabled && smsPhone) {
+        const smsMessage = getSmsMessage(params.type, params.metadata ?? {})
+        if (smsMessage) {
+          sendSms({ to: smsPhone, message: smsMessage })
+            .catch(e => console.error('[notifications] SMS failed:', e))
+        }
+      }
+    } catch (e) {
+      console.error('[notifications] SMS lookup error:', e)
     }
   }
 

@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useCallback } from 'react'
+import { normalizePhone } from '@/lib/phone'
 
 const ORANGE = '#ff7e45'
 
@@ -78,6 +79,8 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true)
   const [saveIndicator, setSaveIndicator] = useState<string | null>(null)
   const [phoneNudge, setPhoneNudge] = useState(false)
+  const [phoneError, setPhoneError] = useState<string | null>(null)
+  const [testSmsStatus, setTestSmsStatus] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -118,16 +121,57 @@ export default function AdminSettingsPage() {
   }, [])
 
   async function savePhone(value: string) {
+    setPhoneError(null)
+    if (!value) {
+      // Allow clearing phone
+      try {
+        await fetch('/api/admin/alert-preferences', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: '' }),
+        })
+      } catch { /* silent */ }
+      setPhone('')
+      setPhoneEditing(false)
+      return
+    }
+
+    const normalized = normalizePhone(value)
+    if (!normalized) {
+      setPhoneError('Invalid phone number. Use format: (206) 555-1234 or +12065551234')
+      return
+    }
+
     try {
       await fetch('/api/admin/alert-preferences', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: value }),
+        body: JSON.stringify({ phone: normalized }),
       })
-    } catch {
-      // silent
-    }
+    } catch { /* silent */ }
+    setPhone(normalized)
     setPhoneEditing(false)
+  }
+
+  async function handleTestSms() {
+    if (!phone) return
+    setTestSmsStatus('Sending...')
+    try {
+      const res = await fetch('/api/admin/test-sms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to: phone }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setTestSmsStatus('Test SMS sent')
+      } else {
+        setTestSmsStatus(data.error || 'Failed to send')
+      }
+    } catch {
+      setTestSmsStatus('Failed to send')
+    }
+    setTimeout(() => setTestSmsStatus(null), 4000)
   }
 
   function handleToggle(alertType: AlertType, channel: Channel) {
@@ -218,11 +262,32 @@ export default function AdminSettingsPage() {
               >
                 {phone ? 'Edit' : 'Add phone'}
               </button>
+              {phone && (
+                <button
+                  onClick={handleTestSms}
+                  disabled={!!testSmsStatus}
+                  style={{
+                    padding: '6px 14px', background: 'none',
+                    border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
+                    color: '#96a0b8', fontSize: '0.78rem', fontWeight: 600,
+                    cursor: testSmsStatus ? 'not-allowed' : 'pointer',
+                    fontFamily: "'DM Sans', sans-serif",
+                    opacity: testSmsStatus ? 0.6 : 1,
+                  }}
+                >
+                  {testSmsStatus || 'Send Test'}
+                </button>
+              )}
             </div>
           )}
           {phoneNudge && !phone && (
             <p style={{ color: ORANGE, fontSize: '0.82rem', marginTop: 8, marginBottom: 0 }}>
               Add your phone number to receive SMS alerts.
+            </p>
+          )}
+          {phoneError && (
+            <p style={{ color: '#ff6b85', fontSize: '0.82rem', marginTop: 8, marginBottom: 0 }}>
+              {phoneError}
             </p>
           )}
         </div>
@@ -282,7 +347,6 @@ export default function AdminSettingsPage() {
 
       <p style={{ color: '#96a0b8', fontSize: '0.78rem', marginTop: 24, lineHeight: 1.6 }}>
         All alerts default to off. Enable the channels you want for each event type.
-        SMS alerts require Telnyx configuration and will be available soon.
       </p>
 
       <style>{`
