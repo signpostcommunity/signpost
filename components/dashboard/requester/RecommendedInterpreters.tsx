@@ -22,13 +22,6 @@ interface InterpreterInfo {
   approve_personal?: boolean
 }
 
-interface DnbEntry {
-  interpreter_id: string
-  name: string
-  first_name?: string
-  last_name?: string
-  photo_url?: string
-}
 
 interface DhhUser {
   name: string
@@ -41,19 +34,18 @@ interface PreferencesData {
   dhh_user: DhhUser | null
   preferred: InterpreterInfo[]
   approved: InterpreterInfo[]
-  do_not_book: DnbEntry[]
+  do_not_book_ids: string[]
 }
 
 function InterpreterTierCard({
   interpreter,
   tier,
-  isDnb = false,
 }: {
-  interpreter: InterpreterInfo | DnbEntry
-  tier: 'preferred' | 'approved' | 'dnb'
-  isDnb?: boolean
+  interpreter: InterpreterInfo
+  tier: 'preferred' | 'approved'
 }) {
-  const i = interpreter as InterpreterInfo
+  const i = interpreter
+  const isDnb = false
   const initials = (i.name || '')
     .split(' ')
     .map(w => w[0])
@@ -287,7 +279,7 @@ export default function RecommendedInterpreters({ dhhUserId }: { dhhUserId: stri
   }
 
   const hasPreferences = data.preferred.length > 0 || data.approved.length > 0
-  const hasDnb = data.do_not_book.length > 0
+  const hasDnb = data.do_not_book_ids.length > 0
 
   if (!hasPreferences && !hasDnb) {
     return (
@@ -394,14 +386,7 @@ export default function RecommendedInterpreters({ dhhUserId }: { dhhUserId: stri
         </div>
       )}
 
-      {/* DNB entries - shown inline, greyed out */}
-      {hasDnb && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {data.do_not_book.map(i => (
-            <InterpreterTierCard key={i.interpreter_id} interpreter={{ ...i, id: i.interpreter_id } as InterpreterInfo} tier="dnb" isDnb />
-          ))}
-        </div>
-      )}
+      {/* DNB — silent exclusion only, no names or details shown */}
 
       <style>{`
         .interp-name-link:hover { text-decoration: underline !important; }

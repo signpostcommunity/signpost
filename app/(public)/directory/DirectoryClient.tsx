@@ -7,6 +7,7 @@ import FilterSidebar from '@/components/directory/FilterSidebar';
 import InterpreterGrid from '@/components/directory/InterpreterGrid';
 import VideoPreviewModal from '@/components/directory/VideoPreviewModal';
 import AddToListModal from '@/components/directory/AddToListModal';
+import BatchAddToListModal from '@/components/directory/BatchAddToListModal';
 import { createClient } from '@/lib/supabase/client';
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap';
 
@@ -76,6 +77,42 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
       location?: string;
     } | null;
   }>({ isOpen: false, interpreter: null });
+
+  // Selection mode state
+  const MAX_BATCH_SELECT = 15
+  const [selectionMode, setSelectionMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [batchModalOpen, setBatchModalOpen] = useState(false)
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        if (next.size >= MAX_BATCH_SELECT) {
+          showToast(`Maximum ${MAX_BATCH_SELECT} interpreters can be added at once.`)
+          return prev
+        }
+        next.add(id)
+      }
+      return next
+    })
+  }
+
+  const selectAllOnPage = () => {
+    const visibleIds = filtered.map(i => String(i.id))
+    const toAdd = visibleIds.slice(0, MAX_BATCH_SELECT)
+    setSelectedIds(new Set(toAdd))
+    if (visibleIds.length > MAX_BATCH_SELECT) {
+      showToast(`Selected first ${MAX_BATCH_SELECT} of ${visibleIds.length} visible interpreters.`)
+    }
+  }
+
+  const exitSelectionMode = () => {
+    setSelectionMode(false)
+    setSelectedIds(new Set())
+  }
 
   // Invite modal state
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
@@ -397,6 +434,48 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
             </div>
           )}
 
+          {/* Select Multiple toggle */}
+          {isLoggedIn && (
+            <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (selectionMode) {
+                    exitSelectionMode()
+                  } else {
+                    setSelectionMode(true)
+                  }
+                }}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 7,
+                  padding: '8px 16px', borderRadius: 10,
+                  background: selectionMode ? 'rgba(0,229,255,0.1)' : 'transparent',
+                  border: `1px solid ${selectionMode ? 'rgba(0,229,255,0.3)' : 'var(--border)'}`,
+                  color: selectionMode ? 'var(--accent)' : 'var(--muted)',
+                  fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
+                  fontFamily: "'DM Sans', sans-serif",
+                  transition: 'all 0.15s',
+                }}
+              >
+                {selectionMode ? (
+                  <>
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                      <path d="M4 8l3 3 5-6" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Selecting
+                    <span style={{
+                      marginLeft: 4, fontSize: '0.72rem', color: 'var(--muted)',
+                    }}>
+                      Cancel
+                    </span>
+                  </>
+                ) : (
+                  'Select Multiple'
+                )}
+              </button>
+            </div>
+          )}
+
           {/* Invite prompt */}
           <div style={{
             background: 'rgba(0,229,255,0.03)',
@@ -573,6 +652,9 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
             userRole={userRole}
             contextParam={contextParam}
             awayPeriods={awayPeriods}
+            selectionMode={selectionMode}
+            selectedIds={selectedIds}
+            onToggleSelect={toggleSelect}
           />
         </div>
       </div>
@@ -826,6 +908,84 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
           </div>
         </div>
       )}
+
+      {/* Floating action bar for selection mode */}
+      {selectionMode && selectedIds.size > 0 && (
+        <div
+          role="toolbar"
+          aria-label="Batch selection actions"
+          style={{
+            position: 'fixed', bottom: 0, left: 0, right: 0,
+            zIndex: 100,
+            background: '#111118',
+            borderTop: '1px solid var(--border)',
+            boxShadow: '0 -8px 32px rgba(0,0,0,0.4)',
+            padding: '14px 24px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            gap: 16, flexWrap: 'wrap',
+          }}
+        >
+          <span
+            aria-live="polite"
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              fontSize: '0.88rem', fontWeight: 600, color: 'var(--text)',
+            }}
+          >
+            <span style={{
+              background: 'var(--accent)', color: '#000',
+              borderRadius: 6, padding: '2px 8px',
+              fontSize: '0.78rem', fontWeight: 700,
+            }}>
+              {selectedIds.size}
+            </span>
+            selected
+          </span>
+          <button
+            type="button"
+            onClick={selectAllOnPage}
+            style={{
+              background: 'none', border: '1px solid var(--border)',
+              borderRadius: 10, padding: '8px 16px',
+              fontSize: '0.82rem', fontWeight: 600, color: 'var(--muted)',
+              cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+            }}
+          >
+            Select All on Page
+          </button>
+          <button
+            type="button"
+            onClick={() => setBatchModalOpen(true)}
+            className="btn-primary"
+            style={{
+              padding: '10px 24px', fontSize: '0.88rem', fontWeight: 700,
+              border: 'none', cursor: 'pointer',
+            }}
+          >
+            Add to List
+          </button>
+        </div>
+      )}
+
+      {/* Batch add modal */}
+      <BatchAddToListModal
+        isOpen={batchModalOpen}
+        onClose={() => setBatchModalOpen(false)}
+        interpreters={
+          filtered
+            .filter(i => selectedIds.has(String(i.id)))
+            .map(i => ({ id: String(i.id), name: i.name }))
+        }
+        userRole={userRole}
+        onSuccess={(count, dupeCount) => {
+          exitSelectionMode()
+          let msg = `Added ${count} interpreter${count !== 1 ? 's' : ''} to your list.`
+          if (dupeCount > 0) {
+            msg += ` ${dupeCount} ${dupeCount === 1 ? 'was' : 'were'} already on your list.`
+          }
+          showToast(msg)
+        }}
+      />
 
       {/* Toast */}
       {toast.visible && (

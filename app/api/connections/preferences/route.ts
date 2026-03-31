@@ -83,13 +83,9 @@ export async function GET(request: NextRequest) {
     if (!interp) continue
 
     if (entry.do_not_book) {
-      // DNB: only basic info, no notes
+      // DNB: IDs only for silent exclusion — no names, no details
       doNotBook.push({
         interpreter_id: entry.interpreter_id,
-        name: interp.name,
-        first_name: interp.first_name,
-        last_name: interp.last_name,
-        photo_url: interp.photo_url,
       })
     } else if (entry.tier === 'preferred') {
       preferred.push({
@@ -112,6 +108,6 @@ export async function GET(request: NextRequest) {
     dhh_user: dhhUser || null,
     preferred,
     approved,
-    do_not_book: doNotBook,
+    do_not_book_ids: doNotBook.map(d => d.interpreter_id),
   })
 }

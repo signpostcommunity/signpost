@@ -15,6 +15,8 @@ export type NotificationType =
   | 'added_to_preferred_list_by_interpreter'
   | 'added_to_preferred_list_by_org'
   | 'added_to_preferred_list_by_dhh'
+  | 'preferred_list_requested'
+  | 'preferred_list_shared'
 
 interface CreateNotificationParams {
   recipientUserId: string
@@ -38,6 +40,9 @@ function getPreferenceCategoryKey(type: NotificationType): string {
     type === 'added_to_preferred_list_by_dhh'
   ) {
     return 'added_to_preferred_list'
+  }
+  if (type === 'preferred_list_requested' || type === 'preferred_list_shared') {
+    return 'preferred_list_requested'
   }
   return type
 }
@@ -379,6 +384,53 @@ ${bookMeSection}
         ? `https://signpost.community/interpreter/dashboard/invoices/${invoiceId}`
         : 'https://signpost.community/interpreter/dashboard/invoices',
       contentBlocks,
+    }
+  }
+
+  if (type === 'preferred_list_requested') {
+    const requesterName = (metadata.requester_name as string) || 'A requester'
+    const bookingTitle = (metadata.booking_title as string) || ''
+    const bookingDate = (metadata.booking_date as string) || ''
+    const bookingTime = (metadata.booking_time as string) || ''
+    const bookingLocation = (metadata.booking_location as string) || ''
+
+    const contentBlocks: EmailContentBlock[] = []
+    if (bookingTitle || bookingDate) {
+      contentBlocks.push({
+        type: 'booking_details',
+        data: {
+          title: bookingTitle,
+          date: bookingDate,
+          time: bookingTime,
+          location: bookingLocation,
+        },
+      })
+    }
+
+    const requesterId = (metadata.requester_id as string) || ''
+    return {
+      subject: `${requesterName} is booking an interpreter for you`,
+      htmlBody: `<p>${requesterName} is booking an interpreter and wants to use your preferred list.</p>
+<p>Sharing your preferred interpreter list helps them find interpreters you know and trust. Interpreters on your preferred list are much more likely to accept.</p>`,
+      ctaText: 'Share My Preferred List',
+      ctaUrl: `https://signpost.community/dhh/dashboard/interpreters?share_to=${requesterId}`,
+      contentBlocks,
+      preferencesUrl: preferencesUrlForRole('deaf'),
+    }
+  }
+
+  if (type === 'preferred_list_shared') {
+    const dhhName = (metadata.dhh_name as string) || 'A Deaf/DB/HH user'
+    const bookingId = (metadata.booking_id as string) || ''
+
+    return {
+      subject: `${dhhName} shared their preferred interpreter list`,
+      htmlBody: `<p>${dhhName} shared their preferred interpreter list for your booking. Their preferred interpreters have been highlighted in your request.</p>`,
+      ctaText: 'View Request',
+      ctaUrl: bookingId
+        ? `https://signpost.community/request/dashboard`
+        : 'https://signpost.community/request/dashboard',
+      preferencesUrl: preferencesUrlForRole('requester'),
     }
   }
 

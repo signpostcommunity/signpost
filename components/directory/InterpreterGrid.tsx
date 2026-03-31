@@ -14,9 +14,12 @@ interface Props {
   userRole?: string | null;
   contextParam?: string | null;
   awayPeriods?: Record<string, AwayInfo>;
+  selectionMode?: boolean;
+  selectedIds?: Set<string>;
+  onToggleSelect?: (id: string) => void;
 }
 
-export default function InterpreterGrid({ interpreters, onVideoPreview, onAddToList, userRole, contextParam, awayPeriods }: Props) {
+export default function InterpreterGrid({ interpreters, onVideoPreview, onAddToList, userRole, contextParam, awayPeriods, selectionMode, selectedIds, onToggleSelect }: Props) {
   if (interpreters.length === 0) {
     return (
       <div
@@ -50,8 +53,42 @@ export default function InterpreterGrid({ interpreters, onVideoPreview, onAddToL
           const away = awayPeriods?.[String(i.id)]
           const shouldDim = away?.dim_profile === true
 
+          const isSelected = selectionMode && selectedIds?.has(String(i.id))
+
           return (
-            <div key={i.id} style={{ position: 'relative', opacity: shouldDim ? 0.6 : 1, transition: 'opacity 0.2s' }}>
+            <div key={i.id} style={{
+              position: 'relative',
+              opacity: shouldDim ? 0.6 : 1,
+              transition: 'opacity 0.2s',
+              ...(isSelected ? { boxShadow: '0 0 0 2px var(--accent)', borderRadius: 'var(--radius)' } : {}),
+            }}>
+              {/* Selection checkbox overlay */}
+              {selectionMode && (
+                <button
+                  type="button"
+                  aria-label={isSelected ? `Deselect ${i.name}` : `Select ${i.name}`}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    onToggleSelect?.(String(i.id))
+                  }}
+                  style={{
+                    position: 'absolute', top: 12, left: 12, zIndex: 10,
+                    width: 24, height: 24, borderRadius: 6,
+                    border: `2px solid ${isSelected ? 'var(--accent)' : '#8891a8'}`,
+                    background: isSelected ? 'var(--accent)' : 'rgba(0,0,0,0.5)',
+                    cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    padding: 0, transition: 'all 0.15s',
+                  }}
+                >
+                  {isSelected && (
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                      <path d="M4 8l3 3 5-6" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </button>
+              )}
               <InterpreterCard
                 interpreter={i}
                 onVideoPreview={onVideoPreview}
@@ -61,7 +98,7 @@ export default function InterpreterGrid({ interpreters, onVideoPreview, onAddToL
               />
               {shouldDim && (
                 <span style={{
-                  position: 'absolute', top: 10, left: 10, zIndex: 2,
+                  position: 'absolute', top: 10, left: selectionMode ? 44 : 10, zIndex: 2,
                   background: 'rgba(0,0,0,0.6)', border: '1px solid var(--border)',
                   borderRadius: 4, padding: '2px 8px',
                   fontSize: '0.68rem', fontWeight: 600, color: 'var(--muted)',

@@ -110,6 +110,8 @@ export default function NewRequestPage() {
   const [clientName, setClientName] = useState('')
   const [clientEmail, setClientEmail] = useState('')
   const [clientCommPrefs, setClientCommPrefs] = useState('')
+  const [prefListState, setPrefListState] = useState<'idle' | 'sending' | 'sent' | 'skipped'>('idle')
+  const [prefListError, setPrefListError] = useState<string | null>(null)
 
   function validate(): boolean {
     const errs: Record<string, string> = {}
@@ -374,10 +376,10 @@ export default function NewRequestPage() {
           />
         </div>
 
-        {/* ── Section 3: DHH Client Info ── */}
-        <h3 style={sectionLabelStyle}>Deaf/DB/HH Client Info</h3>
+        {/* ── Section 3: Who is this interpreter for? ── */}
+        <h3 style={sectionLabelStyle}>Who is this interpreter for?</h3>
         <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginBottom: 16, lineHeight: 1.6 }}>
-          Is there a specific Deaf, DeafBlind, or Hard of Hearing person this booking is for?
+          Is this booking for a Deaf, DeafBlind, or Hard of Hearing individual?
         </p>
 
         <button
@@ -406,7 +408,7 @@ export default function NewRequestPage() {
               </svg>
             )}
           </span>
-          Yes, add client details
+          Yes, I&apos;m booking on behalf of a D/HH person
         </button>
 
         {showDhhClient && (
@@ -419,16 +421,116 @@ export default function NewRequestPage() {
               <input type="text" value={clientName} onChange={e => setClientName(e.target.value)} placeholder="Full name" style={inputStyle} />
             </div>
             <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle}>Client Email (optional)</label>
+              <label style={labelStyle}>Their email address</label>
               <input type="email" value={clientEmail} onChange={e => setClientEmail(e.target.value)} placeholder="email@example.com" style={inputStyle} />
             </div>
-            <div style={{ marginBottom: 12 }}>
+            <div style={{ marginBottom: 16 }}>
               <label style={labelStyle}>Communication Preferences Notes</label>
               <textarea value={clientCommPrefs} onChange={e => setClientCommPrefs(e.target.value)} placeholder="e.g. Prefers ASL, uses cochlear implant" rows={3} style={{ ...inputStyle, resize: 'vertical' as const }} />
             </div>
-            <p style={{ color: 'var(--muted)', fontSize: '0.78rem', lineHeight: 1.6, margin: 0, fontStyle: 'italic' }}>
-              If they have a signpost account, their preferred interpreter list will be integrated into your request. If they don&apos;t have an account, they will receive a notification that you&apos;ve created an interpreter request on their behalf, along with an invitation to view the request&apos;s status.
-            </p>
+
+            {/* Preferred list prompt */}
+            {clientEmail && (prefListState === 'idle' || prefListState === 'sending') && (
+              <div style={{
+                background: 'rgba(0,229,255,0.04)', border: '1px dashed rgba(0,229,255,0.2)',
+                borderRadius: 12, padding: '20px 24px', marginTop: 16,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 14 }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="16" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12.01" y2="8" />
+                  </svg>
+                  <div>
+                    <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>
+                      Want better results?
+                    </div>
+                    <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6, margin: 0 }}>
+                      Ask them to share their preferred interpreter list. When interpreters see they&apos;re on a client&apos;s preferred list, they&apos;re far more likely to accept. Deaf individuals know which interpreters work best for their specific needs.
+                    </p>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    disabled={prefListState === 'sending'}
+                    onClick={async () => {
+                      if (!clientEmail.trim()) return
+                      setPrefListState('sending')
+                      setPrefListError(null)
+                      try {
+                        const res = await fetch('/api/connections/request-preferred-list', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            dhhEmail: clientEmail.trim(),
+                            dhhName: clientName.trim() || undefined,
+                            bookingTitle: title || undefined,
+                            bookingDate: date || undefined,
+                            bookingTime: timeStart && timeEnd ? `${timeStart} - ${timeEnd}` : undefined,
+                            bookingLocation: format === 'in_person' ? location : remotePlatform || undefined,
+                          }),
+                        })
+                        const data = await res.json()
+                        if (!res.ok) {
+                          setPrefListError(data.error || 'Failed to send request')
+                          setPrefListState('idle')
+                          return
+                        }
+                        setPrefListState('sent')
+                      } catch {
+                        setPrefListError('Something went wrong. Please try again.')
+                        setPrefListState('idle')
+                      }
+                    }}
+                    className="btn-primary"
+                    style={{ padding: '9px 18px', fontSize: '0.82rem', fontWeight: 600, border: 'none', cursor: 'pointer' }}
+                  >
+                    {prefListState === 'sending' ? 'Sending...' : 'Request their preferred list'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPrefListState('skipped')}
+                    style={{
+                      background: 'none', border: '1px solid var(--border)',
+                      borderRadius: 'var(--radius-sm)', padding: '9px 18px',
+                      fontSize: '0.82rem', fontWeight: 600, color: 'var(--muted)',
+                      cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                    }}
+                  >
+                    Skip for now
+                  </button>
+                </div>
+                {prefListError && (
+                  <div style={{ fontSize: '0.78rem', color: 'var(--accent3)', marginTop: 8 }}>{prefListError}</div>
+                )}
+              </div>
+            )}
+
+            {/* Success state after requesting */}
+            {prefListState === 'sent' && (
+              <div style={{
+                background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.2)',
+                borderRadius: 12, padding: '16px 20px', marginTop: 16,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 8l3.5 3.5L13 5" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#34d399' }}>Request sent</span>
+                </div>
+                <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.6, margin: 0 }}>
+                  We&apos;ll notify you when they share their list. The booking can continue without their list. You can add interpreters from the directory now, and their preferred interpreters will be added if they share later.
+                </p>
+              </div>
+            )}
+
+            {/* Skipped state */}
+            {prefListState === 'skipped' && !clientEmail && (
+              <p style={{ color: 'var(--muted)', fontSize: '0.78rem', lineHeight: 1.6, margin: '16px 0 0', fontStyle: 'italic' }}>
+                If they have a signpost account, their preferred interpreter list will be integrated into your request.
+              </p>
+            )}
           </div>
         )}
 
