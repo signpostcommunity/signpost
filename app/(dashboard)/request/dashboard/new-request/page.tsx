@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Toast from '@/components/ui/Toast'
@@ -69,6 +69,7 @@ export default function NewRequestPage() {
   const router = useRouter()
   const [submitting, setSubmitting] = useState(false)
   const [hasPaymentMethod, setHasPaymentMethod] = useState<boolean | null>(null)
+  const paymentNoticeRef = useRef<HTMLDivElement>(null)
 
   // Check if requester has a payment method on file
   useEffect(() => {
@@ -133,7 +134,15 @@ export default function NewRequestPage() {
 
     // Gate: require payment method for non-draft submissions
     if (!saveAsDraft && !hasPaymentMethod) {
-      setToast({ message: 'Add a payment method to submit requests.', type: 'error' })
+      setToast({ message: 'Add a payment method before submitting requests.', type: 'error' })
+      // Scroll to and highlight the payment method notice
+      if (paymentNoticeRef.current) {
+        paymentNoticeRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        paymentNoticeRef.current.style.animation = 'none'
+        // Force reflow to restart animation
+        void paymentNoticeRef.current.offsetWidth
+        paymentNoticeRef.current.style.animation = 'pulse-highlight 1.5s ease-out'
+      }
       return
     }
 
@@ -460,6 +469,7 @@ export default function NewRequestPage() {
           return (
             <Link
               href={`/directory?${params.toString()}`}
+              target="_blank"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 7,
                 padding: '9px 18px', borderRadius: 'var(--radius-sm)',
@@ -478,16 +488,19 @@ export default function NewRequestPage() {
 
         {/* Payment method gate warning */}
         {hasPaymentMethod === false && (
-          <div style={{
-            marginTop: 24,
-            padding: '14px 18px',
-            background: 'rgba(239,68,68,0.06)',
-            border: '1px solid rgba(239,68,68,0.2)',
-            borderRadius: 'var(--radius-sm)',
-            fontSize: '14px',
-            color: '#c8cdd8',
-            lineHeight: 1.6,
-          }}>
+          <div
+            ref={paymentNoticeRef}
+            style={{
+              marginTop: 24,
+              padding: '14px 18px',
+              background: 'rgba(239,68,68,0.06)',
+              border: '1px solid rgba(239,68,68,0.2)',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: '14px',
+              color: '#c8cdd8',
+              lineHeight: 1.6,
+            }}
+          >
             <Link
               href="/request/dashboard/profile"
               style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'underline' }}
@@ -533,6 +546,11 @@ export default function NewRequestPage() {
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
       <style>{`
+        @keyframes pulse-highlight {
+          0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); border-color: rgba(239,68,68,0.6); }
+          50% { box-shadow: 0 0 12px 4px rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.6); }
+          100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); border-color: rgba(239,68,68,0.2); }
+        }
         @media (max-width: 768px) {
           .dash-page-content { padding: 24px 20px !important; }
         }
