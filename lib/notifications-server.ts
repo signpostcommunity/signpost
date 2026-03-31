@@ -1,6 +1,6 @@
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { sendEmail } from '@/lib/email'
-import { emailTemplate } from '@/lib/email-template'
+import { emailTemplate, EmailContentBlock } from '@/lib/email-template'
 
 export type NotificationType =
   | 'welcome' | 'profile_approved' | 'profile_denied'
@@ -40,15 +40,28 @@ function getPreferenceCategoryKey(type: NotificationType): string {
   return type
 }
 
+/** Truncate text to maxLen chars, appending "..." if truncated. */
+function truncate(text: string, maxLen: number): string {
+  if (text.length <= maxLen) return text
+  return text.substring(0, maxLen) + '...'
+}
+
+/** Determine the correct preferences URL for a given role. */
+function preferencesUrlForRole(role?: string): string {
+  if (role === 'deaf') return 'https://signpost.community/dhh/dashboard/preferences'
+  if (role === 'requester' || role === 'org') return 'https://signpost.community/request/dashboard/profile'
+  return 'https://signpost.community/interpreter/dashboard/profile?tab=account-settings'
+}
+
 /**
  * Generate rich email content for specific notification types.
- * Returns null for types that should use the default params-based content.
+ * Returns structured data with content blocks for inline email rendering.
  */
 function getEmailContent(
   type: NotificationType,
   metadata: Record<string, unknown>,
   params: CreateNotificationParams
-): { subject: string; htmlBody: string; ctaText: string; ctaUrl: string } | null {
+): { subject: string; htmlBody: string; ctaText: string; ctaUrl: string; contentBlocks?: EmailContentBlock[]; preferencesUrl?: string } | null {
   if (type === 'welcome') {
     const vanitySlug = metadata.vanity_slug as string | undefined
     const bookMeSection = vanitySlug
@@ -56,11 +69,11 @@ function getEmailContent(
 <p>Share it in your email signature, on social media, or anywhere clients can find you.</p>`
       : `<p>Set up your Book Me link from your dashboard to get a shareable URL for your profile.</p>`
     return {
-      subject: 'Welcome to signpost!',
+      subject: 'Welcome to signpost',
       htmlBody: `<p>Thanks for joining signpost! Your interpreter profile is live.</p>
 <p><strong>What comes next:</strong></p>
 <p>Your profile is live in the directory. Requesters will find you when you match their search filters (language, specialization, location, certification) or when a Deaf/DB/HH client includes you on their preferred interpreter list.</p>
-<p>When you receive a new request, you'll be notified via in-app notification, email, and/or SMS depending on your preferences. You can review the request details and respond with your rate, decline, or ask questions. <a href="https://signpost.community/interpreter/dashboard/profile?tab=account-settings" style="color: #00e5ff; text-decoration: none;">Update your notification preferences</a></p>
+<p>When you receive a new request, you'll be notified via in-app notification, email, and/or SMS depending on your preferences. You can review the request details and respond with your rate, decline, or ask questions. <a href="https://signpost.community/interpreter/dashboard/profile?tab=account-settings" style="color: #00e5ff; text-decoration: none;">Manage your notification preferences</a></p>
 <p>You control your rates and terms. Set your standard rate, minimum hours, and cancellation policy from your dashboard. You can also create custom rates for specific jobs.</p>
 ${bookMeSection}
 <p>This is free for interpreters. When requesters book you via signpost, they pay a simple flat platform fee (currently $15 per booking) to help support this site. They never pay an additional percentage added to your rates, or any hidden fees. It's that simple.</p>
@@ -71,6 +84,272 @@ ${bookMeSection}
     }
   }
 
+  if (type === 'new_message') {
+    const senderName = (metadata.sender_name as string) || 'Someone'
+    const messageBody = metadata.message_body as string | undefined
+    const messageTimestamp = metadata.message_timestamp as string | undefined
+    const conversationId = metadata.conversationId as string | undefined
+    const recipientRole = metadata.recipient_role as string | undefined
+
+    // Determine best CTA URL based on recipient role
+    let ctaUrl = (metadata.conversation_url as string) || (params.ctaUrl as string) || 'https://signpost.community'
+    if (conversationId && !ctaUrl.includes('/conversation/')) {
+      if (recipientRole === 'deaf') {
+        ctaUrl = `https://signpost.community/dhh/dashboard/inbox/conversation/${conversationId}`
+      } else if (recipientRole === 'requester' || recipientRole === 'org') {
+        ctaUrl = `https://signpost.community/request/dashboard/inbox/conversation/${conversationId}`
+      } else {
+        ctaUrl = `https://signpost.community/interpreter/dashboard/inbox/conversation/${conversationId}`
+      }
+    }
+
+    const contentBlocks: EmailContentBlock[] = []
+    if (messageBody) {
+      contentBlocks.push({
+        type: 'message_preview',
+        data: {
+          senderName,
+          messageBody: truncate(messageBody, 500),
+          ...(messageTimestamp ? { timestamp: messageTimestamp } : {}),
+        },
+      })
+    }
+
+    return {
+      subject: `New message from ${senderName} on signpost`,
+      htmlBody: messageBody ? '' : `<p>${senderName} sent you a message on signpost.</p>`,
+      ctaText: 'Read and Reply',
+      ctaUrl,
+      contentBlocks,
+      preferencesUrl: preferencesUrlForRole(recipientRole),
+    }
+  }
+
+  if (type === 'new_request') {
+    const bookingTitle = (metadata.booking_title as string) || (metadata.title as string) || 'Interpreter request'
+    const bookingDate = (metadata.booking_date as string) || (metadata.date as string) || ''
+    const bookingTime = (metadata.booking_time as string) || (metadata.time as string) || ''
+    const bookingLocation = (metadata.booking_location as string) || (metadata.location as string) || ''
+    const bookingFormat = (metadata.booking_format as string) || (metadata.format as string) || ''
+    const requesterName = (metadata.requester_name as string) || (metadata.dhhClientName as string) || ''
+
+    const contentBlocks: EmailContentBlock[] = [{
+      type: 'booking_details',
+      data: {
+        title: bookingTitle,
+        date: bookingDate,
+        time: bookingTime,
+        location: bookingLocation || (bookingFormat === 'remote' ? 'Remote' : ''),
+        format: bookingFormat === 'in_person' ? 'In Person' : bookingFormat === 'remote' ? 'Remote' : bookingFormat,
+        ...(requesterName ? { requesterName } : {}),
+      },
+    }]
+
+    const subjectDate = bookingDate ? `, ${bookingDate}` : ''
+    return {
+      subject: `New request on signpost: ${bookingTitle}${subjectDate}`,
+      htmlBody: requesterName
+        ? `<p>${requesterName} has sent you a request. Review the details and respond with your rate.</p>`
+        : `<p>You have a new interpreter request. Review the details and respond with your rate.</p>`,
+      ctaText: 'Review and Respond',
+      ctaUrl: 'https://signpost.community/interpreter/dashboard/inquiries',
+      contentBlocks,
+    }
+  }
+
+  if (type === 'booking_confirmed') {
+    const bookingTitle = (metadata.booking_title as string) || ''
+    const bookingDate = (metadata.booking_date as string) || ''
+    const bookingTime = (metadata.booking_time as string) || ''
+    const bookingLocation = (metadata.booking_location as string) || ''
+    const bookingFormat = (metadata.booking_format as string) || ''
+    const requesterName = (metadata.requester_name as string) || ''
+    const interpreterName = (metadata.interpreter_name as string) || ''
+    const recipientRole = (metadata.recipient_role as string) || ''
+
+    const contentBlocks: EmailContentBlock[] = [{
+      type: 'booking_details',
+      data: {
+        title: bookingTitle,
+        date: bookingDate,
+        time: bookingTime,
+        location: bookingLocation,
+        format: bookingFormat === 'in_person' ? 'In Person' : bookingFormat === 'remote' ? 'Remote' : bookingFormat,
+        ...(requesterName ? { requesterName } : {}),
+        ...(interpreterName ? { interpreterName } : {}),
+      },
+    }]
+
+    const subjectDate = bookingDate ? `, ${bookingDate}` : ''
+    const isInterpreter = recipientRole === 'interpreter'
+    const bodyText = isInterpreter
+      ? (requesterName ? `Your booking with ${requesterName} has been confirmed.` : 'Your booking has been confirmed.')
+      : (interpreterName ? `${interpreterName} has been confirmed for your request.` : 'An interpreter has been confirmed for your request.')
+
+    const ctaText = isInterpreter ? 'View Confirmed Booking' : 'View Booking Details'
+    const ctaUrl = isInterpreter
+      ? 'https://signpost.community/interpreter/dashboard/confirmed'
+      : 'https://signpost.community/request/dashboard/requests'
+
+    return {
+      subject: `Booking confirmed: ${bookingTitle || 'Booking'}${subjectDate}`,
+      htmlBody: `<p>${bodyText}</p>`,
+      ctaText,
+      ctaUrl,
+      contentBlocks,
+      preferencesUrl: preferencesUrlForRole(recipientRole),
+    }
+  }
+
+  if (type === 'booking_cancelled' || type === 'cancelled_by_requester' || type === 'cancelled_by_you') {
+    const bookingTitle = (metadata.booking_title as string) || ''
+    const bookingDate = (metadata.booking_date as string) || ''
+    const bookingTime = (metadata.booking_time as string) || ''
+    const bookingLocation = (metadata.booking_location as string) || ''
+    const bookingFormat = (metadata.booking_format as string) || ''
+    const requesterName = (metadata.requester_name as string) || ''
+    const interpreterName = (metadata.interpreter_name as string) || ''
+    const cancellerName = (metadata.canceller_name as string) || ''
+    const cancellationReason = (metadata.cancellation_reason as string) || ''
+    const cancelledByRole = (metadata.cancelled_by_role as string) || ''
+    const recipientRole = (metadata.recipient_role as string) || ''
+
+    const contentBlocks: EmailContentBlock[] = [{
+      type: 'booking_details',
+      data: {
+        title: bookingTitle,
+        date: bookingDate,
+        time: bookingTime,
+        location: bookingLocation,
+        format: bookingFormat === 'in_person' ? 'In Person' : bookingFormat === 'remote' ? 'Remote' : bookingFormat,
+        ...(requesterName ? { requesterName } : {}),
+        ...(interpreterName ? { interpreterName } : {}),
+      },
+    }]
+
+    // Warning card with reason + policy info
+    let warningTitle = 'Cancellation'
+    let warningMessage = ''
+    if (cancellationReason) {
+      warningMessage = `Reason: ${cancellationReason}`
+    }
+    if (cancelledByRole === 'requester') {
+      warningTitle = 'Cancelled by requester'
+      if (warningMessage) warningMessage += '<br><br>'
+      warningMessage += 'The $15 platform fee is non-refundable.'
+    } else if (cancelledByRole === 'interpreter') {
+      warningTitle = 'Cancelled by interpreter'
+      if (warningMessage) warningMessage += '<br><br>'
+      warningMessage += 'A $15 booking credit has been applied to the requester\'s account.'
+    }
+    if (warningMessage) {
+      contentBlocks.push({ type: 'warning_card', data: { title: warningTitle, message: warningMessage } })
+    }
+
+    const subjectDate = bookingDate ? `, ${bookingDate}` : ''
+    const cancellerDisplay = cancellerName || (cancelledByRole === 'interpreter' ? 'The interpreter' : 'The requester')
+    const bodyText = `${cancellerDisplay} has cancelled the booking for ${bookingTitle || 'this request'}${bookingDate ? ' on ' + bookingDate : ''}.`
+
+    return {
+      subject: `Booking cancelled: ${bookingTitle || 'Booking'}${subjectDate}`,
+      htmlBody: `<p>${bodyText}</p>`,
+      ctaText: 'View Details',
+      ctaUrl: recipientRole === 'interpreter'
+        ? 'https://signpost.community/interpreter/dashboard/confirmed'
+        : 'https://signpost.community/request/dashboard/requests',
+      contentBlocks,
+      preferencesUrl: preferencesUrlForRole(recipientRole),
+    }
+  }
+
+  if (type === 'rate_response') {
+    const interpreterName = (metadata.interpreter_name as string) || ''
+    const rate = (metadata.rate as string) || ''
+    const minHours = (metadata.min_hours as string) || ''
+    const cancellationPolicy = (metadata.cancellation_policy as string) || ''
+    const interpreterNote = (metadata.interpreter_note as string) || ''
+    const bookingTitle = (metadata.booking_title as string) || ''
+    const bookingDate = (metadata.booking_date as string) || ''
+    const bookingTime = (metadata.booking_time as string) || ''
+    const bookingLocation = (metadata.booking_location as string) || ''
+    const bookingFormat = (metadata.booking_format as string) || ''
+    const bookingId = (metadata.booking_id as string) || ''
+    const recipientId = (metadata.recipient_id as string) || ''
+
+    const contentBlocks: EmailContentBlock[] = []
+
+    if (rate || minHours || cancellationPolicy || interpreterNote) {
+      contentBlocks.push({
+        type: 'rate_details',
+        data: {
+          ...(rate ? { rate: `$${rate}` } : {}),
+          ...(minHours ? { minHours } : {}),
+          ...(cancellationPolicy ? { cancellationPolicy } : {}),
+          ...(interpreterNote ? { interpreterNote } : {}),
+        },
+      })
+    }
+
+    if (bookingTitle || bookingDate) {
+      contentBlocks.push({
+        type: 'booking_details',
+        data: {
+          title: bookingTitle,
+          date: bookingDate,
+          time: bookingTime,
+          location: bookingLocation,
+          format: bookingFormat === 'in_person' ? 'In Person' : bookingFormat === 'remote' ? 'Remote' : bookingFormat,
+        },
+      })
+    }
+
+    const displayName = interpreterName || 'An interpreter'
+    const ctaUrl = bookingId && recipientId
+      ? `https://signpost.community/request/dashboard/accept/${bookingId}/${recipientId}`
+      : 'https://signpost.community/request/dashboard'
+
+    return {
+      subject: interpreterName
+        ? `${interpreterName} responded to your request on signpost`
+        : `Interpreter responded to your request on signpost`,
+      htmlBody: `<p>${displayName} sent their rate. Review their rate and terms, then accept or decline.</p>`,
+      ctaText: 'Review and Accept',
+      ctaUrl,
+      contentBlocks,
+      preferencesUrl: preferencesUrlForRole('requester'),
+    }
+  }
+
+  if (type === 'invoice_paid') {
+    const invoiceNumber = (metadata.invoice_number as string) || ''
+    const amount = (metadata.amount as string) || ''
+    const bookingTitle = (metadata.booking_title as string) || ''
+    const bookingDate = (metadata.booking_date as string) || ''
+    const invoiceId = (metadata.invoice_id as string) || ''
+
+    const contentBlocks: EmailContentBlock[] = []
+    const infoData: Record<string, string> = {}
+    if (invoiceNumber) infoData['Invoice'] = invoiceNumber
+    if (amount) infoData['Amount'] = amount
+    if (bookingTitle) infoData['Booking'] = bookingTitle
+    if (bookingDate) infoData['Date'] = bookingDate
+
+    if (Object.keys(infoData).length > 0) {
+      contentBlocks.push({ type: 'info_card', data: infoData })
+    }
+
+    return {
+      subject: invoiceNumber ? `Invoice marked as paid: ${invoiceNumber}` : 'Invoice marked as paid',
+      htmlBody: `<p>Your invoice ${invoiceNumber || ''} has been marked as paid.</p>`,
+      ctaText: 'View Invoice',
+      ctaUrl: invoiceId
+        ? `https://signpost.community/interpreter/dashboard/invoices/${invoiceId}`
+        : 'https://signpost.community/interpreter/dashboard/invoices',
+      contentBlocks,
+    }
+  }
+
+  // Preferred list variants
   const adderName = (metadata.adder_name as string) || (metadata.organization_name as string) || 'Someone'
 
   if (type === 'added_to_preferred_list_by_interpreter') {
@@ -94,21 +373,19 @@ ${bookMeSection}
 
   if (type === 'added_to_preferred_list_by_dhh') {
     return {
-      subject: `You've been added to ${adderName}'s preferred interpreter list`,
-      htmlBody: `<p>${adderName} has added you to their preferred interpreter list on signpost. This means they trust you and want you for their future bookings. When ${adderName} or someone booking on their behalf sends a request, you will be among the first interpreters contacted. Thank you for being a trusted interpreter to this client.</p>`,
-      ctaText: 'View My Dashboard',
+      subject: 'You were added to a preferred interpreter list on signpost',
+      htmlBody: `<p>A Deaf/DB/HH user has added you to their preferred interpreter list. You may receive direct requests from them.</p>`,
+      ctaText: 'View Your Dashboard',
       ctaUrl: 'https://signpost.community/interpreter/dashboard',
     }
   }
 
-  if (type === 'new_message') {
-    const senderName = (metadata.sender_name as string) || 'Someone'
-    const conversationUrl = (metadata.conversation_url as string) || (params.ctaUrl as string) || 'https://signpost.community'
+  if (type === 'added_to_preferred_list') {
     return {
-      subject: `New message from ${senderName} on signpost`,
-      htmlBody: `<p>${senderName} sent you a message on signpost.</p>`,
-      ctaText: 'Read and Reply',
-      ctaUrl: conversationUrl,
+      subject: 'You were added to a preferred interpreter list on signpost',
+      htmlBody: `<p>A Deaf/DB/HH user has added you to their preferred interpreter list. You may receive direct requests from them.</p>`,
+      ctaText: 'View Your Dashboard',
+      ctaUrl: 'https://signpost.community/interpreter/dashboard',
     }
   }
 
@@ -277,12 +554,14 @@ export async function createNotification(params: CreateNotificationParams) {
 
     // Build and send email via Resend
     const emailContent = getEmailContent(params.type, params.metadata ?? {}, params)
+    const emailSubject = emailContent?.subject ?? params.subject
     const html = emailTemplate({
       heading: emailContent?.subject ?? params.subject,
       body: emailContent?.htmlBody ?? `<p>${params.body}</p>`,
       ctaText: emailContent?.ctaText ?? params.ctaText,
       ctaUrl: emailContent?.ctaUrl ?? params.ctaUrl,
-      preferencesUrl: 'https://signpost.community/interpreter/dashboard/profile?tab=account-settings',
+      preferencesUrl: emailContent?.preferencesUrl ?? 'https://signpost.community/interpreter/dashboard/profile?tab=account-settings',
+      contentBlocks: emailContent?.contentBlocks,
     })
 
     try {
@@ -290,7 +569,7 @@ export async function createNotification(params: CreateNotificationParams) {
 
       const result = await sendEmail({
         to: recipientEmail,
-        subject: params.subject,
+        subject: emailSubject,
         html,
       })
 

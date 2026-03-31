@@ -1,15 +1,107 @@
+export interface EmailContentBlock {
+  type: 'message_preview' | 'booking_details' | 'rate_details' | 'info_card' | 'warning_card'
+  data: Record<string, string>
+}
+
+function renderContentBlock(block: EmailContentBlock): string {
+  switch (block.type) {
+    case 'message_preview': {
+      const { senderName, messageBody, timestamp } = block.data
+      return `
+        <tr>
+          <td style="padding: 0 36px;">
+            <div style="background:#16161f; border-left:3px solid #00e5ff; padding:16px 20px; border-radius:0 8px 8px 0; margin:16px 0;">
+              ${senderName ? `<div style="font-size:13px; color:#96a0b8; margin-bottom:6px;">${senderName}</div>` : ''}
+              <div style="font-size:15px; color:#f0f2f8; line-height:1.6;">${messageBody || ''}</div>
+              ${timestamp ? `<div style="font-size:12px; color:#5a6178; margin-top:8px;">${timestamp}</div>` : ''}
+            </div>
+          </td>
+        </tr>`
+    }
+
+    case 'booking_details': {
+      const { title, date, time, location, format, requesterName, interpreterName } = block.data
+      const details = [title, `${date || ''}${time ? ' · ' + time : ''}`, location, format].filter(Boolean).join('<br>')
+      let extras = ''
+      if (requesterName) extras += `<div style="font-size:13px; color:#96a0b8; margin-top:8px;">Requested by ${requesterName}</div>`
+      if (interpreterName) extras += `<div style="font-size:13px; color:#96a0b8; margin-top:4px;">Interpreter: ${interpreterName}</div>`
+      return `
+        <tr>
+          <td style="padding: 0 36px;">
+            <div style="background:#16161f; border:1px solid #1e2433; border-radius:10px; padding:20px; margin:16px 0;">
+              <div style="font-size:13px; color:#00e5ff; text-transform:uppercase; letter-spacing:0.08em; font-weight:600; margin-bottom:12px;">Booking Details</div>
+              <div style="font-size:14px; color:#f0f2f8; line-height:1.8;">${details}</div>
+              ${extras}
+            </div>
+          </td>
+        </tr>`
+    }
+
+    case 'rate_details': {
+      const { rate, minHours, cancellationPolicy, interpreterNote } = block.data
+      let termsHtml = ''
+      if (minHours) termsHtml += `Minimum: ${minHours} hours<br>`
+      if (cancellationPolicy) termsHtml += cancellationPolicy
+      return `
+        <tr>
+          <td style="padding: 0 36px;">
+            <div style="background:#16161f; border:1px solid #1e2433; border-radius:10px; padding:20px; margin:16px 0;">
+              <div style="font-size:13px; color:#00e5ff; text-transform:uppercase; letter-spacing:0.08em; font-weight:600; margin-bottom:12px;">Rate Response</div>
+              ${rate ? `<div style="font-size:22px; color:#f0f2f8; font-weight:700; margin-bottom:8px;">${rate}/hr</div>` : ''}
+              ${termsHtml ? `<div style="font-size:14px; color:#96a0b8; line-height:1.6;">${termsHtml}</div>` : ''}
+              ${interpreterNote ? `<div style="font-size:14px; color:#f0f2f8; margin-top:12px; font-style:italic;">"${interpreterNote}"</div>` : ''}
+            </div>
+          </td>
+        </tr>`
+    }
+
+    case 'info_card': {
+      const entries = Object.entries(block.data)
+      const rows = entries.map(([key, value]) =>
+        `<div style="font-size:14px; color:#96a0b8;">${key}</div><div style="font-size:15px; color:#f0f2f8; margin-bottom:8px;">${value}</div>`
+      ).join('')
+      return `
+        <tr>
+          <td style="padding: 0 36px;">
+            <div style="background:#16161f; border:1px solid #1e2433; border-radius:10px; padding:20px; margin:16px 0;">
+              ${rows}
+            </div>
+          </td>
+        </tr>`
+    }
+
+    case 'warning_card': {
+      const { title, message } = block.data
+      return `
+        <tr>
+          <td style="padding: 0 36px;">
+            <div style="background:rgba(255,126,69,0.08); border:1px solid rgba(255,126,69,0.3); border-radius:10px; padding:20px; margin:16px 0;">
+              ${title ? `<div style="font-size:14px; color:#ff7e45; font-weight:600; margin-bottom:8px;">${title}</div>` : ''}
+              <div style="font-size:14px; color:#f0f2f8; line-height:1.6;">${message || ''}</div>
+            </div>
+          </td>
+        </tr>`
+    }
+
+    default:
+      return ''
+  }
+}
+
 export function emailTemplate({
   heading,
   body,
   ctaText,
   ctaUrl,
   preferencesUrl,
+  contentBlocks,
 }: {
   heading: string;
   body: string;
   ctaText?: string;
   ctaUrl?: string;
   preferencesUrl?: string;
+  contentBlocks?: EmailContentBlock[];
 }): string {
   const prefUrl = preferencesUrl || 'https://signpost.community/interpreter/dashboard/profile?tab=account-settings';
 
@@ -31,6 +123,8 @@ export function emailTemplate({
         </td>
       </tr>`
     : '';
+
+  const contentBlocksHtml = contentBlocks?.map(renderContentBlock).join('') || '';
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -81,6 +175,9 @@ export function emailTemplate({
             </td>
           </tr>
 
+          <!-- Content Blocks -->
+          ${contentBlocksHtml}
+
           <!-- CTA -->
           ${ctaBlock}
           ${ctaBlock ? '<tr><td style="padding: 0 36px;"></td></tr>' : ''}
@@ -103,7 +200,7 @@ export function emailTemplate({
                       font-family: 'Helvetica Neue', Arial, sans-serif;
                       font-size: 12px;
                       line-height: 1.5;
-                    "><a href="${prefUrl}" style="color: #00e5ff; text-decoration: none;">Update your notification preferences &rarr;</a></p>
+                    "><a href="${prefUrl}" style="color: #00e5ff; text-decoration: none;">Manage your notification preferences &rarr;</a></p>
                     <p style="
                       margin: 0;
                       font-family: 'Helvetica Neue', Arial, sans-serif;
