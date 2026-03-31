@@ -11,6 +11,7 @@ import {
   SPOKEN_LANGUAGES_TOP6, SPOKEN_LANGUAGES_BY_REGION,
 } from '@/lib/data/languages'
 import { SPECIALIZATION_CATEGORIES, SPECIALIZED_SKILLS } from '@/lib/constants/specializations'
+import { MENTORSHIP_CATEGORIES, type MentorshipCategory } from '@/lib/mentorship-categories'
 import { getVideoEmbedUrl, isValidVideoUrl } from '@/lib/videoUtils'
 import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
 import LocationPicker from '@/components/shared/LocationPicker'
@@ -1713,31 +1714,22 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           {(mentorshipOffering || mentorshipSeeking) && (
             <div style={{ marginTop: 20, marginBottom: 24 }}>
               <label style={labelStyle}>What areas? (select all that apply)</label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
-                {[
-                  'General professional development',
-                  'Business practices (rates, invoicing, marketing)',
-                  'Credential and certification prep',
-                  ...(specs || []).filter(s =>
-                    !['General professional development', 'Business practices (rates, invoicing, marketing)', 'Credential and certification prep'].includes(s)
-                  ),
-                ].map(area => (
-                  <button
-                    key={area}
-                    onClick={() => setMentorshipTypes(prev =>
-                      prev.includes(area) ? prev.filter(v => v !== area) : [...prev, area]
-                    )}
-                    style={{
-                      padding: '5px 14px', borderRadius: 20, fontSize: '0.8rem', cursor: 'pointer',
-                      border: mentorshipTypes.includes(area) ? '1px solid rgba(0,229,255,0.5)' : '1px solid var(--border)',
-                      background: mentorshipTypes.includes(area) ? 'rgba(0,229,255,0.1)' : 'var(--surface2)',
-                      color: mentorshipTypes.includes(area) ? 'var(--accent)' : 'var(--muted)',
-                      fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
-                    }}
-                  >
-                    {area}
-                  </button>
-                ))}
+              <div style={{ marginTop: 8, border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
+                {MENTORSHIP_CATEGORIES.map((cat, catIdx) => {
+                  const selectedCount = cat.items.filter(item => mentorshipTypes.includes(item.id)).length
+                  return (
+                    <MentorshipAccordion
+                      key={cat.id}
+                      category={cat}
+                      selectedCount={selectedCount}
+                      selectedIds={mentorshipTypes}
+                      onToggle={(itemId) => setMentorshipTypes(prev =>
+                        prev.includes(itemId) ? prev.filter(v => v !== itemId) : [...prev, itemId]
+                      )}
+                      showBorder={catIdx < MENTORSHIP_CATEGORIES.length - 1}
+                    />
+                  )
+                })}
               </div>
             </div>
           )}
@@ -2239,6 +2231,102 @@ function SkillsTab({ specs, setSpecs, specializedSkills, setSpecializedSkills, s
 }
 
 // ── Community toggle ──────────────────────────────────────────────────────────
+
+function MentorshipAccordion({ category, selectedCount, selectedIds, onToggle, showBorder }: {
+  category: MentorshipCategory
+  selectedCount: number
+  selectedIds: string[]
+  onToggle: (itemId: string) => void
+  showBorder: boolean
+}) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div style={{ borderBottom: showBorder ? '1px solid var(--border)' : 'none' }}>
+      <button
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          width: '100%', padding: '12px 14px',
+          background: 'none', border: 'none', cursor: 'pointer',
+          fontFamily: "'DM Sans', sans-serif",
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <svg
+            width="10" height="10" viewBox="0 0 10 10" fill="none"
+            stroke="#96a0b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
+            style={{ transition: 'transform 0.2s', transform: open ? 'rotate(90deg)' : 'rotate(0deg)', flexShrink: 0 }}
+          >
+            <path d="M3 1l4 4-4 4" />
+          </svg>
+          <span style={{
+            fontSize: '12px', fontWeight: 500, letterSpacing: '0.06em',
+            textTransform: 'uppercase', color: '#96a0b8',
+          }}>
+            {category.label}
+          </span>
+        </div>
+        {selectedCount > 0 && (
+          <span style={{
+            fontSize: '0.7rem', fontWeight: 600, color: 'var(--accent)',
+            background: 'rgba(0,229,255,0.1)', borderRadius: 100,
+            padding: '1px 8px',
+          }}>
+            {selectedCount} selected
+          </span>
+        )}
+      </button>
+      <div style={{
+        maxHeight: open ? `${category.items.length * 56 + 8}px` : '0px',
+        overflow: 'hidden', transition: 'max-height 0.2s ease',
+      }}>
+        <div style={{ padding: '0 14px 8px' }}>
+          {category.items.map(item => {
+            const checked = selectedIds.includes(item.id)
+            return (
+              <button
+                key={item.id}
+                onClick={() => onToggle(item.id)}
+                style={{
+                  display: 'flex', alignItems: 'flex-start', gap: 10,
+                  width: '100%', padding: '8px 0',
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontFamily: "'DM Sans', sans-serif", textAlign: 'left',
+                }}
+              >
+                <div style={{
+                  width: 18, height: 18, borderRadius: 4, flexShrink: 0, marginTop: 1,
+                  border: checked ? 'none' : '2px solid var(--border)',
+                  background: checked ? 'var(--accent)' : 'transparent',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.15s',
+                }}>
+                  {checked && (
+                    <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M2 6l3 3 5-5" />
+                    </svg>
+                  )}
+                </div>
+                <div>
+                  <div style={{ fontSize: '14px', color: '#f0f2f8', lineHeight: 1.4 }}>
+                    {item.label}
+                  </div>
+                  {item.description && (
+                    <div style={{ fontSize: '12px', color: '#96a0b8', lineHeight: 1.4, marginTop: 2 }}>
+                      {item.description}
+                    </div>
+                  )}
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function CommunityToggle({ label, helper, checked, onChange }: { label: string; helper?: string; checked: boolean; onChange: () => void }) {
   return (

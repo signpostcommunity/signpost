@@ -7,6 +7,7 @@ import { SectionLabel, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } f
 import PendingRolesNudge from '@/components/shared/PendingRolesNudge'
 import BookMeBadge from '@/components/interpreter/BookMeBadge'
 import SendMessageModal from '@/components/messaging/SendMessageModal'
+import { getMentorshipLabel } from '@/lib/mentorship-categories'
 
 /* ── Types ── */
 
@@ -984,7 +985,7 @@ function SuggestedMentors({ interpreterProfileId }: { interpreterProfileId: stri
   }
 
   function buildPrefillMessage(mentor: MentorSuggestion): string {
-    const types = (mentor.mentorship_types || []).join(', ')
+    const types = (mentor.mentorship_types || []).map(getMentorshipLabel).join(', ')
     if (mentor.mentorship_paid === 'paid') {
       return `Hi ${mentor.first_name || mentor.name}, I'm interested in your paid mentorship${types ? ` in ${types}` : ''}. I'd love to learn about your rates and format.${seekerBio ? ` ${seekerBio}` : ''}`
     }
@@ -1063,7 +1064,7 @@ function SuggestedMentors({ interpreterProfileId }: { interpreterProfileId: stri
                           color: 'var(--accent)',
                         }}
                       >
-                        {t}
+                        {getMentorshipLabel(t)}
                       </span>
                     ))}
                   </div>

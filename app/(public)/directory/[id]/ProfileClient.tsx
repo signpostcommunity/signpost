@@ -12,6 +12,7 @@ import SendMessageModal from '@/components/messaging/SendMessageModal';
 import RequestVideoModal from '@/components/directory/RequestVideoModal';
 import { createClient } from '@/lib/supabase/client';
 import { groupSpecsByCategory } from '@/lib/constants/specializations';
+import { getMentorshipLabel } from '@/lib/mentorship-categories';
 
 const TABS = ['Overview', 'Credentials', 'Availability'] as const;
 type Tab = (typeof TABS)[number];
@@ -939,7 +940,7 @@ function MentorshipSection({ interpreter: i }: { interpreter: Interpreter }) {
                     marginRight: 6, marginBottom: 4,
                   }}
                 >
-                  {t}
+                  {getMentorshipLabel(t)}
                 </span>
               ))}
             </div>
@@ -981,7 +982,7 @@ function MentorshipSection({ interpreter: i }: { interpreter: Interpreter }) {
                     marginRight: 6, marginBottom: 4,
                   }}
                 >
-                  {t}
+                  {getMentorshipLabel(t)}
                 </span>
               ))}
             </div>
