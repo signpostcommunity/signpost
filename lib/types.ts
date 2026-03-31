@@ -35,6 +35,12 @@ export interface Interpreter {
   latitude?: number | null;
   longitude?: number | null;
   distance?: number | null; // calculated client-side, miles
+  mentorshipOffering?: boolean;
+  mentorshipSeeking?: boolean;
+  mentorshipTypes?: string[];
+  mentorshipPaid?: string | null;
+  mentorshipBioOffering?: string | null;
+  mentorshipBioSeeking?: string | null;
 }
 
 export interface RateProfile {
@@ -96,4 +102,7 @@ export interface FilterState {
   userLat: number | null;
   userLng: number | null;
   userLocationLabel: string;
+  // Mentorship filter (interpreter-only)
+  mentorshipOffering: boolean;
+  mentorshipSeeking: boolean;
 }

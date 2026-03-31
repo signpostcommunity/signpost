@@ -247,6 +247,20 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
               })}
             </div>
           )}
+
+          {/* Mentorship badge — interpreter-only */}
+          {userRole === 'interpreter' && i.mentorshipOffering && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 5,
+              marginTop: 8, paddingTop: 6,
+            }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#96a0b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 6L9 17l-5-5" />
+                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+              </svg>
+              <span style={{ fontSize: '0.68rem', color: '#96a0b8' }}>Offering mentorship</span>
+            </div>
+          )}
         </div>
 
         <style>{`

@@ -14,6 +14,7 @@ import type { FilterState } from '@/lib/types';
 interface Props {
   filters: FilterState;
   onChange: (filters: FilterState) => void;
+  userRole?: string | null;
 }
 
 const RADIUS_OPTIONS = [
@@ -31,7 +32,7 @@ const GENDER_OPTIONS = [
   { label: 'Non-binary', value: 'nonbinary' },
 ];
 
-export default function FilterSidebar({ filters, onChange }: Props) {
+export default function FilterSidebar({ filters, onChange, userRole }: Props) {
   const [locationInput, setLocationInput] = useState(filters.userLocationLabel || '')
   const [geocoding, setGeocoding] = useState(false)
   const [geoError, setGeoError] = useState('')
@@ -112,6 +113,8 @@ export default function FilterSidebar({ filters, onChange }: Props) {
       userLat: null,
       userLng: null,
       userLocationLabel: '',
+      mentorshipOffering: false,
+      mentorshipSeeking: false,
     });
   }
 
@@ -130,7 +133,9 @@ export default function FilterSidebar({ filters, onChange }: Props) {
     filters.availability === 'hearing' ||
     filters.affinities.length > 0 ||
     filters.racialIdentity.length > 0 ||
-    filters.religiousAffiliation.length > 0;
+    filters.religiousAffiliation.length > 0 ||
+    filters.mentorshipOffering ||
+    filters.mentorshipSeeking;
 
   return (
     <aside
@@ -491,6 +496,25 @@ export default function FilterSidebar({ filters, onChange }: Props) {
           </div>
         )}
       </CollapsibleSection>
+
+      {/* 6b. Mentorship — interpreter-only */}
+      {(userRole === 'interpreter') && (
+        <>
+          <Divider />
+          <CollapsibleSection label="Mentorship">
+            <ToggleRow
+              label="Offering mentorship"
+              checked={filters.mentorshipOffering}
+              onChange={() => onChange({ ...filters, mentorshipOffering: !filters.mentorshipOffering })}
+            />
+            <ToggleRow
+              label="Seeking mentorship"
+              checked={filters.mentorshipSeeking}
+              onChange={() => onChange({ ...filters, mentorshipSeeking: !filters.mentorshipSeeking })}
+            />
+          </CollapsibleSection>
+        </>
+      )}
 
       <Divider />
 

@@ -39,6 +39,8 @@ const defaultFilters: FilterState = {
   userLat: null,
   userLng: null,
   userLocationLabel: '',
+  mentorshipOffering: false,
+  mentorshipSeeking: false,
 };
 
 export default function DirectoryClient({ interpreters, awayPeriods }: { interpreters: Interpreter[]; awayPeriods?: Record<string, { end_date: string; message: string; dim_profile: boolean }> }) {
@@ -322,6 +324,10 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
       if (filters.affinities.includes('Religious') && i.religiousAffiliation.length === 0) return false;
       if (filters.religiousAffiliation.length > 0 && !filters.religiousAffiliation.some((r) => i.religiousAffiliation.includes(r))) return false;
 
+      // Mentorship filters
+      if (filters.mentorshipOffering && !i.mentorshipOffering) return false;
+      if (filters.mentorshipSeeking && !i.mentorshipSeeking) return false;
+
       return true;
     });
 
@@ -357,7 +363,9 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
     filters.religiousAffiliation.length +
     (filters.gender ? 1 : 0) +
     (filters.isDeafInterpreter ? 1 : 0) +
-    (filters.distanceRadius !== 'any' && filters.userLat != null ? 1 : 0);
+    (filters.distanceRadius !== 'any' && filters.userLat != null ? 1 : 0) +
+    (filters.mentorshipOffering ? 1 : 0) +
+    (filters.mentorshipSeeking ? 1 : 0);
 
   return (
     <div style={{ minHeight: '100vh', position: 'relative' }}>
@@ -377,7 +385,7 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
       >
         {/* Sidebar desktop */}
         <div className="filter-sidebar-desktop">
-          <FilterSidebar filters={filters} onChange={setFilters} />
+          <FilterSidebar filters={filters} onChange={setFilters} userRole={userRole} />
         </div>
 
         {/* Main content */}
@@ -620,7 +628,7 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
                 </button>
               </div>
               <div style={{ padding: '20px', flex: 1 }}>
-                <FilterSidebar filters={filters} onChange={setFilters} />
+                <FilterSidebar filters={filters} onChange={setFilters} userRole={userRole} />
               </div>
               <div style={{
                 padding: '16px 20px',

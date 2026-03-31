@@ -9,7 +9,7 @@ export default async function DirectoryPage() {
 
   const { data: rows } = await supabase
     .from('interpreter_profiles')
-    .select('id, name, first_name, last_name, city, country, state, sign_languages, spoken_languages, specializations, specialized_skills, regions, rating, review_count, available, avatar_color, bio, video_url, interpreter_type, status, photo_url, draft_data, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, latitude, longitude, interpreter_certifications(name, issuing_body, year, verification_url), interpreter_videos(video_url)')
+    .select('id, user_id, name, first_name, last_name, city, country, state, sign_languages, spoken_languages, specializations, specialized_skills, regions, rating, review_count, available, avatar_color, bio, video_url, interpreter_type, status, photo_url, draft_data, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, latitude, longitude, years_experience, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking, interpreter_certifications(name, issuing_body, year, verification_url), interpreter_videos(video_url)')
     .eq('status', 'approved')
     .order('photo_url', { ascending: false, nullsFirst: false })
     .order('last_name', { ascending: true, nullsFirst: false });
@@ -82,6 +82,14 @@ export default async function DirectoryPage() {
       religiousAffiliation: (r.religious_details || []) as string[],
       latitude: r.latitude ?? null,
       longitude: r.longitude ?? null,
+      userId: r.user_id || undefined,
+      yearsExperience: r.years_experience || undefined,
+      mentorshipOffering: r.mentorship_offering || false,
+      mentorshipSeeking: r.mentorship_seeking || false,
+      mentorshipTypes: r.mentorship_types || [],
+      mentorshipPaid: r.mentorship_paid || null,
+      mentorshipBioOffering: r.mentorship_bio_offering || null,
+      mentorshipBioSeeking: r.mentorship_bio_seeking || null,
     };
   });
 
