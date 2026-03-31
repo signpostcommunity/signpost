@@ -11,6 +11,7 @@ import GoogleSignInButton from '@/components/ui/GoogleSignInButton'
 import LocationPicker from '@/components/shared/LocationPicker'
 import { useDialCode } from '@/components/shared/PhoneWithDialCode'
 import { createClient } from '@/lib/supabase/client'
+import { useSearchParams } from 'next/navigation'
 import { generateSlug, validateSlug } from '@/lib/slugUtils'
 import { resizeImage } from '@/lib/imageUtils'
 
@@ -27,9 +28,40 @@ const REGIONS = [
 ]
 
 export default function Step1Personal({ onContinue }: { onContinue: () => void }) {
-  const { formData, updateField, saveDraft } = useForm()
+  const { formData, updateField, updateFormData, saveDraft } = useForm()
   const supabase = createClient()
+  const searchParams = useSearchParams()
+  const isAddRole = searchParams.get('addRole') === 'true'
   const dialCode = useDialCode(formData.country)
+
+  // Pre-fill shared fields from existing profiles when adding a role
+  useEffect(() => {
+    if (!isAddRole) return
+    // Only pre-fill if the form is still empty (not already loaded from draft)
+    if (formData.firstName || formData.email) return
+    ;(async () => {
+      try {
+        const res = await fetch('/api/profile-defaults')
+        if (!res.ok) return
+        const defaults = await res.json()
+        const updates: Record<string, string> = {}
+        if (defaults.first_name) updates.firstName = defaults.first_name
+        if (defaults.last_name) updates.lastName = defaults.last_name
+        if (defaults.email) updates.email = defaults.email
+        if (defaults.phone) updates.phone = defaults.phone
+        if (defaults.country) updates.country = defaults.country
+        if (defaults.state) updates.state = defaults.state
+        if (defaults.city) updates.city = defaults.city
+        if (Object.keys(updates).length > 0) {
+          updateFormData(updates as Partial<import('./FormContext').FormData>)
+        }
+      } catch (e) {
+        // Non-blocking — form still works without pre-fill
+        console.warn('Failed to fetch profile defaults:', e)
+      }
+    })()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAddRole])
 
   // Photo upload state
   const fileInputRef = useRef<HTMLInputElement>(null)

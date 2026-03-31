@@ -24,7 +24,7 @@ function DeafSignupForm() {
   const [loading, setLoading] = useState(false);
   const [existingUserId, setExistingUserId] = useState<string | null>(null);
 
-  // Add-role initialization: fetch existing user and pre-fill
+  // Add-role initialization: fetch existing user and pre-fill from existing profiles
   useEffect(() => {
     if (!isAddRole) return;
     (async () => {
@@ -40,6 +40,24 @@ function DeafSignupForm() {
         const fullName = user.user_metadata?.full_name;
         if (fullName) setName(fullName);
         if (user.email) setEmail(user.email);
+
+        // Pre-fill shared fields from existing profiles (e.g., interpreter profile)
+        try {
+          const res = await fetch('/api/profile-defaults');
+          if (res.ok) {
+            const defaults = await res.json();
+            if (defaults.first_name) {
+              const prefillName = [defaults.first_name, defaults.last_name].filter(Boolean).join(' ');
+              if (prefillName && !fullName) setName(prefillName);
+            }
+            if (defaults.country) setCountry(defaults.country);
+            if (defaults.state) setState(defaults.state);
+            if (defaults.city) setCity(defaults.city);
+          }
+        } catch (prefillErr) {
+          // Non-blocking — form still works without pre-fill
+          console.warn('Failed to fetch profile defaults:', prefillErr);
+        }
       } catch (e) {
         console.error('Add role init failed:', e);
       }

@@ -6,6 +6,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin';
 import { generateSlug } from '@/lib/slugUtils';
 import { getStripe } from '@/lib/stripe';
 import { syncNameFields } from '@/lib/nameSync';
+import { getExistingProfileData } from '@/lib/populateNewProfile';
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
@@ -77,13 +78,21 @@ export async function GET(request: NextRequest) {
       const firstName = (norm.first_name as string) || nameParts[0] || '';
       const lastName = (norm.last_name as string) || nameParts.slice(1).join(' ') || '';
       const normName = `${firstName} ${lastName}`.trim() || displayName;
+
+      // Auto-populate shared fields from existing profiles (e.g., user already has interpreter profile)
+      const existing_data = await getExistingProfileData(user.id);
+
       // TODO: Tech debt — remove deaf_profiles.name column, derive from first_name + last_name
       await supabase.from('deaf_profiles').insert(syncNameFields({
         id: user.id,
         user_id: user.id,
-        first_name: firstName,
-        last_name: lastName,
-        email: user.email || '',
+        first_name: firstName || existing_data.first_name,
+        last_name: lastName || existing_data.last_name,
+        email: user.email || existing_data.email,
+        city: existing_data.city,
+        state: existing_data.state,
+        country_name: existing_data.country_name || existing_data.country,
+        phone: existing_data.phone,
       }));
 
       // Auto-generate vanity slug
@@ -133,13 +142,21 @@ export async function GET(request: NextRequest) {
     const reqFirst = (reqNorm.first_name as string) || reqParts[0] || '';
     const reqLast = (reqNorm.last_name as string) || reqParts.slice(1).join(' ') || '';
     const reqNormName = `${reqFirst} ${reqLast}`.trim() || reqDisplayName;
+
+    // Auto-populate shared fields from existing profiles (e.g., user already has interpreter/deaf profile)
+    const reqExistingData = await getExistingProfileData(user.id);
+
     // TODO: Tech debt — remove requester_profiles.name column, derive from first_name + last_name
     await supabase.from('requester_profiles').insert(syncNameFields({
       id: user.id,
       user_id: user.id,
-      first_name: reqFirst,
-      last_name: reqLast,
-      email: user.email || '',
+      first_name: reqFirst || reqExistingData.first_name,
+      last_name: reqLast || reqExistingData.last_name,
+      email: user.email || reqExistingData.email,
+      city: reqExistingData.city,
+      state: reqExistingData.state,
+      country_name: reqExistingData.country_name || reqExistingData.country,
+      phone: reqExistingData.phone,
     }));
 
     // Create Stripe customer for new requester (non-blocking)

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { seedRequesterData } from '@/lib/seedRequesterData'
 import { syncNameFields } from '@/lib/nameSync'
+import { getExistingProfileData } from '@/lib/populateNewProfile'
 import RequesterOverviewClient from './RequesterOverviewClient'
 
 export const dynamic = 'force-dynamic'
@@ -45,15 +46,21 @@ export default async function RequesterDashboardPage() {
       const norm = normalizeProfileFields({ first_name: nameParts[0] || '', last_name: nameParts.slice(1).join(' ') || '' })
       const firstName = (norm.first_name as string) || nameParts[0] || ''
       const lastName = (norm.last_name as string) || nameParts.slice(1).join(' ') || ''
-      const fullName = `${firstName} ${lastName}`.trim() || fullNameRaw
+
+      // Auto-populate shared fields from existing profiles (e.g., user already has interpreter/deaf profile)
+      const existingData = await getExistingProfileData(user.id)
 
       // TODO: Tech debt — remove requester_profiles.name column, derive from first_name + last_name
       await supabase.from('requester_profiles').insert(syncNameFields({
         id: user.id,
         user_id: user.id,
-        first_name: firstName,
-        last_name: lastName,
-        email: user.email || '',
+        first_name: firstName || existingData.first_name,
+        last_name: lastName || existingData.last_name,
+        email: user.email || existingData.email,
+        city: existingData.city,
+        state: existingData.state,
+        country_name: existingData.country_name || existingData.country,
+        phone: existingData.phone,
       }))
     }
 
