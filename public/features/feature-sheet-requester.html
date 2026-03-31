@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>signpost — Requester Portal Features</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --surface2: #16161f;
+    --border: #1e2433;
+    --accent: #00e5ff;
+    --accent2: #7b61ff;
+    --text: #f0f2f8;
+    --muted: #c8cfe0;
+    --radius: 16px;
+    --nav-height: 52px;
+  }
+
+  html {
+    font-size: 17px;
+    scroll-behavior: smooth;
+    scroll-padding-top: calc(var(--nav-height) + 24px);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .page-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 1000; opacity: 0.4;
+  }
+
+  .wordmark { font-family: 'Syne', sans-serif; font-weight: 800; text-transform: lowercase; }
+  .wordmark span { color: var(--accent); }
+
+  .sheet-header {
+    padding: 32px 48px 28px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-start; justify-content: space-between;
+  }
+  .sheet-header-left { max-width: 600px; }
+  .sheet-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(0,229,255,0.1); border: 1px solid rgba(0,229,255,0.25);
+    border-radius: 100px; padding: 6px 14px; font-size: 0.75rem;
+    color: var(--accent); margin-bottom: 20px; font-weight: 500;
+    letter-spacing: 0.03em;
+  }
+  .sheet-badge::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .sheet-title {
+    font-family: 'Syne', sans-serif; font-weight: 800;
+    font-size: clamp(1.4rem, 3vw, 1.9rem); letter-spacing: -0.04em;
+    line-height: 1.1; margin-bottom: 10px;
+  }
+  .sheet-title em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--accent), #a78bfa);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .sheet-subtitle {
+    color: var(--muted); font-size: 0.95rem; line-height: 1.7; max-width: 520px;
+  }
+
+  .highlights {
+    display: flex; gap: 32px; flex-wrap: wrap; padding: 32px 48px;
+    background: var(--surface); border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .highlight-item {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 0.85rem; color: var(--muted);
+  }
+  .highlight-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  .section { padding: 40px 48px; }
+  .section + .section { border-top: 1px solid var(--border); }
+
+  .section-label {
+    font-family: 'Syne', sans-serif; font-size: 0.68rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .compact-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px; margin-top: 8px;
+  }
+  .compact-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 28px;
+    transition: border-color 0.2s;
+  }
+  .compact-card:hover { border-color: rgba(0,229,255,0.35); }
+  .compact-card h3 {
+    font-family: 'Syne', sans-serif; font-weight: 700;
+    font-size: 0.95rem; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .compact-card p {
+    color: var(--muted); font-size: 0.85rem; line-height: 1.7;
+  }
+
+  .card-icon {
+    width: 28px; height: 28px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .card-icon.cyan { background: rgba(0,229,255,0.1); color: var(--accent); }
+  .card-icon.purple { background: rgba(123,97,255,0.1); color: #a78bfa; }
+
+  .callout {
+    background: rgba(0,229,255,0.04); border: 1px solid rgba(0,229,255,0.15);
+    border-radius: var(--radius); padding: 28px; margin-top: 32px;
+  }
+  .callout-title {
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem;
+    margin-bottom: 8px; color: var(--accent);
+  }
+  .callout-text { color: var(--muted); font-size: 0.85rem; line-height: 1.7; }
+
+  .cta-section {
+    padding: 56px 48px; text-align: center;
+    background: linear-gradient(180deg, var(--bg) 0%, rgba(0,229,255,0.03) 100%);
+  }
+  .cta-title {
+    font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.6rem;
+    letter-spacing: -0.03em; margin-bottom: 12px;
+  }
+  .cta-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 28px; line-height: 1.6; }
+  .cta-btn {
+    display: inline-block; background: var(--accent); color: #0a0a0f;
+    font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 0.9rem;
+    padding: 13px 32px; border-radius: 10px; text-decoration: none;
+    letter-spacing: 0.01em; transition: all 0.2s;
+  }
+  .cta-btn:hover { background: #00d4ee; transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,229,255,0.25); }
+  .cta-note { color: var(--muted); font-size: 0.78rem; margin-top: 16px; font-style: italic; }
+  .cta-note a { color: var(--accent); text-decoration: none; }
+  .cta-note a:hover { text-decoration: underline; }
+
+  .sheet-footer {
+    padding: 24px 48px; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .sheet-footer-text { color: var(--muted); font-size: 0.75rem; }
+
+  /* ── Sticky Nav ── */
+  .sticky-nav {
+    position: sticky;
+    top: 0;
+    z-index: 900;
+    background: rgba(17,17,24,0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,229,255,0.2);
+    border-top: 1px solid rgba(0,229,255,0.1);
+    height: var(--nav-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .sticky-nav-inner {
+    max-width: 1100px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 48px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    gap: 2px;
+  }
+  .sticky-nav-inner::-webkit-scrollbar { display: none; }
+
+  .sticky-nav-inner a {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #8891a8;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 100px;
+    white-space: nowrap;
+    transition: color 0.15s, background 0.15s;
+    flex-shrink: 0;
+    border: 1px solid transparent;
+  }
+  .sticky-nav-inner a:hover,
+  .sticky-nav-inner a:focus-visible {
+    color: var(--text);
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.08);
+  }
+  .sticky-nav-inner a.active {
+    color: var(--accent);
+    background: rgba(0,229,255,0.1);
+    border-color: rgba(0,229,255,0.25);
+  }
+  .sticky-nav-inner a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 800px) {
+    .sticky-nav-inner { padding: 0 16px; }
+    .sheet-header { padding: 32px 20px; flex-direction: column; gap: 16px; }
+    .section { padding: 40px 20px; }
+    .compact-grid { grid-template-columns: 1fr; }
+    .highlights { padding: 24px 20px; flex-direction: column; gap: 16px; }
+    .cta-section { padding: 40px 20px; }
+    .sheet-footer { padding: 20px; }
+    .intro-headline, .intro-logo, .intro-body { padding-left: 0 !important; padding-right: 0 !important; margin-left: 0 !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ HEADER + INTRO (full bleed) ═══════════════ -->
+<div style="border-bottom: 1px solid #1e2433; background: #111118;">
+  <div style="max-width: 1100px; margin: 0 auto; padding: 36px 48px 44px;">
+    <!-- Logo -->
+    <div class="intro-logo" style="display: flex; justify-content: flex-end; margin-bottom: 36px;">
+      <img src="https://udyddevceuulwkqpxkxp.supabase.co/storage/v1/object/public/avatars/signpostlogo.png" alt="signpost" style="height: 100px; width: auto; display: block;">
+    </div>
+    <!-- Badge -->
+    <div class="sheet-badge">Beta — Requester Portal</div>
+    <!-- Headline -->
+    <div class="intro-headline" style="margin-bottom: 24px;">
+      <p style="font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(1.7rem, 4vw, 2.6rem); letter-spacing: -0.04em; line-height: 1.1; color: #f0f2f8; margin: 0 0 8px;">Book interpreters.<br><span style="background: linear-gradient(135deg, #00e5ff, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Directly.</span></p>
+    </div>
+    <!-- Body text -->
+    <div class="intro-body">
+      <p style="font-family: 'DM Sans', sans-serif; font-size: 0.95rem; line-height: 1.75; color: #c8cfe0; max-width: 560px; margin: 0;">signpost connects you with qualified interpreters. Browse real profiles, see credentials and rates, and send requests directly. No middleman. No markup on interpreter pay.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ HIGHLIGHTS STRIP ═══════════════ -->
+<div class="highlights">
+  <div class="highlight-item">
+    <div class="highlight-dot" style="background: var(--accent);"></div>
+    $15 flat fee per booking
+  </div>
+  <div class="highlight-item">
+    <div class="highlight-dot" style="background: var(--accent);"></div>
+    See credentials before you book
+  </div>
+  <div class="highlight-item">
+    <div class="highlight-dot" style="background: #34d399;"></div>
+    Interpreters set their own rates
+  </div>
+  <div class="highlight-item">
+    <div class="highlight-dot" style="background: #fb923c;"></div>
+    Co-founded by a Deaf professional
+  </div>
+</div>
+
+<!-- ═══════════════ STICKY NAV ═══════════════ -->
+<nav class="sticky-nav" role="navigation" aria-label="Feature sections">
+  <div class="sticky-nav-inner">
+    <a href="#find">Find Interpreters</a>
+    <a href="#manage">Manage Bookings</a>
+    <a href="#preferences">Deaf Client Preferences</a>
+  </div>
+</nav>
+
+<!-- ═══════════════ 1. FIND THE RIGHT INTERPRETER — dark ═══════════════ -->
+<div style="border-top: 1px solid #1e2433;" id="find">
+  <div class="page-wrap">
+    <div class="section" style="border-top: none;">
+      <div class="section-label">Browse with confidence</div>
+      <h2 style="font-family: 'Syne', sans-serif; font-weight: 700; font-size: clamp(1.3rem, 2.5vw, 1.7rem); letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 24px;">Find the Right Interpreter</h2>
+      <div class="compact-grid">
+        <div class="compact-card">
+          <h3>
+            <div class="card-icon cyan">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            Browse Real Profiles
+          </h3>
+          <p>See photos, bios, intro videos, credentials, certifications, specializations, and rates. Filter by language, location, specialization, and availability.</p>
+        </div>
+        <div class="compact-card">
+          <h3>
+            <div class="card-icon purple">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            Verified Credentials
+          </h3>
+          <p>Interpreters with a verification badge have linked to their certifying body. You can trust the credentials on their profile.</p>
+        </div>
+        <div class="compact-card">
+          <h3>
+            <div class="card-icon cyan">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </div>
+            Send Requests Directly
+          </h3>
+          <p>No agency queue. Select the interpreters you want, describe the event, and send. They respond directly to you.</p>
+        </div>
+        <div class="compact-card">
+          <h3>
+            <div class="card-icon purple">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            Deaf Client Preferences Built In
+          </h3>
+          <p>When a Deaf client shares their preferred interpreter list with you, their communication preferences automatically flow into your booking form.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ 2. MANAGE YOUR BOOKINGS — grey ═══════════════ -->
+<div style="background: #111118; border-top: 1px solid #1e2433; border-bottom: 1px solid #1e2433;" id="manage">
+  <div class="page-wrap">
+    <div class="section" style="border-top: none;">
+      <div class="section-label">Stay organized</div>
+      <h2 style="font-family: 'Syne', sans-serif; font-weight: 700; font-size: clamp(1.3rem, 2.5vw, 1.7rem); letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 24px;">Manage Your Bookings</h2>
+      <div class="compact-grid">
+        <div class="compact-card">
+          <h3>
+            <div class="card-icon cyan">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            Track All Requests
+          </h3>
+          <p>See pending, confirmed, and past requests at a glance. Each card shows the interpreter, date, time, location, and current status.</p>
+        </div>
+        <div class="compact-card">
+          <h3>
+            <div class="card-icon purple">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+            Build Your Preferred Team
+          </h3>
+          <p>Save interpreters you work with regularly to preferred and secondary tiers. Next time you book, start with your trusted team.</p>
+        </div>
+        <div class="compact-card">
+          <h3>
+            <div class="card-icon cyan">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            Transparent Pricing
+          </h3>
+          <p>$15 platform fee per interpreter, per confirmed booking. That is signpost's only charge. Interpreters invoice you directly for their rate. signpost never takes a percentage.</p>
+        </div>
+        <div class="compact-card">
+          <h3>
+            <div class="card-icon purple">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            Messages and Notifications
+          </h3>
+          <p>Communicate directly with interpreters about booking details, prep materials, and logistics. Email notifications for time-sensitive updates.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ 3. DEAF CLIENT PREFERRED LISTS — dark ═══════════════ -->
+<div style="border-bottom: 1px solid #1e2433;" id="preferences">
+  <div class="page-wrap">
+    <div class="section" style="border-top: none;">
+      <div class="section-label">Preferences that travel</div>
+      <div class="callout">
+        <div class="callout-title">Deaf client preferred lists</div>
+        <div class="callout-text">When a Deaf or Hard of Hearing individual shares their Interpreter Request Link with you, their preferred interpreters and communication preferences are instantly available in your booking form. You book the right person for them, every time.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ CTA ═══════════════ -->
+<div class="cta-section">
+  <div class="cta-title">Help us build what organizations actually need.</div>
+  <div class="cta-sub">We are inviting organizations and coordinators to test the requester portal and share honest feedback.<br>Your experience shapes everything.</div>
+  <a href="https://signpost.community" class="cta-btn">Join the beta at signpost.community</a>
+  <div class="cta-note">Questions? Reach us at <a href="mailto:hello@signpost.community">hello@signpost.community</a></div>
+</div>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<div class="sheet-footer">
+  <div class="wordmark" style="font-size:1rem;">sign<span>post</span></div>
+  <div class="sheet-footer-text">Co-founded by Regina McGinnis (Deaf professional, 20 yrs) and Molly Sano-Mahgoub (interpreter, RID NIC-Master, 18 yrs). signpost.community</div>
+</div>
+
+<!-- Active nav highlighting on scroll -->
+<script>
+  const sections = document.querySelectorAll('[id]');
+  const navLinks = document.querySelectorAll('.sticky-nav-inner a');
+  const sectionIds = new Set(Array.from(navLinks).map(a => a.getAttribute('href').slice(1)));
+
+  function updateActiveNav() {
+    const scrollY = window.scrollY + 80;
+    let currentId = '';
+
+    sections.forEach(section => {
+      if (sectionIds.has(section.id) && section.offsetTop <= scrollY) {
+        currentId = section.id;
+      }
+    });
+
+    navLinks.forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === '#' + currentId);
+    });
+  }
+
+  window.addEventListener('scroll', updateActiveNav, { passive: true });
+  updateActiveNav();
+</script>
+
+</body>
+</html>
