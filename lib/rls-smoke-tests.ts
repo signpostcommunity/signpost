@@ -262,6 +262,29 @@ const tests: TestDef[] = [
     sql: `SELECT count(*) FROM booking_credits`,
     check: 'gte0',
   },
+
+  // interpreter_ratings: Deaf users see own, interpreters see none, admin sees all
+  {
+    name: 'E1: Deaf user sees own interpreter_ratings',
+    table: 'interpreter_ratings', role: 'deaf', type: 'positive',
+    userId: MOLLY,
+    sql: `SELECT count(*) FROM interpreter_ratings`,
+    check: 'gte0',
+  },
+  {
+    name: 'E2: Interpreter sees zero interpreter_ratings',
+    table: 'interpreter_ratings', role: 'interpreter', type: 'negative',
+    userId: JENNY,
+    sql: `SELECT count(*) FROM interpreter_ratings`,
+    check: 'eq0',
+  },
+  {
+    name: 'E3: Admin sees all interpreter_ratings',
+    table: 'interpreter_ratings', role: 'admin', type: 'positive',
+    userId: MOLLY,
+    sql: `SELECT count(*) FROM interpreter_ratings`,
+    check: 'gte0',
+  },
 ]
 
 // ── Runner ─────────────────────────────────────────────────────────────────

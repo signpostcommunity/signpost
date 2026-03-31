@@ -1,3 +1,8 @@
+// TODO: Add rating summary to admin interpreter detail panel
+//   - Total ratings, average met_needs / professional scores
+//   - Would book again breakdown (% yes / maybe / no)
+// TODO: Surface interpreters with 3+ "would not book again" ratings to admin dashboard
+
 'use client'
 
 import { useState } from 'react'
