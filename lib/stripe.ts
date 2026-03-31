@@ -8,6 +8,9 @@ export function getStripe(): Stripe {
     if (!key) {
       throw new Error('Missing STRIPE_SECRET_KEY environment variable')
     }
+    if (key.startsWith('sk_test_') && process.env.NODE_ENV === 'production') {
+      console.warn('[stripe] WARNING: Using test keys in production environment')
+    }
     _stripe = new Stripe(key, {
       apiVersion: '2026-03-25.dahlia',
       typescript: true,
