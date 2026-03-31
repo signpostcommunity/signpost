@@ -128,18 +128,41 @@ function AcceptModal({ booking, onClose, onAccepted }: {
 
     // Send notifications
     if (user) {
-      const location = booking.format === 'remote' ? 'Virtual' : (booking.location?.split(',')[0] || 'TBD')
-      const dateStr = booking.date ? new Date(booking.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'TBD'
-      const timeStr = booking.time_start || ''
+      const locationDisplay = booking.format === 'remote' ? 'Remote' : (booking.location?.split(',')[0] || 'TBD')
+      const dateStr = booking.date ? new Date(booking.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'
+      const timeDisplay = formatTime(booking.time_start, booking.time_end)
+      const formatDisplay = booking.format === 'in_person' ? 'In Person' : booking.format === 'remote' ? 'Remote' : (booking.format || '')
+
+      // Look up interpreter name for notifications
+      const interpSupabase = createClient()
+      const { data: interpSelf } = await interpSupabase
+        .from('interpreter_profiles')
+        .select('first_name, last_name, name')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      const selfName = interpSelf?.first_name
+        ? `${interpSelf.first_name} ${interpSelf.last_name || ''}`.trim()
+        : interpSelf?.name || 'Your interpreter'
+
+      const bookingMeta = {
+        booking_id: booking.id,
+        booking_title: booking.title || '',
+        booking_date: dateStr,
+        booking_time: timeDisplay,
+        booking_location: locationDisplay,
+        booking_format: booking.format || '',
+        requester_name: booking.requester_name || '',
+        interpreter_name: selfName,
+      }
 
       // Notify interpreter (self-confirmation)
       sendNotification({
         recipientUserId: user.id,
         type: 'booking_confirmed',
-        subject: `Booking confirmed: ${booking.title || 'Booking'}`,
+        subject: `Booking confirmed: ${booking.title || 'Booking'}, ${dateStr}`,
         body: `Your booking for ${booking.title || 'Booking'} on ${dateStr} with ${booking.requester_name || 'the requester'} has been confirmed.`,
-        metadata: { booking_id: booking.id },
-        ctaText: 'View Confirmed Bookings',
+        metadata: { ...bookingMeta, recipient_role: 'interpreter' },
+        ctaText: 'View Confirmed Booking',
         ctaUrl: 'https://signpost.community/interpreter/dashboard/confirmed',
       }).catch(err => console.error('[inquiries] confirm notification failed:', err))
 
@@ -148,21 +171,29 @@ function AcceptModal({ booking, onClose, onAccepted }: {
         sendNotification({
           recipientUserId: booking.requester_id,
           type: 'rate_response',
-          subject: `Interpreter responded to your request`,
-          body: `An interpreter has sent their rate and availability for ${booking.title || 'your booking request'}. Review their response and confirm the booking.`,
-          metadata: { booking_id: booking.id },
-          ctaText: 'Review Response',
-          ctaUrl: 'https://signpost.community/request/dashboard',
+          subject: `${selfName} responded to your request on signpost`,
+          body: `${selfName} sent their rate for ${booking.title || 'your booking request'}. Review their rate and terms, then accept or decline.`,
+          metadata: {
+            ...bookingMeta,
+            recipient_role: 'requester',
+            recipient_id: booking.recipient_id,
+            rate: customHourly || '',
+            min_hours: customMinHours || '',
+            cancellation_policy: customCancellation || '',
+            interpreter_note: note || '',
+          },
+          ctaText: 'Review and Accept',
+          ctaUrl: `https://signpost.community/request/dashboard/accept/${booking.id}/${booking.recipient_id}`,
         }).catch(err => console.error('[inquiries] rate_response notification failed:', err))
 
         sendNotification({
           recipientUserId: booking.requester_id,
           type: 'booking_confirmed',
-          subject: `Booking confirmed: ${booking.title || 'Booking'}`,
-          body: `An interpreter has confirmed your booking for ${booking.title || 'Booking'} on ${dateStr}.`,
-          metadata: { booking_id: booking.id },
-          ctaText: 'View Booking',
-          ctaUrl: 'https://signpost.community/request/dashboard',
+          subject: `Booking confirmed: ${booking.title || 'Booking'}, ${dateStr}`,
+          body: `${selfName} has been confirmed for your request.`,
+          metadata: { ...bookingMeta, recipient_role: 'requester' },
+          ctaText: 'View Booking Details',
+          ctaUrl: 'https://signpost.community/request/dashboard/requests',
         }).catch(err => console.error('[inquiries] requester confirm notification failed:', err))
       }
     }

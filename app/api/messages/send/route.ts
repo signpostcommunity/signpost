@@ -138,8 +138,22 @@ export async function POST(request: NextRequest) {
       const senderName = await getSenderName(admin, senderId)
       const preview = body.length > 100 ? body.substring(0, 100) + '...' : body
 
+      // Look up recipient role for deep linking
+      const { data: recipientUserProfile } = await admin
+        .from('user_profiles')
+        .select('role')
+        .eq('id', recipientId)
+        .maybeSingle()
+      const recipientRole = recipientUserProfile?.role || 'interpreter'
+
       const origin = request.headers.get('origin') || request.headers.get('host') || ''
       const baseUrl = origin.startsWith('http') ? origin : `https://${origin}`
+
+      const now = new Date()
+      const messageTimestamp = now.toLocaleDateString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric',
+        hour: 'numeric', minute: '2-digit',
+      })
 
       await fetch(`${baseUrl}/api/notifications/send`, {
         method: 'POST',
@@ -151,11 +165,18 @@ export async function POST(request: NextRequest) {
           recipientUserId: recipientId,
           type: 'new_message',
           channel: 'both',
-          subject: `New message from ${senderName}`,
+          subject: `New message from ${senderName} on signpost`,
           body: preview,
-          metadata: { conversationId, senderId, senderName },
+          metadata: {
+            conversationId,
+            senderId,
+            sender_name: senderName,
+            message_body: body,
+            message_timestamp: messageTimestamp,
+            recipient_role: recipientRole,
+          },
           ctaText: 'Read and Reply',
-          ctaUrl: `/interpreter/dashboard/inbox/conversation/${conversationId}`,
+          ctaUrl: `https://signpost.community/interpreter/dashboard/inbox/conversation/${conversationId}`,
         }),
       })
     } catch {

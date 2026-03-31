@@ -196,16 +196,33 @@ function CancelModal({ booking, onClose, onCancelled }: {
       return
     }
 
+    // Build shared booking metadata for cancellation notifications
+    const locationDisplay = booking.format === 'remote' ? 'Remote' : (booking.location?.split(',')[0] || 'TBD')
+    const dateStr = booking.date ? new Date(booking.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'
+    const timeDisplay = booking.time_start && booking.time_end
+      ? `${booking.time_start} - ${booking.time_end}`
+      : (booking.time_start || '')
+    const formatDisplay = booking.format === 'in_person' ? 'In Person' : booking.format === 'remote' ? 'Remote' : (booking.format || '')
+
+    const cancelMeta = {
+      booking_id: booking.id,
+      booking_title: booking.title || '',
+      booking_date: dateStr,
+      booking_time: timeDisplay,
+      booking_location: locationDisplay,
+      booking_format: booking.format || '',
+      requester_name: booking.requester_name || '',
+      cancellation_reason: finalReason,
+      cancelled_by_role: 'interpreter',
+    }
+
     // Send cancellation notification to interpreter (self-confirmation)
-    const location = booking.format === 'remote' ? 'Virtual' : (booking.location?.split(',')[0] || 'TBD')
-    const dateStr = booking.date ? new Date(booking.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'TBD'
-    const timeStr = booking.time_start || ''
     sendNotification({
       recipientUserId: user.id,
       type: 'cancelled_by_you',
-      subject: `Booking cancelled: ${booking.title || 'Booking'}`,
-      body: `Your cancellation for "${booking.title || 'Booking'}" on ${dateStr} has been processed. Reason: ${finalReason}`,
-      metadata: { booking_id: booking.id },
+      subject: `Booking cancelled: ${booking.title || 'Booking'}, ${dateStr}`,
+      body: `Your cancellation for "${booking.title || 'Booking'}" on ${dateStr} has been processed.`,
+      metadata: { ...cancelMeta, recipient_role: 'interpreter', canceller_name: 'You' },
     }).catch(err => console.error('[confirmed] cancel notification failed:', err))
 
     // Notify the requester about the cancellation
@@ -213,11 +230,11 @@ function CancelModal({ booking, onClose, onCancelled }: {
       sendNotification({
         recipientUserId: booking.requester_id,
         type: 'booking_cancelled',
-        subject: `Booking cancelled: ${booking.title || 'Booking'}`,
-        body: `The interpreter has cancelled the booking for ${booking.title || 'Booking'} on ${dateStr}. Reason: ${finalReason}. A $15 credit has been applied to your account for your next booking.`,
-        metadata: { booking_id: booking.id },
+        subject: `Booking cancelled: ${booking.title || 'Booking'}, ${dateStr}`,
+        body: `The interpreter has cancelled the booking for ${booking.title || 'Booking'} on ${dateStr}. A $15 credit has been applied to your account for your next booking.`,
+        metadata: { ...cancelMeta, recipient_role: 'requester', canceller_name: 'The interpreter' },
         ctaText: 'View Details',
-        ctaUrl: 'https://signpost.community/request/dashboard',
+        ctaUrl: 'https://signpost.community/request/dashboard/requests',
       }).catch(err => console.error('[confirmed] requester cancel notification failed:', err))
     }
 

@@ -205,17 +205,32 @@ export async function POST(request: NextRequest) {
       if (interpProfile?.user_id) {
         // Fire notification via the notifications API
         try {
+          const formatDisplay = dbFormat === 'in_person' ? 'In Person' : dbFormat === 'remote' ? 'Remote' : (dbFormat || '')
+          const dateDisplay = date ? new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : ''
+          const timeDisplay = timeStart && timeEnd ? `${timeStart} - ${timeEnd}` : (timeStart || '')
+
           const notifBody = {
             recipientUserId: interpProfile.user_id,
             type: 'new_request',
-            subject: `New request: ${date}, ${timeStart}, ${dhhClientName}`,
-            body: `${dhhClientName} has sent you a personal interpreter request:\n• ${title}\n• ${date}, ${timeStart} - ${timeEnd} (${timezone || 'PT'})\n• ${location || 'Remote'}`,
+            subject: `New request on signpost: ${title}${date ? ', ' + dateDisplay : ''}`,
+            body: `${dhhClientName} has sent you a request. Review the details and respond with your rate.`,
             metadata: {
               bookingId: booking.id,
               requestType: 'personal',
               dhhClientName,
+              booking_title: title,
+              booking_date: dateDisplay,
+              booking_time: timeDisplay,
+              booking_location: location || '',
+              booking_format: dbFormat || '',
+              requester_name: dhhClientName,
+              title,
+              date: dateDisplay,
+              time: timeDisplay,
+              location: location || '',
+              format: dbFormat || '',
             },
-            ctaText: 'View Request',
+            ctaText: 'Review and Respond',
             ctaUrl: `https://signpost.community/interpreter/dashboard/inquiries`,
             channel: 'both',
           }

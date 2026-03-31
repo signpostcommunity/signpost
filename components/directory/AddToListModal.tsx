@@ -456,23 +456,11 @@ export default function AddToListModal({
 
               if (userRole === 'deaf') {
                 notifType = 'added_to_preferred_list_by_dhh';
-                const { data: deafProfile } = await supabase
-                  .from('deaf_profiles')
-                  .select('first_name, last_name')
-                  .eq('user_id', user.id)
-                  .maybeSingle();
-                adderName = deafProfile
-                  ? `${deafProfile.first_name || ''} ${deafProfile.last_name || ''}`.trim()
-                  : '';
-                notifMetadata.adder_name = adderName || undefined;
+                // Privacy: do not reveal who added the interpreter
               }
 
-              const fallbackSubject = adderName
-                ? `You've been added to ${adderName}'s preferred interpreter list`
-                : "You've been added to a preferred interpreter list";
-              const fallbackBody = adderName
-                ? `${adderName} has added you to their preferred interpreter list on signpost.`
-                : "You've been added to a preferred interpreter list on signpost.";
+              const fallbackSubject = "You were added to a preferred interpreter list on signpost";
+              const fallbackBody = "A Deaf/DB/HH user has added you to their preferred interpreter list. You may receive direct requests from them.";
 
               sendNotification({
                 recipientUserId: interpProfile.user_id,

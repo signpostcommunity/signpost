@@ -328,9 +328,17 @@ export default function InvoicesPage() {
         sendNotification({
           recipientUserId: user.id,
           type: 'invoice_paid',
-          subject: `Invoice paid: ${invoice.invoice_number}`,
-          body: `Your invoice ${invoice.invoice_number} for ${invoice.job_title || 'a booking'} ($${invoice.total?.toFixed(2) || '0.00'}) has been marked as paid.`,
-          metadata: { invoice_id: invoice.id },
+          subject: `Invoice marked as paid: ${invoice.invoice_number}`,
+          body: `Your invoice ${invoice.invoice_number} has been marked as paid.`,
+          metadata: {
+            invoice_id: invoice.id,
+            invoice_number: invoice.invoice_number || '',
+            amount: invoice.total ? `$${invoice.total.toFixed(2)}` : '',
+            booking_title: invoice.job_title || '',
+            booking_date: invoice.job_date
+              ? new Date(invoice.job_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+              : '',
+          },
           ctaText: 'View Invoice',
           ctaUrl: `https://signpost.community/interpreter/dashboard/invoices/${invoice.id}`,
         }).catch(err => console.error('[invoices] paid notification failed:', err))
