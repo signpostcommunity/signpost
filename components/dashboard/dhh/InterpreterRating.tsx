@@ -10,6 +10,16 @@ interface InterpreterRatingProps {
   onRated?: () => void
 }
 
+/* Lock icon for confidentiality indicators */
+function LockIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+      <rect x="3" y="6" width="8" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+      <path d="M5 6V4.5a2 2 0 014 0V6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+    </svg>
+  )
+}
+
 /* SVG star for ratings */
 function Star({ filled, onClick, size = 28 }: { filled: boolean; onClick: () => void; size?: number }) {
   return (
@@ -87,6 +97,7 @@ export default function InterpreterRating({ bookingId, interpreterId, interprete
   const [submitted, setSubmitted] = useState(false)
   const [alreadyRated, setAlreadyRated] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showSuccessToast, setShowSuccessToast] = useState(false)
 
   const checkExistingRating = useCallback(async () => {
     try {
@@ -127,6 +138,10 @@ export default function InterpreterRating({ bookingId, interpreterId, interprete
         <span style={{ fontSize: '0.88rem', color: '#34d399', fontWeight: 600 }}>
           Feedback submitted
         </span>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, marginLeft: 8, color: '#96a0b8' }}>
+          <LockIcon size={12} />
+          <span style={{ fontSize: '0.75rem' }}>Only visible to you</span>
+        </span>
       </div>
     )
   }
@@ -161,6 +176,8 @@ export default function InterpreterRating({ bookingId, interpreterId, interprete
       }
 
       setSubmitted(true)
+      setShowSuccessToast(true)
+      setTimeout(() => setShowSuccessToast(false), 4000)
       onRated?.()
     } catch {
       setError('Failed to submit feedback. Please try again.')
@@ -176,6 +193,19 @@ export default function InterpreterRating({ bookingId, interpreterId, interprete
       padding: '24px',
       marginTop: 12,
     }}>
+      {/* Confidentiality header */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
+        color: '#96a0b8',
+        fontSize: '13px',
+        marginBottom: 16,
+      }}>
+        <LockIcon />
+        <span>Your ratings are confidential</span>
+      </div>
+
       <h3 style={{
         fontFamily: "'DM Sans', sans-serif",
         fontWeight: 700,
@@ -226,7 +256,7 @@ export default function InterpreterRating({ bookingId, interpreterId, interprete
       {/* Optional feedback textarea */}
       <div style={{ marginBottom: 16 }}>
         <textarea
-          placeholder="Any additional feedback? This is 100% confidential."
+          placeholder="Any additional feedback? This is confidential."
           value={feedbackText}
           onChange={e => setFeedbackText(e.target.value)}
           style={{
@@ -273,28 +303,28 @@ export default function InterpreterRating({ bookingId, interpreterId, interprete
         </span>
       </label>
 
-      {/* Confidentiality notice */}
-      <div style={{
-        fontSize: '0.75rem',
-        color: 'var(--muted)',
-        lineHeight: 1.6,
-        marginBottom: shareWithInterpreter ? 8 : 20,
-        padding: '0 0 0 26px',
-      }}>
-        Your ratings are 100% confidential and never shared with interpreters, unless you want it shared. Honest feedback helps signpost maintain a directory that serves the Deaf community well. Interpreters who receive a consistent pattern of concerns may be reviewed by signpost.
-      </div>
-
       {shareWithInterpreter && (
         <div style={{
           fontSize: '0.75rem',
           color: 'var(--accent)',
           lineHeight: 1.6,
-          marginBottom: 20,
+          marginBottom: 8,
           padding: '0 0 0 26px',
         }}>
-          Your written feedback above will be sent to the interpreter&#39;s inbox as a direct message. Your star ratings will not be included.
+          Your written feedback will be sent as a message to the interpreter. Your star ratings will not be included.
         </div>
       )}
+
+      {/* Bottom disclaimer */}
+      <div style={{
+        fontSize: '12px',
+        color: '#5a6178',
+        lineHeight: 1.6,
+        marginBottom: 20,
+        maxWidth: 400,
+      }}>
+        Your star ratings are confidential and never shared with interpreters. Honest feedback helps us maintain a directory that serves the community well.
+      </div>
 
       {error && (
         <div style={{
@@ -320,6 +350,30 @@ export default function InterpreterRating({ bookingId, interpreterId, interprete
       >
         {submitting ? 'Submitting...' : 'Submit feedback'}
       </button>
+
+      {/* Success toast */}
+      {showSuccessToast && (
+        <div style={{
+          position: 'fixed',
+          bottom: 24,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: '#111118',
+          border: '1px solid rgba(52,211,153,0.3)',
+          borderRadius: 10,
+          padding: '12px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          zIndex: 9999,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+        }}>
+          <LockIcon size={14} />
+          <span style={{ fontSize: '0.85rem', color: '#f0f2f8' }}>
+            Rating saved. This is confidential and visible only to you.
+          </span>
+        </div>
+      )}
     </div>
   )
 }

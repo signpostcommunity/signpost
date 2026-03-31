@@ -649,6 +649,18 @@ function InlineRatingModal({ booking, ratedInterpreters, onRated, onClose }: {
         marginTop: 12,
       }}
     >
+      {/* Confidentiality header */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 6,
+        color: '#96a0b8', fontSize: '13px', marginBottom: 16,
+      }}>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0 }}>
+          <rect x="3" y="6" width="8" height="6" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+          <path d="M5 6V4.5a2 2 0 014 0V6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+        </svg>
+        <span>Your ratings are confidential</span>
+      </div>
+
       <h3 style={{
         fontFamily: "'Syne', sans-serif", fontWeight: 600,
         fontSize: '15px', color: '#f0f2f8',
@@ -660,7 +672,7 @@ function InlineRatingModal({ booking, ratedInterpreters, onRated, onClose }: {
         fontSize: '0.82rem', color: 'var(--muted)',
         margin: '0 0 24px 0', lineHeight: 1.5,
       }}>
-        Your ratings are 100% confidential and never shared with interpreters.
+        Your ratings are confidential and never shared with interpreters.
       </p>
 
       {/* One card per confirmed interpreter */}
@@ -773,7 +785,7 @@ function InlineRatingModal({ booking, ratedInterpreters, onRated, onClose }: {
                   fontSize: '0.75rem', color: 'var(--accent)', lineHeight: 1.6,
                   padding: '0 0 0 26px', marginBottom: 4,
                 }}>
-                  Your written feedback above will be sent to the interpreter&apos;s inbox as a direct message. Your star ratings will not be included.
+                  Your written feedback will be sent as a message to the interpreter. Your star ratings will not be included.
                 </div>
               )}
 
@@ -790,12 +802,11 @@ function InlineRatingModal({ booking, ratedInterpreters, onRated, onClose }: {
 
       {/* Confidential note */}
       <div style={{
-        fontSize: '0.75rem', color: 'var(--muted)', lineHeight: 1.6,
-        marginTop: 20, marginBottom: 16, maxWidth: 640,
+        fontSize: '12px', color: '#5a6178', lineHeight: 1.6,
+        marginTop: 20, marginBottom: 16, maxWidth: 400,
       }}>
-        Your ratings are 100% confidential and never shared with interpreters (unless you check the box above).
-        Honest feedback helps signpost maintain a directory that serves the Deaf community well.
-        Interpreters who receive a consistent pattern of concerns may be reviewed by signpost.
+        Your star ratings are confidential and never shared with interpreters.
+        Honest feedback helps us maintain a directory that serves the community well.
       </div>
 
       {globalError && (
