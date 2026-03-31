@@ -2,39 +2,6 @@
 
 import { useState } from 'react'
 
-// ── Beta Sample Banner ────────────────────────────────────────────────────────
-
-const BETA_UI_ENABLED = false
-
-export function BetaBanner() {
-  const [dismissed, setDismissed] = useState(false)
-  if (!BETA_UI_ENABLED) return null /* Beta UI hidden — re-enable when Deaf/DB/HH beta launches */
-  if (dismissed) return null
-  return (
-    <div style={{
-      background: 'rgba(123,97,255,0.08)', border: '1px solid rgba(123,97,255,0.3)',
-      borderRadius: 'var(--radius-sm)', padding: '12px 18px',
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      gap: 16, marginBottom: 28,
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span className="beta-pill">
-          Beta
-        </span>
-        <p style={{ color: 'var(--muted)', fontSize: '0.82rem', margin: 0, lineHeight: 1.5 }}>
-          The data on this page is <strong style={{ color: 'var(--text)' }}>sample content</strong>, not real bookings or messages. It's here so you can explore and test the full flow. Your feedback helps us improve before launch.
-        </p>
-      </div>
-      <button
-        onClick={() => setDismissed(true)}
-        style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1rem', flexShrink: 0, padding: '0 4px' }}
-      >
-        ✕
-      </button>
-    </div>
-  )
-}
-
 // ── Demo Badge ────────────────────────────────────────────────────────────────
 
 export function DemoBadge() {

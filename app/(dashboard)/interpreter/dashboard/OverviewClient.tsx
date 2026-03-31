@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { BetaBanner, SectionLabel, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+import { SectionLabel, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import PendingRolesNudge from '@/components/shared/PendingRolesNudge'
 import BookMeBadge from '@/components/interpreter/BookMeBadge'
 
@@ -409,8 +409,6 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
-      {hasSeedData && <BetaBanner />}
-
       {activeAwayPeriod && (
         <div style={{
           background: 'rgba(0,229,255,0.06)', border: '1px solid rgba(0,229,255,0.15)',

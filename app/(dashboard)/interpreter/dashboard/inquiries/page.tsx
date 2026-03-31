@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { BetaBanner, PageHeader, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+import { PageHeader, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
 import { sendNotification } from '@/lib/notifications'
 import BookingFilterBar, { filterBySearch, filterByDateRange, groupByTimeCategory, timeCategoryHeaderStyle } from '@/components/dashboard/shared/BookingFilterBar'
@@ -742,7 +742,6 @@ export default function InquiriesPage() {
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
-      {hasSeedData && <BetaBanner />}
       <PageHeader title="Inquiries" subtitle="Booking requests awaiting your response." />
 
       <BookingFilterBar

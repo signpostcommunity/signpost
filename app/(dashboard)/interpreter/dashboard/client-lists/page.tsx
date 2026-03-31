@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState } from 'react'
 import { DEMO_CLIENT_LISTS } from '@/lib/data/demo'
-import { BetaBanner, PageHeader, Avatar, DemoBadge } from '@/components/dashboard/interpreter/shared'
+import { PageHeader, Avatar, DemoBadge } from '@/components/dashboard/interpreter/shared'
 
 function PillBadge({ ok, label }: { ok: boolean; label: string }) {
   return (
@@ -28,7 +28,6 @@ export default function ClientListsPage() {
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
-      <BetaBanner />
       <PageHeader
         title="Client Interpreter Lists"
         subtitle="When a Deaf or Hard of Hearing client proactively shares their preferred interpreter list with you, it appears here. These lists belong to your clients and update automatically when the client makes changes. Work/personal designations reflect the client's preferences, helping you understand which contexts they trust you in."

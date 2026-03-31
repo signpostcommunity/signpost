@@ -117,9 +117,6 @@ export default function RequesterOverviewClient({
         <StatCard num={pendingResponses} label="Pending Responses" href="/request/dashboard/inbox" />
       </div>
 
-      {/* Beta Banner */}
-      {process.env.NEXT_PUBLIC_BETA_MODE === 'true' && <BetaBanner />}
-
       {/* New Request Button */}
       <div style={{ marginBottom: 36 }}>
         <Link
@@ -242,42 +239,6 @@ export default function RequesterOverviewClient({
   )
 }
 
-function BetaBanner() {
-  const [dismissed, setDismissed] = useState(false)
-  if (dismissed) return null
-  return (
-    <div style={{
-      background: 'rgba(0,229,255,0.06)', border: '1px solid rgba(0,229,255,0.2)',
-      borderRadius: 'var(--radius-sm)', padding: '12px 18px',
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      gap: 16, marginBottom: 20,
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={{
-          fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.1em',
-          padding: '3px 8px', borderRadius: 4,
-          background: 'rgba(0,229,255,0.15)', color: 'var(--accent)',
-          fontFamily: "'DM Sans', sans-serif",
-        }}>
-          BETA
-        </span>
-        <span style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.5 }}>
-          {"You're using the signpost beta. Features are still being built. Your feedback shapes what comes next."}
-        </span>
-      </div>
-      <button
-        onClick={() => setDismissed(true)}
-        style={{
-          background: 'none', border: 'none', color: 'var(--muted)',
-          cursor: 'pointer', fontSize: '1rem', flexShrink: 0, padding: 4,
-        }}
-        aria-label="Dismiss"
-      >
-        &#10005;
-      </button>
-    </div>
-  )
-}
 
 function BillingInfoCard() {
   const [expanded, setExpanded] = useState(false)

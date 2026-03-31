@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { BetaBanner, PageHeader, SectionLabel, StatusBadge, DemoBadge, GhostButton, Avatar, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+import { PageHeader, SectionLabel, StatusBadge, DemoBadge, GhostButton, Avatar, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import { sendNotification } from '@/lib/notifications'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
 import BookingFilterBar, { filterByDateRange, groupByTimeCategory, timeCategoryHeaderStyle } from '@/components/dashboard/shared/BookingFilterBar'
@@ -1766,7 +1766,6 @@ export default function ConfirmedPage() {
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
-      {hasSeedData && <BetaBanner />}
       <PageHeader title="Confirmed Bookings" subtitle="All your accepted and confirmed bookings." />
 
       <BookingFilterBar

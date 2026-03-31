@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import { BetaBanner, PageHeader, DemoBadge, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
+import { PageHeader, DemoBadge, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import ConversationList from '@/components/messaging/ConversationList'
 
 /* ── Types ── */
@@ -379,7 +379,6 @@ export default function InboxPage() {
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 80px)' }}>
-      {hasSeedData && <BetaBanner />}
       <PageHeader title="Messages & Notifications" />
 
       {/* Tab bar */}

@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { BetaBanner, PageHeader, Avatar, GhostButton } from '@/components/dashboard/interpreter/shared'
+import { PageHeader, Avatar, GhostButton } from '@/components/dashboard/interpreter/shared'
 import AddToListModal from '@/components/directory/AddToListModal'
 import SendMessageModal from '@/components/messaging/SendMessageModal'
 import Toast from '@/components/ui/Toast'
@@ -351,7 +351,6 @@ export default function TeamPage() {
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
-      <BetaBanner />
       <PageHeader
         title="Preferred Team Interpreters"
         subtitle="Interpreters you love working with. Add them here so they're easy to team up with when a job calls for a partner."

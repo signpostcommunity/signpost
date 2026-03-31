@@ -133,18 +133,6 @@ body::before {
   border-radius: 10px;
 }
 
-/* Beta pill */
-.beta-pill {
-  background: #ff7e45;
-  color: #000;
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 4px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
 /* Chip */
 .chip {
   display: inline-flex;
