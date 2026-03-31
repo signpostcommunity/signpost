@@ -11,7 +11,7 @@ export default async function AdminUsersPage() {
   // Fetch all user profiles
   const { data: users } = await supabase
     .from('user_profiles')
-    .select('id, role, email, created_at, is_admin')
+    .select('id, role, email, created_at, is_admin, suspended')
     .order('created_at', { ascending: false })
 
   // Fetch auth.users emails via admin client (user_profiles.email may be null)
@@ -73,6 +73,9 @@ export default async function AdminUsersPage() {
     // Use auth email as fallback if user_profiles.email is empty
     const email = u.email || authEmailMap.get(u.id) || ''
 
+    // If user is suspended at profile level, override status
+    if (u.suspended) status = 'suspended'
+
     return {
       id: u.id,
       name,
@@ -82,6 +85,7 @@ export default async function AdminUsersPage() {
       created_at: u.created_at,
       profileId,
       isAdmin: u.is_admin || false,
+      suspended: u.suspended || false,
     }
   })
 

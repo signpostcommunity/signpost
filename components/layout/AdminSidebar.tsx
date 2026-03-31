@@ -59,6 +59,11 @@ const NAV: NavGroup[] = [
     section: 'Insights',
     items: [
       {
+        label: 'Bookings',
+        href: '/admin/dashboard/bookings',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M2 6h12" stroke="currentColor" strokeWidth="1.3"/><path d="M5 1v2M11 1v2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
+      },
+      {
         label: 'Beta Feedback',
         href: '/admin/dashboard/feedback',
         icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M5 7h6M5 10h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
