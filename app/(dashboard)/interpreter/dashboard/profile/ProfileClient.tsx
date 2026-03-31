@@ -159,6 +159,12 @@ interface ProfileData {
   religious_details?: string[] | null
   gender_identity?: string | null
   vanity_slug?: string | null
+  mentorship_offering?: boolean | null
+  mentorship_seeking?: boolean | null
+  mentorship_types?: string[] | null
+  mentorship_paid?: string | null
+  mentorship_bio_offering?: string | null
+  mentorship_bio_seeking?: string | null
 }
 
 interface NotificationPreferences {
@@ -198,7 +204,7 @@ interface ProfileClientProps {
 
 // ── Tabs ─────────────────────────────────────────────────────────────────────
 
-const TABS = ['Personal', 'Languages', 'Credentials', 'Bio & Video', 'Skills', 'Community & Identity', 'Account Settings'] as const
+const TABS = ['Personal', 'Languages', 'Credentials', 'Bio & Video', 'Skills', 'Community & Identity', 'Mentorship', 'Account Settings'] as const
 type Tab = typeof TABS[number]
 
 function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
@@ -435,6 +441,14 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const [religiousAff, setReligiousAff] = useState(fallback(p.religious_affiliation, 'religiousAffiliation', false))
   const [religiousDetails, setReligiousDetails] = useState<string[]>(fallback(p.religious_details, 'religiousDetails', [] as string[]))
 
+  // ── Mentorship state ────────────────────────────────────────────────
+  const [mentorshipOffering, setMentorshipOffering] = useState(fallback(p.mentorship_offering, 'mentorshipOffering', false))
+  const [mentorshipSeeking, setMentorshipSeeking] = useState(fallback(p.mentorship_seeking, 'mentorshipSeeking', false))
+  const [mentorshipTypes, setMentorshipTypes] = useState<string[]>(fallback(p.mentorship_types, 'mentorshipTypes', [] as string[]))
+  const [mentorshipPaid, setMentorshipPaid] = useState<string>(fallback(p.mentorship_paid, 'mentorshipPaid', ''))
+  const [mentorshipBioOffering, setMentorshipBioOffering] = useState(fallback(p.mentorship_bio_offering, 'mentorshipBioOffering', ''))
+  const [mentorshipBioSeeking, setMentorshipBioSeeking] = useState(fallback(p.mentorship_bio_seeking, 'mentorshipBioSeeking', ''))
+
   // ── Client-side fallback: load profile if server prop was null ──────
   useEffect(() => {
     if (rawProfile) return // Server already provided data
@@ -460,7 +474,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       // Now try interpreter_profiles
       const { data, error, status, statusText } = await supabase
         .from('interpreter_profiles')
-        .select('id, name, first_name, last_name, email, pronouns, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, bio_specializations, bio_extra, sign_languages, spoken_languages, specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms, notification_preferences, notification_phone, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, vanity_slug')
+        .select('id, name, first_name, last_name, email, pronouns, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, bio_specializations, bio_extra, sign_languages, spoken_languages, specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms, notification_preferences, notification_phone, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, vanity_slug, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking')
         .eq('user_id', user.id)
         .maybeSingle()
       console.log('PROFILE CLIENT-SIDE LOAD:', JSON.stringify({ data, error, status, statusText, userId: user.id }, null, 2))
@@ -499,6 +513,12 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
         setVanitySlug((d as ProfileData).vanity_slug || '')
         setSlugDraft((d as ProfileData).vanity_slug || '')
       }
+      if (d.mentorship_offering != null) setMentorshipOffering(d.mentorship_offering)
+      if (d.mentorship_seeking != null) setMentorshipSeeking(d.mentorship_seeking)
+      if (d.mentorship_types) setMentorshipTypes(d.mentorship_types)
+      if (d.mentorship_paid != null) setMentorshipPaid(d.mentorship_paid || '')
+      if (d.mentorship_bio_offering != null) setMentorshipBioOffering(d.mentorship_bio_offering || '')
+      if (d.mentorship_bio_seeking != null) setMentorshipBioSeeking(d.mentorship_bio_seeking || '')
     })()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -1665,7 +1685,143 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
         </>
       )}
 
-      {/* ── Tab 7: Account Settings ──────────────────────────────────── */}
+      {/* ── Tab 7: Mentorship ──────────────────────────────────────── */}
+      {activeTab === 'Mentorship' && (
+        <>
+          <div style={sectionTitleStyle}>Mentorship</div>
+          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 24, marginTop: -12, lineHeight: 1.6 }}>
+            Connect with other interpreters for professional growth. You can offer mentorship, seek it, or both.
+          </p>
+
+          {/* Offering toggle */}
+          <CommunityToggle
+            label="I'm offering mentorship"
+            helper="Let other interpreters know you're available to mentor"
+            checked={mentorshipOffering}
+            onChange={() => setMentorshipOffering(!mentorshipOffering)}
+          />
+
+          {/* Seeking toggle */}
+          <CommunityToggle
+            label="I'm seeking mentorship"
+            helper="Find experienced interpreters who can help you grow"
+            checked={mentorshipSeeking}
+            onChange={() => setMentorshipSeeking(!mentorshipSeeking)}
+          />
+
+          {/* Knowledge areas — shown when either toggle is on */}
+          {(mentorshipOffering || mentorshipSeeking) && (
+            <div style={{ marginTop: 20, marginBottom: 24 }}>
+              <label style={labelStyle}>What areas? (select all that apply)</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+                {[
+                  'General professional development',
+                  'Business practices (rates, invoicing, marketing)',
+                  'Credential and certification prep',
+                  ...(specs || []).filter(s =>
+                    !['General professional development', 'Business practices (rates, invoicing, marketing)', 'Credential and certification prep'].includes(s)
+                  ),
+                ].map(area => (
+                  <button
+                    key={area}
+                    onClick={() => setMentorshipTypes(prev =>
+                      prev.includes(area) ? prev.filter(v => v !== area) : [...prev, area]
+                    )}
+                    style={{
+                      padding: '5px 14px', borderRadius: 20, fontSize: '0.8rem', cursor: 'pointer',
+                      border: mentorshipTypes.includes(area) ? '1px solid rgba(0,229,255,0.5)' : '1px solid var(--border)',
+                      background: mentorshipTypes.includes(area) ? 'rgba(0,229,255,0.1)' : 'var(--surface2)',
+                      color: mentorshipTypes.includes(area) ? 'var(--accent)' : 'var(--muted)',
+                      fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
+                    }}
+                  >
+                    {area}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Compensation — shown when offering */}
+          {mentorshipOffering && (
+            <div style={{ marginBottom: 24 }}>
+              <label style={labelStyle}>Compensation</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                {([
+                  { value: 'pro_bono', label: 'Pro bono' },
+                  { value: 'paid', label: 'Paid mentorship' },
+                  { value: 'either', label: 'Either -- open to discussing' },
+                ] as const).map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setMentorshipPaid(mentorshipPaid === opt.value ? '' : opt.value)}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '10px 14px', borderRadius: 'var(--radius-sm)',
+                      border: `1px solid ${mentorshipPaid === opt.value ? 'rgba(0,229,255,0.4)' : 'var(--border)'}`,
+                      background: mentorshipPaid === opt.value ? 'rgba(0,229,255,0.08)' : 'var(--surface2)',
+                      cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                      fontSize: '0.85rem', color: mentorshipPaid === opt.value ? 'var(--text)' : 'var(--muted)',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    <div style={{
+                      width: 16, height: 16, borderRadius: '50%',
+                      border: mentorshipPaid === opt.value ? '5px solid var(--accent)' : '2px solid var(--border)',
+                      background: mentorshipPaid === opt.value ? '#000' : 'transparent',
+                      flexShrink: 0,
+                    }} />
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Bio: offering */}
+          {mentorshipOffering && (
+            <div style={{ marginBottom: 24 }}>
+              <label style={labelStyle}>What do you bring as a mentor? (optional)</label>
+              <textarea
+                value={mentorshipBioOffering}
+                onChange={e => setMentorshipBioOffering(e.target.value)}
+                placeholder="Your experience, approach, what you enjoy helping with..."
+                rows={3}
+                onFocus={handleFocus as unknown as React.FocusEventHandler<HTMLTextAreaElement>}
+                onBlur={handleBlur as unknown as React.FocusEventHandler<HTMLTextAreaElement>}
+                style={{ ...inputStyle, resize: 'vertical', minHeight: 72 }}
+              />
+            </div>
+          )}
+
+          {/* Bio: seeking */}
+          {mentorshipSeeking && (
+            <div style={{ marginBottom: 24 }}>
+              <label style={labelStyle}>What are you looking for? (optional)</label>
+              <textarea
+                value={mentorshipBioSeeking}
+                onChange={e => setMentorshipBioSeeking(e.target.value)}
+                placeholder="Specific skills, guidance areas, what kind of support would help you grow..."
+                rows={3}
+                onFocus={handleFocus as unknown as React.FocusEventHandler<HTMLTextAreaElement>}
+                onBlur={handleBlur as unknown as React.FocusEventHandler<HTMLTextAreaElement>}
+                style={{ ...inputStyle, resize: 'vertical', minHeight: 72 }}
+              />
+            </div>
+          )}
+
+          <SaveButton saving={saving} onClick={() => saveFields({
+            mentorship_offering: mentorshipOffering,
+            mentorship_seeking: mentorshipSeeking,
+            mentorship_types: mentorshipTypes,
+            mentorship_paid: mentorshipPaid || null,
+            mentorship_bio_offering: mentorshipBioOffering || null,
+            mentorship_bio_seeking: mentorshipBioSeeking || null,
+          })} />
+        </>
+      )}
+
+      {/* ── Tab 8: Account Settings ──────────────────────────────────── */}
       {activeTab === 'Account Settings' && (
         <SettingsTab
           invoicingPref={invoicingPref}
