@@ -61,12 +61,19 @@ export const MENTORSHIP_CATEGORIES: MentorshipCategory[] = [
     id: 'business_development',
     label: 'Business Development',
     items: [
-      { id: 'taxes_accounting', label: 'Business taxes and accounting (S-corp, LLC, sole prop)' },
-      { id: 'going_freelance', label: 'Going freelance for the first time' },
-      { id: 'insurance', label: 'Insurance (liability, professional, health as self-employed)' },
-      { id: 'invoicing', label: 'Invoicing' },
-      { id: 'rates_terms', label: 'Setting and negotiating rates and terms' },
-      { id: 'work_life_balance', label: 'Work-life balance and burnout prevention' },
+      {
+        id: 'creating_streamlining_business',
+        label: 'Creating and streamlining your business',
+        description: 'Invoicing, setting rates and terms, insurance, tax structure, and more',
+      },
+      {
+        id: 'going_freelance',
+        label: 'Going freelance for the first time',
+      },
+      {
+        id: 'work_life_balance',
+        label: 'Work-life balance and burnout prevention',
+      },
     ],
   },
 ]
