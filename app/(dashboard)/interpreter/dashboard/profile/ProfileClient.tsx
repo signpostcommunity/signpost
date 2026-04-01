@@ -208,50 +208,96 @@ interface ProfileClientProps {
 const TABS = ['Personal', 'Languages', 'Credentials', 'Bio & Video', 'Skills', 'Community & Identity', 'Mentorship', 'Account Settings'] as const
 type Tab = typeof TABS[number]
 
-function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
+function ProfileSidebarNav({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
   return (
-    <div style={{
-      background: '#1a1a24', borderRadius: 'var(--radius) var(--radius) 0 0',
-      padding: '12px 8px 0',
-      marginBottom: 32,
-    }}>
-      <div role="tablist" aria-label="Profile sections" className="profile-tabs-scrollable" style={{
-        display: 'flex', gap: 0, overflowX: 'auto',
-        WebkitOverflowScrolling: 'touch',
-        scrollbarWidth: 'none',
+    <>
+      {/* Desktop: vertical left sidebar */}
+      <nav aria-label="Profile sections" className="profile-sidebar-desktop" style={{
+        width: 220, flexShrink: 0,
+        borderRight: '1px solid var(--border)',
+        paddingTop: 8,
       }}>
         {TABS.map(tab => {
           const isActive = active === tab
-          const tabId = `tab-${tab.toLowerCase().replace(/\s+/g, '-')}`
-          const panelId = `panel-${tab.toLowerCase().replace(/\s+/g, '-')}`
           return (
             <button
               key={tab}
               role="tab"
-              id={tabId}
               aria-selected={isActive}
-              aria-controls={panelId}
               onClick={() => onChange(tab)}
               style={{
-                background: isActive ? 'var(--bg)' : 'transparent',
-                border: 'none', cursor: 'pointer',
-                padding: '10px 18px',
-                fontSize: '0.85rem', fontWeight: isActive ? 700 : 400,
+                display: 'block', width: '100%', textAlign: 'left',
+                padding: '10px 16px',
+                background: isActive ? 'rgba(0,229,255,0.04)' : 'transparent',
+                borderLeft: isActive ? '2px solid #00e5ff' : '2px solid transparent',
+                border: 'none', borderLeftStyle: 'solid', borderLeftWidth: 2,
+                borderLeftColor: isActive ? '#00e5ff' : 'transparent',
+                cursor: 'pointer',
+                fontSize: '14px', fontWeight: 500,
                 fontFamily: "'DM Sans', sans-serif",
-                color: isActive ? 'var(--accent)' : 'var(--muted)',
-                borderBottom: isActive ? '2px solid var(--accent)' : '2px solid transparent',
-                borderRadius: isActive ? '8px 8px 0 0' : '8px 8px 0 0',
+                color: isActive ? '#f0f2f8' : '#96a0b8',
                 transition: 'all 0.15s',
-                whiteSpace: 'nowrap',
-                flexShrink: 0,
+              }}
+              onMouseEnter={e => {
+                if (!isActive) {
+                  e.currentTarget.style.color = '#f0f2f8'
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.02)'
+                }
+              }}
+              onMouseLeave={e => {
+                if (!isActive) {
+                  e.currentTarget.style.color = '#96a0b8'
+                  e.currentTarget.style.background = 'transparent'
+                }
               }}
             >
               {tab}
             </button>
           )
         })}
+      </nav>
+
+      {/* Mobile: dropdown selector */}
+      <div className="profile-sidebar-mobile" style={{ display: 'none', marginBottom: 24 }}>
+        <select
+          value={active}
+          onChange={e => onChange(e.target.value as Tab)}
+          aria-label="Profile section"
+          style={{
+            width: '100%',
+            background: 'var(--surface2)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)',
+            padding: '11px 14px',
+            color: 'var(--text)',
+            fontSize: '0.9rem',
+            fontFamily: "'DM Sans', sans-serif",
+            outline: 'none',
+            cursor: 'pointer',
+            appearance: 'none',
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2396a0b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'right 14px center',
+            paddingRight: 36,
+          }}
+        >
+          {TABS.map(tab => (
+            <option key={tab} value={tab}>{tab}</option>
+          ))}
+        </select>
       </div>
-    </div>
+
+      <style>{`
+        @media (min-width: 769px) {
+          .profile-sidebar-desktop { display: block !important; }
+          .profile-sidebar-mobile { display: none !important; }
+        }
+        @media (max-width: 768px) {
+          .profile-sidebar-desktop { display: none !important; }
+          .profile-sidebar-mobile { display: block !important; }
+        }
+      `}</style>
+    </>
   )
 }
 
@@ -878,8 +924,18 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
         )}
       </div>
 
-      {/* Tabs */}
-      <TabBar active={activeTab} onChange={setActiveTab} />
+      {/* Sidebar + Content layout */}
+      <div className="profile-editor-layout" style={{ display: 'flex', gap: 0, minHeight: '60vh' }}>
+        <ProfileSidebarNav active={activeTab} onChange={setActiveTab} />
+
+        <div className="profile-editor-content" style={{ flex: 1, padding: '0 0 0 32px', minWidth: 0 }}>
+          {/* Active section label */}
+          <div style={{
+            fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em',
+            textTransform: 'uppercase', color: '#00e5ff', marginBottom: 20,
+          }}>
+            {activeTab}
+          </div>
 
       {/* ── Tab 1: Personal ─────────────────────────────────────────────── */}
       {activeTab === 'Personal' && (
@@ -1819,6 +1875,16 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           })}
         />
       )}
+
+        </div>{/* end profile-editor-content */}
+      </div>{/* end profile-editor-layout */}
+
+      <style>{`
+        @media (max-width: 768px) {
+          .profile-editor-layout { flex-direction: column !important; }
+          .profile-editor-content { padding: 0 !important; }
+        }
+      `}</style>
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
     </div>
