@@ -193,9 +193,6 @@ export default function AdminSettingsPage() {
     savePrefs(updated)
   }
 
-  // Check if any SMS toggle is on
-  const anySmsEnabled = Object.values(prefs).some(p => p.sms)
-
   if (loading) {
     return (
       <div className="dash-page-content" style={{ padding: '48px 56px' }}>
@@ -218,12 +215,17 @@ export default function AdminSettingsPage() {
       </p>
 
       {/* Phone number section */}
-      {(anySmsEnabled || phoneNudge) && (
-        <div style={{
+      <div style={{
           background: 'var(--card-bg)', border: '1px solid var(--border)',
           borderRadius: 'var(--radius-sm)', padding: '18px 22px', marginBottom: 28,
         }}>
-          <label style={labelStyle}>SMS alerts sent to:</label>
+          <div style={{
+            fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+            fontSize: '13px', letterSpacing: '0.08em',
+            textTransform: 'uppercase', color: '#00e5ff', marginBottom: 10,
+          }}>
+            SMS Phone Number
+          </div>
           {phoneEditing ? (
             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
               <input
@@ -290,8 +292,10 @@ export default function AdminSettingsPage() {
               {phoneError}
             </p>
           )}
+          <p style={{ color: '#96a0b8', fontSize: '0.78rem', marginTop: 10, marginBottom: 0, lineHeight: 1.5 }}>
+            Enter your phone number to receive SMS alerts. US numbers only.
+          </p>
         </div>
-      )}
 
       {/* Save indicator */}
       {saveIndicator && (
