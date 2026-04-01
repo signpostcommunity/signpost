@@ -27,6 +27,10 @@ export function getVideoUrl(slug: string): string {
   return `${ASL_GUIDE_STORAGE_BASE}/${slug}.mp4`;
 }
 
+export function getTransparentVideoUrl(slug: string): string {
+  return `${ASL_GUIDE_STORAGE_BASE}/${slug}-transparent.webm`;
+}
+
 export function getClipForRoute(pathname: string): AslGuideClip {
   const exact = ASL_GUIDE_CLIPS.find(c => c.route === pathname);
   if (exact) return exact;
