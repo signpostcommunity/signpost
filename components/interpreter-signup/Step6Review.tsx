@@ -139,6 +139,14 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         photo_url: formData.avatarUrl,
         other_specializations: formData.otherSpecializations || null,
         vanity_slug: formData.vanitySlug || null,
+        mentorship_offering: formData.mentorshipOffering,
+        mentorship_seeking: formData.mentorshipSeeking,
+        mentorship_types: [...new Set([...formData.mentorshipTypesOffering, ...formData.mentorshipTypesSeeking])],
+        mentorship_types_offering: formData.mentorshipTypesOffering,
+        mentorship_types_seeking: formData.mentorshipTypesSeeking,
+        mentorship_paid: formData.mentorshipPaid || null,
+        mentorship_bio_offering: formData.mentorshipBioOffering || null,
+        mentorship_bio_seeking: formData.mentorshipBioSeeking || null,
         notification_preferences: {
           email_enabled: true,
           sms_enabled: true,
@@ -543,8 +551,8 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
       </div>
 
       <FormNav
-        step={6}
-        totalSteps={6}
+        step={7}
+        totalSteps={7}
         onBack={onBack}
         onContinue={handleSubmit}
         onSaveDraft={saveDraft}

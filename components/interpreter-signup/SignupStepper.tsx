@@ -10,7 +10,8 @@ const STEPS = [
   '3. Credentials',
   '4. Bio & Video',
   '5. Skills',
-  '6. Community',
+  '6. Mentorship',
+  '7. Community',
 ]
 
 export default function SignupStepper() {

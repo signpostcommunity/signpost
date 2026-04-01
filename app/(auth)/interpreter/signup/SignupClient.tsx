@@ -10,6 +10,7 @@ import Step2Languages from '@/components/interpreter-signup/Step2Languages'
 import Step3Credentials from '@/components/interpreter-signup/Step3Credentials'
 import Step4BioVideo from '@/components/interpreter-signup/Step4BioVideo'
 import Step5Skills from '@/components/interpreter-signup/Step5Skills'
+import Step6Mentorship from '@/components/interpreter-signup/Step6Mentorship'
 import Step6Review from '@/components/interpreter-signup/Step6Review'
 
 // TODO: Wire draft resume — load draft_data and draft_step from interpreter_profiles,
@@ -165,7 +166,10 @@ function SignupForm() {
           <Step5Skills onBack={() => goBack(4)} onContinue={() => goToStep(6)} />
         )}
         {currentStep === 6 && (
-          <Step6Review onBack={() => goBack(5)} />
+          <Step6Mentorship onBack={() => goBack(5)} onContinue={() => goToStep(7)} />
+        )}
+        {currentStep === 7 && (
+          <Step6Review onBack={() => goBack(6)} />
         )}
       </div>
     </div>

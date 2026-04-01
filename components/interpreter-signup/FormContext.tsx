@@ -80,6 +80,14 @@ export type FormData = {
   bipocDetails: string[]
   religiousAffiliation: boolean
   religiousDetails: string[]
+  // Step 7 - Mentorship (optional)
+  mentorshipOffering: boolean
+  mentorshipSeeking: boolean
+  mentorshipTypesOffering: string[]
+  mentorshipTypesSeeking: string[]
+  mentorshipPaid: string
+  mentorshipBioOffering: string
+  mentorshipBioSeeking: string
   // Multi-role
   pendingRoles: string[]
   // Agreement
@@ -125,6 +133,9 @@ const initialFormData: FormData = {
   specializations: [], specializedSkills: [],
   lgbtq: false, deafParented: false, bipoc: false, bipocDetails: [],
   religiousAffiliation: false, religiousDetails: [],
+  mentorshipOffering: false, mentorshipSeeking: false,
+  mentorshipTypesOffering: [], mentorshipTypesSeeking: [],
+  mentorshipPaid: '', mentorshipBioOffering: '', mentorshipBioSeeking: '',
   pendingRoles: [],
   agreeTerms: false, agreeBooking: false, agreeCredentials: false,
   vanitySlug: '',
@@ -216,6 +227,14 @@ export function FormProvider({ children }: { children: ReactNode }) {
           gender_identity: formData.genderIdentity,
           other_specializations: formData.otherSpecializations || null,
           vanity_slug: formData.vanitySlug || null,
+          mentorship_offering: formData.mentorshipOffering,
+          mentorship_seeking: formData.mentorshipSeeking,
+          mentorship_types: [...new Set([...formData.mentorshipTypesOffering, ...formData.mentorshipTypesSeeking])],
+          mentorship_types_offering: formData.mentorshipTypesOffering,
+          mentorship_types_seeking: formData.mentorshipTypesSeeking,
+          mentorship_paid: formData.mentorshipPaid || null,
+          mentorship_bio_offering: formData.mentorshipBioOffering || null,
+          mentorship_bio_seeking: formData.mentorshipBioSeeking || null,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' })
     } catch (e) {
