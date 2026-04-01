@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { logAudit } from '@/lib/audit'
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -35,6 +36,13 @@ export async function POST(request: NextRequest) {
       // Suspend requester profile similarly
       // Mark at user_profiles level for universal suspension check
       await admin.from('user_profiles').update({ suspended: true }).eq('id', userId)
+      logAudit({
+        user_id: user.id,
+        action: 'admin_action',
+        resource_type: 'user',
+        resource_id: userId,
+        metadata: { action_type: 'suspend' },
+      })
       return NextResponse.json({ success: true })
     }
 
@@ -44,6 +52,13 @@ export async function POST(request: NextRequest) {
         await admin.from('interpreter_profiles').update({ status: 'approved' }).eq('id', ip.id)
       }
       await admin.from('user_profiles').update({ suspended: false }).eq('id', userId)
+      logAudit({
+        user_id: user.id,
+        action: 'admin_action',
+        resource_type: 'user',
+        resource_id: userId,
+        metadata: { action_type: 'unsuspend' },
+      })
       return NextResponse.json({ success: true })
     }
 
@@ -62,6 +77,13 @@ export async function POST(request: NextRequest) {
       if (updateErr) {
         return NextResponse.json({ error: updateErr.message }, { status: 500 })
       }
+      logAudit({
+        user_id: user.id,
+        action: 'admin_action',
+        resource_type: 'user',
+        resource_id: userId,
+        metadata: { action_type: 'toggle_admin', new_value: !target.is_admin },
+      })
       return NextResponse.json({ success: true, isAdmin: !target.is_admin })
     }
 
@@ -154,6 +176,14 @@ export async function POST(request: NextRequest) {
         }).eq('id', userId)
       }
 
+      logAudit({
+        user_id: user.id,
+        action: 'admin_action',
+        resource_type: 'user',
+        resource_id: userId,
+        metadata: { action_type: 'add_role', role },
+      })
+
       return NextResponse.json({ success: true })
     }
 
@@ -211,6 +241,14 @@ export async function POST(request: NextRequest) {
         }
         await admin.from('user_profiles').update(updates).eq('id', userId)
       }
+
+      logAudit({
+        user_id: user.id,
+        action: 'admin_action',
+        resource_type: 'user',
+        resource_id: userId,
+        metadata: { action_type: 'remove_role', role },
+      })
 
       return NextResponse.json({ success: true })
     }
@@ -288,6 +326,13 @@ export async function POST(request: NextRequest) {
         }
 
         console.error(`[ADMIN] User ${userId} deleted by admin ${user.id}`)
+        logAudit({
+          user_id: user.id,
+          action: 'admin_action',
+          resource_type: 'user',
+          resource_id: userId,
+          metadata: { action_type: 'delete' },
+        })
         return NextResponse.json({ success: true })
       } catch (err) {
         console.error(`[ADMIN] Delete cascade failed for ${userId}:`, err)

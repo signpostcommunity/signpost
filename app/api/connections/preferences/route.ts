@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { logAudit } from '@/lib/audit'
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient()
@@ -27,6 +28,13 @@ export async function GET(request: NextRequest) {
   if (!connection) {
     return NextResponse.json({ error: 'no_active_connection' }, { status: 403 })
   }
+
+  logAudit({
+    user_id: user.id,
+    action: 'view',
+    resource_type: 'deaf_profile',
+    resource_id: dhhUserId,
+  })
 
   // Use service role to read deaf_roster (RLS only allows Deaf user to read)
   const admin = getSupabaseAdmin()

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { logAudit } from '@/lib/audit'
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -72,6 +73,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Failed to update flag: ${updateErr.message}` }, { status: 500 })
     }
   }
+
+  logAudit({
+    user_id: user.id,
+    action: 'admin_action',
+    resource_type: 'profile_flag',
+    resource_id: flagId,
+    metadata: { action_type: action },
+  })
 
   return NextResponse.json({ success: true })
 }

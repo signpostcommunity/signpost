@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { logAudit } from '@/lib/audit'
 
 export async function POST(request: NextRequest) {
   // Verify the caller is an admin
@@ -99,6 +100,14 @@ export async function POST(request: NextRequest) {
   if (authError) {
     return NextResponse.json({ error: `Auth deletion failed: ${authError.message}` }, { status: 500 })
   }
+
+  logAudit({
+    user_id: user.id,
+    action: 'admin_action',
+    resource_type: 'user',
+    resource_id: userId,
+    metadata: { action_type: 'delete' },
+  })
 
   return NextResponse.json({ success: true })
 }

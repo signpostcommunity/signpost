@@ -122,6 +122,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to send message' }, { status: 500 })
     }
 
+    logAudit({
+      user_id: senderId,
+      action: 'send',
+      resource_type: 'message',
+      resource_id: conversationId!,
+      metadata: { recipient_id: recipientId },
+    })
+
     // --- Insert attachments ---
     if (attachments && Array.isArray(attachments) && attachments.length > 0) {
       const attachmentRows = attachments.map((a: { fileName: string; fileType: string; fileSize: number; storagePath: string }) => ({

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { sanitizeText } from '@/lib/sanitize'
+import { logAudit } from '@/lib/audit'
 
 export const dynamic = 'force-dynamic'
 
@@ -99,6 +100,14 @@ export async function POST(request: NextRequest) {
       console.error('[dhh/ratings] insert failed:', insertError.message)
       return NextResponse.json({ error: 'Failed to save rating' }, { status: 500 })
     }
+
+    logAudit({
+      user_id: user.id,
+      action: 'create',
+      resource_type: 'rating',
+      resource_id: interpreterId,
+      metadata: { booking_id: bookingId },
+    })
 
     // If shared_with_interpreter is true and there's feedback text, send as a message
     if (sharedWithInterpreter && feedbackText?.trim()) {
