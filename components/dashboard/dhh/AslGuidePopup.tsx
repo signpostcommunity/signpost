@@ -119,44 +119,63 @@ export default function AslGuidePopup() {
         <button
           onClick={handleExpand}
           aria-label="Watch ASL guide for this page"
+          className="asl-trigger-btn"
           style={{
             position: 'fixed',
             bottom: 24,
             right: 24,
             zIndex: 50,
-            width: 48,
-            height: 48,
-            borderRadius: '50%',
-            background: 'rgba(167, 139, 250, 0.15)',
-            border: '1px solid rgba(167, 139, 250, 0.3)',
+            width: 'auto',
+            minWidth: 64,
+            padding: '12px 16px',
+            borderRadius: 12,
+            background: 'rgba(0, 229, 255, 0.12)',
+            border: '1.5px solid rgba(0, 229, 255, 0.5)',
             cursor: 'pointer',
             display: 'flex',
+            flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center',
+            gap: 4,
             transition: 'background 0.15s ease, transform 0.15s ease',
-            animation: hasAppeared ? 'asl-trigger-pulse 2s ease-out 1' : 'none',
+            animation: hasAppeared ? 'asl-trigger-emanate 1.5s ease-out 5' : 'none',
           }}
           onMouseEnter={e => {
-            e.currentTarget.style.background = 'rgba(167, 139, 250, 0.25)'
+            e.currentTarget.style.background = 'rgba(0, 229, 255, 0.2)'
             e.currentTarget.style.transform = 'scale(1.05)'
           }}
           onMouseLeave={e => {
-            e.currentTarget.style.background = 'rgba(167, 139, 250, 0.15)'
+            e.currentTarget.style.background = 'rgba(0, 229, 255, 0.12)'
             e.currentTarget.style.transform = 'scale(1)'
           }}
         >
-          <HandIcon size={22} color="#a78bfa" />
+          <HandIcon size={24} color="#00e5ff" />
+          <span style={{
+            fontSize: 10,
+            fontWeight: 600,
+            color: '#00e5ff',
+            letterSpacing: '0.05em',
+            lineHeight: 1,
+          }}>
+            ASL Guide
+          </span>
         </button>
         <style>{`
-          @keyframes asl-trigger-pulse {
-            0% { box-shadow: 0 0 0 0 rgba(167, 139, 250, 0.4); }
-            70% { box-shadow: 0 0 0 12px rgba(167, 139, 250, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(167, 139, 250, 0); }
+          @keyframes asl-trigger-emanate {
+            0% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.4); }
+            70% { box-shadow: 0 0 0 12px rgba(0, 229, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0); }
           }
           @media (max-width: 639px) {
-            button[aria-label="Watch ASL guide for this page"] {
-              width: 40px !important;
-              height: 40px !important;
+            .asl-trigger-btn {
+              min-width: 56px !important;
+              padding: 10px 12px !important;
+            }
+            .asl-trigger-btn svg {
+              width: 20px !important;
+              height: 20px !important;
+            }
+            .asl-trigger-btn span {
+              font-size: 9px !important;
             }
           }
         `}</style>
@@ -186,7 +205,7 @@ export default function AslGuidePopup() {
           aria-label="Minimize ASL guide"
           style={{
             background: 'rgba(0, 0, 0, 0.6)',
-            border: '1px solid rgba(167, 139, 250, 0.3)',
+            border: '1px solid rgba(0, 229, 255, 0.3)',
             borderRadius: '50%',
             width: 28,
             height: 28,
@@ -222,9 +241,9 @@ export default function AslGuidePopup() {
             preload="metadata"
             className="asl-popup-video"
             style={{
-              width: 280,
+              width: 400,
               height: 'auto',
-              maxHeight: 400,
+              maxHeight: 500,
               display: 'block',
               filter: 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6))',
             }}
@@ -250,10 +269,10 @@ export default function AslGuidePopup() {
       <style>{`
         @media (max-width: 639px) {
           .asl-popup-video-wrap {
-            max-width: calc(100vw - 32px) !important;
+            max-width: calc(100vw - 48px) !important;
           }
           .asl-popup-video {
-            width: calc(100vw - 32px) !important;
+            width: calc(100vw - 48px) !important;
             max-height: 50vh !important;
           }
         }
