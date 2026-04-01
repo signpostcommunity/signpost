@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { seedRequesterData } from '@/lib/seedRequesterData'
 import { syncNameFields } from '@/lib/nameSync'
 import { getExistingProfileData } from '@/lib/populateNewProfile'
+import { decryptFields } from '@/lib/encryption'
 import RequesterOverviewClient from './RequesterOverviewClient'
 
 export const dynamic = 'force-dynamic'
@@ -105,7 +106,7 @@ export default async function RequesterDashboardPage() {
     }
 
     const recent = recentRes.status === 'fulfilled' ? recentRes.value.data : null
-    if (recent) recentBookings = recent
+    if (recent) recentBookings = recent.map(b => decryptFields(b, ['title']))
   }
 
   return (

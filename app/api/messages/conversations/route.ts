@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { decrypt } from '@/lib/encryption'
 
 export const dynamic = 'force-dynamic'
 
@@ -140,7 +141,7 @@ export async function GET() {
         id: convo.id,
         subject: convo.subject,
         lastMessageAt: convo.last_message_at,
-        lastMessage: lastMsg ? { body: lastMsg.body, senderId: lastMsg.sender_id } : null,
+        lastMessage: lastMsg ? { body: decrypt(lastMsg.body) || lastMsg.body, senderId: lastMsg.sender_id } : null,
         otherParticipant: {
           userId: otherUserId,
           name: profile?.name || 'Unknown User',

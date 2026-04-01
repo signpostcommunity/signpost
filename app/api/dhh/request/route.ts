@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { sanitizeText } from '@/lib/sanitize'
+import { encryptFields, decryptFields, BOOKING_ENCRYPTED_FIELDS } from '@/lib/encryption'
 
 export const dynamic = 'force-dynamic'
 
@@ -102,6 +103,9 @@ export async function POST(request: NextRequest) {
       context_video_visible_before_accept: contextVideoVisibleBeforeAccept !== false,
     }
 
+    // Encrypt sensitive fields before writing to DB
+    const encryptedBookingData = encryptFields(bookingData, [...BOOKING_ENCRYPTED_FIELDS])
+
     let booking: { id: string }
 
     // If updating an existing draft, update in-place
@@ -121,7 +125,7 @@ export async function POST(request: NextRequest) {
 
       const { error: updateErr } = await admin
         .from('bookings')
-        .update(bookingData)
+        .update(encryptedBookingData)
         .eq('id', bookingId)
 
       if (updateErr) {
@@ -136,7 +140,7 @@ export async function POST(request: NextRequest) {
     } else {
       const { data: newBooking, error: insertError } = await admin
         .from('bookings')
-        .insert(bookingData)
+        .insert(encryptedBookingData)
         .select('id')
         .single()
 
@@ -385,7 +389,8 @@ export async function GET() {
       }
     }
 
-    const enriched = (bookings || []).map(b => {
+    const enriched = (bookings || []).map(rawBooking => {
+      const b = decryptFields(rawBooking, [...BOOKING_ENCRYPTED_FIELDS])
       const bookingRecipients = (recipientsByBooking[b.id] || []).map(r => ({
         ...r,
         interpreter: interpreterMap[r.interpreter_id] || null,

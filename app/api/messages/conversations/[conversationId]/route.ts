@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { decrypt } from '@/lib/encryption'
 
 export const dynamic = 'force-dynamic'
 
@@ -128,7 +129,7 @@ export async function GET(
     const messagesResult = (messages || []).map((m: { id: string; sender_id: string; body: string; created_at: string; edited_at: string | null; is_deleted: boolean }) => ({
       id: m.id,
       senderId: m.sender_id,
-      body: m.is_deleted ? '[Message deleted]' : m.body,
+      body: m.is_deleted ? '[Message deleted]' : (decrypt(m.body) || m.body),
       createdAt: m.created_at,
       editedAt: m.edited_at,
       isDeleted: m.is_deleted,

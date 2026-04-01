@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { sanitizeText } from '@/lib/sanitize'
+import { encryptFields, BOOKING_ENCRYPTED_FIELDS } from '@/lib/encryption'
+import { logAudit } from '@/lib/audit'
 
 export const dynamic = 'force-dynamic'
 
@@ -81,6 +83,9 @@ export async function POST(request: NextRequest) {
       is_seed: false,
     }
 
+    // Encrypt sensitive fields before writing to DB
+    const encryptedBookingData = encryptFields(bookingData, [...BOOKING_ENCRYPTED_FIELDS])
+
     let booking: { id: string }
 
     // If updating an existing draft, update in-place instead of creating new
@@ -100,7 +105,7 @@ export async function POST(request: NextRequest) {
 
       const { error: updateErr } = await admin
         .from('bookings')
-        .update(bookingData)
+        .update(encryptedBookingData)
         .eq('id', bookingId)
 
       if (updateErr) {
@@ -112,7 +117,7 @@ export async function POST(request: NextRequest) {
     } else {
       const { data: newBooking, error: insertError } = await admin
         .from('bookings')
-        .insert(bookingData)
+        .insert(encryptedBookingData)
         .select('id')
         .single()
 
@@ -170,6 +175,14 @@ export async function POST(request: NextRequest) {
         }
       }
     }
+
+    logAudit({
+      user_id: user.id,
+      action: saveAsDraft ? 'update' : (bookingId ? 'update' : 'create'),
+      resource_type: 'booking',
+      resource_id: booking.id,
+      metadata: { status: saveAsDraft ? 'draft' : 'open', interpreter_count: count },
+    })
 
     return NextResponse.json({ success: true, bookingId: booking.id })
   } catch (err) {

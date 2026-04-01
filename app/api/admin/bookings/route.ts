@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { decryptFields, BOOKING_ENCRYPTED_FIELDS } from '@/lib/encryption'
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient()
@@ -97,8 +98,11 @@ export async function GET(request: NextRequest) {
     legacyInterpMap = new Map((legacyInterps || []).map(i => [i.id, `${i.first_name || ''} ${i.last_name || ''}`.trim()]))
   }
 
+  // Decrypt sensitive fields before returning
+  const decryptedBookings = bookings.map(b => decryptFields(b, [...BOOKING_ENCRYPTED_FIELDS]))
+
   // Filter by search on requester name if description search returned all
-  let enriched = bookings.map(b => ({
+  let enriched = decryptedBookings.map(b => ({
     id: b.id,
     description: b.description || '',
     requester_name: requesterMap.get(b.requester_id) || '',

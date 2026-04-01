@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { sanitizeText } from '@/lib/sanitize'
+import { encrypt } from '@/lib/encryption'
+import { logAudit } from '@/lib/audit'
 
 export const dynamic = 'force-dynamic'
 
@@ -111,7 +113,7 @@ export async function POST(request: NextRequest) {
       .insert({
         conversation_id: conversationId,
         sender_id: senderId,
-        body,
+        body: encrypt(body) || body,
       })
       .select('id')
       .single()
