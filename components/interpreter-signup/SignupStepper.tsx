@@ -5,13 +5,14 @@ import { useSearchParams } from 'next/navigation'
 import { useForm } from './FormContext'
 
 const STEPS = [
-  '1. Personal Info',
-  '2. Languages',
-  '3. Credentials',
-  '4. Bio & Video',
-  '5. Skills',
-  '6. Mentorship',
-  '7. Community',
+  '1. How It Works',
+  '2. Personal Info',
+  '3. Languages',
+  '4. Credentials',
+  '5. Bio & Video',
+  '6. Skills',
+  '7. Mentorship',
+  '8. Community',
 ]
 
 export default function SignupStepper() {
@@ -20,9 +21,9 @@ export default function SignupStepper() {
   const searchParams = useSearchParams()
   const isAddRole = searchParams.get('addRole') === 'true'
   const displaySteps = isAddRole
-    ? STEPS.slice(1).map((s, i) => `${i + 1}. ${s.split('. ')[1]}`)
+    ? STEPS.slice(2).map((s, i) => `${i + 1}. ${s.split('. ')[1]}`)
     : STEPS
-  const stepOffset = isAddRole ? 1 : 0
+  const stepOffset = isAddRole ? 2 : 0
 
   async function handleSaveExit() {
     await saveDraft()

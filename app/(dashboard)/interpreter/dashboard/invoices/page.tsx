@@ -235,6 +235,7 @@ export default function InvoicesPage() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
   const [reminderInvoice, setReminderInvoice] = useState<Invoice | null>(null)
   const [interpreterId, setInterpreterId] = useState<string | null>(null)
+  const [invoicingPref, setInvoicingPref] = useState<string>('signpost')
   const [confirmAction, setConfirmAction] = useState<{ invoice: Invoice; type: 'delete' | 'void' } | null>(null)
 
   function showToast(message: string, type: 'success' | 'error' | 'info' = 'success') {
@@ -246,15 +247,16 @@ export default function InvoicesPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setLoading(false); return }
 
-    // Get interpreter profile id
+    // Get interpreter profile id + invoicing preference
     const { data: profile, error: profileErr } = await supabase
       .from('interpreter_profiles')
-      .select('id')
+      .select('id, invoicing_preference')
       .eq('user_id', user.id)
       .single()
 
     if (profileErr || !profile) { setLoading(false); return }
     setInterpreterId(profile.id)
+    setInvoicingPref(profile.invoicing_preference || 'own')
 
     // Fetch invoices
     const { data: invData, error: invErr } = await supabase
@@ -437,6 +439,41 @@ export default function InvoicesPage() {
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       <DashMobileStyles />
       <PageHeader title="Invoices" subtitle="Manage invoices for completed jobs." />
+
+      {/* External invoicing info card */}
+      {invoicingPref === 'own' && !loading && (
+        <div style={{
+          background: 'rgba(0,229,255,0.04)',
+          border: '1px dashed rgba(0,229,255,0.2)',
+          borderRadius: 12,
+          padding: '20px 24px',
+          marginBottom: 28,
+        }}>
+          <p style={{ color: '#c8cdd8', fontSize: 14, lineHeight: 1.6, margin: '0 0 12px' }}>
+            You previously opted to use your own invoicing tools.
+          </p>
+          <p style={{ color: '#96a0b8', fontSize: 14, lineHeight: 1.6, margin: '0 0 16px' }}>
+            If you would like to invoice directly through signpost, you can switch at any time. signpost invoicing is free, and is offered purely as a convenience for interpreters who prefer an all-in-one solution.
+          </p>
+          <button
+            className="btn-primary"
+            style={{ padding: '10px 20px' }}
+            onClick={async () => {
+              const supabase = createClient()
+              const { data: { user } } = await supabase.auth.getUser()
+              if (!user) return
+              await supabase.from('interpreter_profiles').update({ invoicing_preference: 'signpost' }).eq('user_id', user.id)
+              setInvoicingPref('signpost')
+              showToast('Switched to signpost invoicing')
+            }}
+          >
+            Switch to signpost invoicing
+          </button>
+        </div>
+      )}
+
+      {/* Invoice content (muted when using external invoicing) */}
+      <div style={invoicingPref === 'own' ? { opacity: 0.5, pointerEvents: 'none' } : undefined}>
 
       {/* Section 1: Past Jobs — Not Yet Invoiced */}
       {!loading && (
@@ -659,6 +696,33 @@ export default function InvoicesPage() {
               </div>
             )
           })}
+        </div>
+      )}
+
+      </div>{/* end muted wrapper */}
+
+      {/* Switch back to external link (visible when using signpost invoicing) */}
+      {invoicingPref === 'signpost' && !loading && (
+        <div style={{ textAlign: 'center', marginTop: 24 }}>
+          <button
+            onClick={async () => {
+              const supabase = createClient()
+              const { data: { user } } = await supabase.auth.getUser()
+              if (!user) return
+              await supabase.from('interpreter_profiles').update({ invoicing_preference: 'own' }).eq('user_id', user.id)
+              setInvoicingPref('own')
+              showToast('Switched to external invoicing')
+            }}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--muted)', fontSize: '0.8rem',
+              fontFamily: "'DM Sans', sans-serif",
+              textDecoration: 'underline',
+              padding: 0,
+            }}
+          >
+            Using signpost invoicing. Switch to external invoicing.
+          </button>
         </div>
       )}
 

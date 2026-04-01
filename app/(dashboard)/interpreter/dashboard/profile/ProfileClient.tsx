@@ -898,15 +898,20 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           rel="noopener noreferrer"
           style={{
             fontFamily: "'Inter', 'DM Sans', sans-serif",
-            fontWeight: 500,
+            fontWeight: 600,
             fontSize: 13,
-            color: 'var(--accent)',
+            color: '#00e5ff',
             textDecoration: 'none',
+            background: 'transparent',
+            border: '1.5px solid #00e5ff',
+            padding: '8px 16px',
+            borderRadius: 8,
+            transition: 'background 0.15s',
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
-          onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0,229,255,0.08)'; e.currentTarget.style.textDecoration = 'none' }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.textDecoration = 'none' }}
         >
-          Preview Profile →
+          Preview Profile
         </a>
       </div>
     )}
@@ -938,7 +943,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       <div className="profile-editor-layout" style={{ display: 'flex', gap: 0, minHeight: '60vh' }}>
         <ProfileSidebarNav active={activeTab} onChange={setActiveTab} />
 
-        <div className="profile-editor-content" style={{ flex: 1, padding: '0 0 0 32px', minWidth: 0 }}>
+        <div className="profile-editor-content" style={{ flex: 1, padding: '0 0 0 32px', minWidth: 0, maxWidth: 720 }}>
           {/* Active section label */}
           <div style={{
             fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em',

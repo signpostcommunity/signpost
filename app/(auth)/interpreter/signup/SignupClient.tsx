@@ -12,6 +12,7 @@ import Step4BioVideo from '@/components/interpreter-signup/Step4BioVideo'
 import Step5Skills from '@/components/interpreter-signup/Step5Skills'
 import Step6Mentorship from '@/components/interpreter-signup/Step6Mentorship'
 import Step6Review from '@/components/interpreter-signup/Step6Review'
+import HowItWorks from '@/components/onboarding/HowItWorks'
 
 // TODO: Wire draft resume — load draft_data and draft_step from interpreter_profiles,
 // pre-fill the signup form, and jump to the saved step when ?resume=true is in the URL
@@ -50,8 +51,8 @@ function SignupForm() {
           }
 
           if (isAddRole) {
-            // Skip to step 2 for add-role users
-            setCurrentStep(2)
+            // Skip to step 3 for add-role users (step 1=infographic, step 2=personal)
+            setCurrentStep(3)
           }
         } else if (isAddRole) {
           // Not logged in but trying to add role — redirect to login
@@ -64,10 +65,10 @@ function SignupForm() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  async function handleStep1Continue() {
+  async function handleStep2Continue() {
     // If user is already authenticated (OAuth), skip account creation
     if (draftUserId) {
-      setCurrentStep(2)
+      setCurrentStep(3)
       window.scrollTo({ top: 0, behavior: 'smooth' })
       return
     }
@@ -113,7 +114,7 @@ function SignupForm() {
         setDraftUserId(signUpData.user.id)
       }
 
-      setCurrentStep(2)
+      setCurrentStep(3)
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } catch (e) {
       setStep1Error(e instanceof Error ? e.message : 'Account creation failed.')
@@ -139,8 +140,11 @@ function SignupForm() {
         <SignupStepper />
 
         {currentStep === 1 && (
+          <HowItWorks role="interpreter" onContinue={() => { setCurrentStep(2); window.scrollTo({ top: 0, behavior: 'smooth' }) }} />
+        )}
+        {currentStep === 2 && (
           <>
-            <Step1Personal onContinue={handleStep1Continue} />
+            <Step1Personal onContinue={handleStep2Continue} />
             {step1Error && (
               <p style={{ color: 'var(--accent3)', fontSize: '0.85rem', marginTop: 12 }}>
                 {step1Error}
@@ -153,23 +157,23 @@ function SignupForm() {
             )}
           </>
         )}
-        {currentStep === 2 && (
-          <Step2Languages onBack={() => goBack(1)} onContinue={() => goToStep(3)} />
-        )}
         {currentStep === 3 && (
-          <Step3Credentials onBack={() => goBack(2)} onContinue={() => goToStep(4)} />
+          <Step2Languages onBack={() => goBack(2)} onContinue={() => goToStep(4)} />
         )}
         {currentStep === 4 && (
-          <Step4BioVideo onBack={() => goBack(3)} onContinue={() => goToStep(5)} />
+          <Step3Credentials onBack={() => goBack(3)} onContinue={() => goToStep(5)} />
         )}
         {currentStep === 5 && (
-          <Step5Skills onBack={() => goBack(4)} onContinue={() => goToStep(6)} />
+          <Step4BioVideo onBack={() => goBack(4)} onContinue={() => goToStep(6)} />
         )}
         {currentStep === 6 && (
-          <Step6Mentorship onBack={() => goBack(5)} onContinue={() => goToStep(7)} />
+          <Step5Skills onBack={() => goBack(5)} onContinue={() => goToStep(7)} />
         )}
         {currentStep === 7 && (
-          <Step6Review onBack={() => goBack(6)} />
+          <Step6Mentorship onBack={() => goBack(6)} onContinue={() => goToStep(8)} />
+        )}
+        {currentStep === 8 && (
+          <Step6Review onBack={() => goBack(7)} />
         )}
       </div>
     </div>

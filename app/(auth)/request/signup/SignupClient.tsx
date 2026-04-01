@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { syncNameFields } from '@/lib/nameSync';
+import HowItWorks from '@/components/onboarding/HowItWorks';
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 
 type RequesterType = 'organization' | 'personal_event' | null;
 
@@ -58,8 +59,9 @@ export default function RequestSignupClient() {
   }
 
   function canContinue() {
-    if (step === 1) return form.requesterType !== null;
-    if (step === 2) {
+    if (step === 1) return true; // How It Works (informational)
+    if (step === 2) return form.requesterType !== null;
+    if (step === 3) {
       const baseValid = form.firstName && form.email && form.password && form.password === form.confirmPassword && form.country && form.city;
       if (form.requesterType === 'organization') return baseValid && form.orgName;
       return baseValid;
@@ -132,7 +134,7 @@ export default function RequestSignupClient() {
     });
 
     // Move to final step
-    setStep(4);
+    setStep(5);
     setLoading(false);
   }
 
@@ -159,8 +161,13 @@ export default function RequestSignupClient() {
         <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Step {step} of {TOTAL_STEPS}</div>
       </div>
 
-      {/* Step 1 — Role Selection */}
+      {/* Step 1 — How signpost Works */}
       {step === 1 && (
+        <HowItWorks role="requester" onContinue={() => { setStep(2); window.scrollTo({ top: 0, behavior: 'smooth' }) }} />
+      )}
+
+      {/* Step 2 — Role Selection */}
+      {step === 2 && (
         <div>
           <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 775, color: '#f0f2f8', marginBottom: '6px' }}>
             Your Role
@@ -269,8 +276,8 @@ export default function RequestSignupClient() {
         </div>
       )}
 
-      {/* Step 2 — Account Details */}
-      {step === 2 && (
+      {/* Step 3 — Account Details */}
+      {step === 3 && (
         <div>
           <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 775, color: '#f0f2f8', marginBottom: '6px' }}>
             Account Details
@@ -346,8 +353,8 @@ export default function RequestSignupClient() {
         </div>
       )}
 
-      {/* Step 3 — Preview & Create */}
-      {step === 3 && (
+      {/* Step 4 — Preview & Create */}
+      {step === 4 && (
         <div>
           <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 775, color: '#f0f2f8', marginBottom: '6px' }}>
             Preview &amp; Create
@@ -396,26 +403,26 @@ export default function RequestSignupClient() {
         </div>
       )}
 
-      {/* Step 4 — Done */}
-      {step === 4 && <DoneStep />}
+      {/* Step 5 — Done */}
+      {step === 5 && <DoneStep />}
 
-      {/* Navigation */}
-      {step < 4 && (
+      {/* Navigation (steps 2-4 only; step 1 has its own CTA, step 5 is done) */}
+      {step > 1 && step < 5 && (
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '32px' }}>
           <button
             onClick={() => setStep(s => s - 1)}
-            disabled={step === 1}
+            disabled={step === 2}
             style={{
               background: 'none', border: '1px solid var(--border)', borderRadius: '8px',
-              padding: '10px 20px', color: step === 1 ? 'var(--border)' : 'var(--muted)',
-              fontSize: '0.9rem', cursor: step === 1 ? 'not-allowed' : 'pointer',
+              padding: '10px 20px', color: step === 2 ? 'var(--border)' : 'var(--muted)',
+              fontSize: '0.9rem', cursor: step === 2 ? 'not-allowed' : 'pointer',
               fontFamily: "'DM Sans', sans-serif",
             }}
           >
             ← Back
           </button>
 
-          {step < 3 ? (
+          {step < 4 ? (
             <button
               onClick={() => {
                 setError('');

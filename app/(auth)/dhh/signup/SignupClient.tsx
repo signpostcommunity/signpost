@@ -8,11 +8,13 @@ import GoogleSignInButton from '@/components/ui/GoogleSignInButton';
 import LocationPicker from '@/components/shared/LocationPicker';
 import { generateSlug } from '@/lib/slugUtils';
 import { syncNameFields } from '@/lib/nameSync';
+import HowItWorks from '@/components/onboarding/HowItWorks';
 
 function DeafSignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isAddRole = searchParams.get('addRole') === 'true';
+  const [signupStep, setSignupStep] = useState(isAddRole ? 2 : 1);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -181,6 +183,12 @@ function DeafSignupForm() {
         padding: '40px 24px',
       }}
     >
+      {signupStep === 1 && (
+        <div style={{ maxWidth: 680, width: '100%' }}>
+          <HowItWorks role="deaf" onContinue={() => { setSignupStep(2); window.scrollTo({ top: 0, behavior: 'smooth' }) }} />
+        </div>
+      )}
+      {signupStep === 2 && (
       <div style={{ maxWidth: 420, width: '100%' }}>
         <div
           style={{
@@ -298,6 +306,7 @@ function DeafSignupForm() {
           </button>
         </form>
       </div>
+      )}
     </div>
   );
 }
