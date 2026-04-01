@@ -931,6 +931,7 @@ interface MentorSuggestion {
   avatar_color: string | null
   years_experience: string | null
   mentorship_types: string[] | null
+  mentorship_types_offering: string[] | null
   mentorship_paid: string | null
   mentorship_bio_offering: string | null
   mentorship_bio_seeking: string | null
@@ -985,7 +986,7 @@ function SuggestedMentors({ interpreterProfileId }: { interpreterProfileId: stri
   }
 
   function buildPrefillMessage(mentor: MentorSuggestion): string {
-    const types = (mentor.mentorship_types || []).map(getMentorshipLabel).join(', ')
+    const types = (mentor.mentorship_types_offering || mentor.mentorship_types || []).map(getMentorshipLabel).join(', ')
     if (mentor.mentorship_paid === 'paid') {
       return `Hi ${mentor.first_name || mentor.name}, I'm interested in your paid mentorship${types ? ` in ${types}` : ''}. I'd love to learn about your rates and format.${seekerBio ? ` ${seekerBio}` : ''}`
     }
@@ -1052,10 +1053,10 @@ function SuggestedMentors({ interpreterProfileId }: { interpreterProfileId: stri
                   </div>
                 </div>
 
-                {/* Mentorship types as tags */}
-                {mentor.mentorship_types && mentor.mentorship_types.length > 0 && (
+                {/* Mentorship types as tags (show offering types) */}
+                {((mentor.mentorship_types_offering && mentor.mentorship_types_offering.length > 0) || (mentor.mentorship_types && mentor.mentorship_types.length > 0)) && (
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                    {mentor.mentorship_types.slice(0, 4).map(t => (
+                    {(mentor.mentorship_types_offering || mentor.mentorship_types || []).slice(0, 4).map(t => (
                       <span
                         key={t}
                         style={{

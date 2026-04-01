@@ -38,6 +38,8 @@ export interface Interpreter {
   mentorshipOffering?: boolean;
   mentorshipSeeking?: boolean;
   mentorshipTypes?: string[];
+  mentorshipTypesOffering?: string[];
+  mentorshipTypesSeeking?: string[];
   mentorshipPaid?: string | null;
   mentorshipBioOffering?: string | null;
   mentorshipBioSeeking?: string | null;

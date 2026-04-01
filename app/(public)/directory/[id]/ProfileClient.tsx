@@ -927,10 +927,10 @@ function MentorshipSection({ interpreter: i }: { interpreter: Interpreter }) {
           }}>
             Offering mentorship
           </div>
-          {i.mentorshipTypes && i.mentorshipTypes.length > 0 && (
+          {((i.mentorshipTypesOffering && i.mentorshipTypesOffering.length > 0) || (i.mentorshipTypes && i.mentorshipTypes.length > 0)) && (
             <div style={{ marginBottom: 10 }}>
               <span style={{ fontSize: '0.78rem', color: 'var(--muted)', marginRight: 8 }}>Areas:</span>
-              {i.mentorshipTypes.map(t => (
+              {(i.mentorshipTypesOffering && i.mentorshipTypesOffering.length > 0 ? i.mentorshipTypesOffering : i.mentorshipTypes || []).map(t => (
                 <span
                   key={t}
                   style={{
@@ -969,10 +969,10 @@ function MentorshipSection({ interpreter: i }: { interpreter: Interpreter }) {
           }}>
             Seeking mentorship
           </div>
-          {i.mentorshipTypes && i.mentorshipTypes.length > 0 && !i.mentorshipOffering && (
+          {((i.mentorshipTypesSeeking && i.mentorshipTypesSeeking.length > 0) || (i.mentorshipTypes && i.mentorshipTypes.length > 0)) && (
             <div style={{ marginBottom: 10 }}>
               <span style={{ fontSize: '0.78rem', color: 'var(--muted)', marginRight: 8 }}>Looking for:</span>
-              {i.mentorshipTypes.map(t => (
+              {(i.mentorshipTypesSeeking && i.mentorshipTypesSeeking.length > 0 ? i.mentorshipTypesSeeking : i.mentorshipTypes || []).map(t => (
                 <span
                   key={t}
                   style={{

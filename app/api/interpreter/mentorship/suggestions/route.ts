@@ -15,6 +15,8 @@ interface Profile {
   mentorship_offering: boolean
   mentorship_seeking: boolean
   mentorship_types: string[] | null
+  mentorship_types_offering: string[] | null
+  mentorship_types_seeking: string[] | null
   mentorship_paid: string | null
   mentorship_bio_offering: string | null
   mentorship_bio_seeking: string | null
@@ -23,9 +25,9 @@ interface Profile {
 function scoreMentor(seeker: Profile, mentor: Profile): number {
   let score = 0
 
-  // Type overlap: each matching mentorship_type adds 10 points
-  const seekerTypes = seeker.mentorship_types || []
-  const mentorTypes = mentor.mentorship_types || []
+  // Compare seeker's mentorship_types_seeking against mentor's mentorship_types_offering
+  const seekerTypes = seeker.mentorship_types_seeking || seeker.mentorship_types || []
+  const mentorTypes = mentor.mentorship_types_offering || mentor.mentorship_types || []
   const typeOverlap = seekerTypes.filter(t => mentorTypes.includes(t)).length
   score += typeOverlap * 10
 
@@ -79,7 +81,7 @@ export async function GET() {
   // Fetch seeker's profile
   const { data: seekerProfile } = await supabase
     .from('interpreter_profiles')
-    .select('id, user_id, first_name, last_name, photo_url, avatar_color, years_experience, city, state, specializations, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking')
+    .select('id, user_id, first_name, last_name, photo_url, avatar_color, years_experience, city, state, specializations, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_types_offering, mentorship_types_seeking, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking')
     .eq('user_id', user.id)
     .maybeSingle()
 
@@ -90,7 +92,7 @@ export async function GET() {
   // Fetch all mentors (offering mentorship, not the seeker themselves)
   const { data: mentors } = await supabase
     .from('interpreter_profiles')
-    .select('id, user_id, first_name, last_name, photo_url, avatar_color, years_experience, city, state, specializations, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking')
+    .select('id, user_id, first_name, last_name, photo_url, avatar_color, years_experience, city, state, specializations, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_types_offering, mentorship_types_seeking, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking')
     .eq('mentorship_offering', true)
     .eq('status', 'approved')
     .neq('user_id', user.id)

@@ -163,6 +163,8 @@ interface ProfileData {
   mentorship_offering?: boolean | null
   mentorship_seeking?: boolean | null
   mentorship_types?: string[] | null
+  mentorship_types_offering?: string[] | null
+  mentorship_types_seeking?: string[] | null
   mentorship_paid?: string | null
   mentorship_bio_offering?: string | null
   mentorship_bio_seeking?: string | null
@@ -492,6 +494,12 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const [mentorshipOffering, setMentorshipOffering] = useState(fallback(p.mentorship_offering, 'mentorshipOffering', false))
   const [mentorshipSeeking, setMentorshipSeeking] = useState(fallback(p.mentorship_seeking, 'mentorshipSeeking', false))
   const [mentorshipTypes, setMentorshipTypes] = useState<string[]>(fallback(p.mentorship_types, 'mentorshipTypes', [] as string[]))
+  const [mentorshipTypesOffering, setMentorshipTypesOffering] = useState<string[]>(
+    fallback(p.mentorship_types_offering, 'mentorshipTypesOffering', fallback(p.mentorship_types, 'mentorshipTypes', [] as string[]))
+  )
+  const [mentorshipTypesSeeking, setMentorshipTypesSeeking] = useState<string[]>(
+    fallback(p.mentorship_types_seeking, 'mentorshipTypesSeeking', fallback(p.mentorship_types, 'mentorshipTypes', [] as string[]))
+  )
   const [mentorshipPaid, setMentorshipPaid] = useState<string>(fallback(p.mentorship_paid, 'mentorshipPaid', ''))
   const [mentorshipBioOffering, setMentorshipBioOffering] = useState(fallback(p.mentorship_bio_offering, 'mentorshipBioOffering', ''))
   const [mentorshipBioSeeking, setMentorshipBioSeeking] = useState(fallback(p.mentorship_bio_seeking, 'mentorshipBioSeeking', ''))
@@ -521,7 +529,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       // Now try interpreter_profiles
       const { data, error, status, statusText } = await supabase
         .from('interpreter_profiles')
-        .select('id, name, first_name, last_name, email, pronouns, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, bio_specializations, bio_extra, sign_languages, spoken_languages, specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms, notification_preferences, notification_phone, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, vanity_slug, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking')
+        .select('id, name, first_name, last_name, email, pronouns, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, bio_specializations, bio_extra, sign_languages, spoken_languages, specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms, notification_preferences, notification_phone, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, vanity_slug, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_types_offering, mentorship_types_seeking, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking')
         .eq('user_id', user.id)
         .maybeSingle()
       console.log('PROFILE CLIENT-SIDE LOAD:', JSON.stringify({ data, error, status, statusText, userId: user.id }, null, 2))
@@ -563,6 +571,8 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       if (d.mentorship_offering != null) setMentorshipOffering(d.mentorship_offering)
       if (d.mentorship_seeking != null) setMentorshipSeeking(d.mentorship_seeking)
       if (d.mentorship_types) setMentorshipTypes(d.mentorship_types)
+      if (d.mentorship_types_offering) setMentorshipTypesOffering(d.mentorship_types_offering)
+      if (d.mentorship_types_seeking) setMentorshipTypesSeeking(d.mentorship_types_seeking)
       if (d.mentorship_paid != null) setMentorshipPaid(d.mentorship_paid || '')
       if (d.mentorship_bio_offering != null) setMentorshipBioOffering(d.mentorship_bio_offering || '')
       if (d.mentorship_bio_seeking != null) setMentorshipBioSeeking(d.mentorship_bio_seeking || '')
@@ -1728,12 +1738,11 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       {/* ── Tab 7: Mentorship ──────────────────────────────────────── */}
       {activeTab === 'Mentorship' && (
         <>
-          <div style={sectionTitleStyle}>Mentorship</div>
-          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 24, marginTop: -12, lineHeight: 1.6 }}>
+          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 24, lineHeight: 1.6 }}>
             Connect with other interpreters for professional growth. You can offer mentorship, seek it, or both.
           </p>
 
-          {/* Offering toggle */}
+          {/* ── Offering mentorship ── */}
           <CommunityToggle
             label="I'm offering mentorship"
             helper="Let other interpreters know you're available to mentor"
@@ -1741,28 +1750,19 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
             onChange={() => setMentorshipOffering(!mentorshipOffering)}
           />
 
-          {/* Seeking toggle */}
-          <CommunityToggle
-            label="I'm seeking mentorship"
-            helper="Find experienced interpreters who can help you grow"
-            checked={mentorshipSeeking}
-            onChange={() => setMentorshipSeeking(!mentorshipSeeking)}
-          />
-
-          {/* Knowledge areas — shown when either toggle is on */}
-          {(mentorshipOffering || mentorshipSeeking) && (
-            <div style={{ marginTop: 20, marginBottom: 24 }}>
-              <label style={labelStyle}>What areas? (select all that apply)</label>
+          {mentorshipOffering && (
+            <div style={{ marginLeft: 16, paddingLeft: 16, borderLeft: '2px solid var(--border)', marginBottom: 24 }}>
+              <label style={labelStyle}>What areas are you offering mentorship in?</label>
               <div style={{ marginTop: 8, border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
                 {MENTORSHIP_CATEGORIES.map((cat, catIdx) => {
-                  const selectedCount = cat.items.filter(item => mentorshipTypes.includes(item.id)).length
+                  const selectedCount = cat.items.filter(item => mentorshipTypesOffering.includes(item.id)).length
                   return (
                     <MentorshipAccordion
                       key={cat.id}
                       category={cat}
                       selectedCount={selectedCount}
-                      selectedIds={mentorshipTypes}
-                      onToggle={(itemId) => setMentorshipTypes(prev =>
+                      selectedIds={mentorshipTypesOffering}
+                      onToggle={(itemId) => setMentorshipTypesOffering(prev =>
                         prev.includes(itemId) ? prev.filter(v => v !== itemId) : [...prev, itemId]
                       )}
                       showBorder={catIdx < MENTORSHIP_CATEGORIES.length - 1}
@@ -1770,81 +1770,108 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                   )
                 })}
               </div>
-            </div>
-          )}
 
-          {/* Compensation — shown when offering */}
-          {mentorshipOffering && (
-            <div style={{ marginBottom: 24 }}>
-              <label style={labelStyle}>Compensation</label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
-                {([
-                  { value: 'pro_bono', label: 'Pro bono' },
-                  { value: 'paid', label: 'Paid mentorship' },
-                  { value: 'either', label: 'Either -- open to discussing' },
-                ] as const).map(opt => (
-                  <button
-                    key={opt.value}
-                    onClick={() => setMentorshipPaid(mentorshipPaid === opt.value ? '' : opt.value)}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: 10,
-                      padding: '10px 14px', borderRadius: 'var(--radius-sm)',
-                      border: `1px solid ${mentorshipPaid === opt.value ? 'rgba(0,229,255,0.4)' : 'var(--border)'}`,
-                      background: mentorshipPaid === opt.value ? 'rgba(0,229,255,0.08)' : 'var(--surface2)',
-                      cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
-                      fontSize: '0.85rem', color: mentorshipPaid === opt.value ? 'var(--text)' : 'var(--muted)',
-                      transition: 'all 0.15s',
-                    }}
-                  >
-                    <div style={{
-                      width: 16, height: 16, borderRadius: '50%',
-                      border: mentorshipPaid === opt.value ? '5px solid var(--accent)' : '2px solid var(--border)',
-                      background: mentorshipPaid === opt.value ? '#000' : 'transparent',
-                      flexShrink: 0,
-                    }} />
-                    {opt.label}
-                  </button>
-                ))}
+              {/* Compensation */}
+              <div style={{ marginTop: 20, marginBottom: 20 }}>
+                <label style={labelStyle}>Compensation</label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                  {([
+                    { value: 'pro_bono', label: 'Pro bono' },
+                    { value: 'paid', label: 'Paid mentorship' },
+                    { value: 'either', label: 'Either -- open to discussing' },
+                  ] as const).map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setMentorshipPaid(mentorshipPaid === opt.value ? '' : opt.value)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        padding: '10px 14px', borderRadius: 'var(--radius-sm)',
+                        border: `1px solid ${mentorshipPaid === opt.value ? 'rgba(0,229,255,0.4)' : 'var(--border)'}`,
+                        background: mentorshipPaid === opt.value ? 'rgba(0,229,255,0.08)' : 'var(--surface2)',
+                        cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                        fontSize: '0.85rem', color: mentorshipPaid === opt.value ? 'var(--text)' : 'var(--muted)',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      <div style={{
+                        width: 16, height: 16, borderRadius: '50%',
+                        border: mentorshipPaid === opt.value ? '5px solid var(--accent)' : '2px solid var(--border)',
+                        background: mentorshipPaid === opt.value ? '#000' : 'transparent',
+                        flexShrink: 0,
+                      }} />
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bio: offering */}
+              <div>
+                <label style={labelStyle}>What do you bring as a mentor? (optional)</label>
+                <textarea
+                  value={mentorshipBioOffering}
+                  onChange={e => setMentorshipBioOffering(e.target.value)}
+                  placeholder="Your experience, approach, what you enjoy helping with..."
+                  rows={3}
+                  onFocus={handleFocus as unknown as React.FocusEventHandler<HTMLTextAreaElement>}
+                  onBlur={handleBlur as unknown as React.FocusEventHandler<HTMLTextAreaElement>}
+                  style={{ ...inputStyle, resize: 'vertical', minHeight: 72 }}
+                />
               </div>
             </div>
           )}
 
-          {/* Bio: offering */}
-          {mentorshipOffering && (
-            <div style={{ marginBottom: 24 }}>
-              <label style={labelStyle}>What do you bring as a mentor? (optional)</label>
-              <textarea
-                value={mentorshipBioOffering}
-                onChange={e => setMentorshipBioOffering(e.target.value)}
-                placeholder="Your experience, approach, what you enjoy helping with..."
-                rows={3}
-                onFocus={handleFocus as unknown as React.FocusEventHandler<HTMLTextAreaElement>}
-                onBlur={handleBlur as unknown as React.FocusEventHandler<HTMLTextAreaElement>}
-                style={{ ...inputStyle, resize: 'vertical', minHeight: 72 }}
-              />
-            </div>
-          )}
+          {/* ── Seeking mentorship ── */}
+          <CommunityToggle
+            label="I'm seeking mentorship"
+            helper="Find experienced interpreters who can help you grow"
+            checked={mentorshipSeeking}
+            onChange={() => setMentorshipSeeking(!mentorshipSeeking)}
+          />
 
-          {/* Bio: seeking */}
           {mentorshipSeeking && (
-            <div style={{ marginBottom: 24 }}>
-              <label style={labelStyle}>What are you looking for? (optional)</label>
-              <textarea
-                value={mentorshipBioSeeking}
-                onChange={e => setMentorshipBioSeeking(e.target.value)}
-                placeholder="Specific skills, guidance areas, what kind of support would help you grow..."
-                rows={3}
-                onFocus={handleFocus as unknown as React.FocusEventHandler<HTMLTextAreaElement>}
-                onBlur={handleBlur as unknown as React.FocusEventHandler<HTMLTextAreaElement>}
-                style={{ ...inputStyle, resize: 'vertical', minHeight: 72 }}
-              />
+            <div style={{ marginLeft: 16, paddingLeft: 16, borderLeft: '2px solid var(--border)', marginBottom: 24 }}>
+              <label style={labelStyle}>What areas are you looking for mentorship in?</label>
+              <div style={{ marginTop: 8, border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
+                {MENTORSHIP_CATEGORIES.map((cat, catIdx) => {
+                  const selectedCount = cat.items.filter(item => mentorshipTypesSeeking.includes(item.id)).length
+                  return (
+                    <MentorshipAccordion
+                      key={cat.id}
+                      category={cat}
+                      selectedCount={selectedCount}
+                      selectedIds={mentorshipTypesSeeking}
+                      onToggle={(itemId) => setMentorshipTypesSeeking(prev =>
+                        prev.includes(itemId) ? prev.filter(v => v !== itemId) : [...prev, itemId]
+                      )}
+                      showBorder={catIdx < MENTORSHIP_CATEGORIES.length - 1}
+                    />
+                  )
+                })}
+              </div>
+
+              {/* Bio: seeking */}
+              <div style={{ marginTop: 20 }}>
+                <label style={labelStyle}>What are you looking for? (optional)</label>
+                <textarea
+                  value={mentorshipBioSeeking}
+                  onChange={e => setMentorshipBioSeeking(e.target.value)}
+                  placeholder="Specific skills, guidance areas, what kind of support would help you grow..."
+                  rows={3}
+                  onFocus={handleFocus as unknown as React.FocusEventHandler<HTMLTextAreaElement>}
+                  onBlur={handleBlur as unknown as React.FocusEventHandler<HTMLTextAreaElement>}
+                  style={{ ...inputStyle, resize: 'vertical', minHeight: 72 }}
+                />
+              </div>
             </div>
           )}
 
           <SaveButton saving={saving} onClick={() => saveFields({
             mentorship_offering: mentorshipOffering,
             mentorship_seeking: mentorshipSeeking,
-            mentorship_types: mentorshipTypes,
+            mentorship_types: [...new Set([...mentorshipTypesOffering, ...mentorshipTypesSeeking])],
+            mentorship_types_offering: mentorshipTypesOffering,
+            mentorship_types_seeking: mentorshipTypesSeeking,
             mentorship_paid: mentorshipPaid || null,
             mentorship_bio_offering: mentorshipBioOffering || null,
             mentorship_bio_seeking: mentorshipBioSeeking || null,
