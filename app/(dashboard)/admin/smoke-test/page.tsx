@@ -48,7 +48,7 @@ export default function SmokeTestPage() {
         RLS Smoke Tests
       </h1>
       <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 24 }}>
-        Tests RLS policies by impersonating real users and checking data visibility.
+        Tests RLS policies by running direct queries as the logged-in admin and checking data visibility.
       </p>
 
       <button

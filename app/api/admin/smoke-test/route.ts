@@ -25,8 +25,8 @@ export async function POST() {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Run all RLS tests
-    const results = await runRlsTests(admin)
+    // Run all RLS tests using the authenticated user's client (not service role)
+    const results = await runRlsTests(supabase, user.id)
 
     return NextResponse.json(results)
   } catch (err) {
