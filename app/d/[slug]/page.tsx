@@ -15,7 +15,7 @@ async function getPublicProfile(slug: string) {
     const admin = getSupabaseAdmin()
     const { data, error } = await admin
       .from('deaf_profiles')
-      .select('id, name, first_name, last_name, city, state, photo_url, vanity_slug')
+      .select('id, first_name, last_name, city, state, photo_url, vanity_slug')
       .ilike('vanity_slug', slug)
       .maybeSingle()
     if (error) { console.error('[d/slug] Profile fetch error:', error); return null }
@@ -54,7 +54,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Profile Not Found — signpost' }
   }
 
-  const displayName = data.first_name || data.name || 'User'
+  const displayName = data.first_name || [data.first_name, data.last_name].filter(Boolean).join(' ') || 'User'
 
   return {
     title: `Book an Interpreter for ${displayName} — signpost`,
@@ -112,7 +112,7 @@ export default async function DeafSlugPage({ params }: Props) {
         isAuthenticated={false}
         deafProfile={{
           id: publicData.id,
-          name: publicData.name,
+          name: [publicData.first_name, publicData.last_name].filter(Boolean).join(' ') || 'User',
           firstName: publicData.first_name,
           lastName: publicData.last_name,
           city: publicData.city,
