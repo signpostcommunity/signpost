@@ -1,3 +1,8 @@
+// TODO: Migrate notification emails to use the branded React Email template system
+// in emails/SignpostEmail.tsx. The current raw HTML approach works but the new
+// React Email components provide better maintainability and brand consistency.
+// See emails/ directory for the base layout and reusable components.
+
 export interface EmailContentBlock {
   type: 'message_preview' | 'booking_details' | 'rate_details' | 'info_card' | 'warning_card'
   data: Record<string, string>

@@ -10,6 +10,7 @@
     "seed": "npx tsx lib/data/seed-script.ts"
   },
   "dependencies": {
+    "@react-email/components": "^1.0.11",
     "@resvg/resvg-wasm": "^2.6.2",
     "@sentry/nextjs": "^10.46.0",
     "@stripe/react-stripe-js": "^6.0.0",
@@ -23,6 +24,7 @@
     "qrcode.react": "^4.2.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-email": "^5.2.10",
     "resend": "^6.9.3",
     "stripe": "^21.0.1",
     "telnyx": "^6.29.7"
