@@ -279,7 +279,7 @@ function BillingInfoCard() {
           <p style={{
             margin: 0, fontStyle: 'italic', opacity: 0.8,
           }}>
-            During beta, platform fees are tracked but not charged.
+            Platform fees are tracked and charged after booking completion.
           </p>
         </div>
       )}

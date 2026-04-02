@@ -1,5 +1,4 @@
 import RequesterDashboardSidebar from '@/components/layout/RequesterDashboardSidebar'
-import RequesterBetaPanel from '@/components/beta/RequesterBetaPanel'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function RequesterDashboardLayout({ children }: { children: React.ReactNode }) {
@@ -48,7 +47,6 @@ export default async function RequesterDashboardLayout({ children }: { children:
           }
         `}</style>
       </div>
-      {user && <RequesterBetaPanel userId={user.id} />}
     </>
   )
 }

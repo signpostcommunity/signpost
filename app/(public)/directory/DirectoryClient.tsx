@@ -530,7 +530,7 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
             </span>
           </div>
 
-          {/* Hidden for beta — unhide when directory is larger */}
+          {/* Hidden — unhide when directory is larger */}
           {false && (
           <div style={{ marginBottom: '20px' }}>
             <p style={{ color: 'var(--muted)', fontSize: '0.95rem' }}>

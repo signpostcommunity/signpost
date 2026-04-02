@@ -281,7 +281,7 @@ function InterpreterPortalTab() {
         signpost: Interpreter Portal
       </h2>
       <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.75, marginBottom: 48, fontStyle: 'italic' }}>
-        Vision document coming soon. Core features are live and in beta testing.
+        Vision document coming soon. Core features are live.
       </p>
 
       <div className="vision-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
@@ -357,7 +357,7 @@ function RequesterPortalTab() {
             {[
               'Client Interpreter Lists (receiving shared Deaf user preferences)',
               '$15 flat fee per interpreter per confirmed booking',
-              'Mocked payment UI (Stripe integration post-beta)',
+              'Stripe payment integration (live)',
             ].map((item, i) => (
               <li key={i} style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.7 }}>{item}</li>
             ))}

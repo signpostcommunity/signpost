@@ -2,9 +2,6 @@ import type { Metadata } from 'next';
 import { Syne, DM_Sans } from 'next/font/google';
 import './globals.css';
 import { Analytics } from '@vercel/analytics/react';
-import BetaWelcomeModal from '@/components/beta/BetaWelcomeModal';
-
-const BETA_UI_ENABLED = false;
 
 const syne = Syne({
   subsets: ['latin'],
@@ -57,8 +54,6 @@ export default function RootLayout({
         >
           Skip to main content
         </a>
-        {/* Beta UI hidden — re-enable when Deaf/DB/HH beta launches */}
-        {BETA_UI_ENABLED && process.env.NEXT_PUBLIC_BETA_MODE === 'true' && <BetaWelcomeModal />}
         {children}
         <Analytics />
       </body>

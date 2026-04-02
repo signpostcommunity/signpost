@@ -44,7 +44,6 @@ interface Stats {
   totalUsers: number
   interpreters: number
   deafUsers: number
-  betaFeedback: number
   profileFlags: number
 }
 
@@ -84,7 +83,7 @@ export default function AdminOverviewClient({
     { label: 'Total Users', value: stats.totalUsers, icon: <IconUsers />, href: '/admin/dashboard/users' },
     { label: 'Interpreters', value: stats.interpreters, icon: <IconInterpreter />, href: '/admin/dashboard/interpreters' },
     { label: 'Deaf/DB/HH Users', value: stats.deafUsers, icon: <IconDeaf />, href: '/admin/dashboard/users?role=deaf' },
-    { label: 'Beta Feedback', value: stats.betaFeedback, icon: <IconFeedback />, href: '/admin/dashboard/feedback' },
+    { label: 'Profile Flags', value: stats.profileFlags, icon: <IconFeedback />, href: '/admin/dashboard/flags' },
   ]
 
   return (

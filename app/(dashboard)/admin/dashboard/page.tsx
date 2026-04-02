@@ -7,11 +7,10 @@ export default async function AdminDashboardPage() {
   const supabase = await createClient()
 
   // Fetch stats — use allSettled so one failure doesn't crash the page
-  const [usersRes, interpretersRes, deafRes, feedbackRes, flagsRes, chargedRes, failedRes, creditsRes] = await Promise.allSettled([
+  const [usersRes, interpretersRes, deafRes, flagsRes, chargedRes, failedRes, creditsRes] = await Promise.allSettled([
     supabase.from('user_profiles').select('id', { count: 'exact' }).limit(1),
     supabase.from('interpreter_profiles').select('id', { count: 'exact' }).limit(1).neq('status', 'draft'),
     supabase.from('deaf_profiles').select('id', { count: 'exact' }).limit(1),
-    supabase.from('beta_feedback').select('id', { count: 'exact' }).limit(1),
     supabase.from('profile_flags').select('id', { count: 'exact' }).limit(1),
     supabase.from('bookings').select('platform_fee_amount').eq('platform_fee_status', 'charged'),
     supabase.from('bookings').select('platform_fee_amount').eq('platform_fee_status', 'failed'),
@@ -65,7 +64,6 @@ export default async function AdminDashboardPage() {
         totalUsers: val(usersRes)?.count ?? 0,
         interpreters: val(interpretersRes)?.count ?? 0,
         deafUsers: val(deafRes)?.count ?? 0,
-        betaFeedback: val(feedbackRes)?.count ?? 0,
         profileFlags: val(flagsRes)?.count ?? 0,
       }}
       paymentStats={{

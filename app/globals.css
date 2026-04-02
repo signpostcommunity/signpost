@@ -275,19 +275,6 @@ img {
     padding: 20px !important;
   }
 
-  /* Beta panel: minimized on mobile */
-  .beta-panel-mobile-minimized {
-    width: auto !important;
-    height: auto !important;
-    top: auto !important;
-    bottom: 16px !important;
-    right: 16px !important;
-    transform: none !important;
-    padding: 8px 14px !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.4) !important;
-  }
-
   /* Touch targets on mobile — 44px minimum (WCAG 2.5.8) */
   button, a, [role="button"], input[type="checkbox"], input[type="radio"], select {
     min-height: 44px;
@@ -497,27 +484,6 @@ img {
     font-size: 0.95rem !important;
   }
 
-  /* Beta final survey mobile */
-  .beta-final-page {
-    padding: 24px 16px 60px !important;
-  }
-  .beta-final-nav {
-    flex-direction: column !important;
-    gap: 10px !important;
-  }
-  .beta-final-nav button {
-    width: 100% !important;
-  }
-  .beta-final-choice-card {
-    padding: 16px !important;
-    min-height: 44px !important;
-  }
-}
-
-/* Body scroll lock when beta panel is open on mobile */
-body.beta-panel-open-mobile {
-  overflow: hidden !important;
-  touch-action: none;
 }
 
 /* ── Requester portal mobile overrides ── */

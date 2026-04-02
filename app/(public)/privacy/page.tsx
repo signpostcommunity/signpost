@@ -80,7 +80,7 @@ export default function PrivacyPolicyPage() {
         Privacy Policy
       </h1>
       <p style={{ ...body, marginBottom: 48 }}>
-        Beta Version &mdash; Last updated: March 18, 2026
+        Last updated: March 18, 2026
       </p>
 
       <Section number={1} title="Information We Collect">
@@ -90,7 +90,7 @@ export default function PrivacyPolicyPage() {
           <li><strong style={{ color: 'var(--text)' }}>Profile information:</strong> credentials, certifications, specializations, languages, rates, bio, location, and other details you choose to add to your profile</li>
           <li><strong style={{ color: 'var(--text)' }}>Communication preferences:</strong> signing style, preferred communication methods, and interpreter preferences (for Deaf/DB/HH users)</li>
           <li><strong style={{ color: 'var(--text)' }}>Booking and request details:</strong> appointment information, messages exchanged through the platform, and feedback</li>
-          <li><strong style={{ color: 'var(--text)' }}>Beta feedback:</strong> responses to beta questions and surveys submitted during the testing period</li>
+          <li><strong style={{ color: 'var(--text)' }}>Feedback:</strong> responses to questions and surveys submitted through the platform</li>
         </ul>
 
         <h3 style={subheading}>Information collected automatically</h3>
@@ -215,7 +215,7 @@ export default function PrivacyPolicyPage() {
           <a href="mailto:hello@signpost.community" style={{ color: 'var(--accent)', textDecoration: 'none' }}>hello@signpost.community</a>
         </p>
         <p style={{ ...body, fontSize: '0.78rem', fontStyle: 'italic', textAlign: 'center', marginBottom: 0 }}>
-          This document is a working draft for the beta period and does not constitute legal advice.
+          This document is a working draft and does not constitute legal advice.
         </p>
       </div>
     </div>

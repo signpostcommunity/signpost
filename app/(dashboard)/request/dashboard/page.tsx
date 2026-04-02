@@ -65,7 +65,7 @@ export default async function RequesterDashboardPage() {
       }))
     }
 
-    // Seed beta data if needed
+    // Seed demo data if needed
     const { count: seedCount } = await supabase
       .from('bookings')
       .select('id', { count: 'exact' }).limit(1)

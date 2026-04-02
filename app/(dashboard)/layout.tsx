@@ -1,10 +1,7 @@
 import Link from 'next/link';
-import BetaFeedbackPanel from '@/components/beta/BetaFeedbackPanel';
 import DashboardHeaderNav from '@/components/layout/DashboardHeaderNav';
 import Footer from '@/components/layout/Footer';
 import { createClient } from '@/lib/supabase/server';
-
-const BETA_UI_ENABLED = false;
 
 export default async function DashboardRootLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -24,36 +21,32 @@ export default async function DashboardRootLayout({ children }: { children: Reac
   const portalPath = role === 'deaf' ? '/dhh/dashboard' : role === 'requester' || role === 'org' ? '/request/dashboard' : '/interpreter/dashboard';
 
   return (
-    <>
-      <div id="site-content" className="site-content" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-        {/* Dashboard top bar — hidden on mobile where sidebar mobile bar takes over */}
-        <header
-          className="dash-top-bar"
-          style={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 50,
-            height: 57,
-            display: 'flex',
-            alignItems: 'center',
-            padding: '0 24px',
-            background: 'rgba(7,9,16,0.9)',
-            backdropFilter: 'blur(20px)',
-            borderBottom: '1px solid var(--border)',
-          }}
-        >
-          <Link href="/" style={{ textDecoration: 'none' }}>
-            <div className="wordmark" style={{ fontSize: '1.2rem' }}>
-              sign<span>post</span>
-            </div>
-          </Link>
-          <DashboardHeaderNav portalPath={portalPath} />
-        </header>
-        <main id="main-content">{children}</main>
-        <Footer />
-      </div>
-      {/* Beta UI hidden — re-enable when Deaf/DB/HH beta launches */}
-      {BETA_UI_ENABLED && process.env.NEXT_PUBLIC_BETA_MODE === 'true' && <BetaFeedbackPanel />}
-    </>
+    <div id="site-content" className="site-content" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
+      {/* Dashboard top bar — hidden on mobile where sidebar mobile bar takes over */}
+      <header
+        className="dash-top-bar"
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 50,
+          height: 57,
+          display: 'flex',
+          alignItems: 'center',
+          padding: '0 24px',
+          background: 'rgba(7,9,16,0.9)',
+          backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid var(--border)',
+        }}
+      >
+        <Link href="/" style={{ textDecoration: 'none' }}>
+          <div className="wordmark" style={{ fontSize: '1.2rem' }}>
+            sign<span>post</span>
+          </div>
+        </Link>
+        <DashboardHeaderNav portalPath={portalPath} />
+      </header>
+      <main id="main-content">{children}</main>
+      <Footer />
+    </div>
   );
 }
