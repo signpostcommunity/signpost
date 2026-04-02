@@ -75,6 +75,7 @@ export default function AdminAnnouncementsPage() {
       const res = await fetch('/api/admin/send-announcement', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ template: tmpl, recipientEmail: trimmedEmail, recipientName: name.trim() }),
       })
       const data = await res.json()

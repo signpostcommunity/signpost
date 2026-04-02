@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
   const { data: profile } = await admin
     .from('user_profiles')
     .select('is_admin')
-    .eq('user_id', user.id)
+    .eq('id', user.id)
     .single()
 
   if (!profile?.is_admin) {
