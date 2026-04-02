@@ -1,17 +1,20 @@
 import { Text, Link, Section } from '@react-email/components'
 import * as React from 'react'
 
+// ---- Styles ----
+
 const heading: React.CSSProperties = {
   color: '#f0f2f8',
-  fontSize: '22px',
+  fontSize: '24px',
   fontWeight: 700,
   fontFamily: "'Syne', 'Inter', sans-serif",
   lineHeight: '1.3',
-  margin: '0 0 16px',
+  margin: '0 0 20px',
+  textAlign: 'center' as const,
 }
 
 const paragraph: React.CSSProperties = {
-  color: '#96a0b8',
+  color: '#c8cdd8',
   fontSize: '15px',
   lineHeight: '1.7',
   margin: '0 0 16px',
@@ -23,7 +26,7 @@ const leadStyle: React.CSSProperties = {
 }
 
 const bullet: React.CSSProperties = {
-  color: '#96a0b8',
+  color: '#c8cdd8',
   fontSize: '15px',
   lineHeight: '1.7',
   margin: '0 0 8px',
@@ -32,18 +35,19 @@ const bullet: React.CSSProperties = {
 
 const buttonContainer: React.CSSProperties = {
   textAlign: 'center' as const,
-  margin: '24px 0',
+  margin: '32px 0',
 }
 
 const buttonPrimary: React.CSSProperties = {
   backgroundColor: '#00e5ff',
   color: '#0a0a0f',
   fontWeight: 700,
-  fontSize: '15px',
-  padding: '14px 32px',
-  borderRadius: '10px',
+  fontSize: '16px',
+  padding: '16px 40px',
+  borderRadius: '12px',
   textDecoration: 'none',
   display: 'inline-block',
+  textAlign: 'center' as const,
 }
 
 const buttonSecondary: React.CSSProperties = {
@@ -67,11 +71,11 @@ const card: React.CSSProperties = {
 }
 
 const callout: React.CSSProperties = {
-  backgroundColor: '#16161f',
+  backgroundColor: 'rgba(0, 229, 255, 0.04)',
   borderLeft: '3px solid #00e5ff',
-  borderRadius: '0 8px 8px 0',
-  padding: '16px 20px',
-  margin: '16px 0',
+  borderRadius: '0 12px 12px 0',
+  padding: '20px 24px',
+  margin: '24px 0',
 }
 
 const small: React.CSSProperties = {
@@ -80,6 +84,31 @@ const small: React.CSSProperties = {
   lineHeight: '1.5',
   margin: '0 0 8px',
 }
+
+const featureCard: React.CSSProperties = {
+  backgroundColor: '#111118',
+  borderRadius: '12px',
+  border: '1px solid #1e2433',
+  padding: '16px 20px',
+  margin: '0 0 12px',
+}
+
+const featureTitle: React.CSSProperties = {
+  color: '#00e5ff',
+  fontSize: '14px',
+  fontWeight: 700,
+  margin: '0 0 6px',
+  letterSpacing: '0.01em',
+}
+
+const featureDesc: React.CSSProperties = {
+  color: '#c8cdd8',
+  fontSize: '14px',
+  lineHeight: '1.6',
+  margin: '0',
+}
+
+// ---- Components ----
 
 export function EmailHeading({ children }: { children: React.ReactNode }) {
   return <Text style={heading}>{children}</Text>
@@ -100,6 +129,15 @@ export function EmailBlock({ lead, children }: { lead: string; children: React.R
 
 export function EmailBullet({ children }: { children: React.ReactNode }) {
   return <Text style={bullet}>{'•  '}{children}</Text>
+}
+
+export function EmailFeature({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <Section style={featureCard}>
+      <Text style={featureTitle}>{title}</Text>
+      <Text style={featureDesc}>{children}</Text>
+    </Section>
+  )
 }
 
 export function EmailButton({ href, children, variant = 'primary' }: {
@@ -125,4 +163,20 @@ export function EmailCallout({ children }: { children: React.ReactNode }) {
 
 export function EmailSmall({ children }: { children: React.ReactNode }) {
   return <Text style={small}>{children}</Text>
+}
+
+export function EmailSignature({ name, title, email }: { name: string; title?: string; email?: string }) {
+  return (
+    <Section style={{ marginTop: '32px' }}>
+      <Text style={{ color: '#f0f2f8', fontSize: '15px', fontWeight: 600, margin: '0 0 4px' }}>
+        {name}
+      </Text>
+      {title && <Text style={{ color: '#96a0b8', fontSize: '13px', margin: '0 0 2px' }}>{title}</Text>}
+      {email && (
+        <Text style={{ margin: '0' }}>
+          <Link href={`mailto:${email}`} style={{ color: '#00e5ff', fontSize: '13px', textDecoration: 'none' }}>{email}</Link>
+        </Text>
+      )}
+    </Section>
+  )
 }

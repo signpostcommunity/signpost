@@ -4,9 +4,10 @@ import { SignpostEmail } from './SignpostEmail'
 import {
   EmailHeading,
   EmailParagraph,
-  EmailBullet,
+  EmailFeature,
   EmailButton,
   EmailCallout,
+  EmailSignature,
 } from './components'
 
 interface InterpreterInvitationProps {
@@ -34,28 +35,28 @@ export function InterpreterInvitation({ recipientName = 'there' }: InterpreterIn
       </EmailParagraph>
 
       <EmailParagraph>
-        signpost puts interpreters in control. You set your own rates and terms. Requesters find you through the directory or through a Deaf client's preferred interpreter list. You respond to inquiries in a couple clicks, and after the job, you invoice however you want. 100% of your rate goes to you. signpost charges the requester a flat $15 booking fee, and that's it. No commissions, no markups, nothing on top of your rate.
+        signpost puts interpreters in control. You set your own rates and terms. 100% of your rate goes to you. signpost charges the requester a flat $15 booking fee, and that's it. No commissions, no markups, nothing on top of your rate.
       </EmailParagraph>
 
       <EmailParagraph>
         A few things I'm really proud of:
       </EmailParagraph>
 
-      <EmailBullet>
-        Deaf clients can build a preferred interpreter list and share it with anyone who books for them. The requester sees who the Deaf person actually wants.
-      </EmailBullet>
+      <EmailFeature title="Preferred interpreter lists">
+        Deaf clients build a preferred list and share it with anyone who books for them. The requester sees who the Deaf person actually wants.
+      </EmailFeature>
 
-      <EmailBullet>
-        You get a custom URL and Book Me badge to put in your email signature or on LinkedIn.
-      </EmailBullet>
+      <EmailFeature title="Book Me badge">
+        A custom URL and badge to put in your email signature or on LinkedIn.
+      </EmailFeature>
 
-      <EmailBullet>
-        We built mentorship matching so experienced interpreters can connect with newer interpreters.
-      </EmailBullet>
+      <EmailFeature title="Mentorship matching">
+        Experienced interpreters connect with newer interpreters. Built-in scheduling and compensation tools.
+      </EmailFeature>
 
-      <EmailBullet>
-        Free invoicing built in if you want it, or use your own tools.
-      </EmailBullet>
+      <EmailFeature title="Free invoicing">
+        Built in if you want it, or use your own tools. No lock-in.
+      </EmailFeature>
 
       <EmailParagraph>
         We're almost ready to start inviting requesters (schools, medical offices, agencies, event coordinators). But we need a solid directory of interpreters first. That's where you come in.
@@ -86,9 +87,7 @@ export function InterpreterInvitation({ recipientName = 'there' }: InterpreterIn
         I'd really appreciate your support on this. Let me know what you think once you've had a chance to look around.
       </EmailParagraph>
 
-      <EmailParagraph>
-        Molly
-      </EmailParagraph>
+      <EmailSignature name="Molly" />
     </SignpostEmail>
   )
 }

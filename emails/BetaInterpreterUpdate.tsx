@@ -4,9 +4,10 @@ import { SignpostEmail } from './SignpostEmail'
 import {
   EmailHeading,
   EmailParagraph,
-  EmailBullet,
+  EmailFeature,
   EmailButton,
   EmailCallout,
+  EmailSignature,
 } from './components'
 
 interface BetaInterpreterUpdateProps {
@@ -33,25 +34,25 @@ export function BetaInterpreterUpdate({ recipientName = 'there' }: BetaInterpret
         Here are some of the biggest improvements we built based on what you told us:
       </EmailParagraph>
 
-      <EmailBullet>
-        <strong style={{ color: '#f0f2f8' }}>Mentorship matching:</strong> You can now offer or seek mentorship from other interpreters. Choose your knowledge areas, set your compensation preference, and get matched with interpreters who complement your experience.
-      </EmailBullet>
+      <EmailFeature title="Mentorship matching">
+        Offer or seek mentorship from other interpreters. Choose knowledge areas, set compensation, get matched.
+      </EmailFeature>
 
-      <EmailBullet>
-        <strong style={{ color: '#f0f2f8' }}>Rating confidentiality:</strong> Deaf users can now rate interpreters privately. Ratings are never shared with interpreters and never visible on public profiles. This was a direct response to concerns about honest feedback.
-      </EmailBullet>
+      <EmailFeature title="Rating confidentiality">
+        Deaf users rate privately. Ratings are never shared with interpreters or visible on public profiles.
+      </EmailFeature>
 
-      <EmailBullet>
-        <strong style={{ color: '#f0f2f8' }}>Book Me badge:</strong> You now have a custom URL and badge that link directly to your personal booking page. You can add it to your email signature, LinkedIn, or anywhere you like. This creates an easy way to track your direct-book work in one centralized platform.
-      </EmailBullet>
+      <EmailFeature title="Book Me badge">
+        Your custom URL and badge link directly to your booking page. Add it to your email signature or LinkedIn.
+      </EmailFeature>
 
-      <EmailBullet>
-        <strong style={{ color: '#f0f2f8' }}>Built-in Invoicing:</strong> Use your own invoicing tools or use signpost's free all-in-one invoicing feature. Change your preference any time, no requirement to use signpost's tools.
-      </EmailBullet>
+      <EmailFeature title="Built-in invoicing">
+        Use your own tools or signpost's free invoicing. Change your preference any time.
+      </EmailFeature>
 
-      <EmailBullet>
-        <strong style={{ color: '#f0f2f8' }}>Directory improvements:</strong> Batch add interpreters to preferred lists, new filters, and a cleaner browsing experience for the people booking you.
-      </EmailBullet>
+      <EmailFeature title="Directory improvements">
+        Batch add to preferred lists, new filters, cleaner browsing.
+      </EmailFeature>
 
       <EmailParagraph>
         Now, we are very close to opening the door to requesters. Organizations, schools, medical offices, and event coordinators are ready to start booking. But they need a directory full of interpreters to book from.
@@ -61,22 +62,16 @@ export function BetaInterpreterUpdate({ recipientName = 'there' }: BetaInterpret
         That's where you come in.
       </EmailParagraph>
 
-      <EmailParagraph>
-        The single most important thing you can do right now is complete your profile. Upload a photo, fill in your specializations, set your rate profiles, and make sure your credentials are current. The more complete your profile, the more likely you are to be found and booked.
-      </EmailParagraph>
-
       <EmailButton href="https://signpost.community/interpreter/dashboard/profile">
         Complete Your Profile
       </EmailButton>
 
       <EmailParagraph>
-        And if there's an interpreter you love working with who isn't on signpost yet, send them an invitation. It takes 10 seconds. Just forward them this link:
+        Upload a photo, add your specializations, set your rates. The more complete your profile, the more bookings you'll get.
       </EmailParagraph>
 
       <EmailParagraph>
-        <Link href="https://signpost.community/interpreter/signup" style={linkStyle}>
-          https://signpost.community/interpreter/signup
-        </Link>
+        Know an interpreter who should be here? Forward them this:
       </EmailParagraph>
 
       <EmailCallout>
@@ -92,11 +87,11 @@ export function BetaInterpreterUpdate({ recipientName = 'there' }: BetaInterpret
         Thank you for helping us build something the community actually needs. We couldn't have gotten here without you.
       </EmailParagraph>
 
-      <EmailParagraph>
-        Molly Sano-Mahgoub{'\n'}
-        Co-founder, signpost{'\n'}
-        mollysano.nicm@gmail.com
-      </EmailParagraph>
+      <EmailSignature
+        name="Molly Sano-Mahgoub"
+        title="Co-founder, signpost"
+        email="mollysano.nicm@gmail.com"
+      />
     </SignpostEmail>
   )
 }
