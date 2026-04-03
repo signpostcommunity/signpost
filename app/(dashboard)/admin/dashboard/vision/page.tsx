@@ -375,9 +375,9 @@ function CommitmentsTab() {
     {
       title: 'Accessibility',
       items: [
-        'WCAG 2.2 Level AA compliance across the entire platform',
+        'WCAG 2.2 Level AAA compliance across the entire platform',
         'Screen reader friendly: semantic HTML, ARIA labels, full keyboard navigation',
-        'DeafBlind-friendly high-contrast toggle before public launch',
+        'DeafBlind/high-contrast accessibility conforming to WCAG AAA standards',
         'Ongoing testing and improvement',
       ],
     },

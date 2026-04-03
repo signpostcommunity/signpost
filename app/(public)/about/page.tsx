@@ -345,9 +345,9 @@ export default function AboutPage() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 32 }}>
               {[
-                { title: 'WCAG 2.2 Level AA', desc: 'We meet or exceed Web Content Accessibility Guidelines 2.2 at the AA conformance level across the entire platform.' },
+                { title: 'WCAG 2.2 Level AAA', desc: 'We meet or exceed Web Content Accessibility Guidelines 2.2 at the AAA conformance level across the entire platform.' },
                 { title: 'Screen reader friendly', desc: 'Semantic HTML, ARIA labels, and full keyboard navigation throughout.' },
-                { title: 'DeafBlind-friendly mode', desc: 'A high-contrast display toggle optimized for DeafBlind users is in active development and will be available before public launch.' },
+                { title: 'DeafBlind/High-Contrast Accessibility', desc: 'signpost aims to conform with WCAG AAA guidelines for website accessibility. These are the strictest standards for high-contrast web content. If you have any difficulty accessing our site, please reach out at hello@signpost.community.' },
                 { title: 'Ongoing improvement', desc: 'Accessibility is never "done." We continuously test and improve.' },
               ].map(item => (
                 <div key={item.title} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
