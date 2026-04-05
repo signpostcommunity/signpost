@@ -16,6 +16,13 @@ interface RecentBooking {
   event_category: string | null
 }
 
+interface RecentRecipient {
+  id: string
+  booking_id: string
+  interpreter_id: string
+  status: string
+}
+
 interface Props {
   firstName: string
   orgName: string
@@ -24,6 +31,8 @@ interface Props {
   rosterCount: number
   pendingResponses: number
   recentBookings: RecentBooking[]
+  recentRecipients?: RecentRecipient[]
+  recentInterpreterMap?: Record<string, string>
 }
 
 /* ── Helpers ── */
@@ -92,8 +101,31 @@ function StatCard({ num, label, href }: { num: number; label: string; href: stri
 
 /* ── Main ── */
 
+function recipientStatusLabel(s: string): string {
+  switch (s) {
+    case 'sent': return 'Pending'
+    case 'viewed': return 'Viewed'
+    case 'responded': return 'Rate sent'
+    case 'confirmed': return 'Confirmed'
+    case 'declined': return 'Declined'
+    case 'withdrawn': return 'Withdrawn'
+    default: return s
+  }
+}
+
+function recipientStatusColor(s: string): string {
+  switch (s) {
+    case 'sent': case 'viewed': return '#f97316'
+    case 'responded': return '#00e5ff'
+    case 'confirmed': return '#34d399'
+    case 'declined': case 'withdrawn': return '#666'
+    default: return '#96a0b8'
+  }
+}
+
 export default function RequesterOverviewClient({
   firstName, orgName, activeRequests, confirmedBookings, rosterCount, pendingResponses, recentBookings,
+  recentRecipients = [], recentInterpreterMap = {},
 }: Props) {
   const greeting = firstName ? `Good to see you, ${firstName}.` : 'Welcome to your dashboard.'
 
@@ -185,6 +217,31 @@ export default function RequesterOverviewClient({
                   <span>{formatTime(booking.time_start, booking.time_end)}</span>
                   <span>{booking.interpreter_count} interpreter{booking.interpreter_count !== 1 ? 's' : ''}</span>
                 </div>
+                {/* Per-interpreter status for multi-interpreter bookings */}
+                {(() => {
+                  const recs = recentRecipients.filter(r => r.booking_id === booking.id)
+                  if (recs.length <= 1) return null
+                  return (
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', paddingBottom: 4 }}>
+                      {recs.map(rec => (
+                        <span key={rec.id} style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 5,
+                          fontSize: '0.72rem', padding: '3px 10px',
+                          borderRadius: 100, fontFamily: "'DM Sans', sans-serif",
+                          background: 'rgba(255,255,255,0.04)',
+                          border: '1px solid var(--border)',
+                        }}>
+                          <span style={{ color: 'var(--text)', fontWeight: 600 }}>
+                            {recentInterpreterMap[rec.interpreter_id] || 'Unknown'}
+                          </span>
+                          <span style={{ color: recipientStatusColor(rec.status), fontWeight: 600 }}>
+                            {recipientStatusLabel(rec.status)}
+                          </span>
+                        </span>
+                      ))}
+                    </div>
+                  )
+                })()}
               </div>
             ))}
             <Link

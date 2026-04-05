@@ -32,6 +32,15 @@ export default async function RequesterDashboardPage() {
     event_category: string | null
   }[] = []
 
+  // Recent booking recipients (for multi-interpreter status)
+  let recentRecipients: {
+    id: string
+    booking_id: string
+    interpreter_id: string
+    status: string
+  }[] = []
+  let recentInterpreterMap: Record<string, string> = {}
+
   if (user) {
     // BUG 1 FIX: Auto-create requester_profiles row for multi-role users
     const { data: existingProfile } = await supabase
@@ -107,6 +116,35 @@ export default async function RequesterDashboardPage() {
 
     const recent = recentRes.status === 'fulfilled' ? recentRes.value.data : null
     if (recent) recentBookings = recent.map(b => decryptFields(b, ['title']))
+
+    // Fetch recipients for recent bookings (for multi-interpreter status display)
+    const recentIds = recentBookings.map(b => b.id)
+    if (recentIds.length > 0) {
+      const { data: recs } = await supabase
+        .from('booking_recipients')
+        .select('id, booking_id, interpreter_id, status')
+        .in('booking_id', recentIds)
+
+      if (recs) {
+        recentRecipients = recs
+
+        // Fetch interpreter names
+        const interpIds = [...new Set(recs.map(r => r.interpreter_id))]
+        if (interpIds.length > 0) {
+          const admin = (await import('@/lib/supabase/admin')).getSupabaseAdmin()
+          const { data: interps } = await admin
+            .from('interpreter_profiles')
+            .select('id, first_name, last_name, name')
+            .in('id', interpIds)
+
+          if (interps) {
+            for (const ip of interps) {
+              recentInterpreterMap[ip.id] = ip.first_name || ip.name?.split(' ')[0] || 'Unknown'
+            }
+          }
+        }
+      }
+    }
   }
 
   return (
@@ -118,6 +156,8 @@ export default async function RequesterDashboardPage() {
       rosterCount={rosterCount}
       pendingResponses={pendingResponses}
       recentBookings={recentBookings}
+      recentRecipients={recentRecipients}
+      recentInterpreterMap={recentInterpreterMap}
     />
   )
 }
