@@ -4,6 +4,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { sanitizeText } from '@/lib/sanitize'
 import { encryptFields, BOOKING_ENCRYPTED_FIELDS } from '@/lib/encryption'
 import { logAudit } from '@/lib/audit'
+import { createNotification } from '@/lib/notifications-server'
 
 export const dynamic = 'force-dynamic'
 
@@ -159,7 +160,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create booking_recipients for each interpreter (if provided)
-    if (interpreterIds?.length) {
+    if (interpreterIds?.length && !saveAsDraft) {
       for (const interpreterId of interpreterIds) {
         const { error: recipientErr } = await admin
           .from('booking_recipients')
@@ -167,11 +168,37 @@ export async function POST(request: NextRequest) {
             booking_id: booking.id,
             interpreter_id: interpreterId,
             status: 'sent',
+            wave_number: 1,
             sent_at: new Date().toISOString(),
           })
 
         if (recipientErr) {
           console.error('[request/booking] booking_recipients insert failed:', recipientErr.message)
+        }
+
+        // Send notification to interpreter
+        try {
+          // Look up the interpreter's user_id from interpreter_profiles
+          const { data: interpProfile } = await admin
+            .from('interpreter_profiles')
+            .select('user_id')
+            .eq('id', interpreterId)
+            .maybeSingle()
+
+          if (interpProfile?.user_id) {
+            await createNotification({
+              recipientUserId: interpProfile.user_id,
+              type: 'new_request',
+              subject: `New interpreter request: ${title || 'Untitled'}`,
+              body: `${requesterName} has sent you an interpreter request${date ? ` for ${date}` : ''}. Review the details and respond with your rate.`,
+              metadata: { booking_id: booking.id },
+              ctaText: 'View Request',
+              ctaUrl: `/interpreter/dashboard/inquiries`,
+              channel: 'both',
+            })
+          }
+        } catch (notifErr) {
+          console.error('[request/booking] notification send failed:', notifErr)
         }
       }
     }

@@ -208,7 +208,10 @@ export default function NewRequestPage() {
         return
       }
 
-      setToast({ message: 'Request submitted. Interpreters will be notified.', type: 'success' })
+      const interpMsg = selectedInterpreters.length > 0
+        ? `Request sent to ${selectedInterpreters.length} interpreter${selectedInterpreters.length !== 1 ? 's' : ''}.`
+        : 'Request submitted. Interpreters will be notified.'
+      setToast({ message: interpMsg, type: 'success' })
       setTimeout(() => router.push('/request/dashboard'), 1500)
     } catch {
       setToast({ message: 'Something went wrong. Please try again.', type: 'error' })

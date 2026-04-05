@@ -44,7 +44,7 @@ export default function SmokeTestPage() {
 
   return (
     <div style={{ padding: '32px 24px', color: 'var(--text)' }}>
-      <h1 style={{ fontFamily: 'var(--font-syne)', fontSize: 28, fontWeight: 775, marginBottom: 8 }}>
+      <h1 style={{ fontFamily: 'var(--font-syne)', fontSize: 28, fontWeight: 700, marginBottom: 8 }}>
         RLS Smoke Tests
       </h1>
       <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 24 }}>

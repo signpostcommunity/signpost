@@ -353,7 +353,7 @@ export default function AdminAnnouncementsPage() {
 
       {/* Page header */}
       <h1 style={{
-        fontFamily: "'Syne', sans-serif", fontWeight: 775, fontSize: '27px',
+        fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '27px',
         color: '#f0f2f8', letterSpacing: '-0.02em', margin: '0 0 6px',
       }}>
         Send Announcement

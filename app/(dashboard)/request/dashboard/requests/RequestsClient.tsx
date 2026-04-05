@@ -432,6 +432,29 @@ export default function RequestsClient({
                           </span>
                         )}
                       </div>
+                      {/* Per-interpreter status breakdown for multi-interpreter bookings */}
+                      {recs.length > 1 && (
+                        <div style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                          {recs.map(rec => {
+                            const interp = interpreterMap[rec.interpreter_id]
+                            const firstName = interp?.first_name || interp?.name?.split(' ')[0] || 'Unknown'
+                            return (
+                              <span key={rec.id} style={{
+                                display: 'inline-flex', alignItems: 'center', gap: 5,
+                                fontSize: '0.72rem', padding: '3px 10px',
+                                borderRadius: 100, fontFamily: "'DM Sans', sans-serif",
+                                background: 'rgba(255,255,255,0.04)',
+                                border: '1px solid var(--border)',
+                              }}>
+                                <span style={{ color: 'var(--text)', fontWeight: 600 }}>{firstName}</span>
+                                <span style={{ color: recipientStatusColor(rec.status), fontWeight: 600 }}>
+                                  {recipientStatusLabel(rec.status)}
+                                </span>
+                              </span>
+                            )
+                          })}
+                        </div>
+                      )}
                     </div>
                     <svg
                       width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)"
