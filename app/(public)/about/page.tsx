@@ -516,7 +516,7 @@ export default function AboutPage() {
             id="panel-pricing"
             aria-labelledby="tab-pricing"
             hidden={activeTab !== 'pricing'}
-            style={{ maxWidth: 800 }}
+            style={{ maxWidth: 800, margin: '0 auto' }}
           >
             <h2 style={{
               fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.4rem, 2.5vw, 1.8rem)',
@@ -651,7 +651,7 @@ export default function AboutPage() {
             id="panel-accessibility"
             aria-labelledby="tab-accessibility"
             hidden={activeTab !== 'accessibility'}
-            style={{ maxWidth: 800 }}
+            style={{ maxWidth: 800, margin: '0 auto' }}
           >
             <h2 style={{
               fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.4rem, 2.5vw, 1.8rem)',
@@ -743,7 +743,7 @@ export default function AboutPage() {
             id="panel-social"
             aria-labelledby="tab-social"
             hidden={activeTab !== 'social'}
-            style={{ maxWidth: 800 }}
+            style={{ maxWidth: 800, margin: '0 auto' }}
           >
             <h2 style={{
               fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.4rem, 2.5vw, 1.8rem)',
@@ -799,7 +799,7 @@ export default function AboutPage() {
             id="panel-faq"
             aria-labelledby="tab-faq"
             hidden={activeTab !== 'faq'}
-            style={{ maxWidth: 800 }}
+            style={{ maxWidth: 800, margin: '0 auto' }}
           >
             <h2 style={{
               fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.4rem, 2.5vw, 1.8rem)',
@@ -879,7 +879,7 @@ export default function AboutPage() {
             id="panel-contact"
             aria-labelledby="tab-contact"
             hidden={activeTab !== 'contact'}
-            style={{ maxWidth: 800 }}
+            style={{ maxWidth: 800, margin: '0 auto' }}
           >
             <h2 style={{
               fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.4rem, 2.5vw, 1.8rem)',
