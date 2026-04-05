@@ -6,7 +6,7 @@ import Link from 'next/link'
 import Toast from '@/components/ui/Toast'
 import RequesterInterpreterPicker from '@/components/requester/RequesterInterpreterPicker'
 
-/* ── Constants ── */
+/* -- Constants -- */
 
 const EVENT_CATEGORIES = [
   'Medical', 'Legal', 'Education', 'Employment', 'Government',
@@ -29,7 +29,28 @@ const SPECIALIZATIONS = [
 
 const RECURRENCE_OPTIONS = ['One-time', 'Weekly', 'Bi-weekly', 'Monthly']
 
-/* ── Styles ── */
+/* -- Types -- */
+
+interface DeafListInterpreter {
+  id: string
+  name: string
+  certifications: string[]
+  specializations: string[]
+  tier: string
+  avatar_url: string | null
+  avatar_color: string | null
+  is_dnb: boolean
+}
+
+interface TaggedDeafPerson {
+  identifier: string
+  userId: string | null
+  displayName: string
+  status: 'loading' | 'list_available' | 'approval_pending' | 'not_on_signpost' | 'error'
+  interpreters: DeafListInterpreter[]
+}
+
+/* -- Styles -- */
 
 const labelStyle: React.CSSProperties = {
   display: 'block', fontSize: '0.82rem', fontWeight: 600,
@@ -55,16 +76,16 @@ const selectStyle: React.CSSProperties = {
 }
 
 const sectionLabelStyle: React.CSSProperties = {
-  fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem',
-  letterSpacing: '0.1em', textTransform: 'uppercase' as const,
-  color: 'var(--muted)', margin: '32px 0 16px',
+  fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '13px',
+  letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+  color: 'var(--accent)', margin: '32px 0 12px',
 }
 
 const errorStyle: React.CSSProperties = {
   fontSize: '0.78rem', color: 'var(--accent3)', marginTop: 4,
 }
 
-/* ── Component ── */
+/* -- Component -- */
 
 export default function NewRequestPage() {
   const router = useRouter()
@@ -74,7 +95,6 @@ export default function NewRequestPage() {
   const [draftId, setDraftId] = useState<string | null>(null)
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
 
-  // Check if requester has a payment method on file
   useEffect(() => {
     async function checkPaymentMethod() {
       try {
@@ -87,10 +107,11 @@ export default function NewRequestPage() {
     }
     checkPaymentMethod()
   }, [])
+
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
-  // Form state
+  // Section 1: Event details
   const [title, setTitle] = useState('')
   const [eventCategory, setEventCategory] = useState('')
   const [date, setDate] = useState('')
@@ -104,16 +125,19 @@ export default function NewRequestPage() {
   const [spokenLanguage, setSpokenLanguage] = useState('English')
   const [interpreterCount, setInterpreterCount] = useState(1)
   const [specialization, setSpecialization] = useState('')
-  const [selectedInterpreters, setSelectedInterpreters] = useState<string[]>([])
-  const [notes, setNotes] = useState('')
 
-  // DHH client info
-  const [showDhhClient, setShowDhhClient] = useState(false)
-  const [clientName, setClientName] = useState('')
-  const [clientEmail, setClientEmail] = useState('')
-  const [clientCommPrefs, setClientCommPrefs] = useState('')
-  const [prefListState, setPrefListState] = useState<'idle' | 'sending' | 'sent' | 'skipped'>('idle')
-  const [prefListError, setPrefListError] = useState<string | null>(null)
+  // Section 2: Who is this for?
+  const [taggedDeafPersons, setTaggedDeafPersons] = useState<TaggedDeafPerson[]>([])
+  const [currentLookupInput, setCurrentLookupInput] = useState('')
+  const [lookupError, setLookupError] = useState<string | null>(null)
+  const [skipDeafTag, setSkipDeafTag] = useState(false)
+  const [continuedWithoutList, setContinuedWithoutList] = useState(false)
+
+  // Section 3: Interpreter selection
+  const [selectedInterpreters, setSelectedInterpreters] = useState<string[]>([])
+
+  // Section 4: Notes
+  const [notes, setNotes] = useState('')
 
   function validate(): boolean {
     const errs: Record<string, string> = {}
@@ -136,6 +160,10 @@ export default function NewRequestPage() {
   }
 
   function buildPayload() {
+    const taggedIds = taggedDeafPersons
+      .filter(p => p.userId)
+      .map(p => p.userId)
+
     return {
       title: title || null,
       date: date || null,
@@ -150,6 +178,7 @@ export default function NewRequestPage() {
       interpreterIds: selectedInterpreters.length > 0 ? selectedInterpreters : undefined,
       description: `Sign language: ${signLanguage}. Spoken language: ${spokenLanguage}.`,
       notes: notes || null,
+      tagged_deaf_user_ids: taggedIds.length > 0 ? taggedIds : undefined,
     }
   }
 
@@ -180,7 +209,6 @@ export default function NewRequestPage() {
   async function handleSubmit() {
     if (!validate()) return
 
-    // Gate: require payment method for non-draft submissions
     if (!hasPaymentMethod) {
       setToast({ message: 'Please add a payment method before submitting a request.', type: 'error' })
       if (paymentNoticeRef.current) {
@@ -219,20 +247,206 @@ export default function NewRequestPage() {
     }
   }
 
+  async function handleDeafLookup() {
+    const input = currentLookupInput.trim()
+    if (!input) return
+
+    // Prevent duplicate lookups
+    if (taggedDeafPersons.some(p => p.identifier.toLowerCase() === input.toLowerCase())) {
+      setLookupError('This person has already been added.')
+      return
+    }
+
+    setLookupError(null)
+    const newPerson: TaggedDeafPerson = {
+      identifier: input,
+      userId: null,
+      displayName: '',
+      status: 'loading',
+      interpreters: [],
+    }
+    const idx = taggedDeafPersons.length
+    setTaggedDeafPersons(prev => [...prev, newPerson])
+    setCurrentLookupInput('')
+
+    try {
+      const res = await fetch('/api/request/deaf-list-check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deafUserIdentifier: input }),
+      })
+      const data = await res.json()
+
+      setTaggedDeafPersons(prev => {
+        const updated = [...prev]
+        if (!updated[idx]) return prev
+        if (data.status === 'list_available') {
+          updated[idx] = {
+            ...updated[idx],
+            userId: data.userId,
+            displayName: data.displayName || 'this person',
+            status: 'list_available',
+            interpreters: data.interpreters || [],
+          }
+        } else if (data.status === 'approval_pending') {
+          updated[idx] = {
+            ...updated[idx],
+            userId: data.userId,
+            displayName: data.displayName || 'this person',
+            status: 'approval_pending',
+            interpreters: [],
+          }
+        } else {
+          updated[idx] = {
+            ...updated[idx],
+            status: 'not_on_signpost',
+            interpreters: [],
+          }
+        }
+        return updated
+      })
+    } catch {
+      setTaggedDeafPersons(prev => {
+        const updated = [...prev]
+        if (updated[idx]) {
+          updated[idx] = { ...updated[idx], status: 'error' }
+        }
+        return updated
+      })
+    }
+  }
+
+  function removeTaggedPerson(idx: number) {
+    setTaggedDeafPersons(prev => prev.filter((_, i) => i !== idx))
+  }
+
+  // Build interpreter groups from Deaf person lists
+  function buildInterpreterGroups() {
+    const groups: Array<{
+      label: string
+      accent: 'purple' | 'cyan'
+      interpreters: Array<{
+        id: string; name: string; certifications: string[]; specializations: string[]
+        tier?: string; avatar_url?: string | null; avatar_color?: string | null
+        badge?: string; recommended?: boolean; is_dnb?: boolean
+      }>
+      collapsed?: boolean
+    }> = []
+
+    const listsAvailable = taggedDeafPersons.filter(p => p.status === 'list_available' && p.interpreters.length > 0)
+    if (listsAvailable.length === 0) return groups
+
+    // Collect all DNB IDs across all lists
+    const allDnbIds = new Set<string>()
+    for (const person of listsAvailable) {
+      for (const interp of person.interpreters) {
+        if (interp.is_dnb) allDnbIds.add(interp.id)
+      }
+    }
+
+    // Count how many lists each interpreter appears on (excluding DNB)
+    const interpListCount: Record<string, number> = {}
+    for (const person of listsAvailable) {
+      for (const interp of person.interpreters) {
+        if (!interp.is_dnb && !allDnbIds.has(interp.id)) {
+          interpListCount[interp.id] = (interpListCount[interp.id] || 0) + 1
+        }
+      }
+    }
+
+    // Group 1: Recommended (appears on multiple lists)
+    if (listsAvailable.length > 1) {
+      const recommended = new Map<string, DeafListInterpreter>()
+      for (const person of listsAvailable) {
+        for (const interp of person.interpreters) {
+          if (!interp.is_dnb && !allDnbIds.has(interp.id) && (interpListCount[interp.id] || 0) >= 2) {
+            if (!recommended.has(interp.id)) {
+              recommended.set(interp.id, interp)
+            }
+          }
+        }
+      }
+
+      if (recommended.size > 0) {
+        groups.push({
+          label: 'Recommended: appears on multiple lists',
+          accent: 'purple',
+          interpreters: Array.from(recommended.values()).map(i => ({
+            ...i,
+            badge: undefined,
+            recommended: true,
+          })),
+        })
+      }
+    }
+
+    // Group 2+: Per-person lists
+    const recommendedIds = new Set(
+      groups.length > 0 ? groups[0].interpreters.map(i => i.id) : []
+    )
+
+    for (const person of listsAvailable) {
+      const personInterpreters = person.interpreters
+        .filter(i => !i.is_dnb && !allDnbIds.has(i.id) && !recommendedIds.has(i.id))
+        .map(i => ({
+          ...i,
+          badge: `On ${person.displayName}'s list`,
+        }))
+
+      if (personInterpreters.length > 0) {
+        groups.push({
+          label: `${person.displayName}'s preferred interpreters`,
+          accent: 'purple',
+          interpreters: personInterpreters,
+        })
+      }
+    }
+
+    return groups
+  }
+
+  // Check if any Deaf lists had DNB conflicts
+  function hasDnbConflicts() {
+    const listsAvailable = taggedDeafPersons.filter(p => p.status === 'list_available')
+    if (listsAvailable.length < 2) return false
+
+    const allDnbIds = new Set<string>()
+    const allPreferredIds = new Set<string>()
+    for (const person of listsAvailable) {
+      for (const interp of person.interpreters) {
+        if (interp.is_dnb) allDnbIds.add(interp.id)
+        else allPreferredIds.add(interp.id)
+      }
+    }
+
+    // If any preferred interpreter is also on a DNB list
+    for (const id of allPreferredIds) {
+      if (allDnbIds.has(id)) return true
+    }
+    return false
+  }
+
+  const interpreterGroups = buildInterpreterGroups()
+  const hasDeafLists = interpreterGroups.length > 0
+  const showRosterOnly = skipDeafTag || continuedWithoutList ||
+    (taggedDeafPersons.length > 0 && taggedDeafPersons.every(p => p.status === 'not_on_signpost'))
+
   const platformFee = 15.0 * interpreterCount
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       <div style={{ maxWidth: 680, margin: '0 auto' }}>
         {/* Header */}
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.6rem', margin: '0 0 6px' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '27px', letterSpacing: '-0.02em', margin: '0 0 6px', color: '#f0f2f8' }}>
           New Interpreter Request
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: '0 0 26px' }}>
           Fill out the details below to request an interpreter for your event.
         </p>
 
-        {/* ── Section 1: Event Details ── */}
+        {/* ================================================================ */}
+        {/* SECTION 1: EVENT DETAILS                                         */}
+        {/* ================================================================ */}
         <h3 style={sectionLabelStyle}>Event Details</h3>
 
         <div style={{ marginBottom: 20 }}>
@@ -333,9 +547,6 @@ export default function NewRequestPage() {
           </div>
         )}
 
-        {/* ── Section 2: Interpreter Needs ── */}
-        <h3 style={sectionLabelStyle}>Interpreter Needs</h3>
-
         <div style={{ marginBottom: 20 }}>
           <label style={labelStyle}>Sign Language Needed *</label>
           <select value={signLanguage} onChange={e => setSignLanguage(e.target.value)} style={selectStyle}>
@@ -371,28 +582,250 @@ export default function NewRequestPage() {
           </select>
         </div>
 
-        <div style={{ marginBottom: 20 }}>
-          <label style={labelStyle}>Additional Notes for Interpreters</label>
-          <textarea
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            placeholder="Any additional context, preparation materials, or special requirements"
-            rows={4}
-            style={{ ...inputStyle, resize: 'vertical' as const }}
-          />
-        </div>
+        {/* ================================================================ */}
+        {/* SECTION 2: WHO IS THIS FOR?                                      */}
+        {/* ================================================================ */}
+        <h3 style={sectionLabelStyle}>Who is this for?</h3>
+        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, lineHeight: 1.6 }}>
+          Enter the email or phone number of the Deaf, DeafBlind, or Hard of Hearing person this interpreter is for. Their preferred interpreter list will help you find the best match.
+        </p>
 
-        {/* ── Section 3: Choose Interpreters ── */}
-        <h3 style={{
-          fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '13px',
-          letterSpacing: '0.08em', textTransform: 'uppercase' as const,
-          color: 'var(--accent)', margin: '32px 0 12px',
-        }}>CHOOSE INTERPRETERS</h3>
+        {!skipDeafTag && (
+          <>
+            {/* Tagged persons */}
+            {taggedDeafPersons.map((person, idx) => (
+              <div key={idx} style={{ marginBottom: 12 }}>
+                {person.status === 'loading' && (
+                  <div style={{
+                    padding: '16px 20px', background: 'var(--surface)',
+                    border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
+                    display: 'flex', alignItems: 'center', gap: 10,
+                  }}>
+                    <div style={{
+                      width: 16, height: 16, border: '2px solid var(--accent)',
+                      borderTopColor: 'transparent', borderRadius: '50%',
+                      animation: 'spin 0.8s linear infinite',
+                    }} />
+                    <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Looking up {person.identifier}...</span>
+                  </div>
+                )}
+
+                {/* State A: List available */}
+                {person.status === 'list_available' && (
+                  <div style={{
+                    padding: '16px 20px',
+                    background: 'rgba(0,229,255,0.04)',
+                    border: '1px solid rgba(0,229,255,0.2)',
+                    borderRadius: 'var(--radius-sm)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                          <path d="M3 8l3.5 3.5L13 5" stroke="#00e5ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--accent)' }}>
+                          {person.displayName}&apos;s preferred interpreter list has been shared with you.
+                        </span>
+                      </div>
+                      <button type="button" onClick={() => removeTaggedPerson(idx)} style={{
+                        background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem', padding: '2px 6px',
+                      }}>&times;</button>
+                    </div>
+                    <p style={{ fontSize: '0.82rem', color: 'var(--muted)', margin: '6px 0 0', lineHeight: 1.5 }}>
+                      These are interpreters {person.displayName} trusts and has worked with.
+                    </p>
+                  </div>
+                )}
+
+                {/* State B: Approval pending */}
+                {person.status === 'approval_pending' && (
+                  <div style={{
+                    padding: '16px 20px',
+                    background: 'rgba(251,191,36,0.04)',
+                    border: '1px solid rgba(251,191,36,0.2)',
+                    borderRadius: 'var(--radius-sm)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                          <circle cx="8" cy="8" r="6" stroke="#fbbf24" strokeWidth="1.5" />
+                          <path d="M8 5v3" stroke="#fbbf24" strokeWidth="1.5" strokeLinecap="round" />
+                          <circle cx="8" cy="10.5" r="0.5" fill="#fbbf24" />
+                        </svg>
+                        <span style={{ fontSize: '0.88rem', fontWeight: 600, color: '#fbbf24' }}>
+                          Waiting for {person.displayName}&apos;s approval
+                        </span>
+                      </div>
+                      <button type="button" onClick={() => removeTaggedPerson(idx)} style={{
+                        background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem', padding: '2px 6px',
+                      }}>&times;</button>
+                    </div>
+                    <p style={{ fontSize: '0.82rem', color: 'var(--muted)', margin: '6px 0 12px', lineHeight: 1.5 }}>
+                      {person.displayName} manages access to their preferred interpreter list. We have sent them a request to share it with you. You can save this as a draft and come back when they respond, or continue with interpreters from your own roster.
+                    </p>
+                    <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={handleSaveDraft}
+                        className="btn-primary"
+                        style={{ padding: '9px 18px', fontSize: '0.82rem', fontWeight: 600, border: 'none', cursor: 'pointer' }}
+                      >
+                        Save as Draft
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setContinuedWithoutList(true)}
+                        style={{
+                          background: 'none', border: '1px solid var(--border)',
+                          borderRadius: 'var(--radius-sm)', padding: '9px 18px',
+                          fontSize: '0.82rem', color: 'var(--muted)', cursor: 'pointer',
+                          fontFamily: "'DM Sans', sans-serif",
+                        }}
+                      >
+                        Continue without their list
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* State C: Not on signpost */}
+                {person.status === 'not_on_signpost' && (
+                  <div style={{
+                    padding: '16px 20px',
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-sm)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
+                        {person.identifier} does not have a signpost account yet.
+                      </span>
+                      <button type="button" onClick={() => removeTaggedPerson(idx)} style={{
+                        background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem', padding: '2px 6px',
+                      }}>&times;</button>
+                    </div>
+                    <p style={{ fontSize: '0.78rem', color: 'var(--muted)', margin: '6px 0 0', lineHeight: 1.5 }}>
+                      You can invite them to create one so their interpreter preferences are included in future bookings.
+                    </p>
+                  </div>
+                )}
+
+                {/* Error state */}
+                {person.status === 'error' && (
+                  <div style={{
+                    padding: '16px 20px',
+                    background: 'rgba(255,107,133,0.04)',
+                    border: '1px solid rgba(255,107,133,0.2)',
+                    borderRadius: 'var(--radius-sm)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--accent3)' }}>
+                        Could not look up {person.identifier}. Please try again.
+                      </span>
+                      <button type="button" onClick={() => removeTaggedPerson(idx)} style={{
+                        background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem', padding: '2px 6px',
+                      }}>&times;</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* Lookup input */}
+            <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
+              <input
+                type="text"
+                value={currentLookupInput}
+                onChange={e => { setCurrentLookupInput(e.target.value); setLookupError(null) }}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleDeafLookup() } }}
+                placeholder="Email or phone number"
+                style={{ ...inputStyle, flex: 1 }}
+              />
+              <button
+                type="button"
+                onClick={handleDeafLookup}
+                disabled={!currentLookupInput.trim()}
+                style={{
+                  padding: '11px 20px',
+                  background: currentLookupInput.trim() ? 'rgba(0,229,255,0.1)' : 'var(--surface)',
+                  border: `1px solid ${currentLookupInput.trim() ? 'rgba(0,229,255,0.3)' : 'var(--border)'}`,
+                  borderRadius: 'var(--radius-sm)',
+                  color: currentLookupInput.trim() ? 'var(--accent)' : 'var(--muted)',
+                  fontSize: '0.85rem', fontWeight: 600, cursor: currentLookupInput.trim() ? 'pointer' : 'not-allowed',
+                  fontFamily: "'DM Sans', sans-serif",
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Look up
+              </button>
+            </div>
+            {lookupError && <div style={errorStyle}>{lookupError}</div>}
+
+            {taggedDeafPersons.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setCurrentLookupInput('')}
+                style={{
+                  background: 'none', border: 'none', padding: '4px 0',
+                  color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600,
+                  cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                  marginBottom: 8,
+                }}
+              >
+                + Add another person
+              </button>
+            )}
+          </>
+        )}
+
+        {/* State D: Skip */}
+        {!skipDeafTag && taggedDeafPersons.length === 0 && (
+          <button
+            type="button"
+            onClick={() => setSkipDeafTag(true)}
+            style={{
+              background: 'none', border: 'none', padding: '4px 0',
+              color: 'var(--muted)', fontSize: '0.82rem',
+              cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+              textDecoration: 'underline', marginTop: 4,
+            }}
+          >
+            I don&apos;t have a specific person to tag (conference, event with unknown attendees, etc.)
+          </button>
+        )}
+
+        {skipDeafTag && (
+          <div style={{
+            padding: '12px 16px', background: 'var(--surface)',
+            border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>
+              No specific Deaf/DB/HH person tagged. Showing your roster.
+            </span>
+            <button
+              type="button"
+              onClick={() => setSkipDeafTag(false)}
+              style={{
+                background: 'none', border: 'none', color: 'var(--accent)',
+                fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
+                fontFamily: "'DM Sans', sans-serif",
+              }}
+            >
+              Undo
+            </button>
+          </div>
+        )}
+
+        {/* ================================================================ */}
+        {/* SECTION 3: CHOOSE INTERPRETERS                                   */}
+        {/* ================================================================ */}
+        <h3 style={sectionLabelStyle}>Choose Interpreters</h3>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, lineHeight: 1.6 }}>
           Select up to 10 interpreters for this request. Each one will receive a personalized notification with your booking details and can respond with their availability and rates.
         </p>
 
-        {/* Why is there a limit? accordion */}
+        {/* "Why is there a limit?" accordion */}
         <details style={{
           marginBottom: 20, background: 'var(--surface)', border: '1px solid var(--border)',
           borderRadius: 'var(--radius-sm)', overflow: 'hidden',
@@ -412,11 +845,38 @@ export default function NewRequestPage() {
           </div>
         </details>
 
+        {/* Continued-without-list reminder */}
+        {continuedWithoutList && taggedDeafPersons.some(p => p.status === 'approval_pending') && (
+          <div style={{
+            padding: '12px 16px', marginBottom: 16,
+            background: 'rgba(251,191,36,0.04)', border: '1px solid rgba(251,191,36,0.15)',
+            borderRadius: 'var(--radius-sm)',
+          }}>
+            <p style={{ fontSize: '0.82rem', color: 'var(--muted)', margin: 0, lineHeight: 1.5 }}>
+              You are selecting interpreters without input from {taggedDeafPersons.find(p => p.status === 'approval_pending')?.displayName || 'the tagged person'}. If they share their list later, you can send to their preferred interpreters from the request detail page.
+            </p>
+          </div>
+        )}
+
         <div style={{ marginBottom: 32 }}>
           <RequesterInterpreterPicker
             selectedIds={selectedInterpreters}
             onChange={setSelectedInterpreters}
+            interpreterGroups={hasDeafLists && !showRosterOnly ? interpreterGroups : []}
+            showRosterFallback={true}
+            rosterLabel={hasDeafLists && !showRosterOnly ? 'Your roster' : undefined}
           />
+
+          {/* DNB conflict note */}
+          {hasDnbConflicts() && (
+            <p style={{
+              fontSize: '0.78rem', color: 'var(--muted)', marginTop: 10, lineHeight: 1.5,
+              fontStyle: 'italic',
+            }}>
+              Some interpreters were excluded due to booking preferences from your tagged clients.
+            </p>
+          )}
+
           {selectedInterpreters.length >= 10 && (
             <p style={{
               fontSize: '0.82rem', color: 'var(--accent)', marginTop: 10, lineHeight: 1.6,
@@ -427,165 +887,25 @@ export default function NewRequestPage() {
           )}
         </div>
 
-        {/* ── Section 4: Who is this interpreter for? ── */}
-        <h3 style={sectionLabelStyle}>Who is this interpreter for?</h3>
-        <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginBottom: 16, lineHeight: 1.6 }}>
-          Is this booking for a Deaf, DeafBlind, or Hard of Hearing individual?
-        </p>
+        {/* ================================================================ */}
+        {/* SECTION 4: ADDITIONAL CONTEXT                                    */}
+        {/* ================================================================ */}
+        <h3 style={sectionLabelStyle}>Additional Context</h3>
 
-        <button
-          type="button"
-          onClick={() => setShowDhhClient(!showDhhClient)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            background: 'none', border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-sm)', padding: '10px 16px',
-            color: showDhhClient ? 'var(--accent)' : 'var(--muted)',
-            fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
-            fontFamily: "'DM Sans', sans-serif",
-            transition: 'all 0.15s',
-          }}
-        >
-          <span style={{
-            width: 20, height: 20, borderRadius: 6,
-            border: `2px solid ${showDhhClient ? 'var(--accent)' : 'var(--border)'}`,
-            background: showDhhClient ? 'var(--accent)' : 'transparent',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transition: 'all 0.15s', flexShrink: 0,
-          }}>
-            {showDhhClient && (
-              <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                <path d="M4 8l3 3 5-6" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            )}
-          </span>
-          Yes, I&apos;m booking on behalf of a D/HH person
-        </button>
+        <div style={{ marginBottom: 20 }}>
+          <label style={labelStyle}>Additional Notes for Interpreters</label>
+          <textarea
+            value={notes}
+            onChange={e => setNotes(e.target.value)}
+            placeholder="Any additional context, preparation materials, or special requirements"
+            rows={4}
+            style={{ ...inputStyle, resize: 'vertical' as const }}
+          />
+        </div>
 
-        {showDhhClient && (
-          <div style={{
-            marginTop: 16, padding: '20px', background: 'var(--surface)',
-            border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
-          }}>
-            <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle}>Client Name</label>
-              <input type="text" value={clientName} onChange={e => setClientName(e.target.value)} placeholder="Full name" style={inputStyle} />
-            </div>
-            <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle}>Their email address</label>
-              <input type="email" value={clientEmail} onChange={e => setClientEmail(e.target.value)} placeholder="email@example.com" style={inputStyle} />
-            </div>
-            <div style={{ marginBottom: 16 }}>
-              <label style={labelStyle}>Communication Preferences Notes</label>
-              <textarea value={clientCommPrefs} onChange={e => setClientCommPrefs(e.target.value)} placeholder="e.g. Prefers ASL, uses cochlear implant" rows={3} style={{ ...inputStyle, resize: 'vertical' as const }} />
-            </div>
-
-            {/* Preferred list prompt */}
-            {clientEmail && (prefListState === 'idle' || prefListState === 'sending') && (
-              <div style={{
-                background: 'rgba(0,229,255,0.04)', border: '1px dashed rgba(0,229,255,0.2)',
-                borderRadius: 12, padding: '20px 24px', marginTop: 16,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 14 }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="12" y1="16" x2="12" y2="12" />
-                    <line x1="12" y1="8" x2="12.01" y2="8" />
-                  </svg>
-                  <div>
-                    <div style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text)', marginBottom: 6 }}>
-                      Want better results?
-                    </div>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6, margin: 0 }}>
-                      Ask them to share their preferred interpreter list. When interpreters see they&apos;re on a client&apos;s preferred list, they&apos;re far more likely to accept. Deaf individuals know which interpreters work best for their specific needs.
-                    </p>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                  <button
-                    type="button"
-                    disabled={prefListState === 'sending'}
-                    onClick={async () => {
-                      if (!clientEmail.trim()) return
-                      setPrefListState('sending')
-                      setPrefListError(null)
-                      try {
-                        const res = await fetch('/api/connections/request-preferred-list', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            dhhEmail: clientEmail.trim(),
-                            dhhName: clientName.trim() || undefined,
-                            bookingTitle: title || undefined,
-                            bookingDate: date || undefined,
-                            bookingTime: timeStart && timeEnd ? `${timeStart} - ${timeEnd}` : undefined,
-                            bookingLocation: format === 'in_person' ? location : remotePlatform || undefined,
-                          }),
-                        })
-                        const data = await res.json()
-                        if (!res.ok) {
-                          setPrefListError(data.error || 'Failed to send request')
-                          setPrefListState('idle')
-                          return
-                        }
-                        setPrefListState('sent')
-                      } catch {
-                        setPrefListError('Something went wrong. Please try again.')
-                        setPrefListState('idle')
-                      }
-                    }}
-                    className="btn-primary"
-                    style={{ padding: '9px 18px', fontSize: '0.82rem', fontWeight: 600, border: 'none', cursor: 'pointer' }}
-                  >
-                    {prefListState === 'sending' ? 'Sending...' : 'Request their preferred list'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPrefListState('skipped')}
-                    style={{
-                      background: 'none', border: '1px solid var(--border)',
-                      borderRadius: 'var(--radius-sm)', padding: '9px 18px',
-                      fontSize: '0.82rem', fontWeight: 600, color: 'var(--muted)',
-                      cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
-                    }}
-                  >
-                    Skip for now
-                  </button>
-                </div>
-                {prefListError && (
-                  <div style={{ fontSize: '0.78rem', color: 'var(--accent3)', marginTop: 8 }}>{prefListError}</div>
-                )}
-              </div>
-            )}
-
-            {/* Success state after requesting */}
-            {prefListState === 'sent' && (
-              <div style={{
-                background: 'rgba(52,211,153,0.06)', border: '1px solid rgba(52,211,153,0.2)',
-                borderRadius: 12, padding: '16px 20px', marginTop: 16,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path d="M3 8l3.5 3.5L13 5" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#34d399' }}>Request sent</span>
-                </div>
-                <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.6, margin: 0 }}>
-                  We&apos;ll notify you when they share their list. The booking can continue without their list. You can add interpreters from the directory now, and their preferred interpreters will be added if they share later.
-                </p>
-              </div>
-            )}
-
-            {/* Skipped state */}
-            {prefListState === 'skipped' && !clientEmail && (
-              <p style={{ color: 'var(--muted)', fontSize: '0.78rem', lineHeight: 1.6, margin: '16px 0 0', fontStyle: 'italic' }}>
-                If they have a signpost account, their preferred interpreter list will be integrated into your request.
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* ── Section 4: Review & Platform Fee ── */}
+        {/* ================================================================ */}
+        {/* SECTION 5: PAYMENT + SUBMIT                                     */}
+        {/* ================================================================ */}
         <h3 style={sectionLabelStyle}>Review &amp; Platform Fee</h3>
 
         <div style={{
@@ -595,20 +915,20 @@ export default function NewRequestPage() {
           <div className="req-review-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 24px', fontSize: '0.85rem', marginBottom: 16 }}>
             <div>
               <span style={{ color: 'var(--muted)' }}>Event: </span>
-              <span style={{ color: 'var(--text)', fontWeight: 600 }}>{title || '—'}</span>
+              <span style={{ color: 'var(--text)', fontWeight: 600 }}>{title || '\u2014'}</span>
             </div>
             <div>
               <span style={{ color: 'var(--muted)' }}>Category: </span>
-              <span style={{ color: 'var(--text)', fontWeight: 600 }}>{eventCategory || '—'}</span>
+              <span style={{ color: 'var(--text)', fontWeight: 600 }}>{eventCategory || '\u2014'}</span>
             </div>
             <div>
               <span style={{ color: 'var(--muted)' }}>Date: </span>
-              <span style={{ color: 'var(--text)', fontWeight: 600 }}>{date || '—'}</span>
+              <span style={{ color: 'var(--text)', fontWeight: 600 }}>{date || '\u2014'}</span>
             </div>
             <div>
               <span style={{ color: 'var(--muted)' }}>Time: </span>
               <span style={{ color: 'var(--text)', fontWeight: 600 }}>
-                {timeStart && timeEnd ? `${timeStart} – ${timeEnd}` : '—'}
+                {timeStart && timeEnd ? `${timeStart} \u2013 ${timeEnd}` : '\u2014'}
               </span>
             </div>
             <div>
@@ -708,7 +1028,7 @@ export default function NewRequestPage() {
           </div>
         )}
 
-        {/* ── Actions ── */}
+        {/* Actions */}
         <div className="req-form-actions" style={{ display: 'flex', gap: 12, marginTop: 32, marginBottom: 48 }}>
           <button
             className="btn-primary"
@@ -755,6 +1075,9 @@ export default function NewRequestPage() {
           0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); border-color: rgba(239,68,68,0.6); }
           50% { box-shadow: 0 0 12px 4px rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.6); }
           100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); border-color: rgba(239,68,68,0.2); }
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
         }
         @media (max-width: 768px) {
           .dash-page-content { padding: 24px 20px !important; }
