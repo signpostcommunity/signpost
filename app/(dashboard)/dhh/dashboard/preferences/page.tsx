@@ -86,6 +86,7 @@ export default function DhhPreferencesPage() {
   const [voiceNotes, setVoiceNotes] = useState('')
   const [diPreferred, setDiPreferred] = useState(false)
   const [commNotes, setCommNotes] = useState('')
+  const [autoSharePrefList, setAutoSharePrefList] = useState(true)
 
   useEffect(() => {
     async function load() {
@@ -143,6 +144,8 @@ export default function DhhPreferencesPage() {
             }
           }
         }
+
+        setAutoSharePrefList(profile.auto_share_pref_list !== false)
 
         const cp = profile.comm_prefs as Record<string, unknown> | null
         if (cp) {
@@ -235,6 +238,7 @@ export default function DhhPreferencesPage() {
       profile_video_url: profileVideoUrl || null,
       share_intro_text_before_confirm: shareTextBefore,
       share_intro_video_before_confirm: shareVideoBefore,
+      auto_share_pref_list: autoSharePrefList,
       comm_prefs: commPrefs,
       updated_at: new Date().toISOString(),
     })
@@ -955,6 +959,70 @@ export default function DhhPreferencesPage() {
               rows={4}
               style={{ ...inputStyle, resize: 'vertical', minHeight: 100 }}
             />
+          </div>
+        </div>
+
+        {/* ── Interpreter List Sharing Section ── */}
+        <div style={{ marginBottom: 34 }}>
+          <h3 style={sectionHeadingStyle}>Interpreter list sharing</h3>
+          <p style={{ fontSize: '0.84rem', color: 'var(--muted)', marginBottom: 20, lineHeight: 1.6 }}>
+            When someone requests an interpreter for you (through a booking form, your QR code, or your request link), should they automatically see your preferred interpreter list?
+          </p>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <label
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '12px 14px', cursor: 'pointer',
+                borderRadius: 'var(--radius-sm)',
+                border: `1px solid ${autoSharePrefList ? 'rgba(157,135,255,0.4)' : 'var(--border)'}`,
+                background: autoSharePrefList ? 'rgba(157,135,255,0.06)' : 'var(--surface2)',
+                transition: 'all 0.15s',
+              }}
+            >
+              <input
+                type="radio"
+                name="autoSharePrefList"
+                checked={autoSharePrefList}
+                onChange={() => setAutoSharePrefList(true)}
+                style={{ accentColor: '#9d87ff' }}
+              />
+              <div>
+                <span style={{ fontSize: '0.85rem', color: autoSharePrefList ? 'var(--text)' : 'var(--muted)', fontWeight: 600 }}>
+                  Yes, share automatically (recommended)
+                </span>
+                <p style={{ fontSize: '0.78rem', color: 'var(--muted)', margin: '4px 0 0', lineHeight: 1.5 }}>
+                  Requesters will immediately see interpreters you trust, leading to better matches.
+                </p>
+              </div>
+            </label>
+
+            <label
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '12px 14px', cursor: 'pointer',
+                borderRadius: 'var(--radius-sm)',
+                border: `1px solid ${!autoSharePrefList ? 'rgba(157,135,255,0.4)' : 'var(--border)'}`,
+                background: !autoSharePrefList ? 'rgba(157,135,255,0.06)' : 'var(--surface2)',
+                transition: 'all 0.15s',
+              }}
+            >
+              <input
+                type="radio"
+                name="autoSharePrefList"
+                checked={!autoSharePrefList}
+                onChange={() => setAutoSharePrefList(false)}
+                style={{ accentColor: '#9d87ff' }}
+              />
+              <div>
+                <span style={{ fontSize: '0.85rem', color: !autoSharePrefList ? 'var(--text)' : 'var(--muted)', fontWeight: 600 }}>
+                  Ask me first
+                </span>
+                <p style={{ fontSize: '0.78rem', color: 'var(--muted)', margin: '4px 0 0', lineHeight: 1.5 }}>
+                  You will be notified each time and can approve or decline.
+                </p>
+              </div>
+            </label>
           </div>
         </div>
 

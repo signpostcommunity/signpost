@@ -5,6 +5,36 @@ import { createClient } from '@/lib/supabase/client'
 
 const MAX_INTERPRETERS = 10
 
+interface InterpreterItem {
+  id: string
+  name: string
+  certifications: string[]
+  specializations: string[]
+  tier?: string
+  avatar_url?: string | null
+  avatar_color?: string | null
+  badge?: string
+  recommended?: boolean
+  is_dnb?: boolean
+}
+
+interface InterpreterGroup {
+  label: string
+  accent: 'purple' | 'cyan'
+  interpreters: InterpreterItem[]
+  collapsed?: boolean
+}
+
+interface RequesterInterpreterPickerProps {
+  selectedIds: string[]
+  onChange: (ids: string[]) => void
+  excludeIds?: string[]
+  interpreterGroups?: InterpreterGroup[]
+  showRosterFallback?: boolean
+  rosterLabel?: string
+  emptyMessage?: string
+}
+
 interface RosterInterpreter {
   id: string
   name: string
@@ -20,34 +50,47 @@ export default function RequesterInterpreterPicker({
   selectedIds,
   onChange,
   excludeIds = [],
-}: {
-  selectedIds: string[]
-  onChange: (ids: string[]) => void
-  excludeIds?: string[]
-}) {
-  const [interpreters, setInterpreters] = useState<RosterInterpreter[]>([])
-  const [loading, setLoading] = useState(true)
+  interpreterGroups = [],
+  showRosterFallback = true,
+  rosterLabel = 'Your roster',
+  emptyMessage,
+}: RequesterInterpreterPickerProps) {
+  const [rosterInterpreters, setRosterInterpreters] = useState<RosterInterpreter[]>([])
+  const [rosterLoading, setRosterLoading] = useState(true)
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<number, boolean>>({})
 
+  // Initialize collapsed state from group defaults
   useEffect(() => {
+    const initial: Record<number, boolean> = {}
+    interpreterGroups.forEach((g, i) => {
+      if (g.collapsed) initial[i] = true
+    })
+    // Roster group is the last one, starts collapsed if there are other groups
+    if (interpreterGroups.length > 0) {
+      initial[-1] = true // -1 is the roster group key
+    }
+    setCollapsedGroups(initial)
+  }, [interpreterGroups.length])
+
+  // Fetch requester's own roster (for fallback or secondary display)
+  useEffect(() => {
+    if (!showRosterFallback && interpreterGroups.length > 0) {
+      setRosterLoading(false)
+      return
+    }
+
     async function fetchRoster() {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { setLoading(false); return }
+      if (!user) { setRosterLoading(false); return }
 
-      // Step 1: Fetch roster rows
       const { data: rosterRows, error: rosterErr } = await supabase
         .from('requester_roster')
         .select('interpreter_id, tier')
         .eq('requester_user_id', user.id)
 
-      if (rosterErr) {
-        console.error('[RequesterInterpreterPicker] roster fetch error:', rosterErr.message)
-        setLoading(false)
-        return
-      }
-
-      if (!rosterRows || rosterRows.length === 0) {
-        setLoading(false)
+      if (rosterErr || !rosterRows || rosterRows.length === 0) {
+        setRosterLoading(false)
         return
       }
 
@@ -55,19 +98,13 @@ export default function RequesterInterpreterPicker({
       const tierMap: Record<string, string> = {}
       for (const r of rosterRows) tierMap[r.interpreter_id] = r.tier
 
-      // Step 2: Fetch interpreter profiles (separate query to avoid RLS join issues)
       const { data: profiles, error: profileErr } = await supabase
         .from('interpreter_profiles')
         .select('id, first_name, last_name, name, photo_url, avatar_color, specializations')
         .in('id', interpIds)
 
-      if (profileErr) {
-        console.error('[RequesterInterpreterPicker] profiles fetch error:', profileErr.message)
-        setLoading(false)
-        return
-      }
+      if (profileErr) { setRosterLoading(false); return }
 
-      // Step 3: Fetch certifications
       const { data: certs } = await supabase
         .from('interpreter_certifications')
         .select('interpreter_id, name')
@@ -79,7 +116,6 @@ export default function RequesterInterpreterPicker({
         certsMap[c.interpreter_id].push(c.name)
       }
 
-      // Step 4: Map to display objects
       const mapped: RosterInterpreter[] = (profiles || [])
         .filter(p => tierMap[p.id] === 'preferred' || tierMap[p.id] === 'secondary')
         .map(p => {
@@ -102,20 +138,18 @@ export default function RequesterInterpreterPicker({
           }
         })
 
-      // Filter out excluded interpreters (already in previous waves)
       const filtered = excludeIds.length > 0
         ? mapped.filter(i => !excludeIds.includes(i.id))
         : mapped
 
-      // Sort: preferred first, then alphabetical
       filtered.sort((a, b) => {
         if (a.tier === 'preferred' && b.tier !== 'preferred') return -1
         if (a.tier !== 'preferred' && b.tier === 'preferred') return 1
         return a.name.localeCompare(b.name)
       })
 
-      setInterpreters(filtered)
-      setLoading(false)
+      setRosterInterpreters(filtered)
+      setRosterLoading(false)
     }
     fetchRoster()
   }, [])
@@ -128,21 +162,42 @@ export default function RequesterInterpreterPicker({
     }
   }
 
-  function selectAllPreferred() {
-    const preferredIds = interpreters.filter(i => i.tier === 'preferred').map(i => i.id)
-    const merged = [...new Set([...selectedIds, ...preferredIds])].slice(0, MAX_INTERPRETERS)
+  function selectAllInGroup(interpreters: InterpreterItem[]) {
+    const ids = interpreters.map(i => i.id)
+    const merged = [...new Set([...selectedIds, ...ids])].slice(0, MAX_INTERPRETERS)
     onChange(merged)
   }
 
-  function selectAll() {
-    onChange(interpreters.map(i => i.id).slice(0, MAX_INTERPRETERS))
+  function clearGroup(interpreters: InterpreterItem[]) {
+    const ids = new Set(interpreters.map(i => i.id))
+    onChange(selectedIds.filter(id => !ids.has(id)))
   }
 
-  if (loading) {
-    return <div style={{ color: 'var(--muted)', fontSize: '0.85rem', padding: '12px 0' }}>Loading your interpreter list...</div>
+  function toggleGroupCollapse(key: number) {
+    setCollapsedGroups(prev => ({ ...prev, [key]: !prev[key] }))
   }
 
-  if (interpreters.length === 0) {
+  const atLimit = selectedIds.length >= MAX_INTERPRETERS
+  const hasAnyGroups = interpreterGroups.length > 0
+
+  // Build list of all interpreter IDs already shown in groups (to dedupe roster)
+  const groupInterpreterIds = new Set<string>()
+  for (const g of interpreterGroups) {
+    for (const i of g.interpreters) {
+      if (!i.is_dnb) groupInterpreterIds.add(i.id)
+    }
+  }
+
+  // Filter roster to exclude those already shown in groups
+  const filteredRoster = hasAnyGroups
+    ? rosterInterpreters.filter(i => !groupInterpreterIds.has(i.id))
+    : rosterInterpreters
+
+  // If no groups and no roster, show empty state
+  if (!hasAnyGroups && !rosterLoading && filteredRoster.length === 0) {
+    if (emptyMessage) {
+      return <div style={{ color: 'var(--muted)', fontSize: '0.85rem', padding: '12px 0' }}>{emptyMessage}</div>
+    }
     return (
       <div style={{
         border: '2px dashed var(--border)', borderRadius: 'var(--radius)',
@@ -165,55 +220,14 @@ export default function RequesterInterpreterPicker({
     )
   }
 
-  const hasPreferred = interpreters.some(i => i.tier === 'preferred')
-  const atLimit = selectedIds.length >= MAX_INTERPRETERS
+  if (rosterLoading && !hasAnyGroups) {
+    return <div style={{ color: 'var(--muted)', fontSize: '0.85rem', padding: '12px 0' }}>Loading your interpreter list...</div>
+  }
 
   return (
     <div>
-      {/* Counter + quick actions */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          {hasPreferred && (
-            <button
-              type="button"
-              onClick={selectAllPreferred}
-              style={{
-                background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.25)',
-                borderRadius: 'var(--radius-sm)', padding: '6px 14px',
-                color: 'var(--accent)', fontSize: '0.78rem', fontWeight: 600,
-                cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
-              }}
-            >
-              Select All Preferred
-            </button>
-          )}
-          <button
-            type="button"
-            onClick={selectAll}
-            style={{
-              background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-sm)', padding: '6px 14px',
-              color: 'var(--muted)', fontSize: '0.78rem', fontWeight: 600,
-              cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
-            }}
-          >
-            Select All
-          </button>
-          {selectedIds.length > 0 && (
-            <button
-              type="button"
-              onClick={() => onChange([])}
-              style={{
-                background: 'none', border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-sm)', padding: '6px 14px',
-                color: 'var(--muted)', fontSize: '0.78rem',
-                cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
-              }}
-            >
-              Clear
-            </button>
-          )}
-        </div>
+      {/* Counter */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <span style={{
           fontSize: '0.82rem', fontWeight: 600,
           color: atLimit ? 'var(--accent3)' : 'var(--muted)',
@@ -221,98 +235,216 @@ export default function RequesterInterpreterPicker({
         }}>
           {selectedIds.length} of {MAX_INTERPRETERS} selected
         </span>
+        {selectedIds.length > 0 && (
+          <button
+            type="button"
+            onClick={() => onChange([])}
+            style={{
+              background: 'none', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)', padding: '5px 12px',
+              color: 'var(--muted)', fontSize: '0.75rem',
+              cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+            }}
+          >
+            Clear all
+          </button>
+        )}
       </div>
 
-      {/* Interpreter cards */}
-      <div className="req-interp-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-        {interpreters.map(interp => {
-          const selected = selectedIds.includes(interp.id)
-          const disabled = !selected && atLimit
+      {/* Interpreter groups from Deaf lists */}
+      {interpreterGroups.map((group, idx) => {
+        const visibleInterpreters = group.interpreters.filter(i => !i.is_dnb)
+        if (visibleInterpreters.length === 0) return null
+        const isCollapsed = collapsedGroups[idx]
+        const accentColor = group.accent === 'purple' ? '#a78bfa' : 'var(--accent)'
+        const accentBg = group.accent === 'purple' ? 'rgba(167,139,250,0.08)' : 'rgba(0,229,255,0.08)'
+        const accentBorder = group.accent === 'purple' ? 'rgba(167,139,250,0.25)' : 'rgba(0,229,255,0.25)'
 
-          return (
-            <label
-              key={interp.id}
+        return (
+          <div key={idx} style={{ marginBottom: 20 }}>
+            {/* Group header */}
+            <button
+              type="button"
+              onClick={() => toggleGroupCollapse(idx)}
               style={{
-                display: 'flex', alignItems: 'flex-start', gap: 12,
-                padding: '14px 16px', cursor: disabled ? 'not-allowed' : 'pointer',
-                background: selected ? 'rgba(0,229,255,0.06)' : 'var(--surface2)',
-                border: `1px solid ${selected ? 'rgba(0,229,255,0.4)' : 'var(--border)'}`,
-                borderRadius: 'var(--radius-sm)',
-                transition: 'all 0.15s',
-                opacity: disabled ? 0.5 : 1,
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                width: '100%', padding: '10px 14px', marginBottom: 10,
+                background: accentBg, border: `1px solid ${accentBorder}`,
+                borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+                textAlign: 'left',
               }}
             >
-              <input
-                type="checkbox"
-                checked={selected}
-                disabled={disabled}
-                onChange={() => toggle(interp.id)}
-                style={{ width: 18, height: 18, accentColor: '#00e5ff', flexShrink: 0, marginTop: 2 }}
-              />
-
-              {/* Avatar */}
-              {interp.photo_url ? (
-                <img
-                  src={interp.photo_url}
-                  alt=""
-                  style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
-                />
-              ) : (
-                <div style={{
-                  width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-                  background: interp.avatar_color || 'linear-gradient(135deg, #7b61ff, #00e5ff)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.78rem', color: '#fff',
-                }}>
-                  {interp.initials}
-                </div>
-              )}
-
-              <div style={{ flex: 1, minWidth: 0 }}>
-                {/* Name + tier badge */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-                  <span style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)' }}>
-                    {interp.name}
-                  </span>
-                  <span style={{
-                    fontSize: '0.68rem', fontWeight: 700, padding: '1px 8px',
-                    borderRadius: 100, whiteSpace: 'nowrap',
-                    background: interp.tier === 'preferred' ? 'rgba(0,229,255,0.12)' : 'rgba(255,255,255,0.06)',
-                    color: interp.tier === 'preferred' ? 'var(--accent)' : 'var(--muted)',
-                    border: `1px solid ${interp.tier === 'preferred' ? 'rgba(0,229,255,0.25)' : 'var(--border)'}`,
-                    fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.08em',
-                    textTransform: 'uppercase',
-                  }}>
-                    {interp.tier === 'preferred' ? 'Preferred' : 'Secondary'}
-                  </span>
-                </div>
-
-                {/* Certifications */}
-                {interp.certifications.length > 0 && (
-                  <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 3 }}>
-                    {interp.certifications.slice(0, 3).map(cert => (
-                      <span key={cert} style={{
-                        padding: '1px 8px', borderRadius: 20,
-                        background: 'rgba(255,255,255,0.04)',
-                        color: 'var(--muted)', fontSize: '0.7rem', fontWeight: 500,
-                      }}>
-                        {cert}
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* Specializations */}
-                {interp.specializations.length > 0 && (
-                  <div style={{ fontSize: '0.75rem', color: '#96a0b8', lineHeight: 1.4 }}>
-                    {interp.specializations.slice(0, 3).join(', ')}
-                  </div>
-                )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)', transition: 'transform 0.2s', flexShrink: 0 }}>
+                  <path d="M6 4l4 4-4 4" stroke={accentColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span style={{ fontSize: '0.82rem', fontWeight: 600, color: accentColor, fontFamily: "'DM Sans', sans-serif" }}>
+                  {group.label}
+                </span>
+                <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontFamily: "'DM Sans', sans-serif" }}>
+                  ({visibleInterpreters.length})
+                </span>
               </div>
-            </label>
-          )
-        })}
-      </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => { e.stopPropagation(); selectAllInGroup(visibleInterpreters) }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); selectAllInGroup(visibleInterpreters) } }}
+                  style={{ fontSize: '0.72rem', color: accentColor, cursor: 'pointer', fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}
+                >
+                  Select all
+                </span>
+                <span style={{ color: 'var(--border)' }}>|</span>
+                <span
+                  role="button"
+                  tabIndex={0}
+                  onClick={(e) => { e.stopPropagation(); clearGroup(visibleInterpreters) }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); clearGroup(visibleInterpreters) } }}
+                  style={{ fontSize: '0.72rem', color: 'var(--muted)', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}
+                >
+                  Clear
+                </span>
+              </div>
+            </button>
+
+            {/* Group cards */}
+            {!isCollapsed && (
+              <div className="req-interp-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                {visibleInterpreters.map(interp => renderCard(interp, accentColor, accentBg, accentBorder))}
+              </div>
+            )}
+          </div>
+        )
+      })}
+
+      {/* Requester's own roster */}
+      {(showRosterFallback || hasAnyGroups) && filteredRoster.length > 0 && (
+        <div style={{ marginBottom: 20 }}>
+          <button
+            type="button"
+            onClick={() => toggleGroupCollapse(-1)}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              width: '100%', padding: '10px 14px', marginBottom: 10,
+              background: 'rgba(0,229,255,0.04)', border: '1px solid rgba(0,229,255,0.15)',
+              borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+              textAlign: 'left',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ transform: collapsedGroups[-1] ? 'rotate(0deg)' : 'rotate(90deg)', transition: 'transform 0.2s', flexShrink: 0 }}>
+                <path d="M6 4l4 4-4 4" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--accent)', fontFamily: "'DM Sans', sans-serif" }}>
+                {rosterLabel}
+              </span>
+              <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontFamily: "'DM Sans', sans-serif" }}>
+                ({filteredRoster.length})
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={(e) => { e.stopPropagation(); selectAllInGroup(filteredRoster.map(r => ({ ...r, avatar_url: r.photo_url }))) }}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); selectAllInGroup(filteredRoster.map(r => ({ ...r, avatar_url: r.photo_url }))) } }}
+                style={{ fontSize: '0.72rem', color: 'var(--accent)', cursor: 'pointer', fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}
+              >
+                Select all
+              </span>
+              <span style={{ color: 'var(--border)' }}>|</span>
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={(e) => { e.stopPropagation(); clearGroup(filteredRoster.map(r => ({ ...r, avatar_url: r.photo_url }))) }}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); clearGroup(filteredRoster.map(r => ({ ...r, avatar_url: r.photo_url }))) } }}
+                style={{ fontSize: '0.72rem', color: 'var(--muted)', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}
+              >
+                Clear
+              </span>
+            </div>
+          </button>
+
+          {!collapsedGroups[-1] && (
+            <div className="req-interp-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              {filteredRoster.map(interp => {
+                const selected = selectedIds.includes(interp.id)
+                const disabled = !selected && atLimit
+
+                return (
+                  <label
+                    key={interp.id}
+                    style={{
+                      display: 'flex', alignItems: 'flex-start', gap: 12,
+                      padding: '14px 16px', cursor: disabled ? 'not-allowed' : 'pointer',
+                      background: selected ? 'rgba(0,229,255,0.06)' : 'var(--surface2)',
+                      border: `1px solid ${selected ? 'rgba(0,229,255,0.4)' : 'var(--border)'}`,
+                      borderRadius: 'var(--radius-sm)',
+                      transition: 'all 0.15s',
+                      opacity: disabled ? 0.5 : 1,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selected}
+                      disabled={disabled}
+                      onChange={() => toggle(interp.id)}
+                      style={{ width: 18, height: 18, accentColor: '#00e5ff', flexShrink: 0, marginTop: 2 }}
+                    />
+                    {interp.photo_url ? (
+                      <img src={interp.photo_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                    ) : (
+                      <div style={{
+                        width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+                        background: interp.avatar_color || 'linear-gradient(135deg, #7b61ff, #00e5ff)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.78rem', color: '#fff',
+                      }}>
+                        {interp.initials}
+                      </div>
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)' }}>{interp.name}</span>
+                        <span style={{
+                          fontSize: '0.68rem', fontWeight: 700, padding: '1px 8px',
+                          borderRadius: 100, whiteSpace: 'nowrap',
+                          background: interp.tier === 'preferred' ? 'rgba(0,229,255,0.12)' : 'rgba(255,255,255,0.06)',
+                          color: interp.tier === 'preferred' ? 'var(--accent)' : 'var(--muted)',
+                          border: `1px solid ${interp.tier === 'preferred' ? 'rgba(0,229,255,0.25)' : 'var(--border)'}`,
+                          fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.08em',
+                          textTransform: 'uppercase',
+                        }}>
+                          {interp.tier === 'preferred' ? 'Preferred' : 'Secondary'}
+                        </span>
+                      </div>
+                      {interp.certifications.length > 0 && (
+                        <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 3 }}>
+                          {interp.certifications.slice(0, 3).map(cert => (
+                            <span key={cert} style={{
+                              padding: '1px 8px', borderRadius: 20,
+                              background: 'rgba(255,255,255,0.04)',
+                              color: 'var(--muted)', fontSize: '0.7rem', fontWeight: 500,
+                            }}>
+                              {cert}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {interp.specializations.length > 0 && (
+                        <div style={{ fontSize: '0.75rem', color: '#96a0b8', lineHeight: 1.4 }}>
+                          {interp.specializations.slice(0, 3).join(', ')}
+                        </div>
+                      )}
+                    </div>
+                  </label>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Browse directory link */}
       <div style={{ marginTop: 14 }}>
@@ -342,4 +474,97 @@ export default function RequesterInterpreterPicker({
       `}</style>
     </div>
   )
+
+  function renderCard(interp: InterpreterItem, accentColor: string, accentBg: string, accentBorder: string) {
+    const selected = selectedIds.includes(interp.id)
+    const disabled = !selected && atLimit
+    const firstName = interp.name.split(' ')[0] || ''
+    const lastName = interp.name.split(' ').slice(1).join(' ')
+    const initials = firstName
+      ? `${firstName[0]}${(lastName[0] || '')}`.toUpperCase()
+      : 'I'
+
+    return (
+      <label
+        key={interp.id}
+        style={{
+          display: 'flex', alignItems: 'flex-start', gap: 12,
+          padding: '14px 16px', cursor: disabled ? 'not-allowed' : 'pointer',
+          background: selected ? accentBg : 'var(--surface2)',
+          border: `1px solid ${selected ? accentBorder : 'var(--border)'}`,
+          borderRadius: 'var(--radius-sm)',
+          transition: 'all 0.15s',
+          opacity: disabled ? 0.5 : 1,
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={selected}
+          disabled={disabled}
+          onChange={() => toggle(interp.id)}
+          style={{ width: 18, height: 18, accentColor: accentColor, flexShrink: 0, marginTop: 2 }}
+        />
+
+        {interp.avatar_url ? (
+          <img src={interp.avatar_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+        ) : (
+          <div style={{
+            width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+            background: interp.avatar_color || 'linear-gradient(135deg, #7b61ff, #00e5ff)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.78rem', color: '#fff',
+          }}>
+            {initials}
+          </div>
+        )}
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+            <span style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)' }}>{interp.name}</span>
+            {interp.recommended && (
+              <span style={{
+                fontSize: '0.68rem', fontWeight: 700, padding: '1px 8px',
+                borderRadius: 100, whiteSpace: 'nowrap',
+                background: 'rgba(251,191,36,0.12)', color: '#fbbf24',
+                border: '1px solid rgba(251,191,36,0.3)',
+                fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+              }}>
+                &#9733; Recommended
+              </span>
+            )}
+            {interp.badge && (
+              <span style={{
+                fontSize: '0.68rem', fontWeight: 700, padding: '1px 8px',
+                borderRadius: 100, whiteSpace: 'nowrap',
+                background: accentBg, color: accentColor,
+                border: `1px solid ${accentBorder}`,
+                fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.06em',
+              }}>
+                {interp.badge}
+              </span>
+            )}
+          </div>
+          {interp.certifications.length > 0 && (
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 3 }}>
+              {interp.certifications.slice(0, 3).map(cert => (
+                <span key={cert} style={{
+                  padding: '1px 8px', borderRadius: 20,
+                  background: 'rgba(255,255,255,0.04)',
+                  color: 'var(--muted)', fontSize: '0.7rem', fontWeight: 500,
+                }}>
+                  {cert}
+                </span>
+              ))}
+            </div>
+          )}
+          {interp.specializations.length > 0 && (
+            <div style={{ fontSize: '0.75rem', color: '#96a0b8', lineHeight: 1.4 }}>
+              {interp.specializations.slice(0, 3).join(', ')}
+            </div>
+          )}
+        </div>
+      </label>
+    )
+  }
 }

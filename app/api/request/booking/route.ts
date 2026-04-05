@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
       specialization, recurrence,
       saveAsDraft, // Optional: save as draft instead of submitting
       bookingId, // Optional: existing draft ID to update in-place
+      tagged_deaf_user_ids, // Optional: Deaf user IDs tagged on this request
     } = body
     // Sanitize user-provided text fields
     const title = body.title ? sanitizeText(body.title) : null
@@ -82,6 +83,7 @@ export async function POST(request: NextRequest) {
       platform_fee_amount: 15.0 * count,
       platform_fee_status: 'pending',
       is_seed: false,
+      tagged_deaf_user_ids: Array.isArray(tagged_deaf_user_ids) ? tagged_deaf_user_ids : [],
     }
 
     // Encrypt sensitive fields before writing to DB
