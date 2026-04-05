@@ -122,7 +122,7 @@ function GroupedView({ feedback }: { feedback: FeedbackItem[] }) {
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 width: '100%', padding: '16px 20px', background: 'none', border: 'none',
-                cursor: 'pointer', textAlign: 'left', fontFamily: "'DM Sans', sans-serif",
+                cursor: 'pointer', textAlign: 'left', fontFamily: "'Inter', sans-serif",
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -130,7 +130,7 @@ function GroupedView({ feedback }: { feedback: FeedbackItem[] }) {
                   width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
                   background: 'linear-gradient(135deg, #7b61ff, #00e5ff)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.75rem', color: '#fff',
+                  fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.75rem', color: '#fff',
                 }}>
                   {(group.name[0] || '?').toUpperCase()}
                 </div>
@@ -291,7 +291,7 @@ export default function FeedbackClient({ feedback }: { feedback: FeedbackItem[] 
 
   return (
     <div style={{ padding: '32px 40px', maxWidth: 1200 }}>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 700, marginBottom: 8 }}>
+      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 600, marginBottom: 8 }}>
         Beta Feedback
       </h1>
       <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: 24 }}>
@@ -309,7 +309,7 @@ export default function FeedbackClient({ feedback }: { feedback: FeedbackItem[] 
             flex: 1, minWidth: 200, padding: '8px 14px', borderRadius: 8,
             border: '1px solid var(--border)', background: 'var(--surface2)',
             color: 'var(--text)', fontSize: '0.85rem',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "'Inter', sans-serif",
           }}
         />
         <select
@@ -319,7 +319,7 @@ export default function FeedbackClient({ feedback }: { feedback: FeedbackItem[] 
             padding: '6px 12px', borderRadius: 8,
             border: '1px solid var(--border)', background: 'var(--surface2)',
             color: 'var(--text)', fontSize: '0.85rem',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "'Inter', sans-serif",
           }}
         >
           <option value="all">All Types</option>
@@ -333,7 +333,7 @@ export default function FeedbackClient({ feedback }: { feedback: FeedbackItem[] 
             onClick={() => setViewMode('grouped')}
             style={{
               padding: '6px 14px', border: 'none', fontSize: '0.82rem',
-              fontFamily: "'DM Sans', sans-serif", cursor: 'pointer',
+              fontFamily: "'Inter', sans-serif", cursor: 'pointer',
               background: viewMode === 'grouped' ? ORANGE : 'var(--surface2)',
               color: viewMode === 'grouped' ? '#fff' : 'var(--muted)',
               fontWeight: viewMode === 'grouped' ? 600 : 400,
@@ -345,7 +345,7 @@ export default function FeedbackClient({ feedback }: { feedback: FeedbackItem[] 
             onClick={() => setViewMode('flat')}
             style={{
               padding: '6px 14px', border: 'none', borderLeft: '1px solid var(--border)',
-              fontSize: '0.82rem', fontFamily: "'DM Sans', sans-serif", cursor: 'pointer',
+              fontSize: '0.82rem', fontFamily: "'Inter', sans-serif", cursor: 'pointer',
               background: viewMode === 'flat' ? ORANGE : 'var(--surface2)',
               color: viewMode === 'flat' ? '#fff' : 'var(--muted)',
               fontWeight: viewMode === 'flat' ? 600 : 400,

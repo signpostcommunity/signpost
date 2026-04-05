@@ -31,7 +31,7 @@ const inputStyle: React.CSSProperties = {
   padding: '11px 14px',
   color: 'var(--text)',
   fontSize: '0.9rem',
-  fontFamily: "'DM Sans', sans-serif",
+  fontFamily: "'Inter', sans-serif",
   outline: 'none',
   boxSizing: 'border-box' as const,
 }
@@ -76,7 +76,7 @@ function Chip({ label, selected, onToggle }: { label: string; selected: boolean;
         border: `1px solid ${selected ? 'rgba(0,229,255,0.4)' : 'var(--border)'}`,
         background: selected ? 'rgba(0,229,255,0.1)' : 'var(--surface2)',
         color: selected ? 'var(--accent)' : 'var(--muted)',
-        fontFamily: "'DM Sans', sans-serif", lineHeight: 1.4, wordBreak: 'break-word',
+        fontFamily: "'Inter', sans-serif", lineHeight: 1.4, wordBreak: 'break-word',
       }}
     >
       {label}
@@ -236,7 +236,7 @@ function ProfileSidebarNav({ active, onChange }: { active: Tab; onChange: (t: Ta
                 borderLeftColor: isActive ? '#00e5ff' : 'transparent',
                 cursor: 'pointer',
                 fontSize: '14px', fontWeight: 500,
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: "'Inter', sans-serif",
                 color: isActive ? '#f0f2f8' : '#96a0b8',
                 transition: 'all 0.15s',
               }}
@@ -273,7 +273,7 @@ function ProfileSidebarNav({ active, onChange }: { active: Tab; onChange: (t: Ta
             padding: '11px 14px',
             color: 'var(--text)',
             fontSize: '0.9rem',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "'Inter', sans-serif",
             outline: 'none',
             cursor: 'pointer',
             appearance: 'none',
@@ -884,7 +884,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
         zIndex: 10,
       }}>
         <span style={{
-          fontFamily: "'Inter', 'DM Sans', sans-serif",
+          fontFamily: "'Inter', 'Inter', sans-serif",
           fontWeight: 500,
           fontSize: 14,
           color: '#f0f2f8',
@@ -896,7 +896,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           target="_blank"
           rel="noopener noreferrer"
           style={{
-            fontFamily: "'Inter', 'DM Sans', sans-serif",
+            fontFamily: "'Inter', 'Inter', sans-serif",
             fontWeight: 600,
             fontSize: 13,
             color: '#00e5ff',
@@ -930,7 +930,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
         background: 'var(--card-bg)', border: '1px solid var(--border)',
         borderRadius: 'var(--radius)', padding: '24px 28px', marginBottom: 28,
       }}>
-        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.3rem' }}>{displayName}</div>
+        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '1.3rem' }}>{displayName}</div>
         {(p.city || p.state) && (
           <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: 4 }}>
             {[p.city, p.state].filter(Boolean).join(', ')}
@@ -971,7 +971,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                 width: 72, height: 72, borderRadius: '50%', flexShrink: 0,
                 background: 'linear-gradient(135deg,#7b61ff,#00e5ff)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.4rem', color: '#fff',
+                fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1.4rem', color: '#fff',
               }}>{initials}</div>
             )}
             <div>
@@ -989,7 +989,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                   background: 'none', border: '1px solid rgba(0,229,255,0.4)',
                   color: 'var(--accent)', borderRadius: 8, padding: '8px 16px',
                   fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
-                  fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
+                  fontFamily: "'Inter', sans-serif", transition: 'all 0.15s',
                   opacity: uploading ? 0.6 : 1,
                 }}
               >
@@ -1034,7 +1034,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
                     <span style={{
                       fontSize: '1rem', fontWeight: 600, color: 'var(--accent)',
-                      fontFamily: "'DM Sans', sans-serif", wordBreak: 'break-all',
+                      fontFamily: "'Inter', sans-serif", wordBreak: 'break-all',
                     }}>
                       signpost.community/book/{vanitySlug}
                     </span>
@@ -1047,7 +1047,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                         background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.3)',
                         color: 'var(--accent)', borderRadius: 8, padding: '6px 14px',
                         fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: "'Inter', sans-serif",
                       }}
                     >
                       Copy link
@@ -1058,7 +1058,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                         background: 'none', border: '1px solid var(--border)',
                         color: 'var(--muted)', borderRadius: 8, padding: '6px 14px',
                         fontSize: '0.82rem', cursor: 'pointer',
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: "'Inter', sans-serif",
                       }}
                     >
                       Edit
@@ -1075,7 +1075,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                     <div style={{
                       background: 'var(--surface)', padding: '11px 12px', fontSize: '0.85rem',
                       color: 'var(--muted)', whiteSpace: 'nowrap', borderRight: '1px solid var(--border)',
-                      flexShrink: 0, fontFamily: "'DM Sans', sans-serif",
+                      flexShrink: 0, fontFamily: "'Inter', sans-serif",
                     }}>
                       signpost.community/book/
                     </div>
@@ -1098,7 +1098,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                       style={{
                         flex: 1, background: 'var(--card-bg)', border: 'none', padding: '11px 14px',
                         color: 'var(--text)', fontSize: '0.9rem', outline: 'none',
-                        fontFamily: "'DM Sans', sans-serif", minWidth: 0,
+                        fontFamily: "'Inter', sans-serif", minWidth: 0,
                       }}
                     />
                   </div>
@@ -1139,7 +1139,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                           background: 'none', border: '1px solid var(--border)',
                           color: 'var(--muted)', borderRadius: 8, padding: '6px 14px',
                           fontSize: '0.82rem', cursor: 'pointer',
-                          fontFamily: "'DM Sans', sans-serif",
+                          fontFamily: "'Inter', sans-serif",
                         }}
                       >
                         Cancel
@@ -1173,7 +1173,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                     style={{
                       background: 'none', border: '1px solid var(--border)',
                       color: 'var(--muted)', borderRadius: 8, padding: '8px 16px',
-                      fontSize: '0.82rem', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                      fontSize: '0.82rem', cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                     }}
                   >
                     Copy badge image link
@@ -1185,7 +1185,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                   <summary style={{
                     cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600,
                     color: 'var(--accent)', listStyle: 'none', display: 'flex', alignItems: 'center', gap: 6,
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: "'Inter', sans-serif",
                   }}>
                     <span style={{ transition: 'transform 0.15s', display: 'inline-block' }}>&#9654;</span>
                     How to add your badge
@@ -1413,7 +1413,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   borderRadius: 20, border: '1px solid rgba(0,229,255,0.4)',
                   background: 'rgba(0,229,255,0.1)', color: 'var(--accent)',
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: "'Inter', sans-serif",
                 }}>
                   {lang}
                   <button onClick={() => { setSignRegional(prev => prev.filter(l => l !== lang)); setSignLangs(prev => prev.filter(l => l !== lang)) }} aria-label={`Remove ${lang}`} style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6, fontSize: '0.85rem', color: 'inherit', padding: 0 }}><span aria-hidden="true">✕</span></button>
@@ -1457,7 +1457,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   borderRadius: 20, border: '1px solid rgba(0,229,255,0.4)',
                   background: 'rgba(0,229,255,0.1)', color: 'var(--accent)',
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: "'Inter', sans-serif",
                 }}>
                   {lang}
                   <button onClick={() => { setSpokenRegional(prev => prev.filter(l => l !== lang)); setSpokenLangs(prev => prev.filter(l => l !== lang)) }} aria-label={`Remove ${lang}`} style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6, fontSize: '0.85rem', color: 'inherit', padding: 0 }}><span aria-hidden="true">✕</span></button>
@@ -1565,7 +1565,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                         onClick={() => { if (confirm('Delete this video?')) deleteVideo(v.id) }}
                         style={{
                           background: 'none', border: 'none', cursor: 'pointer',
-                          color: 'var(--accent3)', fontSize: '0.78rem', fontFamily: "'DM Sans', sans-serif",
+                          color: 'var(--accent3)', fontSize: '0.78rem', fontFamily: "'Inter', sans-serif",
                         }}
                       >
                         Delete
@@ -1627,7 +1627,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                   style={{
                     background: 'none', border: '1px solid var(--border)',
                     borderRadius: 8, padding: '8px 16px', color: 'var(--muted)',
-                    cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", fontSize: '0.85rem',
+                    cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.85rem',
                   }}
                 >
                   Cancel
@@ -1639,7 +1639,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                     background: 'var(--accent)', color: '#000', border: 'none',
                     borderRadius: 8, padding: '8px 16px', fontWeight: 600,
                     cursor: !newVideoLanguage || saving ? 'not-allowed' : 'pointer',
-                    fontFamily: "'DM Sans', sans-serif", fontSize: '0.85rem',
+                    fontFamily: "'Inter', sans-serif", fontSize: '0.85rem',
                     opacity: !newVideoLanguage || saving ? 0.5 : 1,
                   }}
                 >
@@ -1706,7 +1706,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                   border: bipocDetails.includes(opt) ? '1px solid rgba(0,229,255,0.5)' : '1px solid var(--border)',
                   background: bipocDetails.includes(opt) ? 'rgba(0,229,255,0.1)' : 'var(--surface2)',
                   color: bipocDetails.includes(opt) ? 'var(--accent)' : 'var(--muted)',
-                  fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
+                  fontFamily: "'Inter', sans-serif", transition: 'all 0.15s',
                 }}>{opt}</button>
               ))}
             </div>
@@ -1722,7 +1722,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                   border: religiousDetails.includes(opt) ? '1px solid rgba(0,229,255,0.5)' : '1px solid var(--border)',
                   background: religiousDetails.includes(opt) ? 'rgba(0,229,255,0.1)' : 'var(--surface2)',
                   color: religiousDetails.includes(opt) ? 'var(--accent)' : 'var(--muted)',
-                  fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
+                  fontFamily: "'Inter', sans-serif", transition: 'all 0.15s',
                 }}>{opt}</button>
               ))}
             </div>
@@ -1792,7 +1792,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                         padding: '10px 14px', borderRadius: 'var(--radius-sm)',
                         border: `1px solid ${mentorshipPaid === opt.value ? 'rgba(0,229,255,0.4)' : 'var(--border)'}`,
                         background: mentorshipPaid === opt.value ? 'rgba(0,229,255,0.08)' : 'var(--surface2)',
-                        cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                        cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                         fontSize: '0.85rem', color: mentorshipPaid === opt.value ? 'var(--text)' : 'var(--muted)',
                         transition: 'all 0.15s',
                       }}
@@ -2046,7 +2046,7 @@ function CredentialsTab({ saving, onSave, profileId, initialCerts, initialEducat
           background: 'none', border: '1px dashed var(--border)',
           color: 'var(--muted)', borderRadius: 'var(--radius-sm)',
           padding: 10, width: '100%', cursor: 'pointer',
-          fontFamily: "'DM Sans', sans-serif", fontSize: '0.85rem',
+          fontFamily: "'Inter', sans-serif", fontSize: '0.85rem',
           transition: 'all 0.2s', marginTop: 10,
         }}
       >
@@ -2096,7 +2096,7 @@ function CredentialsTab({ saving, onSave, profileId, initialCerts, initialEducat
           background: 'none', border: '1px dashed var(--border)',
           color: 'var(--muted)', borderRadius: 'var(--radius-sm)',
           padding: 10, width: '100%', cursor: 'pointer',
-          fontFamily: "'DM Sans', sans-serif", fontSize: '0.85rem',
+          fontFamily: "'Inter', sans-serif", fontSize: '0.85rem',
           transition: 'all 0.2s', marginTop: 10,
         }}
       >
@@ -2211,7 +2211,7 @@ function SkillsTab({ specs, setSpecs, specializedSkills, setSpecializedSkills, s
               display: 'inline-flex', alignItems: 'center', gap: 6,
               borderRadius: 20, border: '1px solid rgba(0,229,255,0.4)',
               background: 'rgba(0,229,255,0.1)', color: 'var(--accent)',
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "'Inter', sans-serif",
             }}>
               {spec}
               <button onClick={() => toggleSpec(spec)} aria-label={`Remove ${spec}`} style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6, fontSize: '0.85rem', color: 'inherit', padding: 0 }}><span aria-hidden="true">✕</span></button>
@@ -2247,7 +2247,7 @@ function SkillsTab({ specs, setSpecs, specializedSkills, setSpecializedSkills, s
                     <span style={{
                       background: 'rgba(0,229,255,0.15)', color: 'var(--accent)',
                       borderRadius: 100, padding: '1px 7px', fontSize: '0.7rem', fontWeight: 700,
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "'Inter', sans-serif",
                     }}>{selectedCount}</span>
                   )}
                   <span style={{ fontSize: '0.7rem', transition: 'transform 0.15s', transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▾</span>
@@ -2330,7 +2330,7 @@ function MentorshipAccordion({ category, selectedCount, selectedIds, onToggle, s
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           width: '100%', padding: '12px 14px',
           background: 'none', border: 'none', cursor: 'pointer',
-          fontFamily: "'DM Sans', sans-serif",
+          fontFamily: "'Inter', sans-serif",
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -2373,7 +2373,7 @@ function MentorshipAccordion({ category, selectedCount, selectedIds, onToggle, s
                   display: 'flex', alignItems: 'flex-start', gap: 10,
                   width: '100%', padding: '8px 0',
                   background: 'none', border: 'none', cursor: 'pointer',
-                  fontFamily: "'DM Sans', sans-serif", textAlign: 'left',
+                  fontFamily: "'Inter', sans-serif", textAlign: 'left',
                 }}
               >
                 <div style={{
@@ -2413,7 +2413,7 @@ function CommunityToggle({ label, helper, checked, onChange }: { label: string; 
     <button onClick={onChange} style={{
       display: 'flex', alignItems: 'center', gap: 12, width: '100%',
       padding: '10px 0', marginBottom: 8, background: 'none', border: 'none',
-      cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", textAlign: 'left',
+      cursor: 'pointer', fontFamily: "'Inter', sans-serif", textAlign: 'left',
     }}>
       <div style={{
         width: 40, height: 20, borderRadius: 100, flexShrink: 0,
@@ -2703,7 +2703,7 @@ function SettingsTab({
               style={{
                 background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
                 color: 'var(--muted)', fontSize: '0.85rem', padding: '9px 12px', cursor: 'pointer',
-                flexShrink: 0, fontFamily: "'DM Sans', sans-serif",
+                flexShrink: 0, fontFamily: "'Inter', sans-serif",
               }}
             >
               ✕
@@ -2717,7 +2717,7 @@ function SettingsTab({
             background: 'transparent', border: '1.5px dashed var(--border)',
             borderRadius: 'var(--radius-sm)', padding: '10px 16px',
             color: 'var(--muted)', fontSize: '0.85rem', cursor: 'pointer',
-            fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s', marginBottom: 4,
+            fontFamily: "'Inter', sans-serif", transition: 'all 0.15s', marginBottom: 4,
           }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
@@ -2927,7 +2927,7 @@ function CalendarSyncSettings() {
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
         <span style={{
           fontSize: '0.82rem', fontWeight: 600, color: 'var(--accent)',
-          fontFamily: "'DM Sans', sans-serif", wordBreak: 'break-all',
+          fontFamily: "'Inter', sans-serif", wordBreak: 'break-all',
         }}>
           {feedUrl}
         </span>
@@ -2940,7 +2940,7 @@ function CalendarSyncSettings() {
             background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.3)',
             color: 'var(--accent)', borderRadius: 8, padding: '6px 14px',
             fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "'Inter', sans-serif",
           }}
         >
           Copy link
@@ -2952,7 +2952,7 @@ function CalendarSyncSettings() {
         href="/help/calendar-sync"
         style={{
           display: 'inline-block', color: 'var(--accent)', fontSize: '0.82rem',
-          fontWeight: 600, fontFamily: "'DM Sans', sans-serif",
+          fontWeight: 600, fontFamily: "'Inter', sans-serif",
           textDecoration: 'none', marginBottom: 12,
         }}
       >
@@ -2965,7 +2965,7 @@ function CalendarSyncSettings() {
         style={{
           display: 'block', background: 'none', border: 'none', cursor: 'pointer',
           color: 'var(--muted)', fontSize: '0.78rem', fontWeight: 500,
-          fontFamily: "'DM Sans', sans-serif", padding: '2px 0',
+          fontFamily: "'Inter', sans-serif", padding: '2px 0',
           textDecoration: 'underline', textUnderlineOffset: '3px',
         }}
       >

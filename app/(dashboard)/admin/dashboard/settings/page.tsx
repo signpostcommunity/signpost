@@ -42,7 +42,7 @@ const inputStyle: React.CSSProperties = {
   width: '100%', padding: '11px 14px', maxWidth: 320,
   background: 'var(--surface)', border: '1px solid var(--border)',
   borderRadius: 'var(--radius-sm)', color: 'var(--text)',
-  fontSize: '15px', fontFamily: "'DM Sans', sans-serif",
+  fontSize: '15px', fontFamily: "'Inter', sans-serif",
   outline: 'none',
 }
 
@@ -205,7 +205,7 @@ export default function AdminSettingsPage() {
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       {/* Page header */}
       <h1 style={{
-        fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '27px',
+        fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '27px',
         color: '#f0f2f8', letterSpacing: '-0.02em', margin: '0 0 6px',
       }}>
         Settings
@@ -220,7 +220,7 @@ export default function AdminSettingsPage() {
           borderRadius: 'var(--radius-sm)', padding: '18px 22px', marginBottom: 28,
         }}>
           <div style={{
-            fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+            fontFamily: "'Inter', sans-serif", fontWeight: 600,
             fontSize: '13px', letterSpacing: '0.08em',
             textTransform: 'uppercase', color: '#00e5ff', marginBottom: 10,
           }}>
@@ -242,7 +242,7 @@ export default function AdminSettingsPage() {
                   padding: '10px 18px', background: ORANGE, border: 'none',
                   borderRadius: 'var(--radius-sm)', color: '#0a0a0f',
                   fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
-                  fontFamily: "'DM Sans', sans-serif", whiteSpace: 'nowrap',
+                  fontFamily: "'Inter', sans-serif", whiteSpace: 'nowrap',
                 }}
               >
                 Save
@@ -250,7 +250,7 @@ export default function AdminSettingsPage() {
             </div>
           ) : (
             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-              <span style={{ fontSize: '0.9rem', color: phone ? 'var(--text)' : 'var(--muted)', fontFamily: "'DM Sans', sans-serif" }}>
+              <span style={{ fontSize: '0.9rem', color: phone ? 'var(--text)' : 'var(--muted)', fontFamily: "'Inter', sans-serif" }}>
                 {phone || 'No phone number set'}
               </span>
               <button
@@ -259,7 +259,7 @@ export default function AdminSettingsPage() {
                   padding: '6px 14px', background: 'none',
                   border: `1px solid ${ORANGE}`, borderRadius: 'var(--radius-sm)',
                   color: ORANGE, fontSize: '0.78rem', fontWeight: 600,
-                  cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                  cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                 }}
               >
                 {phone ? 'Edit' : 'Add phone'}
@@ -273,7 +273,7 @@ export default function AdminSettingsPage() {
                     border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
                     color: '#96a0b8', fontSize: '0.78rem', fontWeight: 600,
                     cursor: testSmsStatus ? 'not-allowed' : 'pointer',
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: "'Inter', sans-serif",
                     opacity: testSmsStatus ? 0.6 : 1,
                   }}
                 >
@@ -306,7 +306,7 @@ export default function AdminSettingsPage() {
           border: `1px solid ${saveIndicator === 'Error' ? 'rgba(255,107,133,0.3)' : 'rgba(52,211,153,0.3)'}`,
           color: saveIndicator === 'Error' ? '#ff6b85' : '#34d399',
           fontSize: '0.82rem', fontWeight: 600,
-          fontFamily: "'DM Sans', sans-serif",
+          fontFamily: "'Inter', sans-serif",
         }}>
           {saveIndicator}
         </div>
@@ -325,7 +325,7 @@ export default function AdminSettingsPage() {
               }}
             >
               <div style={{
-                fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+                fontFamily: "'Inter', sans-serif", fontWeight: 600,
                 fontSize: '13px', letterSpacing: '0.08em',
                 textTransform: 'uppercase', color: ORANGE, marginBottom: 4,
               }}>
@@ -336,11 +336,11 @@ export default function AdminSettingsPage() {
               </p>
               <div style={{ display: 'flex', gap: 28, alignItems: 'center', flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: '0.84rem', color: '#c8cdd8', fontFamily: "'DM Sans', sans-serif", fontWeight: 500 }}>Email</span>
+                  <span style={{ fontSize: '0.84rem', color: '#c8cdd8', fontFamily: "'Inter', sans-serif", fontWeight: 500 }}>Email</span>
                   <Toggle on={pref.email} color="#00e5ff" onToggle={() => handleToggle(cat.key, 'email')} />
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: '0.84rem', color: '#c8cdd8', fontFamily: "'DM Sans', sans-serif", fontWeight: 500 }}>SMS</span>
+                  <span style={{ fontSize: '0.84rem', color: '#c8cdd8', fontFamily: "'Inter', sans-serif", fontWeight: 500 }}>SMS</span>
                   <Toggle on={pref.sms} color="#34d399" onToggle={() => handleToggle(cat.key, 'sms')} />
                 </div>
               </div>

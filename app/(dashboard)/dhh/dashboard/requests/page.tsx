@@ -230,7 +230,7 @@ function InterpreterMiniCard({ recipient }: { recipient: Recipient }) {
             width: 32, height: 32, borderRadius: '50%',
             background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.6rem', color: '#fff',
+            fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.6rem', color: '#fff',
           }}>
             {initials}
           </div>
@@ -241,7 +241,7 @@ function InterpreterMiniCard({ recipient }: { recipient: Recipient }) {
           href={`/directory/${recipient.interpreter_id}`}
           onClick={e => e.stopPropagation()}
           style={{
-            fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.82rem',
+            fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.82rem',
             color: 'var(--text)', textDecoration: 'none', display: 'block',
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }}
@@ -330,7 +330,7 @@ function AppointmentVideoSection({ booking }: { booking: BookingWithRecipients }
   }
 
   const mutedSmall: React.CSSProperties = {
-    fontFamily: "'DM Sans', sans-serif", fontSize: '0.78rem',
+    fontFamily: "'Inter', sans-serif", fontSize: '0.78rem',
     color: 'var(--muted)', lineHeight: 1.5,
   }
 
@@ -416,7 +416,7 @@ function AppointmentVideoSection({ booking }: { booking: BookingWithRecipients }
                 background: 'none', border: '1px solid rgba(157,135,255,0.4)',
                 borderRadius: 'var(--radius-sm)', padding: '7px 16px',
                 fontSize: '0.82rem', fontWeight: 600, color: '#9d87ff',
-                cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                cursor: 'pointer', fontFamily: "'Inter', sans-serif",
               }}
             >
               Re-record
@@ -428,7 +428,7 @@ function AppointmentVideoSection({ booking }: { booking: BookingWithRecipients }
                 background: 'none', border: '1px solid var(--border)',
                 borderRadius: 'var(--radius-sm)', padding: '7px 16px',
                 fontSize: '0.82rem', color: 'var(--muted)',
-                cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                cursor: 'pointer', fontFamily: "'Inter', sans-serif",
               }}
             >
               {removing ? 'Removing...' : 'Remove video'}
@@ -470,7 +470,7 @@ function AppointmentVideoSection({ booking }: { booking: BookingWithRecipients }
 
       {/* Cross-link to profile Intro Video */}
       <p style={{
-        fontFamily: "'DM Sans', sans-serif", fontSize: '0.76rem',
+        fontFamily: "'Inter', sans-serif", fontSize: '0.76rem',
         color: 'var(--muted)', marginTop: 14, marginBottom: 0,
         lineHeight: 1.5, opacity: 0.85,
       }}>
@@ -529,7 +529,7 @@ function ModalPill({ label, selected, onClick }: { label: string; selected: bool
         border: selected ? '1px solid #00e5ff' : '1px solid var(--border)',
         background: selected ? '#00e5ff' : 'var(--surface2)',
         color: selected ? '#000' : 'var(--muted)',
-        fontFamily: "'DM Sans', sans-serif", fontSize: '0.85rem',
+        fontFamily: "'Inter', sans-serif", fontSize: '0.85rem',
         fontWeight: selected ? 700 : 500, transition: 'all 0.15s ease',
       }}
     >
@@ -703,13 +703,13 @@ function InlineRatingModal({ booking, ratedInterpreters, onRated, onClose }: {
                     width: 40, height: 40, borderRadius: '50%',
                     background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.75rem', color: '#fff',
+                    fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.75rem', color: '#fff',
                   }}>
                     {initials}
                   </div>
                 )}
                 <div style={{
-                  fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+                  fontFamily: "'Inter', sans-serif", fontWeight: 700,
                   fontSize: '0.95rem', color: 'var(--text)',
                 }}>
                   {name}
@@ -756,7 +756,7 @@ function InlineRatingModal({ booking, ratedInterpreters, onRated, onClose }: {
                   width: '100%', boxSizing: 'border-box',
                   background: 'var(--surface2)', border: '1px solid var(--border)',
                   borderRadius: 'var(--radius-sm)', padding: '12px 14px',
-                  color: 'var(--text)', fontFamily: "'DM Sans', sans-serif",
+                  color: 'var(--text)', fontFamily: "'Inter', sans-serif",
                   fontSize: '0.85rem', outline: 'none', resize: 'vertical',
                   minHeight: 80, marginBottom: 12,
                 }}
@@ -823,7 +823,7 @@ function InlineRatingModal({ booking, ratedInterpreters, onRated, onClose }: {
           background: '#7b61ff', color: '#fff',
           border: 'none', borderRadius: 'var(--radius-sm)',
           padding: '12px 32px', fontSize: '0.9rem', fontWeight: 700,
-          fontFamily: "'DM Sans', sans-serif", cursor: submitting ? 'not-allowed' : 'pointer',
+          fontFamily: "'Inter', sans-serif", cursor: submitting ? 'not-allowed' : 'pointer',
           opacity: submitting ? 0.6 : 1, transition: 'opacity 0.15s',
         }}
       >
@@ -877,7 +877,7 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
         {/* Line 1: Title */}
         <div style={{ marginBottom: 8 }}>
           <span style={{
-            fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem',
+            fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1rem',
             color: 'var(--text)',
           }}>
             {booking.title || 'Interpreter Request'}
@@ -887,7 +887,7 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
         {/* Line 2: Date + Time + Location with icons */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap',
-          fontFamily: "'DM Sans', sans-serif", fontSize: '0.84rem', color: 'var(--muted)',
+          fontFamily: "'Inter', sans-serif", fontSize: '0.84rem', color: 'var(--muted)',
           marginBottom: 8,
         }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
@@ -937,7 +937,7 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
                   padding: '8px 20px',
                   borderRadius: 8,
                   cursor: 'pointer',
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: "'Inter', sans-serif",
                   fontSize: '0.85rem',
                   whiteSpace: 'nowrap',
                   flexShrink: 0,
@@ -974,7 +974,7 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
                         width: 24, height: 24, borderRadius: '50%',
                         background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.5rem', color: '#fff',
+                        fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.5rem', color: '#fff',
                       }}>
                         {initials}
                       </div>
@@ -1000,7 +1000,7 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
             aria-expanded={expanded}
             style={{
               background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-              fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: '0.82rem',
+              fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '0.82rem',
               color: '#00e5ff', display: 'inline-flex', alignItems: 'center', gap: 5,
               textDecoration: 'none',
             }}
@@ -1016,7 +1016,7 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
             rel="noopener noreferrer"
             onClick={e => e.stopPropagation()}
             style={{
-              fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: '0.82rem',
+              fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '0.82rem',
               color: '#00e5ff', textDecoration: 'none',
               display: 'inline-flex', alignItems: 'center', gap: 5,
             }}
@@ -1053,10 +1053,10 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
 
                 {/* Location */}
                 <div style={{ marginBottom: 10 }}>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
+                  <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
                     Location
                   </div>
-                  <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
+                  <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
                     {booking.format === 'remote' ? (
                       <span style={{ color: '#00e5ff' }}>Remote</span>
                     ) : booking.location ? (
@@ -1076,10 +1076,10 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
                 {/* Event */}
                 {(booking.event_category || booking.event_type) && (
                   <div style={{ marginBottom: 10 }}>
-                    <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
                       Event
                     </div>
-                    <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
                       {booking.event_category}{booking.event_type ? ` — ${booking.event_type}` : ''}
                     </div>
                   </div>
@@ -1088,10 +1088,10 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
                 {/* Requester */}
                 {booking.requester_name && (
                   <div style={{ marginBottom: 10 }}>
-                    <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
                       Requester
                     </div>
-                    <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
                       {booking.requester_name}
                     </div>
                   </div>
@@ -1100,10 +1100,10 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
                 {/* Notes */}
                 {(booking.description || booking.notes) && (
                   <div style={{ marginBottom: 10 }}>
-                    <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
                       Notes
                     </div>
-                    <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.55 }}>
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.55 }}>
                       {booking.description || booking.notes}
                     </div>
                   </div>
@@ -1112,10 +1112,10 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
                 {/* Cancellation reason */}
                 {booking.status === 'cancelled' && booking.cancellation_reason && (
                   <div style={{ marginBottom: 10 }}>
-                    <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: '#ff6b85', marginBottom: 2 }}>
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: '#ff6b85', marginBottom: 2 }}>
                       Cancellation reason
                     </div>
-                    <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem', color: '#ff6b85' }}>
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: '#ff6b85' }}>
                       {booking.cancellation_reason}
                     </div>
                   </div>
@@ -1235,7 +1235,7 @@ export default function DhhRequestsListPage() {
 
   const tabStyle = (tab: Tab): React.CSSProperties => ({
     background: 'none', border: 'none', cursor: 'pointer',
-    padding: '10px 20px', fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+    padding: '10px 20px', fontFamily: "'Inter', sans-serif", fontWeight: 700,
     fontSize: '0.88rem',
     color: activeTab === tab ? 'var(--accent)' : 'var(--muted)',
     borderBottom: activeTab === tab ? '2px solid var(--accent)' : '2px solid transparent',
@@ -1288,7 +1288,7 @@ export default function DhhRequestsListPage() {
                   background: 'linear-gradient(135deg, #9d87ff, #7b61ff)',
                   borderRadius: 'var(--radius-sm)', color: '#fff',
                   textDecoration: 'none', fontSize: '0.88rem', fontWeight: 700,
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: "'Inter', sans-serif",
                 }}
               >
                 New Request

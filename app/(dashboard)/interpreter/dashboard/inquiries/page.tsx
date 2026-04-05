@@ -75,7 +75,7 @@ const fieldInputStyle: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box',
   background: 'var(--surface2)', border: '1px solid var(--border)',
   borderRadius: 'var(--radius-sm)', padding: '10px 14px',
-  color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem',
+  color: 'var(--text)', fontFamily: "'Inter', sans-serif", fontSize: '0.88rem',
   outline: 'none',
 }
 
@@ -207,7 +207,7 @@ function AcceptModal({ booking, onClose, onAccepted }: {
       <div className="modal-dialog" style={modalStyle}>
         <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
           <div style={{ fontSize: '2rem', marginBottom: 12 }}>✓</div>
-          <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent)', marginBottom: 8 }}>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent)', marginBottom: 8 }}>
             Rate sent!
           </div>
           <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 20px' }}>
@@ -232,7 +232,7 @@ function AcceptModal({ booking, onClose, onAccepted }: {
     <div style={overlayStyle}>
       <div className="modal-dialog" style={{ ...modalStyle, maxHeight: '90vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Send Rate — {booking.title || 'Booking'}</div>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Send Rate — {booking.title || 'Booking'}</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
         </div>
 
@@ -332,7 +332,7 @@ function DetailModal({ booking, onClose }: {
       }} onClick={e => e.stopPropagation()}>
         <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-            <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>{booking.title || 'Booking Request'}</h3>
+            <h3 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>{booking.title || 'Booking Request'}</h3>
             <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem', flexShrink: 0 }}>✕</button>
           </div>
           <span style={{
@@ -538,7 +538,7 @@ function DeclineModal({ booking, onConfirm, onClose }: {
     <div style={overlayStyle}>
       <div className="modal-dialog" style={modalStyle}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Decline: {booking.title || 'Booking'}</div>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Decline: {booking.title || 'Booking'}</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
         </div>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, marginBottom: 20 }}>
@@ -556,7 +556,7 @@ function DeclineModal({ booking, onConfirm, onClose }: {
                 borderRadius: 'var(--radius-sm)', padding: '12px 16px',
                 color: reason === r ? 'var(--accent)' : 'var(--text)',
                 fontSize: '0.88rem', cursor: 'pointer', textAlign: 'left',
-                fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
+                fontFamily: "'Inter', sans-serif", transition: 'all 0.15s',
               }}
             >
               {r}
@@ -773,7 +773,7 @@ export default function InquiriesPage() {
           }}>
             <div className="dash-card-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
               <div>
-                <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'DM Sans', sans-serif" }}>{inq.title || 'Booking Request'}</div>
+                <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Inter', sans-serif" }}>{inq.title || 'Booking Request'}</div>
                 <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>
                   From: {inq.requester_name || 'Unknown'} · {inq.specialization || 'General'}
                   {inq.request_type === 'personal' && inq.dhh_client_name && (

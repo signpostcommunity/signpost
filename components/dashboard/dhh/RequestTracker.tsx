@@ -298,7 +298,7 @@ export default function RequestTracker({ booking, recipients, compact = false, h
                 {/* Label */}
                 <div style={{ textAlign: 'center' }}>
                   <span style={{
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: "'Inter', sans-serif",
                     fontSize: compact ? '0.62rem' : '0.69rem',
                     fontWeight: (ratingPending && isLast && !hasRating) || step.state === 'current' ? 700 : 500,
                     color: labelColor,

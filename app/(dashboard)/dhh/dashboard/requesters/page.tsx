@@ -67,7 +67,7 @@ const btnBase: React.CSSProperties = {
   borderRadius: 'var(--radius-sm)',
   fontSize: '0.78rem',
   fontWeight: 600,
-  fontFamily: "'DM Sans', sans-serif",
+  fontFamily: "'Inter', sans-serif",
   cursor: 'pointer',
   border: 'none',
   transition: 'opacity 0.15s',
@@ -265,7 +265,7 @@ export default function MyRequestersPage() {
                       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
                         <div style={{ flex: 1, minWidth: 200 }}>
                           <div style={{
-                            fontFamily: "'DM Sans', sans-serif",
+                            fontFamily: "'Inter', sans-serif",
                             fontWeight: 700,
                             fontSize: '1rem',
                             color: 'var(--text)',
@@ -275,7 +275,7 @@ export default function MyRequestersPage() {
                           </div>
                           {conn.org_type && (
                             <div style={{
-                              fontFamily: "'DM Sans', sans-serif",
+                              fontFamily: "'Inter', sans-serif",
                               fontSize: '0.78rem',
                               color: 'var(--muted)',
                               marginBottom: 6,
@@ -284,7 +284,7 @@ export default function MyRequestersPage() {
                             </div>
                           )}
                           <div style={{
-                            fontFamily: "'DM Sans', sans-serif",
+                            fontFamily: "'Inter', sans-serif",
                             fontSize: '0.82rem',
                             color: '#ffa500',
                           }}>
@@ -342,7 +342,7 @@ export default function MyRequestersPage() {
                       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
                         <div style={{ flex: 1, minWidth: 200 }}>
                           <div style={{
-                            fontFamily: "'DM Sans', sans-serif",
+                            fontFamily: "'Inter', sans-serif",
                             fontWeight: 700,
                             fontSize: '1rem',
                             color: 'var(--text)',
@@ -352,7 +352,7 @@ export default function MyRequestersPage() {
                           </div>
                           {conn.org_type && (
                             <div style={{
-                              fontFamily: "'DM Sans', sans-serif",
+                              fontFamily: "'Inter', sans-serif",
                               fontSize: '0.78rem',
                               color: 'var(--muted)',
                               marginBottom: 4,
@@ -362,7 +362,7 @@ export default function MyRequestersPage() {
                           )}
                           {conn.org_name && conn.requester_name && conn.requester_name !== conn.org_name && (
                             <div style={{
-                              fontFamily: "'DM Sans', sans-serif",
+                              fontFamily: "'Inter', sans-serif",
                               fontSize: '0.78rem',
                               color: 'var(--muted)',
                               marginBottom: 4,
@@ -371,7 +371,7 @@ export default function MyRequestersPage() {
                             </div>
                           )}
                           <div style={{
-                            fontFamily: "'DM Sans', sans-serif",
+                            fontFamily: "'Inter', sans-serif",
                             fontSize: '0.78rem',
                             color: 'var(--muted)',
                           }}>
@@ -383,7 +383,7 @@ export default function MyRequestersPage() {
                           {isConfirming ? (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
                               <div style={{
-                                fontFamily: "'DM Sans', sans-serif",
+                                fontFamily: "'Inter', sans-serif",
                                 fontSize: '0.76rem',
                                 color: '#ff8099',
                                 maxWidth: 260,

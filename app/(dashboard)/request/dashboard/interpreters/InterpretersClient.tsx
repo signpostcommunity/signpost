@@ -139,7 +139,7 @@ function InterpreterCard({ interp, onMoveTier, onRemove, onEditNote, targetTierL
               borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
               fontSize: '0.75rem', padding: '5px 14px', cursor: 'pointer',
               textDecoration: 'none', display: 'inline-block',
-              transition: 'all 0.2s', fontFamily: "'DM Sans', sans-serif",
+              transition: 'all 0.2s', fontFamily: "'Inter', sans-serif",
             }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
@@ -152,7 +152,7 @@ function InterpreterCard({ interp, onMoveTier, onRemove, onEditNote, targetTierL
               background: 'none', border: '1px solid var(--border)',
               borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
               fontSize: '0.75rem', padding: '5px 14px', cursor: 'pointer',
-              whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'DM Sans', sans-serif",
+              whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'Inter', sans-serif",
             }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
@@ -165,7 +165,7 @@ function InterpreterCard({ interp, onMoveTier, onRemove, onEditNote, targetTierL
               background: 'none', border: '1px solid var(--border)',
               borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
               fontSize: '0.75rem', padding: '5px 14px', cursor: 'pointer',
-              whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'DM Sans', sans-serif",
+              whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'Inter', sans-serif",
             }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
@@ -178,7 +178,7 @@ function InterpreterCard({ interp, onMoveTier, onRemove, onEditNote, targetTierL
               background: 'none', border: '1px solid var(--border)',
               borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
               fontSize: '0.75rem', padding: '5px 14px', cursor: 'pointer',
-              whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'DM Sans', sans-serif",
+              whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'Inter', sans-serif",
             }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,80,80,0.4)'; e.currentTarget.style.color = '#f87171' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
@@ -379,7 +379,7 @@ export default function InterpretersClient() {
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       {/* Page Header */}
       <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
           Preferred Interpreters
         </h1>
         <p style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', margin: 0 }}>
@@ -391,7 +391,7 @@ export default function InterpretersClient() {
       <div style={{ marginBottom: 36 }}>
         <div className="req-section-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px', color: '#f0f2f8', marginBottom: 2 }}>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '20px', color: '#f0f2f8', marginBottom: 2 }}>
               Preferred Interpreters
               <span style={{
                 marginLeft: 10, fontSize: '0.75rem', fontWeight: 600,
@@ -411,7 +411,7 @@ export default function InterpretersClient() {
               display: 'inline-flex', alignItems: 'center', gap: 7,
               background: 'transparent', border: '1.5px dashed var(--border)',
               borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
-              fontFamily: "'DM Sans', sans-serif", fontSize: '0.82rem',
+              fontFamily: "'Inter', sans-serif", fontSize: '0.82rem',
               padding: '8px 16px', cursor: 'pointer', textDecoration: 'none',
               transition: 'all 0.2s', whiteSpace: 'nowrap',
             }}
@@ -459,7 +459,7 @@ export default function InterpretersClient() {
                         width: '100%', boxSizing: 'border-box',
                         background: 'var(--surface)', border: '1px solid var(--border)',
                         borderRadius: 'var(--radius-sm)', padding: '10px 14px',
-                        color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.85rem',
+                        color: 'var(--text)', fontFamily: "'Inter', sans-serif", fontSize: '0.85rem',
                         outline: 'none', resize: 'vertical', minHeight: 60, marginBottom: 10,
                       }}
                       onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
@@ -469,7 +469,7 @@ export default function InterpretersClient() {
                       <button onClick={() => setEditingNoteId(null)} style={{
                         background: 'transparent', border: '1px solid var(--border)',
                         borderRadius: 8, padding: '6px 16px', color: 'var(--muted)',
-                        fontSize: '0.8rem', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                        fontSize: '0.8rem', cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                       }}>Cancel</button>
                       <button onClick={() => saveNote(interp.roster_id)} className="btn-primary" style={{ padding: '6px 16px', fontSize: '0.8rem' }}>
                         Save
@@ -495,7 +495,7 @@ export default function InterpretersClient() {
       <div style={{ marginBottom: 36 }}>
         <div className="req-section-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px', color: '#f0f2f8', marginBottom: 2 }}>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '20px', color: '#f0f2f8', marginBottom: 2 }}>
               Secondary Tier
               <span style={{
                 marginLeft: 10, fontSize: '0.75rem', fontWeight: 600,
@@ -515,7 +515,7 @@ export default function InterpretersClient() {
               display: 'inline-flex', alignItems: 'center', gap: 7,
               background: 'transparent', border: '1.5px dashed var(--border)',
               borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
-              fontFamily: "'DM Sans', sans-serif", fontSize: '0.82rem',
+              fontFamily: "'Inter', sans-serif", fontSize: '0.82rem',
               padding: '8px 16px', cursor: 'pointer', textDecoration: 'none',
               transition: 'all 0.2s', whiteSpace: 'nowrap',
             }}
@@ -557,7 +557,7 @@ export default function InterpretersClient() {
                         width: '100%', boxSizing: 'border-box',
                         background: 'var(--surface)', border: '1px solid var(--border)',
                         borderRadius: 'var(--radius-sm)', padding: '10px 14px',
-                        color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.85rem',
+                        color: 'var(--text)', fontFamily: "'Inter', sans-serif", fontSize: '0.85rem',
                         outline: 'none', resize: 'vertical', minHeight: 60, marginBottom: 10,
                       }}
                       onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
@@ -567,7 +567,7 @@ export default function InterpretersClient() {
                       <button onClick={() => setEditingNoteId(null)} style={{
                         background: 'transparent', border: '1px solid var(--border)',
                         borderRadius: 8, padding: '6px 16px', color: 'var(--muted)',
-                        fontSize: '0.8rem', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                        fontSize: '0.8rem', cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                       }}>Cancel</button>
                       <button onClick={() => saveNote(interp.roster_id)} className="btn-primary" style={{ padding: '6px 16px', fontSize: '0.8rem' }}>
                         Save
@@ -632,7 +632,7 @@ export default function InterpretersClient() {
                   style={{
                     background: 'transparent', border: '1px solid var(--border)',
                     borderRadius: 10, padding: '11px 20px', color: 'var(--muted)',
-                    fontSize: '0.85rem', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                    fontSize: '0.85rem', cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                     minHeight: 44,
                   }}
                 >
@@ -644,7 +644,7 @@ export default function InterpretersClient() {
                     background: isRemove ? '#ff6b85' : 'var(--accent)',
                     border: 'none', borderRadius: 10, padding: '11px 20px',
                     color: isRemove ? '#fff' : '#000', fontSize: '0.85rem',
-                    fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                    fontWeight: 700, cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                     minHeight: 44,
                   }}
                 >

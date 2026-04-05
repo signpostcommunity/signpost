@@ -190,7 +190,7 @@ function InterpreterMiniCard({ recipient }: { recipient: Recipient }) {
           width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
           background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.6rem', color: '#fff',
+          fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.6rem', color: '#fff',
         }}>
           {initials}
         </div>
@@ -199,7 +199,7 @@ function InterpreterMiniCard({ recipient }: { recipient: Recipient }) {
         <Link
           href={`/directory/${recipient.interpreter_id}`}
           style={{
-            fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.82rem',
+            fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.82rem',
             color: 'var(--text)', textDecoration: 'none', display: 'block',
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }}
@@ -269,7 +269,7 @@ function DetailModal({ booking, onClose }: { booking: RecentBooking; onClose: ()
           paddingRight: 32,
         }}>
           <span style={{
-            fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem',
+            fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1.1rem',
             color: 'var(--text)',
           }}>
             {booking.title || 'Interpreter Request'}
@@ -293,7 +293,7 @@ function DetailModal({ booking, onClose }: { booking: RecentBooking; onClose: ()
         {/* Line 2: Date/time/location */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap',
-          fontFamily: "'DM Sans', sans-serif", fontSize: '0.84rem', color: 'var(--muted)',
+          fontFamily: "'Inter', sans-serif", fontSize: '0.84rem', color: 'var(--muted)',
           marginBottom: 8,
         }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
@@ -364,10 +364,10 @@ function DetailModal({ booking, onClose }: { booking: RecentBooking; onClose: ()
             </div>
 
             <div style={{ marginBottom: 10 }}>
-              <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
+              <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
                 Location
               </div>
-              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
+              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
                 {booking.format === 'remote' ? (
                   <span style={{ color: '#00e5ff' }}>Remote</span>
                 ) : booking.location ? (
@@ -386,10 +386,10 @@ function DetailModal({ booking, onClose }: { booking: RecentBooking; onClose: ()
 
             {(booking.event_category || booking.event_type) && (
               <div style={{ marginBottom: 10 }}>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
                   Event
                 </div>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
                   {booking.event_category}{booking.event_type ? ` — ${booking.event_type}` : ''}
                 </div>
               </div>
@@ -397,10 +397,10 @@ function DetailModal({ booking, onClose }: { booking: RecentBooking; onClose: ()
 
             {booking.requester_name && (
               <div style={{ marginBottom: 10 }}>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
                   Requester
                 </div>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
                   {booking.requester_name}
                 </div>
               </div>
@@ -408,10 +408,10 @@ function DetailModal({ booking, onClose }: { booking: RecentBooking; onClose: ()
 
             {(booking.description || booking.notes) && (
               <div style={{ marginBottom: 10 }}>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
                   Notes
                 </div>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.55 }}>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.55 }}>
                   {booking.description || booking.notes}
                 </div>
               </div>
@@ -419,10 +419,10 @@ function DetailModal({ booking, onClose }: { booking: RecentBooking; onClose: ()
 
             {booking.status === 'cancelled' && booking.cancellation_reason && (
               <div style={{ marginBottom: 10 }}>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: '#ff6b85', marginBottom: 2 }}>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: '#ff6b85', marginBottom: 2 }}>
                   Cancellation reason
                 </div>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem', color: '#ff6b85' }}>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: '#ff6b85' }}>
                   {booking.cancellation_reason}
                 </div>
               </div>
@@ -478,7 +478,7 @@ function StatCard({ num, label, href }: { num: number; label: string; href: stri
           flex: 1,
         }}
       >
-        <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '2rem', letterSpacing: '-0.04em', color: '#9d87ff' }}>{num}</div>
+        <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '2rem', letterSpacing: '-0.04em', color: '#9d87ff' }}>{num}</div>
         <div style={{ color: 'var(--muted)', fontSize: '0.78rem', marginTop: 4 }}>{label}</div>
       </div>
     </Link>
@@ -509,7 +509,7 @@ function RecentRequestCard({ booking, onClick }: { booking: RecentBooking; onCli
         display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6,
       }}>
         <span style={{
-          fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.95rem',
+          fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.95rem',
           color: 'var(--text)', flex: 1, minWidth: 0,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>
@@ -535,7 +535,7 @@ function RecentRequestCard({ booking, onClick }: { booking: RecentBooking; onCli
       {/* Line 2: Date + Time + Location */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
-        fontFamily: "'DM Sans', sans-serif", fontSize: '0.78rem', color: 'var(--muted)',
+        fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', color: 'var(--muted)',
         marginBottom: 6,
       }}>
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
@@ -596,7 +596,7 @@ function RecentRequestCard({ booking, onClick }: { booking: RecentBooking; onCli
 
       {/* View details link */}
       <div style={{
-        marginTop: 8, fontFamily: "'DM Sans', sans-serif", fontWeight: 500,
+        marginTop: 8, fontFamily: "'Inter', sans-serif", fontWeight: 500,
         fontSize: '0.78rem', color: '#00e5ff',
       }}>
         View details
@@ -842,7 +842,7 @@ export default function DeafDashboardOverview() {
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       {/* Greeting */}
       <div style={{ marginBottom: 30 }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
           Welcome back, {displayName}.
         </h1>
         <p style={{ fontWeight: 400, fontSize: '15px', color: '#96a0b8', margin: 0 }}>Here&apos;s a snapshot of your activity on signpost.</p>

@@ -125,7 +125,7 @@ export default function DhhInboxPage() {
           onClick={() => setActiveTab('messages')}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            padding: '10px 20px', fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+            padding: '10px 20px', fontFamily: "'Inter', sans-serif", fontWeight: 700,
             fontSize: '0.88rem',
             color: activeTab === 'messages' ? '#9d87ff' : 'var(--muted)',
             borderBottom: activeTab === 'messages' ? '2px solid #9d87ff' : '2px solid transparent',
@@ -138,7 +138,7 @@ export default function DhhInboxPage() {
           onClick={() => setActiveTab('notifications')}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            padding: '10px 20px', fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+            padding: '10px 20px', fontFamily: "'Inter', sans-serif", fontWeight: 700,
             fontSize: '0.88rem',
             color: activeTab === 'notifications' ? '#9d87ff' : 'var(--muted)',
             borderBottom: activeTab === 'notifications' ? '2px solid #9d87ff' : '2px solid transparent',
@@ -149,7 +149,7 @@ export default function DhhInboxPage() {
           Notifications
           {unreadNotifCount > 0 && (
             <span style={{
-              background: '#9d87ff', color: '#000', fontFamily: "'DM Sans', sans-serif",
+              background: '#9d87ff', color: '#000', fontFamily: "'Inter', sans-serif",
               fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20,
               lineHeight: '1.4',
             }}>
@@ -201,7 +201,7 @@ export default function DhhInboxPage() {
                   Notifications
                 </h2>
                 {unreadNotifCount > 0 && (
-                  <button onClick={markAllNotificationsAsRead} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9d87ff', fontSize: '0.76rem', fontFamily: "'DM Sans', sans-serif", fontWeight: 600, whiteSpace: 'nowrap', padding: '2px 4px' }}>Mark all read</button>
+                  <button onClick={markAllNotificationsAsRead} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9d87ff', fontSize: '0.76rem', fontFamily: "'Inter', sans-serif", fontWeight: 600, whiteSpace: 'nowrap', padding: '2px 4px' }}>Mark all read</button>
                 )}
               </div>
               <div style={{
@@ -248,7 +248,7 @@ export default function DhhInboxPage() {
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: isExpanded ? 0 : 3 }}>
                             <span style={{
-                              fontFamily: "'DM Sans', sans-serif", fontSize: '0.86rem',
+                              fontFamily: "'Inter', sans-serif", fontSize: '0.86rem',
                               fontWeight: isUnread ? 600 : 400, color: 'var(--text)',
                               ...(isExpanded ? {} : { whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' }),
                             }}>{notif.subject || '(no subject)'}</span>
@@ -265,11 +265,11 @@ export default function DhhInboxPage() {
                       </div>
                       {isExpanded && (
                         <div style={{ padding: '0 20px 16px 50px', background: 'rgba(157,135,255,0.02)' }}>
-                          {notif.body && <p style={{ margin: '0 0 12px', fontSize: '0.85rem', color: '#b0b0b0', lineHeight: 1.65, fontFamily: "'DM Sans', sans-serif" }}>{notif.body}</p>}
-                          <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginBottom: 8, fontFamily: "'DM Sans', sans-serif" }}>
+                          {notif.body && <p style={{ margin: '0 0 12px', fontSize: '0.85rem', color: '#b0b0b0', lineHeight: 1.65, fontFamily: "'Inter', sans-serif" }}>{notif.body}</p>}
+                          <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginBottom: 8, fontFamily: "'Inter', sans-serif" }}>
                             {new Date(notif.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
                           </div>
-                          <Link href="/dhh/dashboard/profile?tab=account-settings" style={{ fontSize: '0.75rem', color: 'var(--muted)', fontFamily: "'DM Sans', sans-serif", textDecoration: 'none', opacity: 0.7 }}>
+                          <Link href="/dhh/dashboard/profile?tab=account-settings" style={{ fontSize: '0.75rem', color: 'var(--muted)', fontFamily: "'Inter', sans-serif", textDecoration: 'none', opacity: 0.7 }}>
                             Manage notification preferences
                           </Link>
                         </div>

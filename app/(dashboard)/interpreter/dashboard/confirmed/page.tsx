@@ -269,7 +269,7 @@ function CancelModal({ booking, onClose, onCancelled }: {
         {step === 1 && (
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.05rem' }}>Cancel this booking</div>
+              <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1.05rem' }}>Cancel this booking</div>
               <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
             </div>
             <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 20px' }}>
@@ -297,7 +297,7 @@ function CancelModal({ booking, onClose, onCancelled }: {
                     borderRadius: 'var(--radius-sm)', padding: '12px 16px',
                     color: reason === r ? '#ff6b85' : 'var(--text)',
                     fontSize: '0.88rem', cursor: 'pointer', textAlign: 'left',
-                    fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
+                    fontFamily: "'Inter', sans-serif", transition: 'all 0.15s',
                   }}
                 >
                   {r}
@@ -314,7 +314,7 @@ function CancelModal({ booking, onClose, onCancelled }: {
                     width: '100%', boxSizing: 'border-box',
                     background: 'var(--surface2)', border: '1px solid var(--border)',
                     borderRadius: 'var(--radius-sm)', padding: '10px 14px',
-                    color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem',
+                    color: 'var(--text)', fontFamily: "'Inter', sans-serif", fontSize: '0.88rem',
                     outline: 'none', resize: 'vertical', minHeight: 70,
                   }}
                   onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
@@ -332,7 +332,7 @@ function CancelModal({ booking, onClose, onCancelled }: {
                   background: 'none', border: '1px solid var(--border)',
                   borderRadius: 'var(--radius-sm)', padding: '8px 18px',
                   color: 'var(--text)', fontSize: '0.82rem', cursor: 'pointer',
-                  fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
+                  fontFamily: "'Inter', sans-serif", transition: 'all 0.15s',
                   opacity: reason && !(reason === 'Other reason' && !otherText.trim()) ? 1 : 0.4,
                   pointerEvents: reason && !(reason === 'Other reason' && !otherText.trim()) ? 'auto' : 'none',
                 }}
@@ -347,7 +347,7 @@ function CancelModal({ booking, onClose, onCancelled }: {
         {step === 2 && (
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-              <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.05rem' }}>Help find a replacement?</div>
+              <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1.05rem' }}>Help find a replacement?</div>
               <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
             </div>
             <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 8px' }}>
@@ -388,7 +388,7 @@ function CancelModal({ booking, onClose, onCancelled }: {
                   borderRadius: 'var(--radius-sm)', padding: '8px 18px',
                   color: subOption && !saving ? '#ff6b85' : 'var(--muted)',
                   fontSize: '0.82rem', cursor: subOption && !saving ? 'pointer' : 'default',
-                  fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
+                  fontFamily: "'Inter', sans-serif", transition: 'all 0.15s',
                   opacity: subOption && !saving ? 1 : 0.4,
                 }}
               >
@@ -468,7 +468,7 @@ function ForwardToTeamModal({ booking, interpreterId, onClose, onForwarded }: {
     <div role="presentation" style={overlayStyle} onClick={onClose}>
       <div className="modal-dialog" style={modalStyle} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.05rem' }}>Forward to Team</div>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1.05rem' }}>Forward to Team</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
         </div>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 16px' }}>
@@ -685,7 +685,7 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
         {/* Header: Title + Status Badge */}
         <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-            <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>{booking.title || 'Booking'}</h3>
+            <h3 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>{booking.title || 'Booking'}</h3>
             <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem', flexShrink: 0 }}>✕</button>
           </div>
           {booking.status === 'cancelled' ? (
@@ -694,7 +694,7 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
               fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20,
               background: 'rgba(255,107,133,0.1)', color: '#ff6b85',
               border: '1px solid rgba(255,107,133,0.3)',
-              fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em',
+              fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em',
             }}>
               Cancelled{booking.cancellation_reason ? ` — ${booking.cancellation_reason}` : ''}
             </span>
@@ -704,7 +704,7 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
               fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20,
               background: 'rgba(52,211,153,0.1)', color: '#34d399',
               border: '1px solid rgba(52,211,153,0.3)',
-              fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em',
+              fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em',
             }}>
               Completed
             </span>
@@ -1008,7 +1008,7 @@ function CalendarDropdown({ booking, onToast }: {
     display: 'block', width: '100%', textAlign: 'left',
     background: 'none', border: 'none', padding: '9px 14px',
     color: 'var(--text)', fontSize: '0.82rem', cursor: 'pointer',
-    fontFamily: "'DM Sans', sans-serif", borderRadius: 6,
+    fontFamily: "'Inter', sans-serif", borderRadius: 6,
     transition: 'background 0.12s',
   }
 
@@ -1216,7 +1216,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
   const inputSt: React.CSSProperties = {
     background: 'var(--surface2)', border: '1px solid var(--border)',
     borderRadius: 'var(--radius-sm)', padding: '9px 12px',
-    color: 'var(--text)', fontFamily: "'DM Sans', sans-serif",
+    color: 'var(--text)', fontFamily: "'Inter', sans-serif",
     fontSize: '0.88rem', outline: 'none', width: '100%', boxSizing: 'border-box',
   }
   const labelSt: React.CSSProperties = { display: 'block', fontSize: '13px', fontWeight: 500, color: '#c8cdd8', marginBottom: 6 }
@@ -1241,7 +1241,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
         {/* Header */}
         <div style={{ padding: '24px 28px 16px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem', margin: '0 0 6px' }}>Submit Invoice</h3>
+            <h3 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1.1rem', margin: '0 0 6px' }}>Submit Invoice</h3>
             <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
               <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>{invoiceNumber}</span>
               <span style={{
@@ -1355,7 +1355,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
               style={{
                 background: 'transparent', border: '1.5px dashed var(--border)', borderRadius: 'var(--radius-sm)',
                 padding: '8px 14px', color: 'var(--muted)', fontSize: '0.82rem', cursor: 'pointer',
-                fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
+                fontFamily: "'Inter', sans-serif", transition: 'all 0.15s',
               }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}>
@@ -1429,7 +1429,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
               background: 'none', border: '1px solid var(--border)',
               borderRadius: 'var(--radius-sm)', padding: '8px 18px',
               color: 'var(--text)', fontSize: '0.82rem', cursor: saving ? 'default' : 'pointer',
-              fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
+              fontFamily: "'Inter', sans-serif", transition: 'all 0.15s',
               opacity: saving ? 0.5 : 1,
             }}
           >
@@ -1454,7 +1454,7 @@ function CancelledBadge({ reason }: { reason: string | null }) {
       borderRadius: 100, whiteSpace: 'nowrap',
       background: 'rgba(255,107,133,0.1)', color: '#ff6b85',
       border: '1px solid rgba(255,107,133,0.3)',
-      fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em',
+      fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em',
     }}>
       Cancelled{reason ? ` — ${reason}` : ''}
     </span>
@@ -1468,7 +1468,7 @@ function CompletedBadge() {
       borderRadius: 100, whiteSpace: 'nowrap',
       background: 'rgba(52,211,153,0.1)', color: '#34d399',
       border: '1px solid rgba(52,211,153,0.3)',
-      fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em',
+      fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em',
     }}>
       Completed
     </span>
@@ -1524,7 +1524,7 @@ function BookingCard({ booking, onViewDetails, onCancel, onForwardToTeam, onToas
     }}>
       <div className="dash-card-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
         <div>
-          <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'DM Sans', sans-serif" }}>{booking.title || 'Booking'}</div>
+          <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Inter', sans-serif" }}>{booking.title || 'Booking'}</div>
           <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>{booking.requester_name || 'Client'} · {booking.specialization || 'General'}</div>
         </div>
         <div className="dash-card-badges" style={{ display: 'flex', gap: 8, flexShrink: 0, alignItems: 'center' }}>

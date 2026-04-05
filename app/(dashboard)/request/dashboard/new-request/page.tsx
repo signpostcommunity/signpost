@@ -55,14 +55,14 @@ interface TaggedDeafPerson {
 const labelStyle: React.CSSProperties = {
   display: 'block', fontSize: '0.82rem', fontWeight: 600,
   color: 'var(--text)', marginBottom: 6,
-  fontFamily: "'DM Sans', sans-serif",
+  fontFamily: "'Inter', sans-serif",
 }
 
 const inputStyle: React.CSSProperties = {
   width: '100%', padding: '11px 14px',
   background: 'var(--surface)', border: '1px solid var(--border)',
   borderRadius: 'var(--radius-sm)', color: 'var(--text)',
-  fontSize: '15px', fontFamily: "'DM Sans', sans-serif",
+  fontSize: '15px', fontFamily: "'Inter', sans-serif",
   outline: 'none', transition: 'border-color 0.15s',
 }
 
@@ -76,7 +76,7 @@ const selectStyle: React.CSSProperties = {
 }
 
 const sectionLabelStyle: React.CSSProperties = {
-  fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '13px',
+  fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px',
   letterSpacing: '0.08em', textTransform: 'uppercase' as const,
   color: 'var(--accent)', margin: '32px 0 12px',
 }
@@ -437,7 +437,7 @@ export default function NewRequestPage() {
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       <div style={{ maxWidth: 680, margin: '0 auto' }}>
         {/* Header */}
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '27px', letterSpacing: '-0.02em', margin: '0 0 6px', color: '#f0f2f8' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '27px', letterSpacing: '-0.02em', margin: '0 0 6px', color: '#f0f2f8' }}>
           New Interpreter Request
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: '0 0 26px' }}>
@@ -510,7 +510,7 @@ export default function NewRequestPage() {
                   borderRadius: 'var(--radius-sm)', cursor: 'pointer',
                   color: format === f ? 'var(--accent)' : 'var(--muted)',
                   fontWeight: 600, fontSize: '0.88rem',
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: "'Inter', sans-serif",
                   transition: 'all 0.15s',
                 }}
               >
@@ -679,7 +679,7 @@ export default function NewRequestPage() {
                           background: 'none', border: '1px solid var(--border)',
                           borderRadius: 'var(--radius-sm)', padding: '9px 18px',
                           fontSize: '0.82rem', color: 'var(--muted)', cursor: 'pointer',
-                          fontFamily: "'DM Sans', sans-serif",
+                          fontFamily: "'Inter', sans-serif",
                         }}
                       >
                         Continue without their list
@@ -752,7 +752,7 @@ export default function NewRequestPage() {
                   borderRadius: 'var(--radius-sm)',
                   color: currentLookupInput.trim() ? 'var(--accent)' : 'var(--muted)',
                   fontSize: '0.85rem', fontWeight: 600, cursor: currentLookupInput.trim() ? 'pointer' : 'not-allowed',
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: "'Inter', sans-serif",
                   whiteSpace: 'nowrap',
                 }}
               >
@@ -768,7 +768,7 @@ export default function NewRequestPage() {
                 style={{
                   background: 'none', border: 'none', padding: '4px 0',
                   color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600,
-                  cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                  cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                   marginBottom: 8,
                 }}
               >
@@ -786,7 +786,7 @@ export default function NewRequestPage() {
             style={{
               background: 'none', border: 'none', padding: '4px 0',
               color: 'var(--muted)', fontSize: '0.82rem',
-              cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+              cursor: 'pointer', fontFamily: "'Inter', sans-serif",
               textDecoration: 'underline', marginTop: 4,
             }}
           >
@@ -809,7 +809,7 @@ export default function NewRequestPage() {
               style={{
                 background: 'none', border: 'none', color: 'var(--accent)',
                 fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: "'Inter', sans-serif",
               }}
             >
               Undo
@@ -832,7 +832,7 @@ export default function NewRequestPage() {
         }}>
           <summary style={{
             padding: '12px 16px', cursor: 'pointer', fontSize: '0.82rem',
-            fontWeight: 600, color: 'var(--accent)', fontFamily: "'DM Sans', sans-serif",
+            fontWeight: 600, color: 'var(--accent)', fontFamily: "'Inter', sans-serif",
             listStyle: 'none', display: 'flex', alignItems: 'center', gap: 8,
           }}>
             <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, transition: 'transform 0.2s' }}>
@@ -880,7 +880,7 @@ export default function NewRequestPage() {
           {selectedInterpreters.length >= 10 && (
             <p style={{
               fontSize: '0.82rem', color: 'var(--accent)', marginTop: 10, lineHeight: 1.6,
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "'Inter', sans-serif",
             }}>
               Maximum reached for this round. If your selected interpreters are unavailable, signpost will notify you so you can send to more.
             </p>
@@ -975,7 +975,7 @@ export default function NewRequestPage() {
                 padding: '9px 18px', borderRadius: 'var(--radius-sm)',
                 background: 'rgba(0,229,255,0.06)', border: '1px solid rgba(0,229,255,0.2)',
                 color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600,
-                textDecoration: 'none', fontFamily: "'DM Sans', sans-serif",
+                textDecoration: 'none', fontFamily: "'Inter', sans-serif",
                 marginTop: 20, transition: 'all 0.15s',
               }}
               onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.12)' }}
@@ -1052,7 +1052,7 @@ export default function NewRequestPage() {
               color: saveState === 'saved' ? '#34d399' : saveState === 'error' ? '#ff6b85' : 'var(--muted)',
               fontSize: '0.88rem', fontWeight: 600,
               cursor: (submitting || saveState === 'saving') ? 'not-allowed' : 'pointer',
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "'Inter', sans-serif",
               transition: 'all 0.2s',
               opacity: (submitting || saveState === 'saving') ? 0.6 : 1,
               display: 'inline-flex', alignItems: 'center', gap: 6,

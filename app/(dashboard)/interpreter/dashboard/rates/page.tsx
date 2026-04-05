@@ -36,7 +36,7 @@ const DEFAULT_PROFILES: RateProfile[] = [
 const inputStyle = {
   background: 'var(--surface2)', border: '1px solid var(--border)',
   borderRadius: 'var(--radius-sm)', padding: '9px 12px',
-  color: 'var(--text)', fontFamily: "'DM Sans', sans-serif",
+  color: 'var(--text)', fontFamily: "'Inter', sans-serif",
   fontSize: '0.88rem', outline: 'none', width: '100%',
   boxSizing: 'border-box' as const,
 }
@@ -332,7 +332,7 @@ export default function RatesPage() {
                         removeProfile(profile.id)
                       }
                     }}
-                    style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--muted)', fontSize: '0.75rem', padding: '4px 10px', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}
+                    style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', color: 'var(--muted)', fontSize: '0.75rem', padding: '4px 10px', cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}
                   >
                     Delete
                   </button>
@@ -493,7 +493,7 @@ export default function RatesPage() {
           style={{
             width: '100%', padding: 14, background: 'transparent',
             border: '1.5px dashed var(--border)', borderRadius: 'var(--radius)',
-            color: 'var(--muted)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.9rem',
+            color: 'var(--muted)', fontFamily: "'Inter', sans-serif", fontSize: '0.9rem',
             cursor: 'pointer', transition: 'all 0.2s',
           }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}

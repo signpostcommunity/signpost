@@ -88,7 +88,7 @@ export default function AdminOverviewClient({
 
   return (
     <div className="admin-overview-content" style={{ padding: '32px 40px', maxWidth: 1200 }}>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 700, marginBottom: 8 }}>
+      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 600, marginBottom: 8 }}>
         Admin Dashboard
       </h1>
       <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: 32 }}>
@@ -111,7 +111,7 @@ export default function AdminOverviewClient({
               {card.icon}
               {card.label}
             </div>
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '2rem', fontWeight: 700, color: ORANGE }}>
+            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '2rem', fontWeight: 700, color: ORANGE }}>
               {card.value}
             </div>
           </Link>
@@ -122,7 +122,7 @@ export default function AdminOverviewClient({
       <div className="admin-recent-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
         {/* Recent signups */}
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: 24 }}>
-          <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1rem', fontWeight: 700, marginBottom: 16 }}>
+          <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: '1rem', fontWeight: 700, marginBottom: 16 }}>
             Recent Signups
           </h2>
           {recentUsers.length === 0 ? (
@@ -159,7 +159,7 @@ export default function AdminOverviewClient({
 
         {/* Recent flags */}
         <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: 24 }}>
-          <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1rem', fontWeight: 700, marginBottom: 16 }}>
+          <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: '1rem', fontWeight: 700, marginBottom: 16 }}>
             Recent Profile Flags
           </h2>
           {recentFlags.length === 0 ? (
@@ -197,7 +197,7 @@ export default function AdminOverviewClient({
 
       {/* Payment stats */}
       <div style={{ marginTop: 40 }}>
-        <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1rem', fontWeight: 700, marginBottom: 16 }}>
+        <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: '1rem', fontWeight: 700, marginBottom: 16 }}>
           Platform Fees
         </h2>
         <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
@@ -208,7 +208,7 @@ export default function AdminOverviewClient({
             <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
               Fees Collected
             </div>
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.8rem', fontWeight: 700, color: '#22c55e' }}>
+            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.8rem', fontWeight: 700, color: '#22c55e' }}>
               ${paymentStats.feesCollected.total.toFixed(2)}
             </div>
             <div style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 4 }}>
@@ -223,7 +223,7 @@ export default function AdminOverviewClient({
             <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
               Fees Failed / Pending
             </div>
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.8rem', fontWeight: 700, color: paymentStats.feesFailed.count > 0 ? '#ef4444' : 'var(--muted)' }}>
+            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.8rem', fontWeight: 700, color: paymentStats.feesFailed.count > 0 ? '#ef4444' : 'var(--muted)' }}>
               ${paymentStats.feesFailed.total.toFixed(2)}
             </div>
             <div style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 4 }}>
@@ -238,7 +238,7 @@ export default function AdminOverviewClient({
             <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>
               Credits Outstanding
             </div>
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.8rem', fontWeight: 700, color: ORANGE }}>
+            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.8rem', fontWeight: 700, color: ORANGE }}>
               ${paymentStats.creditsOutstanding.total.toFixed(2)}
             </div>
             <div style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 4 }}>

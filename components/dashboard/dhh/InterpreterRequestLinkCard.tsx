@@ -127,7 +127,7 @@ export default function InterpreterRequestLinkCard() {
             fontSize: '0.82rem',
             fontWeight: 600,
             color: 'var(--text)',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "'Inter', sans-serif",
           }}>
             My Interpreter Request Link
           </div>
@@ -166,7 +166,7 @@ export default function InterpreterRequestLinkCard() {
               fontWeight: 600,
               color: copied ? '#34d399' : 'var(--accent)',
               cursor: 'pointer',
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "'Inter', sans-serif",
               transition: 'all 0.15s',
               whiteSpace: 'nowrap',
             }}
@@ -179,7 +179,7 @@ export default function InterpreterRequestLinkCard() {
               fontSize: '0.72rem',
               color: 'var(--muted)',
               textDecoration: 'none',
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "'Inter', sans-serif",
             }}
           >
             Edit

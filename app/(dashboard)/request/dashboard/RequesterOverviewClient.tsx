@@ -66,7 +66,7 @@ function statusBadge(status: string) {
     <span style={{
       fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px',
       borderRadius: 100, background: s.bg, color: s.color,
-      fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em', whiteSpace: 'nowrap',
+      fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em', whiteSpace: 'nowrap',
     }}>
       {s.label}
     </span>
@@ -92,7 +92,7 @@ function StatCard({ num, label, href }: { num: number; label: string; href: stri
           flex: 1,
         }}
       >
-        <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '2rem', letterSpacing: '-0.04em', color: 'var(--accent)' }}>{num}</div>
+        <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '2rem', letterSpacing: '-0.04em', color: 'var(--accent)' }}>{num}</div>
         <div style={{ color: 'var(--muted)', fontSize: '0.78rem', marginTop: 4 }}>{label}</div>
       </div>
     </Link>
@@ -133,7 +133,7 @@ export default function RequesterOverviewClient({
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       {/* Greeting */}
       <div style={{ marginBottom: 30 }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
           {greeting}
         </h1>
         <p style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', margin: 0 }}>
@@ -197,7 +197,7 @@ export default function RequesterOverviewClient({
               }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'DM Sans', sans-serif" }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Inter', sans-serif" }}>
                       {booking.title || 'Untitled Request'}
                     </div>
                     {booking.event_category && (
@@ -227,7 +227,7 @@ export default function RequesterOverviewClient({
                         <span key={rec.id} style={{
                           display: 'inline-flex', alignItems: 'center', gap: 5,
                           fontSize: '0.72rem', padding: '3px 10px',
-                          borderRadius: 100, fontFamily: "'DM Sans', sans-serif",
+                          borderRadius: 100, fontFamily: "'Inter', sans-serif",
                           background: 'rgba(255,255,255,0.04)',
                           border: '1px solid var(--border)',
                         }}>
@@ -306,7 +306,7 @@ function BillingInfoCard() {
         style={{
           background: 'none', border: 'none', cursor: 'pointer',
           color: 'var(--accent)', fontSize: '0.85rem', fontWeight: 600,
-          fontFamily: "'DM Sans', sans-serif", padding: 0,
+          fontFamily: "'Inter', sans-serif", padding: 0,
           display: 'flex', alignItems: 'center', gap: 6,
         }}
       >

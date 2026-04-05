@@ -114,7 +114,7 @@ function Toast({ message }: { message: string }) {
       background: '#1a1a2e', border: '1px solid var(--accent)',
       borderRadius: 'var(--radius-sm)', padding: '10px 18px',
       color: 'var(--accent)', fontSize: '0.85rem', fontWeight: 600,
-      fontFamily: "'DM Sans', sans-serif",
+      fontFamily: "'Inter', sans-serif",
       animation: 'fadeIn 0.2s ease-out',
     }}>
       {message}
@@ -291,7 +291,7 @@ export default function AvailabilityClient({
   const selectStyle: React.CSSProperties = {
     background: 'var(--surface2)', border: '1px solid var(--border)',
     borderRadius: 'var(--radius-sm)', padding: '7px 10px',
-    color: 'var(--text)', fontFamily: "'DM Sans', sans-serif",
+    color: 'var(--text)', fontFamily: "'Inter', sans-serif",
     fontSize: '0.82rem', outline: 'none', cursor: 'pointer',
     appearance: 'none' as const,
     backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2300e5ff' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E")`,
@@ -340,7 +340,7 @@ export default function AvailabilityClient({
               background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.3)',
               color: 'var(--accent)', borderRadius: 8, padding: '8px 16px',
               fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "'Inter', sans-serif",
             }}>
               + Schedule time away
             </button>
@@ -358,7 +358,7 @@ export default function AvailabilityClient({
                   }}>
                     {/* Header */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                      <span style={{ fontWeight: 700, fontSize: '0.92rem', fontFamily: "'DM Sans', sans-serif" }}>
+                      <span style={{ fontWeight: 700, fontSize: '0.92rem', fontFamily: "'Inter', sans-serif" }}>
                         {formatDateShort(period.start_date)} — {formatDateShort(period.end_date)}
                       </span>
                       <button
@@ -366,7 +366,7 @@ export default function AvailabilityClient({
                         style={{
                           background: 'none', border: '1px solid var(--border)',
                           borderRadius: 6, padding: '4px 12px', fontSize: '0.75rem',
-                          color: 'var(--muted)', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                          color: 'var(--muted)', cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                         }}
                       >
                         Remove
@@ -428,7 +428,7 @@ export default function AvailabilityClient({
                               background: 'rgba(255,107,133,0.15)', border: '1px solid rgba(255,107,133,0.4)',
                               color: '#ff6b85', borderRadius: 6, padding: '6px 14px',
                               fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer',
-                              fontFamily: "'DM Sans', sans-serif",
+                              fontFamily: "'Inter', sans-serif",
                             }}
                           >
                             Yes, remove
@@ -438,7 +438,7 @@ export default function AvailabilityClient({
                             style={{
                               background: 'none', border: '1px solid var(--border)',
                               color: 'var(--muted)', borderRadius: 6, padding: '6px 14px',
-                              fontSize: '0.8rem', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                              fontSize: '0.8rem', cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                             }}
                           >
                             Cancel
@@ -457,7 +457,7 @@ export default function AvailabilityClient({
                 border: '1px solid rgba(0,229,255,0.3)',
                 color: 'var(--accent)', borderRadius: 8, padding: '8px 16px',
                 fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: "'Inter', sans-serif",
               }}>
                 + Schedule time away
               </button>
@@ -512,7 +512,7 @@ export default function AvailabilityClient({
                 {/* Day name */}
                 <span className="avail-day-name" style={{
                   fontWeight: 700, fontSize: '0.9rem', minWidth: 100,
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: "'Inter', sans-serif",
                 }}>
                   {DAY_NAMES[dow]}
                 </span>
@@ -564,7 +564,7 @@ export default function AvailabilityClient({
 
                 {/* Saved indicator */}
                 {savedRows[dow] && (
-                  <span style={{ fontSize: '0.78rem', color: '#34d399', fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}>
+                  <span style={{ fontSize: '0.78rem', color: '#34d399', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
                     Saved
                   </span>
                 )}
@@ -694,7 +694,7 @@ function AwayModal({
   const dateInputStyle: React.CSSProperties = {
     background: 'var(--surface2)', border: '1px solid var(--border)',
     borderRadius: 'var(--radius-sm)', padding: '9px 12px',
-    color: 'var(--text)', fontFamily: "'DM Sans', sans-serif",
+    color: 'var(--text)', fontFamily: "'Inter', sans-serif",
     fontSize: '0.88rem', outline: 'none', width: '100%',
     colorScheme: 'dark',
   }
@@ -702,7 +702,7 @@ function AwayModal({
   const selectStyle: React.CSSProperties = {
     background: 'var(--surface2)', border: '1px solid var(--border)',
     borderRadius: 'var(--radius-sm)', padding: '7px 10px',
-    color: 'var(--text)', fontFamily: "'DM Sans', sans-serif",
+    color: 'var(--text)', fontFamily: "'Inter', sans-serif",
     fontSize: '0.82rem', outline: 'none', cursor: 'pointer',
     appearance: 'none',
     backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%2300e5ff' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E")`,
@@ -726,7 +726,7 @@ function AwayModal({
         onClick={e => e.stopPropagation()}
       >
         <div style={{
-          fontFamily: "'Syne', sans-serif", fontSize: '1.1rem', fontWeight: 700,
+          fontFamily: "'Syne', sans-serif", fontSize: '1.1rem', fontWeight: 600,
           marginBottom: 24,
         }}>
           Schedule Time Away
@@ -841,7 +841,7 @@ function AwayModal({
             style={{
               background: 'none', border: '1px solid var(--border)',
               color: 'var(--muted)', borderRadius: 8, padding: '10px 20px',
-              fontSize: '0.85rem', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+              fontSize: '0.85rem', cursor: 'pointer', fontFamily: "'Inter', sans-serif",
             }}
           >
             Cancel

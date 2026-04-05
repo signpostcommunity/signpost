@@ -75,7 +75,7 @@ function PillButton({ label, selected, onClick }: { label: string; selected: boo
         border: selected ? '1px solid #00e5ff' : '1px solid var(--border)',
         background: selected ? '#00e5ff' : 'var(--surface2)',
         color: selected ? '#000' : 'var(--muted)',
-        fontFamily: "'DM Sans', sans-serif",
+        fontFamily: "'Inter', sans-serif",
         fontSize: '0.85rem',
         fontWeight: selected ? 700 : 500,
         cursor: 'pointer',
@@ -207,7 +207,7 @@ export default function InterpreterRating({ bookingId, interpreterId, interprete
       </div>
 
       <h3 style={{
-        fontFamily: "'DM Sans', sans-serif",
+        fontFamily: "'Inter', sans-serif",
         fontWeight: 700,
         fontSize: '1rem',
         color: 'var(--text)',
@@ -267,7 +267,7 @@ export default function InterpreterRating({ bookingId, interpreterId, interprete
             borderRadius: 'var(--radius-sm)',
             padding: '12px 14px',
             color: 'var(--text)',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "'Inter', sans-serif",
             fontSize: '0.85rem',
             outline: 'none',
             resize: 'vertical',

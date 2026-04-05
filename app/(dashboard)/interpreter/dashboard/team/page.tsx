@@ -27,7 +27,7 @@ const fieldInputStyle: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box',
   background: 'var(--surface2)', border: '1px solid var(--border)',
   borderRadius: 'var(--radius-sm)', padding: '10px 14px',
-  color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem',
+  color: 'var(--text)', fontFamily: "'Inter', sans-serif", fontSize: '0.88rem',
   outline: 'none',
 }
 
@@ -110,7 +110,7 @@ function InviteModal({ onClose, onSaved, interpreterId, interpreterFullName }: {
       <div className="modal-dialog" style={modalStyle}>
         <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
           <div style={{ fontSize: '2rem', marginBottom: 12 }}>✓</div>
-          <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent)', marginBottom: 8 }}>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent)', marginBottom: 8 }}>
             {firstName} has been added to your Preferred Team!
           </div>
           <button className="btn-primary" onClick={onClose} style={{ padding: '10px 28px' }}>Done</button>
@@ -123,7 +123,7 @@ function InviteModal({ onClose, onSaved, interpreterId, interpreterFullName }: {
     <div style={overlayStyle}>
       <div className="modal-dialog" style={modalStyle}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Invite to your preferred team</div>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Invite to your preferred team</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
         </div>
 
@@ -362,7 +362,7 @@ export default function TeamPage() {
           style={{
             background: 'none', border: 'none', padding: 0, cursor: 'pointer',
             color: 'var(--accent)', fontSize: '0.84rem', textDecoration: 'underline',
-            textDecorationColor: 'rgba(0,229,255,0.3)', fontFamily: "'DM Sans', sans-serif",
+            textDecorationColor: 'rgba(0,229,255,0.3)', fontFamily: "'Inter', sans-serif",
           }}
         >
           Don&apos;t see an interpreter here who you love working with? Click here to invite them to join the signpost community.
@@ -412,7 +412,7 @@ export default function TeamPage() {
             display: 'inline-flex', alignItems: 'center', gap: 9,
             background: 'transparent', border: '1.5px dashed var(--border)',
             borderRadius: 'var(--radius)', color: 'var(--muted)',
-            fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem',
+            fontFamily: "'Inter', sans-serif", fontSize: '0.88rem',
             padding: '13px 22px', cursor: 'pointer', transition: 'all 0.2s',
           }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
@@ -505,7 +505,7 @@ export default function TeamPage() {
                   style={{
                     background: 'transparent', border: '1px solid var(--border)',
                     borderRadius: 8, padding: '8px 20px', color: 'var(--muted)',
-                    fontSize: '0.85rem', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                    fontSize: '0.85rem', cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                   }}
                 >
                   Cancel
@@ -516,7 +516,7 @@ export default function TeamPage() {
                     background: 'var(--accent)',
                     border: 'none', borderRadius: 8, padding: '8px 20px',
                     color: '#000', fontSize: '0.85rem',
-                    fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                    fontWeight: 700, cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                   }}
                 >
                   Move
@@ -605,7 +605,7 @@ function TeamCard({ member, onMoveTier, onRemove, onEdit, onMessage, moveLabel }
               background: 'none', border: '1px solid var(--border)',
               borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
               fontSize: '0.73rem', padding: '5px 12px', cursor: 'pointer',
-              whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'DM Sans', sans-serif",
+              whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'Inter', sans-serif",
             }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
@@ -619,7 +619,7 @@ function TeamCard({ member, onMoveTier, onRemove, onEdit, onMessage, moveLabel }
             background: 'none', border: '1px solid var(--border)',
             borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
             fontSize: '0.73rem', padding: '5px 12px', cursor: 'pointer',
-            whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'DM Sans', sans-serif",
+            whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'Inter', sans-serif",
           }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
@@ -632,7 +632,7 @@ function TeamCard({ member, onMoveTier, onRemove, onEdit, onMessage, moveLabel }
             background: 'none', border: '1px solid var(--border)',
             borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
             fontSize: '0.73rem', padding: '5px 12px', cursor: 'pointer',
-            whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'DM Sans', sans-serif",
+            whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'Inter', sans-serif",
           }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,80,80,0.4)'; e.currentTarget.style.color = '#f87171' }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}

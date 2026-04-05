@@ -168,7 +168,7 @@ export default function TrustedDeafCirclePage() {
       {/* Title row with invite button */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 8 }}>
         <h1 style={{
-          fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '27px',
+          fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '27px',
           margin: 0, color: '#f0f2f8',
         }}>
           Your trusted Deaf circle
@@ -183,7 +183,7 @@ export default function TrustedDeafCirclePage() {
             padding: '9px 22px',
             fontSize: '0.84rem',
             fontWeight: 600,
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "'Inter', sans-serif",
             cursor: 'pointer',
             transition: 'opacity 0.15s',
             whiteSpace: 'nowrap',
@@ -256,7 +256,7 @@ export default function TrustedDeafCirclePage() {
                   style={{
                     background: '#7b61ff', color: '#fff', border: 'none',
                     borderRadius: 10, padding: '9px 22px', fontSize: '0.84rem',
-                    fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                    fontWeight: 600, cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                   }}
                 >
                   + Invite someone
@@ -278,12 +278,12 @@ export default function TrustedDeafCirclePage() {
                         width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
                         background: 'linear-gradient(135deg, #9d87ff, #7b61ff)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.82rem', color: '#fff',
+                        fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.82rem', color: '#fff',
                       }}>
                         {c.other_name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()}
                       </div>
                       <div>
-                        <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '1rem', color: 'var(--text)' }}>
+                        <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '1rem', color: 'var(--text)' }}>
                           {c.other_name}
                         </div>
                         {c.other_location && (
@@ -310,7 +310,7 @@ export default function TrustedDeafCirclePage() {
                         fontWeight: 600,
                         color: '#9d87ff',
                         cursor: c.other_user_id ? 'pointer' : 'not-allowed',
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: "'Inter', sans-serif",
                         transition: 'background 0.15s, border-color 0.15s',
                         opacity: c.other_user_id ? 1 : 0.5,
                         width: '100%',
@@ -364,7 +364,7 @@ export default function TrustedDeafCirclePage() {
                             width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
                             background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.68rem', color: '#fff',
+                            fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.68rem', color: '#fff',
                           }}>
                             {c.other_name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()}
                           </div>
@@ -376,7 +376,7 @@ export default function TrustedDeafCirclePage() {
                             style={{
                               background: '#7b61ff', color: '#fff', border: 'none',
                               borderRadius: 8, padding: '7px 18px', fontSize: '0.82rem',
-                              fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                              fontWeight: 600, cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                             }}
                           >
                             Accept
@@ -387,7 +387,7 @@ export default function TrustedDeafCirclePage() {
                               background: 'transparent', color: 'var(--muted)',
                               border: '1px solid var(--border)', borderRadius: 8,
                               padding: '7px 18px', fontSize: '0.82rem', fontWeight: 600,
-                              cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                              cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                             }}
                           >
                             Decline
@@ -444,7 +444,7 @@ export default function TrustedDeafCirclePage() {
                             style={{
                               background: 'none', border: 'none', color: '#9d87ff',
                               fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
-                              fontFamily: "'DM Sans', sans-serif", padding: 0,
+                              fontFamily: "'Inter', sans-serif", padding: 0,
                             }}
                           >
                             Resend
@@ -454,7 +454,7 @@ export default function TrustedDeafCirclePage() {
                             style={{
                               background: 'none', border: 'none', color: 'var(--muted)',
                               fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
-                              fontFamily: "'DM Sans', sans-serif", padding: 0,
+                              fontFamily: "'Inter', sans-serif", padding: 0,
                             }}
                           >
                             Cancel
@@ -499,7 +499,7 @@ export default function TrustedDeafCirclePage() {
           position: 'fixed', top: 24, left: '50%', transform: 'translateX(-50%)',
           background: '#1a1a2e', color: 'var(--text)', border: '1px solid var(--border)',
           borderRadius: 'var(--radius-sm)', padding: '10px 24px', fontSize: '0.88rem',
-          fontFamily: "'DM Sans', sans-serif", zIndex: 999,
+          fontFamily: "'Inter', sans-serif", zIndex: 999,
           boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
         }}>
           {toast}
@@ -561,7 +561,7 @@ function InviteModal({ email, setEmail, loading, error, onSubmit, onClose }: {
         }}
       >
         <h2 style={{
-          fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px',
+          fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '20px',
           margin: '0 0 8px', color: '#f0f2f8',
         }}>
           Invite someone to your Deaf circle
@@ -590,7 +590,7 @@ function InviteModal({ email, setEmail, loading, error, onSubmit, onClose }: {
             width: '100%', padding: '10px 14px',
             background: 'var(--bg)', border: '1px solid var(--border)',
             borderRadius: 'var(--radius-sm)', color: 'var(--text)',
-            fontSize: '0.9rem', fontFamily: "'DM Sans', sans-serif",
+            fontSize: '0.9rem', fontFamily: "'Inter', sans-serif",
             outline: 'none', boxSizing: 'border-box',
           }}
           autoFocus
@@ -607,7 +607,7 @@ function InviteModal({ email, setEmail, loading, error, onSubmit, onClose }: {
               background: 'transparent', border: '1px solid var(--border)',
               borderRadius: 'var(--radius-sm)', padding: '8px 20px',
               color: 'var(--muted)', fontSize: '0.85rem', fontWeight: 600,
-              cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+              cursor: 'pointer', fontFamily: "'Inter', sans-serif",
             }}
           >
             Cancel
@@ -620,7 +620,7 @@ function InviteModal({ email, setEmail, loading, error, onSubmit, onClose }: {
               borderRadius: 'var(--radius-sm)', padding: '8px 20px',
               color: '#fff', fontSize: '0.85rem', fontWeight: 600,
               cursor: loading ? 'wait' : 'pointer',
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "'Inter', sans-serif",
               opacity: loading || !email.trim() ? 0.5 : 1,
             }}
           >
@@ -685,7 +685,7 @@ function ViewListModal({ userName, roster, loading, tierBadge, onClose }: {
                       width: 32, height: 32, borderRadius: '50%',
                       background: item.color || 'linear-gradient(135deg, #9d87ff, #00e5ff)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem', color: '#fff',
+                      fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.7rem', color: '#fff',
                     }}>
                       {item.initials}
                     </div>
@@ -757,7 +757,7 @@ function ViewListModal({ userName, roster, loading, tierBadge, onClose }: {
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <h2 style={{
-            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px',
+            fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '20px',
             margin: 0, color: '#f0f2f8',
           }}>
             {userName}&apos;s interpreter list

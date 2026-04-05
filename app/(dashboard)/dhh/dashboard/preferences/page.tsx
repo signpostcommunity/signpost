@@ -33,7 +33,7 @@ const inputStyle: React.CSSProperties = {
   width: '100%', padding: '10px 14px',
   background: 'var(--surface2)', border: '1px solid var(--border)',
   borderRadius: 'var(--radius-sm)', color: 'var(--text)',
-  fontSize: '0.88rem', fontFamily: "'DM Sans', sans-serif",
+  fontSize: '0.88rem', fontFamily: "'Inter', sans-serif",
   outline: 'none', boxSizing: 'border-box',
 }
 
@@ -45,7 +45,7 @@ const labelStyle: React.CSSProperties = {
 const fieldGroupStyle: React.CSSProperties = { marginBottom: 18 }
 
 const sectionHeadingStyle: React.CSSProperties = {
-  fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px',
+  fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '20px',
   color: '#f0f2f8', marginBottom: 14, paddingBottom: 10,
   borderBottom: '1px solid var(--border)',
 }
@@ -410,7 +410,7 @@ export default function DhhPreferencesPage() {
                       fontSize: '0.82rem', fontWeight: 600,
                       color: slugCopied ? '#34d399' : 'var(--accent)',
                       cursor: 'pointer',
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "'Inter', sans-serif",
                       transition: 'all 0.15s',
                       whiteSpace: 'nowrap',
                     }}
@@ -447,7 +447,7 @@ export default function DhhPreferencesPage() {
                           fontSize: '0.78rem',
                           color: 'var(--muted)',
                           cursor: 'pointer',
-                          fontFamily: "'DM Sans', sans-serif",
+                          fontFamily: "'Inter', sans-serif",
                         }}
                       >
                         Edit
@@ -502,7 +502,7 @@ export default function DhhPreferencesPage() {
                       fontSize: '0.82rem', fontWeight: 600,
                       color: 'var(--accent)',
                       cursor: slugSaving ? 'wait' : 'pointer',
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "'Inter', sans-serif",
                       opacity: slugSaving ? 0.6 : 1,
                     }}
                   >
@@ -523,7 +523,7 @@ export default function DhhPreferencesPage() {
                       fontSize: '0.82rem',
                       color: 'var(--muted)',
                       cursor: 'pointer',
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "'Inter', sans-serif",
                     }}
                   >
                     Cancel
@@ -551,7 +551,7 @@ export default function DhhPreferencesPage() {
                 width: 64, height: 64, borderRadius: '50%', flexShrink: 0,
                 background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: '#fff',
+                fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: '#fff',
               }}>
                 {(firstName?.[0] || '').toUpperCase()}{(lastName?.[0] || '').toUpperCase()}
               </div>
@@ -565,7 +565,7 @@ export default function DhhPreferencesPage() {
                   borderRadius: 'var(--radius-sm)', padding: '7px 16px',
                   fontSize: '0.82rem', fontWeight: 600, color: '#9d87ff',
                   cursor: uploading ? 'wait' : 'pointer',
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: "'Inter', sans-serif",
                 }}
               >
                 {uploading ? 'Uploading...' : 'Upload photo'}
@@ -710,7 +710,7 @@ export default function DhhPreferencesPage() {
                 transition: 'all 0.15s', textAlign: 'left',
               }}
             >
-              <span style={{ fontSize: '0.82rem', color: 'var(--muted)', flex: 1, fontFamily: "'DM Sans', sans-serif" }}>
+              <span style={{ fontSize: '0.82rem', color: 'var(--muted)', flex: 1, fontFamily: "'Inter', sans-serif" }}>
                 {shareTextBefore
                   ? 'Share with interpreters before they are confirmed'
                   : 'Wait until interpreters are confirmed to share'}
@@ -767,7 +767,7 @@ export default function DhhPreferencesPage() {
                       background: 'none', border: '1px solid rgba(157,135,255,0.4)',
                       borderRadius: 'var(--radius-sm)', padding: '7px 16px',
                       fontSize: '0.82rem', fontWeight: 600, color: '#9d87ff',
-                      cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                      cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                     }}
                   >
                     Replace video
@@ -779,7 +779,7 @@ export default function DhhPreferencesPage() {
                       background: 'none', border: '1px solid var(--border)',
                       borderRadius: 'var(--radius-sm)', padding: '7px 16px',
                       fontSize: '0.82rem', color: 'var(--muted)',
-                      cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                      cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                     }}
                   >
                     Remove video
@@ -808,7 +808,7 @@ export default function DhhPreferencesPage() {
                 transition: 'all 0.15s', textAlign: 'left',
               }}
             >
-              <span style={{ fontSize: '0.82rem', color: 'var(--muted)', flex: 1, fontFamily: "'DM Sans', sans-serif" }}>
+              <span style={{ fontSize: '0.82rem', color: 'var(--muted)', flex: 1, fontFamily: "'Inter', sans-serif" }}>
                 {shareVideoBefore
                   ? 'Share with interpreters before they are confirmed'
                   : 'Wait until interpreters are confirmed to share'}
@@ -861,7 +861,7 @@ export default function DhhPreferencesPage() {
                       background: selected ? 'rgba(157,135,255,0.1)' : 'var(--surface2)',
                       color: selected ? '#9d87ff' : 'var(--muted)',
                       fontSize: '0.82rem', fontWeight: selected ? 600 : 400,
-                      cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                      cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                       transition: 'all 0.15s',
                     }}
                   >
@@ -1036,7 +1036,7 @@ export default function DhhPreferencesPage() {
             background: saving ? 'var(--surface2)' : 'linear-gradient(135deg, #9d87ff, #7b61ff)',
             border: 'none', borderRadius: 'var(--radius-sm)',
             color: '#fff', fontSize: '0.92rem', fontWeight: 700,
-            fontFamily: "'DM Sans', sans-serif", cursor: saving ? 'not-allowed' : 'pointer',
+            fontFamily: "'Inter', sans-serif", cursor: saving ? 'not-allowed' : 'pointer',
             transition: 'all 0.2s', opacity: saving ? 0.6 : 1,
           }}
         >

@@ -61,7 +61,7 @@ export default function InterpretersClient({ interpreters }: { interpreters: Int
     padding: '6px 12px', borderRadius: 8,
     border: '1px solid var(--border)', background: 'var(--surface2)',
     color: 'var(--text)', fontSize: '0.85rem',
-    fontFamily: "'DM Sans', sans-serif",
+    fontFamily: "'Inter', sans-serif",
   }
 
   function renderTable(list: InterpreterRow[], showDraftStep: boolean) {
@@ -78,7 +78,7 @@ export default function InterpretersClient({ interpreters }: { interpreters: Int
                 {headers.map(h => (
                   <th key={h} style={{
                     padding: '12px 16px', textAlign: 'left',
-                    fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+                    fontFamily: "'Inter', sans-serif", fontWeight: 700,
                     fontSize: '0.7rem', textTransform: 'uppercase',
                     letterSpacing: '0.1em', color: 'var(--muted)',
                   }}>
@@ -188,7 +188,7 @@ export default function InterpretersClient({ interpreters }: { interpreters: Int
 
   return (
     <div className="admin-interp-content" style={{ padding: '32px 40px', maxWidth: 1200 }}>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 700, marginBottom: 8 }}>
+      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 600, marginBottom: 8 }}>
         Interpreters
       </h1>
       <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: 24 }}>
@@ -206,7 +206,7 @@ export default function InterpretersClient({ interpreters }: { interpreters: Int
             flex: 1, minWidth: 200, padding: '8px 14px', borderRadius: 8,
             border: '1px solid var(--border)', background: 'var(--surface2)',
             color: 'var(--text)', fontSize: '0.85rem',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "'Inter', sans-serif",
           }}
         />
         <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={selectStyle}>
@@ -239,7 +239,7 @@ export default function InterpretersClient({ interpreters }: { interpreters: Int
       )}
 
       {/* All interpreters */}
-      <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1rem', fontWeight: 700, marginBottom: 12 }}>
+      <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: '1rem', fontWeight: 700, marginBottom: 12 }}>
         All Interpreters
       </h2>
       {renderTable(filteredRest, false)}

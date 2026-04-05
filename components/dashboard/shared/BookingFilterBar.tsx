@@ -36,7 +36,7 @@ export default function BookingFilterBar({
     borderRadius: 'var(--radius-sm)',
     padding: '9px 14px',
     color: 'var(--text)',
-    fontFamily: "'DM Sans', sans-serif",
+    fontFamily: "'Inter', sans-serif",
     fontSize: '0.88rem',
     outline: 'none',
     transition: 'border-color 0.15s',
@@ -103,7 +103,7 @@ export default function BookingFilterBar({
             style={{
               background: 'none', border: '1px solid #333', borderRadius: 'var(--radius-sm)',
               padding: '8px 12px', color: 'var(--muted)', fontSize: '0.78rem',
-              cursor: 'pointer', fontFamily: "'DM Sans', sans-serif", whiteSpace: 'nowrap',
+              cursor: 'pointer', fontFamily: "'Inter', sans-serif", whiteSpace: 'nowrap',
             }}
           >
             Clear dates

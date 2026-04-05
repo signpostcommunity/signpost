@@ -47,7 +47,7 @@ function DeleteModal({ user, onConfirm, onCancel, deleting }: {
             <path d="M10 11v6M14 11v6" stroke="var(--accent3)" strokeWidth="1.5" strokeLinecap="round"/>
           </svg>
         </div>
-        <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.1rem', fontWeight: 700, textAlign: 'center', marginBottom: 12 }}>
+        <h3 style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.1rem', fontWeight: 700, textAlign: 'center', marginBottom: 12 }}>
           Permanently Delete User
         </h3>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, textAlign: 'center', marginBottom: 16 }}>
@@ -66,7 +66,7 @@ function DeleteModal({ user, onConfirm, onCancel, deleting }: {
             width: '100%', padding: '10px 14px', borderRadius: 10,
             border: '1px solid var(--border)', background: 'var(--surface2)',
             color: 'var(--text)', fontSize: '0.9rem', marginBottom: 20,
-            fontFamily: "'DM Sans', sans-serif", boxSizing: 'border-box',
+            fontFamily: "'Inter', sans-serif", boxSizing: 'border-box',
           }}
         />
         <div style={{ display: 'flex', gap: 12 }}>
@@ -74,7 +74,7 @@ function DeleteModal({ user, onConfirm, onCancel, deleting }: {
             flex: 1, padding: '10px 16px', borderRadius: 10,
             border: '1px solid var(--border)', background: 'none',
             color: 'var(--muted)', fontSize: '0.88rem', cursor: 'pointer',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "'Inter', sans-serif",
           }}>
             Cancel
           </button>
@@ -82,7 +82,7 @@ function DeleteModal({ user, onConfirm, onCancel, deleting }: {
             flex: 1, padding: '10px 16px', borderRadius: 10,
             border: 'none', background: confirmed ? 'var(--accent3)' : 'rgba(255,107,133,0.3)',
             color: '#fff', fontSize: '0.88rem', fontWeight: 600,
-            cursor: confirmed ? 'pointer' : 'not-allowed', fontFamily: "'DM Sans', sans-serif",
+            cursor: confirmed ? 'pointer' : 'not-allowed', fontFamily: "'Inter', sans-serif",
             opacity: deleting ? 0.6 : 1,
           }}>
             {deleting ? 'Deleting...' : 'Delete permanently'}
@@ -110,7 +110,7 @@ function ConfirmModal({ title, message, confirmLabel, confirmColor, onConfirm, o
         background: 'var(--surface)', border: '1px solid var(--border)',
         borderRadius: 'var(--radius-sm)', padding: 32, maxWidth: 420, width: '100%',
       }}>
-        <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '1.05rem', fontWeight: 700, marginBottom: 12 }}>
+        <h3 style={{ fontFamily: "'Inter', sans-serif", fontSize: '1.05rem', fontWeight: 700, marginBottom: 12 }}>
           {title}
         </h3>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, marginBottom: 24 }}>
@@ -121,7 +121,7 @@ function ConfirmModal({ title, message, confirmLabel, confirmColor, onConfirm, o
             flex: 1, padding: '10px 16px', borderRadius: 10,
             border: '1px solid var(--border)', background: 'none',
             color: 'var(--muted)', fontSize: '0.88rem', cursor: 'pointer',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "'Inter', sans-serif",
           }}>
             Cancel
           </button>
@@ -129,7 +129,7 @@ function ConfirmModal({ title, message, confirmLabel, confirmColor, onConfirm, o
             flex: 1, padding: '10px 16px', borderRadius: 10, border: 'none',
             background: confirmColor || ORANGE, color: '#fff',
             fontSize: '0.88rem', fontWeight: 600, cursor: 'pointer',
-            fontFamily: "'DM Sans', sans-serif", opacity: loading ? 0.6 : 1,
+            fontFamily: "'Inter', sans-serif", opacity: loading ? 0.6 : 1,
           }}>
             {loading ? 'Working...' : confirmLabel}
           </button>
@@ -158,7 +158,7 @@ function ProfileCard({ title, accentColor, data }: { title: string; accentColor:
       padding: '16px 20px', marginBottom: 12,
     }}>
       <h4 style={{
-        fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.78rem',
+        fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.78rem',
         textTransform: 'uppercase', letterSpacing: '0.08em', color: accentColor, marginBottom: 12,
       }}>
         {title}
@@ -267,7 +267,7 @@ function UserDetailPanel({ userId, onClose, onAction }: {
 
   const btnStyle = (color: string, outline = true): React.CSSProperties => ({
     padding: '5px 12px', borderRadius: 10, fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
-    fontFamily: "'DM Sans', sans-serif",
+    fontFamily: "'Inter', sans-serif",
     border: outline ? `1px solid ${color}44` : 'none',
     background: outline ? 'none' : color,
     color: outline ? color : '#fff',
@@ -286,7 +286,7 @@ function UserDetailPanel({ userId, onClose, onAction }: {
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
           <div>
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.3rem', fontWeight: 700, marginBottom: 4 }}>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.3rem', fontWeight: 600, marginBottom: 4 }}>
               {userName}
             </h2>
             <p style={{ color: 'var(--muted)', fontSize: '0.84rem' }}>
@@ -438,7 +438,7 @@ function UserDetailPanel({ userId, onClose, onAction }: {
           padding: '16px 20px', marginBottom: 12,
         }}>
           <h4 style={{
-            fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.78rem',
+            fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.78rem',
             textTransform: 'uppercase', letterSpacing: '0.08em', color: ORANGE, marginBottom: 12,
           }}>
             Role Management
@@ -591,12 +591,12 @@ export default function UsersClient({ users, currentUserId }: { users: User[]; c
     padding: '6px 12px', borderRadius: 10,
     border: '1px solid var(--border)', background: 'var(--surface2)',
     color: 'var(--text)', fontSize: '0.85rem',
-    fontFamily: "'DM Sans', sans-serif",
+    fontFamily: "'Inter', sans-serif",
   }
 
   return (
     <div className="admin-users-content" style={{ padding: '32px 40px', maxWidth: 1200 }}>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 700, marginBottom: 8 }}>
+      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 600, marginBottom: 8 }}>
         Users
       </h1>
       <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: 24 }}>
@@ -614,7 +614,7 @@ export default function UsersClient({ users, currentUserId }: { users: User[]; c
             flex: 1, minWidth: 200, padding: '8px 14px', borderRadius: 10,
             border: '1px solid var(--border)', background: 'var(--surface2)',
             color: 'var(--text)', fontSize: '0.85rem',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "'Inter', sans-serif",
           }}
         />
         <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} style={selectStyle}>
@@ -644,7 +644,7 @@ export default function UsersClient({ users, currentUserId }: { users: User[]; c
                 {['Name', 'Email', 'Role', 'Status', 'Signup Date', 'Actions'].map(h => (
                   <th key={h} style={{
                     padding: '12px 16px', textAlign: 'left',
-                    fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+                    fontFamily: "'Inter', sans-serif", fontWeight: 700,
                     fontSize: '0.7rem', textTransform: 'uppercase',
                     letterSpacing: '0.1em', color: 'var(--muted)',
                   }}>
@@ -695,7 +695,7 @@ export default function UsersClient({ users, currentUserId }: { users: User[]; c
                           style={{
                             padding: '3px 10px', borderRadius: 6, border: `1px solid ${ORANGE}44`,
                             background: 'none', color: ORANGE, fontSize: '0.75rem',
-                            cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                            cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                           }}
                         >
                           View
@@ -706,7 +706,7 @@ export default function UsersClient({ users, currentUserId }: { users: User[]; c
                             style={{
                               padding: '3px 10px', borderRadius: 6, border: `1px solid ${ORANGE}44`,
                               background: 'none', color: ORANGE, fontSize: '0.75rem',
-                              cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                              cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                             }}
                           >
                             Unsuspend
@@ -717,7 +717,7 @@ export default function UsersClient({ users, currentUserId }: { users: User[]; c
                             style={{
                               padding: '3px 10px', borderRadius: 6, border: '1px solid rgba(255,107,133,0.3)',
                               background: 'none', color: 'var(--accent3)', fontSize: '0.75rem',
-                              cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                              cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                             }}
                           >
                             Suspend
@@ -733,7 +733,7 @@ export default function UsersClient({ users, currentUserId }: { users: User[]; c
                             color: 'var(--accent3)', fontSize: '0.75rem',
                             cursor: isSelf ? 'not-allowed' : 'pointer',
                             opacity: isSelf ? 0.3 : 1,
-                            fontFamily: "'DM Sans', sans-serif",
+                            fontFamily: "'Inter', sans-serif",
                             textDecoration: 'underline',
                           }}
                         >

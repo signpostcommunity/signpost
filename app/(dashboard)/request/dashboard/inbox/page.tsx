@@ -240,7 +240,7 @@ export default function RequesterInboxPage() {
           onClick={() => setActiveTab('messages')}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            padding: '10px 20px', fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+            padding: '10px 20px', fontFamily: "'Inter', sans-serif", fontWeight: 700,
             fontSize: '0.88rem',
             color: activeTab === 'messages' ? 'var(--accent)' : 'var(--muted)',
             borderBottom: activeTab === 'messages' ? '2px solid var(--accent)' : '2px solid transparent',
@@ -251,7 +251,7 @@ export default function RequesterInboxPage() {
           Messages
           {rateResponses.length > 0 && (
             <span style={{
-              background: 'var(--accent)', color: '#000', fontFamily: "'DM Sans', sans-serif",
+              background: 'var(--accent)', color: '#000', fontFamily: "'Inter', sans-serif",
               fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20,
               lineHeight: '1.4',
             }}>
@@ -263,7 +263,7 @@ export default function RequesterInboxPage() {
           onClick={() => setActiveTab('notifications')}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            padding: '10px 20px', fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+            padding: '10px 20px', fontFamily: "'Inter', sans-serif", fontWeight: 700,
             fontSize: '0.88rem',
             color: activeTab === 'notifications' ? 'var(--accent)' : 'var(--muted)',
             borderBottom: activeTab === 'notifications' ? '2px solid var(--accent)' : '2px solid transparent',
@@ -274,7 +274,7 @@ export default function RequesterInboxPage() {
           Notifications
           {unreadNotifCount > 0 && (
             <span style={{
-              background: 'var(--accent)', color: '#000', fontFamily: "'DM Sans', sans-serif",
+              background: 'var(--accent)', color: '#000', fontFamily: "'Inter', sans-serif",
               fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20,
               lineHeight: '1.4',
             }}>
@@ -304,7 +304,7 @@ export default function RequesterInboxPage() {
                     }}>
                       <div className="req-rate-card-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
                         <div style={{ minWidth: 0 }}>
-                          <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)', marginBottom: 4 }}>
+                          <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)', marginBottom: 4 }}>
                             {resp.interpreterName} responded to your request
                           </div>
                           <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
@@ -314,7 +314,7 @@ export default function RequesterInboxPage() {
                         <span style={{
                           fontSize: '0.7rem', fontWeight: 700, padding: '3px 10px',
                           borderRadius: 100, border: '1px solid rgba(0,229,255,0.3)',
-                          color: 'var(--accent)', fontFamily: "'DM Sans', sans-serif",
+                          color: 'var(--accent)', fontFamily: "'Inter', sans-serif",
                           whiteSpace: 'nowrap', flexShrink: 0,
                         }}>
                           Action Required
@@ -337,7 +337,7 @@ export default function RequesterInboxPage() {
                             background: 'var(--accent)', color: '#000',
                             padding: '8px 18px', borderRadius: 'var(--radius-sm)',
                             fontSize: '0.82rem', fontWeight: 700,
-                            fontFamily: "'DM Sans', sans-serif",
+                            fontFamily: "'Inter', sans-serif",
                             textDecoration: 'none', whiteSpace: 'nowrap',
                           }}
                         >
@@ -356,7 +356,7 @@ export default function RequesterInboxPage() {
                             background: 'none', border: '1px solid var(--border)',
                             color: 'var(--muted)', padding: '8px 18px',
                             borderRadius: 'var(--radius-sm)', fontSize: '0.82rem',
-                            fontFamily: "'DM Sans', sans-serif", cursor: 'pointer',
+                            fontFamily: "'Inter', sans-serif", cursor: 'pointer',
                           }}
                         >
                           {decliningId === resp.recipientId ? (declining ? 'Declining...' : 'Confirm Decline') : 'Decline'}
@@ -366,7 +366,7 @@ export default function RequesterInboxPage() {
                           style={{
                             background: 'none', border: 'none',
                             color: 'var(--accent)', padding: '8px 0',
-                            fontSize: '0.82rem', fontFamily: "'DM Sans', sans-serif",
+                            fontSize: '0.82rem', fontFamily: "'Inter', sans-serif",
                             textDecoration: 'underline', textUnderlineOffset: '3px',
                           }}
                         >
@@ -384,7 +384,7 @@ export default function RequesterInboxPage() {
                 padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10,
                 borderBottom: '1px solid var(--border)',
               }}>
-                <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
+                <h2 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
                   Conversations
                 </h2>
               </div>
@@ -409,11 +409,11 @@ export default function RequesterInboxPage() {
                 padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10,
                 borderBottom: '1px solid var(--border)',
               }}>
-                <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
+                <h2 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
                   Notifications
                 </h2>
                 {unreadNotifCount > 0 && (
-                  <button onClick={markAllNotificationsAsRead} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent)', fontSize: '0.76rem', fontFamily: "'DM Sans', sans-serif", fontWeight: 600, whiteSpace: 'nowrap', padding: '2px 4px' }}>Mark all read</button>
+                  <button onClick={markAllNotificationsAsRead} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent)', fontSize: '0.76rem', fontFamily: "'Inter', sans-serif", fontWeight: 600, whiteSpace: 'nowrap', padding: '2px 4px' }}>Mark all read</button>
                 )}
               </div>
               <div style={{
@@ -460,7 +460,7 @@ export default function RequesterInboxPage() {
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: isExpanded ? 0 : 3 }}>
                             <span style={{
-                              fontFamily: "'DM Sans', sans-serif", fontSize: '0.86rem',
+                              fontFamily: "'Inter', sans-serif", fontSize: '0.86rem',
                               fontWeight: isUnread ? 600 : 400, color: 'var(--text)',
                               ...(isExpanded ? {} : { whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' }),
                             }}>{notif.subject || '(no subject)'}</span>
@@ -477,8 +477,8 @@ export default function RequesterInboxPage() {
                       </div>
                       {isExpanded && (
                         <div style={{ padding: '0 20px 16px 50px', background: 'rgba(0,229,255,0.02)' }}>
-                          {notif.body && <p style={{ margin: '0 0 12px', fontSize: '0.85rem', color: '#b0b0b0', lineHeight: 1.65, fontFamily: "'DM Sans', sans-serif" }}>{notif.body}</p>}
-                          <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginBottom: 8, fontFamily: "'DM Sans', sans-serif" }}>
+                          {notif.body && <p style={{ margin: '0 0 12px', fontSize: '0.85rem', color: '#b0b0b0', lineHeight: 1.65, fontFamily: "'Inter', sans-serif" }}>{notif.body}</p>}
+                          <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginBottom: 8, fontFamily: "'Inter', sans-serif" }}>
                             {new Date(notif.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
                           </div>
                         </div>

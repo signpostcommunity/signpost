@@ -259,7 +259,7 @@ function ClientCard({ client, onToggle }: { client: ClientData; onToggle: () => 
               background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.25)',
               color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600,
               textDecoration: 'none', transition: 'all 0.15s',
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "'Inter', sans-serif",
             }}
             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.15)' }}
             onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.08)' }}
@@ -406,7 +406,7 @@ export default function ClientListsClient() {
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
           Client Interpreter Lists
         </h1>
         <p style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', margin: 0 }}>

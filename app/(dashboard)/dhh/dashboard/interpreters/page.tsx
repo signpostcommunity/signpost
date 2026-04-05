@@ -267,7 +267,7 @@ export default function DeafDashboardPage() {
   if (roster.length === 0) {
     return (
       <div className="dhh-interp-list-page" style={{ maxWidth: 960, margin: '0 auto', padding: '60px 32px 64px' }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 4, color: '#f0f2f8' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 600, letterSpacing: '-0.03em', marginBottom: 4, color: '#f0f2f8' }}>
           My Interpreter List
         </h1>
         <p style={{ fontWeight: 400, fontSize: '15px', color: '#96a0b8', marginBottom: 40 }}>
@@ -375,7 +375,7 @@ export default function DeafDashboardPage() {
                   width: '100%', boxSizing: 'border-box',
                   background: 'var(--surface)', border: '1px solid var(--border)',
                   borderRadius: 'var(--radius-sm)', padding: '10px 14px',
-                  color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.85rem',
+                  color: 'var(--text)', fontFamily: "'Inter', sans-serif", fontSize: '0.85rem',
                   outline: 'none', resize: 'vertical', minHeight: 60, marginBottom: 8,
                 }}
                 onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
@@ -486,7 +486,7 @@ export default function DeafDashboardPage() {
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 4 }}>
         <div>
-          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: 0, color: '#f0f2f8' }}>
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 600, letterSpacing: '-0.03em', marginBottom: 0, color: '#f0f2f8' }}>
             My Interpreter List
           </h1>
           <p style={{ fontWeight: 400, fontSize: '15px', color: '#96a0b8' }}>
@@ -500,7 +500,7 @@ export default function DeafDashboardPage() {
             flexShrink: 0, marginTop: 6,
             background: 'transparent', border: '1.5px solid rgba(0,229,255,0.3)',
             borderRadius: 8, color: 'var(--accent)',
-            fontFamily: "'DM Sans', sans-serif", fontSize: '0.82rem',
+            fontFamily: "'Inter', sans-serif", fontSize: '0.82rem',
             fontWeight: 700, padding: '7px 14px', cursor: 'pointer',
             transition: 'all 0.15s',
           }}
@@ -647,7 +647,7 @@ export default function DeafDashboardPage() {
                   style={{
                     background: 'transparent', border: '1px solid var(--border)',
                     borderRadius: 8, padding: '8px 20px', color: 'var(--muted)',
-                    fontSize: '0.85rem', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                    fontSize: '0.85rem', cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                   }}
                 >
                   Cancel
@@ -658,7 +658,7 @@ export default function DeafDashboardPage() {
                     background: isDnb ? '#ff6b85' : 'var(--accent)',
                     border: 'none', borderRadius: 8, padding: '8px 20px',
                     color: isDnb ? '#fff' : '#000', fontSize: '0.85rem',
-                    fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                    fontWeight: 700, cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                   }}
                 >
                   Move

@@ -231,7 +231,7 @@ export default function RequesterInterpreterPicker({
         <span style={{
           fontSize: '0.82rem', fontWeight: 600,
           color: atLimit ? 'var(--accent3)' : 'var(--muted)',
-          fontFamily: "'DM Sans', sans-serif",
+          fontFamily: "'Inter', sans-serif",
         }}>
           {selectedIds.length} of {MAX_INTERPRETERS} selected
         </span>
@@ -243,7 +243,7 @@ export default function RequesterInterpreterPicker({
               background: 'none', border: '1px solid var(--border)',
               borderRadius: 'var(--radius-sm)', padding: '5px 12px',
               color: 'var(--muted)', fontSize: '0.75rem',
-              cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+              cursor: 'pointer', fontFamily: "'Inter', sans-serif",
             }}
           >
             Clear all
@@ -278,10 +278,10 @@ export default function RequesterInterpreterPicker({
                 <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)', transition: 'transform 0.2s', flexShrink: 0 }}>
                   <path d="M6 4l4 4-4 4" stroke={accentColor} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
-                <span style={{ fontSize: '0.82rem', fontWeight: 600, color: accentColor, fontFamily: "'DM Sans', sans-serif" }}>
+                <span style={{ fontSize: '0.82rem', fontWeight: 600, color: accentColor, fontFamily: "'Inter', sans-serif" }}>
                   {group.label}
                 </span>
-                <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontFamily: "'DM Sans', sans-serif" }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontFamily: "'Inter', sans-serif" }}>
                   ({visibleInterpreters.length})
                 </span>
               </div>
@@ -291,7 +291,7 @@ export default function RequesterInterpreterPicker({
                   tabIndex={0}
                   onClick={(e) => { e.stopPropagation(); selectAllInGroup(visibleInterpreters) }}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); selectAllInGroup(visibleInterpreters) } }}
-                  style={{ fontSize: '0.72rem', color: accentColor, cursor: 'pointer', fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}
+                  style={{ fontSize: '0.72rem', color: accentColor, cursor: 'pointer', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
                 >
                   Select all
                 </span>
@@ -301,7 +301,7 @@ export default function RequesterInterpreterPicker({
                   tabIndex={0}
                   onClick={(e) => { e.stopPropagation(); clearGroup(visibleInterpreters) }}
                   onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); clearGroup(visibleInterpreters) } }}
-                  style={{ fontSize: '0.72rem', color: 'var(--muted)', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}
+                  style={{ fontSize: '0.72rem', color: 'var(--muted)', cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}
                 >
                   Clear
                 </span>
@@ -336,10 +336,10 @@ export default function RequesterInterpreterPicker({
               <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ transform: collapsedGroups[-1] ? 'rotate(0deg)' : 'rotate(90deg)', transition: 'transform 0.2s', flexShrink: 0 }}>
                 <path d="M6 4l4 4-4 4" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--accent)', fontFamily: "'DM Sans', sans-serif" }}>
+              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--accent)', fontFamily: "'Inter', sans-serif" }}>
                 {rosterLabel}
               </span>
-              <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontFamily: "'DM Sans', sans-serif" }}>
+              <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontFamily: "'Inter', sans-serif" }}>
                 ({filteredRoster.length})
               </span>
             </div>
@@ -349,7 +349,7 @@ export default function RequesterInterpreterPicker({
                 tabIndex={0}
                 onClick={(e) => { e.stopPropagation(); selectAllInGroup(filteredRoster.map(r => ({ ...r, avatar_url: r.photo_url }))) }}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); selectAllInGroup(filteredRoster.map(r => ({ ...r, avatar_url: r.photo_url }))) } }}
-                style={{ fontSize: '0.72rem', color: 'var(--accent)', cursor: 'pointer', fontWeight: 600, fontFamily: "'DM Sans', sans-serif" }}
+                style={{ fontSize: '0.72rem', color: 'var(--accent)', cursor: 'pointer', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
               >
                 Select all
               </span>
@@ -359,7 +359,7 @@ export default function RequesterInterpreterPicker({
                 tabIndex={0}
                 onClick={(e) => { e.stopPropagation(); clearGroup(filteredRoster.map(r => ({ ...r, avatar_url: r.photo_url }))) }}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); clearGroup(filteredRoster.map(r => ({ ...r, avatar_url: r.photo_url }))) } }}
-                style={{ fontSize: '0.72rem', color: 'var(--muted)', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}
+                style={{ fontSize: '0.72rem', color: 'var(--muted)', cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}
               >
                 Clear
               </span>
@@ -399,7 +399,7 @@ export default function RequesterInterpreterPicker({
                         width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
                         background: interp.avatar_color || 'linear-gradient(135deg, #7b61ff, #00e5ff)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.78rem', color: '#fff',
+                        fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.78rem', color: '#fff',
                       }}>
                         {interp.initials}
                       </div>
@@ -413,7 +413,7 @@ export default function RequesterInterpreterPicker({
                           background: interp.tier === 'preferred' ? 'rgba(0,229,255,0.12)' : 'rgba(255,255,255,0.06)',
                           color: interp.tier === 'preferred' ? 'var(--accent)' : 'var(--muted)',
                           border: `1px solid ${interp.tier === 'preferred' ? 'rgba(0,229,255,0.25)' : 'var(--border)'}`,
-                          fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.08em',
+                          fontFamily: "'Inter', sans-serif", letterSpacing: '0.08em',
                           textTransform: 'uppercase',
                         }}>
                           {interp.tier === 'preferred' ? 'Preferred' : 'Secondary'}
@@ -455,7 +455,7 @@ export default function RequesterInterpreterPicker({
             padding: '8px 16px', borderRadius: 'var(--radius-sm)',
             background: 'rgba(0,229,255,0.04)', border: '1px dashed rgba(0,229,255,0.2)',
             color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600,
-            textDecoration: 'none', fontFamily: "'DM Sans', sans-serif",
+            textDecoration: 'none', fontFamily: "'Inter', sans-serif",
             transition: 'all 0.15s',
           }}
         >
@@ -512,7 +512,7 @@ export default function RequesterInterpreterPicker({
             width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
             background: interp.avatar_color || 'linear-gradient(135deg, #7b61ff, #00e5ff)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.78rem', color: '#fff',
+            fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.78rem', color: '#fff',
           }}>
             {initials}
           </div>
@@ -527,7 +527,7 @@ export default function RequesterInterpreterPicker({
                 borderRadius: 100, whiteSpace: 'nowrap',
                 background: 'rgba(251,191,36,0.12)', color: '#fbbf24',
                 border: '1px solid rgba(251,191,36,0.3)',
-                fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.06em',
+                fontFamily: "'Inter', sans-serif", letterSpacing: '0.06em',
                 textTransform: 'uppercase',
               }}>
                 &#9733; Recommended
@@ -539,7 +539,7 @@ export default function RequesterInterpreterPicker({
                 borderRadius: 100, whiteSpace: 'nowrap',
                 background: accentBg, color: accentColor,
                 border: `1px solid ${accentBorder}`,
-                fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.06em',
+                fontFamily: "'Inter', sans-serif", letterSpacing: '0.06em',
               }}>
                 {interp.badge}
               </span>

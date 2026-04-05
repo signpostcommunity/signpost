@@ -147,7 +147,7 @@ const cardStyle: React.CSSProperties = {
 }
 
 const sectionLabel: React.CSSProperties = {
-  fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+  fontFamily: "'Inter', sans-serif", fontWeight: 600,
   fontSize: '13px', letterSpacing: '0.08em',
   textTransform: 'uppercase', color: ORANGE, marginBottom: 14,
 }
@@ -156,7 +156,7 @@ const inputStyle: React.CSSProperties = {
   width: '100%', padding: '11px 14px', maxWidth: 420,
   background: 'var(--surface)', border: '1px solid var(--border)',
   borderRadius: 'var(--radius-sm)', color: 'var(--text)',
-  fontSize: '15px', fontFamily: "'DM Sans', sans-serif",
+  fontSize: '15px', fontFamily: "'Inter', sans-serif",
   outline: 'none',
 }
 
@@ -170,7 +170,7 @@ const primaryBtn = (disabled: boolean): React.CSSProperties => ({
   border: 'none', borderRadius: 'var(--radius-sm)',
   color: '#0a0a0f', fontSize: '0.85rem', fontWeight: 700,
   cursor: disabled ? 'not-allowed' : 'pointer',
-  fontFamily: "'DM Sans', sans-serif",
+  fontFamily: "'Inter', sans-serif",
   opacity: disabled ? 0.6 : 1,
 })
 
@@ -180,7 +180,7 @@ const tabBtn = (active: boolean, position: 'left' | 'right' | 'middle'): React.C
   borderLeft: position === 'left' ? '1px solid var(--border)' : 'none',
   borderRadius: position === 'left' ? '10px 0 0 10px' : position === 'right' ? '0 10px 10px 0' : '0',
   cursor: 'pointer',
-  fontFamily: "'DM Sans', sans-serif", fontSize: '0.82rem', fontWeight: 600,
+  fontFamily: "'Inter', sans-serif", fontSize: '0.82rem', fontWeight: 600,
   background: active ? ORANGE : 'transparent',
   color: active ? '#0a0a0f' : 'var(--muted)',
 })
@@ -345,7 +345,7 @@ export default function AdminAnnouncementsPage() {
           border: `1px solid ${toast.type === 'error' ? 'rgba(255,107,133,0.3)' : 'rgba(52,211,153,0.3)'}`,
           color: toast.type === 'error' ? '#ff6b85' : '#34d399',
           fontSize: '0.82rem', fontWeight: 600,
-          fontFamily: "'DM Sans', sans-serif",
+          fontFamily: "'Inter', sans-serif",
         }}>
           {toast.message}
         </div>
@@ -353,7 +353,7 @@ export default function AdminAnnouncementsPage() {
 
       {/* Page header */}
       <h1 style={{
-        fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '27px',
+        fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '27px',
         color: '#f0f2f8', letterSpacing: '-0.02em', margin: '0 0 6px',
       }}>
         Send Announcement
@@ -387,7 +387,7 @@ export default function AdminAnnouncementsPage() {
               />
               <div>
                 <div style={{
-                  fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+                  fontFamily: "'Inter', sans-serif", fontWeight: 600,
                   fontSize: '0.88rem', color: 'var(--text)', marginBottom: 4,
                 }}>
                   {t.label}
@@ -423,7 +423,7 @@ export default function AdminAnnouncementsPage() {
                 padding: '11px 14px', maxWidth: 420,
                 background: 'var(--surface)', border: '1px solid var(--border)',
                 borderRadius: 'var(--radius-sm)', color: '#96a0b8',
-                fontSize: '15px', fontFamily: "'DM Sans', sans-serif",
+                fontSize: '15px', fontFamily: "'Inter', sans-serif",
               }}>
                 {TEMPLATE_SUBJECTS[template]}
               </div>
@@ -456,7 +456,7 @@ export default function AdminAnnouncementsPage() {
                 padding: '16px 20px',
                 background: '#111118', border: '1px solid var(--border)',
                 borderRadius: 'var(--radius-sm)', color: '#96a0b8',
-                fontSize: '0.82rem', fontFamily: "'DM Sans', sans-serif",
+                fontSize: '0.82rem', fontFamily: "'Inter', sans-serif",
                 lineHeight: 1.6, whiteSpace: 'pre-wrap', wordWrap: 'break-word',
                 maxHeight: 360, overflowY: 'auto', margin: 0,
               }}>
@@ -501,7 +501,7 @@ export default function AdminAnnouncementsPage() {
                         background: isSelected ? 'rgba(0, 229, 255, 0.1)' : 'transparent',
                         color: isSelected ? '#00e5ff' : 'var(--muted)',
                         fontSize: '0.85rem', fontWeight: 600,
-                        fontFamily: "'DM Sans', sans-serif",
+                        fontFamily: "'Inter', sans-serif",
                         cursor: sending ? 'not-allowed' : 'pointer',
                         transition: 'all 0.15s',
                       }}
@@ -514,13 +514,13 @@ export default function AdminAnnouncementsPage() {
 
               {selectedRole && (
                 <div>
-                  <p style={{ color: '#96a0b8', fontSize: '0.85rem', margin: '0 0 14px', fontFamily: "'DM Sans', sans-serif" }}>
+                  <p style={{ color: '#96a0b8', fontSize: '0.85rem', margin: '0 0 14px', fontFamily: "'Inter', sans-serif" }}>
                     Sending to: {ROLE_LABELS[selectedRole]} ({counts ? counts[selectedRole] : '...'} recipients)
                   </p>
 
                   {sending && progress && (
                     <div style={{ marginBottom: 14 }}>
-                      <div style={{ fontSize: '0.82rem', color: '#96a0b8', fontFamily: "'DM Sans', sans-serif", marginBottom: 6 }}>
+                      <div style={{ fontSize: '0.82rem', color: '#96a0b8', fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>
                         Sending... {progress.current} of {progress.total}
                       </div>
                       <div style={{ height: 4, borderRadius: 2, background: 'var(--border)', overflow: 'hidden' }}>
@@ -535,7 +535,7 @@ export default function AdminAnnouncementsPage() {
 
                   {roleResult && (
                     <p style={{
-                      fontSize: '0.85rem', fontFamily: "'DM Sans', sans-serif", margin: '0 0 14px',
+                      fontSize: '0.85rem', fontFamily: "'Inter', sans-serif", margin: '0 0 14px',
                       color: roleResult.failed === 0 ? '#34d399' : '#ff6b85',
                     }}>
                       Complete: {roleResult.sent} sent, {roleResult.failed} failed
@@ -614,14 +614,14 @@ export default function AdminAnnouncementsPage() {
                   />
 
                   {batchText.trim() && (
-                    <p style={{ color: '#96a0b8', fontSize: '0.82rem', margin: '8px 0 0', fontFamily: "'DM Sans', sans-serif" }}>
+                    <p style={{ color: '#96a0b8', fontSize: '0.82rem', margin: '8px 0 0', fontFamily: "'Inter', sans-serif" }}>
                       {batchRecipientCount} recipient{batchRecipientCount !== 1 ? 's' : ''} detected
                     </p>
                   )}
 
                   {progress && (
                     <div style={{ marginTop: 12 }}>
-                      <div style={{ fontSize: '0.82rem', color: '#96a0b8', fontFamily: "'DM Sans', sans-serif", marginBottom: 6 }}>
+                      <div style={{ fontSize: '0.82rem', color: '#96a0b8', fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>
                         Sending {progress.current} of {progress.total}...
                       </div>
                       <div style={{ height: 4, borderRadius: 2, background: 'var(--border)', overflow: 'hidden' }}>
@@ -660,7 +660,7 @@ export default function AdminAnnouncementsPage() {
                 key={`${entry.email}-${i}`}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 10,
-                  fontSize: '0.82rem', fontFamily: "'DM Sans', sans-serif",
+                  fontSize: '0.82rem', fontFamily: "'Inter', sans-serif",
                   padding: '8px 0',
                   borderBottom: i < sentLog.length - 1 ? '1px solid var(--border)' : 'none',
                 }}

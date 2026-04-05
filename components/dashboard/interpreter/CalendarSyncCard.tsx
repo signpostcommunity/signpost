@@ -32,7 +32,7 @@ export default function CalendarSyncCard({ calendarToken, onTokenChange, onToast
       borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 24,
     }}>
       <div style={{
-        fontFamily: "'DM Sans', sans-serif", fontSize: '0.7rem', fontWeight: 700,
+        fontFamily: "'Inter', sans-serif", fontSize: '0.7rem', fontWeight: 700,
         letterSpacing: '0.1em', textTransform: 'uppercase',
         color: 'var(--accent)', marginBottom: 14,
       }}>
@@ -47,7 +47,7 @@ export default function CalendarSyncCard({ calendarToken, onTokenChange, onToast
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 12 }}>
         <span style={{
           fontSize: '0.82rem', fontWeight: 600, color: 'var(--accent)',
-          fontFamily: "'DM Sans', sans-serif", wordBreak: 'break-all',
+          fontFamily: "'Inter', sans-serif", wordBreak: 'break-all',
         }}>
           {feedUrl}
         </span>
@@ -60,7 +60,7 @@ export default function CalendarSyncCard({ calendarToken, onTokenChange, onToast
             background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.3)',
             color: 'var(--accent)', borderRadius: 8, padding: '6px 14px',
             fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "'Inter', sans-serif",
           }}
         >
           Copy link
@@ -72,7 +72,7 @@ export default function CalendarSyncCard({ calendarToken, onTokenChange, onToast
         href="/help/calendar-sync"
         style={{
           display: 'inline-block', color: 'var(--accent)', fontSize: '0.82rem',
-          fontWeight: 600, fontFamily: "'DM Sans', sans-serif",
+          fontWeight: 600, fontFamily: "'Inter', sans-serif",
           textDecoration: 'none', marginBottom: 12,
         }}
       >
@@ -85,7 +85,7 @@ export default function CalendarSyncCard({ calendarToken, onTokenChange, onToast
         style={{
           display: 'block', background: 'none', border: 'none', cursor: 'pointer',
           color: 'var(--muted)', fontSize: '0.78rem', fontWeight: 500,
-          fontFamily: "'DM Sans', sans-serif", padding: '2px 0',
+          fontFamily: "'Inter', sans-serif", padding: '2px 0',
           textDecoration: 'underline', textUnderlineOffset: '3px',
         }}
       >

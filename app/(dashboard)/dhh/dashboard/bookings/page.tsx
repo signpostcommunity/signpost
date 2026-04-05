@@ -89,7 +89,7 @@ function ConfirmedBadge() {
       borderRadius: 100, whiteSpace: 'nowrap',
       background: 'rgba(52,211,153,0.1)', color: '#34d399',
       border: '1px solid rgba(52,211,153,0.3)',
-      fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em',
+      fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em',
     }}>
       Confirmed
     </span>
@@ -103,7 +103,7 @@ function CancelledBadge({ reason }: { reason: string | null }) {
       borderRadius: 100, whiteSpace: 'nowrap',
       background: 'rgba(255,107,133,0.1)', color: '#ff6b85',
       border: '1px solid rgba(255,107,133,0.3)',
-      fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em',
+      fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em',
     }}>
       Cancelled{reason ? ` — ${reason}` : ''}
     </span>
@@ -117,7 +117,7 @@ function OpenBadge() {
       borderRadius: 100, whiteSpace: 'nowrap',
       background: 'rgba(255,165,0,0.12)', color: '#f97316',
       border: '1px solid rgba(249,115,22,0.25)',
-      fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em',
+      fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em',
     }}>
       Still looking
     </span>
@@ -153,7 +153,7 @@ function MessageRequesterButton({ requesterName, onToast, disabled, tooltip }: {
           fontSize: '0.82rem', padding: '8px 16px',
           cursor: disabled ? 'not-allowed' : 'pointer',
           transition: 'all 0.15s',
-          fontFamily: "'DM Sans', sans-serif",
+          fontFamily: "'Inter', sans-serif",
           fontWeight: 600,
           opacity: disabled ? 0.5 : 1,
         }}
@@ -292,7 +292,7 @@ function DetailModal({ booking, onClose, onToast }: {
         {/* Header */}
         <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid var(--border)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-            <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>
+            <h3 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>
               {booking.title || 'Booking'}
             </h3>
             <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem', flexShrink: 0 }}>&#10005;</button>
@@ -554,7 +554,7 @@ function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast, on
               background: 'none', border: '1px solid rgba(123,97,255,0.4)',
               borderRadius: 'var(--radius-sm)', padding: '8px 16px',
               color: '#9d87ff', fontSize: '0.82rem', fontWeight: 600,
-              cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+              cursor: 'pointer', fontFamily: "'Inter', sans-serif",
               transition: 'all 0.15s',
             }}
           >
@@ -726,7 +726,7 @@ const requesterBtnBase: React.CSSProperties = {
   borderRadius: 'var(--radius-sm)',
   fontSize: '0.78rem',
   fontWeight: 600,
-  fontFamily: "'DM Sans', sans-serif",
+  fontFamily: "'Inter', sans-serif",
   cursor: 'pointer',
   border: 'none',
   transition: 'opacity 0.15s',
@@ -997,7 +997,7 @@ export default function DhhBookingsPage() {
                 color: isActive ? 'var(--text)' : 'var(--muted)',
                 fontSize: '0.88rem',
                 fontWeight: isActive ? 600 : 400,
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: "'Inter', sans-serif",
                 cursor: 'pointer',
                 transition: 'all 0.15s',
               }}
@@ -1048,11 +1048,11 @@ export default function DhhBookingsPage() {
                               {orgDisplay}
                             </div>
                             {conn.org_type && (
-                              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.78rem', color: 'var(--muted)', marginBottom: 6 }}>
+                              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', color: 'var(--muted)', marginBottom: 6 }}>
                                 {conn.org_type}
                               </div>
                             )}
-                            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.82rem', color: '#ffa500' }}>
+                            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.82rem', color: '#ffa500' }}>
                               Wants to request interpreters for you
                             </div>
                           </div>
@@ -1090,23 +1090,23 @@ export default function DhhBookingsPage() {
                               {orgDisplay}
                             </div>
                             {conn.org_type && (
-                              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.78rem', color: 'var(--muted)', marginBottom: 4 }}>
+                              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', color: 'var(--muted)', marginBottom: 4 }}>
                                 {conn.org_type}
                               </div>
                             )}
                             {conn.org_name && conn.requester_name && conn.requester_name !== conn.org_name && (
-                              <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.78rem', color: 'var(--muted)', marginBottom: 4 }}>
+                              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', color: 'var(--muted)', marginBottom: 4 }}>
                                 Contact: {nameDisplay}
                               </div>
                             )}
-                            <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.78rem', color: 'var(--muted)' }}>
+                            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.78rem', color: 'var(--muted)' }}>
                               Connected since {conn.confirmed_at ? formatConnectionDate(conn.confirmed_at) : formatConnectionDate(conn.created_at)}
                             </div>
                           </div>
                           <div style={{ flexShrink: 0 }}>
                             {isConfirming ? (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
-                                <div style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.76rem', color: '#ff8099', maxWidth: 260, textAlign: 'right', lineHeight: 1.4, marginBottom: 4 }}>
+                                <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.76rem', color: '#ff8099', maxWidth: 260, textAlign: 'right', lineHeight: 1.4, marginBottom: 4 }}>
                                   Are you sure? {orgDisplay} will no longer see your interpreter preferences.
                                 </div>
                                 <div style={{ display: 'flex', gap: 8 }}>

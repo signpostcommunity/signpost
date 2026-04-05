@@ -66,7 +66,7 @@ export default function FlagsClient({ flags }: { flags: Flag[] }) {
 
   return (
     <div style={{ padding: '32px 40px', maxWidth: 1200 }}>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 700, marginBottom: 8 }}>
+      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 600, marginBottom: 8 }}>
         Profile Flags
       </h1>
       <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: 24 }}>
@@ -81,7 +81,7 @@ export default function FlagsClient({ flags }: { flags: Flag[] }) {
                 {['Flagged Interpreter', 'Reason', 'Details', 'Flagged By', 'Date', 'Status', 'Actions'].map(h => (
                   <th key={h} style={{
                     padding: '12px 16px', textAlign: 'left',
-                    fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+                    fontFamily: "'Inter', sans-serif", fontWeight: 700,
                     fontSize: '0.7rem', textTransform: 'uppercase',
                     letterSpacing: '0.1em', color: 'var(--muted)',
                   }}>

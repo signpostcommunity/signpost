@@ -28,7 +28,7 @@ const PERSONAL_EVENT_TYPES = [
 ]
 
 const sectionHeadingStyle: React.CSSProperties = {
-  fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px',
+  fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '20px',
   color: '#f0f2f8', marginBottom: 14, paddingBottom: 10,
   borderBottom: '1px solid var(--border)',
 }
@@ -42,7 +42,7 @@ const inputStyle: React.CSSProperties = {
   width: '100%', padding: '11px 14px',
   background: 'var(--surface)', border: '1px solid var(--border)',
   borderRadius: 'var(--radius-sm)', color: 'var(--text)',
-  fontSize: '15px', fontFamily: "'DM Sans', sans-serif",
+  fontSize: '15px', fontFamily: "'Inter', sans-serif",
   outline: 'none',
 }
 
@@ -110,7 +110,7 @@ function RequestCallout() {
               fontSize: '0.82rem', fontWeight: 600,
               color: copied ? '#34d399' : '#9d87ff',
               cursor: 'pointer',
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "'Inter', sans-serif",
               transition: 'all 0.15s',
             }}
           >
@@ -121,7 +121,7 @@ function RequestCallout() {
           href="/dhh/dashboard/preferences"
           style={{
             fontSize: '0.82rem', color: '#9d87ff', textDecoration: 'none',
-            fontWeight: 500, fontFamily: "'DM Sans', sans-serif",
+            fontWeight: 500, fontFamily: "'Inter', sans-serif",
           }}
         >
           Go to My Request Link
@@ -498,7 +498,7 @@ export default function DhhRequestPage() {
                     background: 'none', border: '1px solid var(--border)',
                     borderRadius: 'var(--radius-sm)', padding: '7px 16px',
                     fontSize: '0.82rem', color: 'var(--muted)',
-                    cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                    cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                   }}
                 >
                   Remove video
@@ -572,7 +572,7 @@ export default function DhhRequestPage() {
               background: submitting ? 'var(--surface2)' : 'linear-gradient(135deg, #9d87ff, #7b61ff)',
               border: 'none', borderRadius: 'var(--radius-sm)',
               color: '#fff', fontSize: '1rem', fontWeight: 700,
-              fontFamily: "'DM Sans', sans-serif", cursor: submitting ? 'not-allowed' : 'pointer',
+              fontFamily: "'Inter', sans-serif", cursor: submitting ? 'not-allowed' : 'pointer',
               transition: 'all 0.2s', opacity: submitting ? 0.6 : 1,
             }}
           >
@@ -589,7 +589,7 @@ export default function DhhRequestPage() {
               color: saveState === 'saved' ? '#34d399' : saveState === 'error' ? '#ff6b85' : 'var(--muted)',
               fontSize: '0.88rem', fontWeight: 600,
               cursor: (submitting || saveState === 'saving') ? 'not-allowed' : 'pointer',
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "'Inter', sans-serif",
               transition: 'all 0.2s',
               opacity: (submitting || saveState === 'saving') ? 0.6 : 1,
               display: 'inline-flex', alignItems: 'center', gap: 6,

@@ -24,7 +24,7 @@ const CARD_ELEMENT_OPTIONS = {
   style: {
     base: {
       color: '#f0f2f8',
-      fontFamily: "'Inter', 'DM Sans', sans-serif",
+      fontFamily: "'Inter', 'Inter', sans-serif",
       fontSize: '15px',
       '::placeholder': { color: '#96a0b8' },
       backgroundColor: 'transparent',
@@ -200,7 +200,7 @@ function CardForm({
             color: '#96a0b8',
             fontSize: '14.5px',
             cursor: 'pointer',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "'Inter', sans-serif",
           }}
         >
           Cancel
@@ -319,7 +319,7 @@ export default function PaymentMethodSection({ onToast }: PaymentMethodSectionPr
               <CardBrandIcon brand={paymentMethod.brand} />
               <div style={{ minWidth: 0 }}>
                 <span style={{
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: "'Inter', sans-serif",
                   fontSize: '15px',
                   color: '#f0f2f8',
                   letterSpacing: '0.03em',
@@ -327,7 +327,7 @@ export default function PaymentMethodSection({ onToast }: PaymentMethodSectionPr
                   {brandDisplayName(paymentMethod.brand)} ending in {paymentMethod.last4}
                 </span>
                 <span className="pm-expiry" style={{
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: "'Inter', sans-serif",
                   fontSize: '13px',
                   color: '#96a0b8',
                   marginLeft: 12,
@@ -344,7 +344,7 @@ export default function PaymentMethodSection({ onToast }: PaymentMethodSectionPr
                 style={{
                   background: 'none', border: 'none', color: '#96a0b8',
                   fontSize: '13px', fontWeight: 500, cursor: 'pointer',
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: "'Inter', sans-serif",
                   minHeight: 44, minWidth: 44,
                 }}
               >
@@ -355,7 +355,7 @@ export default function PaymentMethodSection({ onToast }: PaymentMethodSectionPr
                 style={{
                   background: 'none', border: 'none', color: '#96a0b8',
                   fontSize: '13px', fontWeight: 500, cursor: 'pointer',
-                  fontFamily: "'DM Sans', sans-serif",
+                  fontFamily: "'Inter', sans-serif",
                   minHeight: 44, minWidth: 44,
                 }}
               >
@@ -383,7 +383,7 @@ export default function PaymentMethodSection({ onToast }: PaymentMethodSectionPr
                     background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)',
                     borderRadius: 10, padding: '8px 16px', color: '#ef4444',
                     fontSize: '13.5px', fontWeight: 600, cursor: 'pointer',
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: "'Inter', sans-serif",
                     opacity: removing ? 0.5 : 1,
                   }}
                 >
@@ -395,7 +395,7 @@ export default function PaymentMethodSection({ onToast }: PaymentMethodSectionPr
                     background: 'none', border: '1px solid var(--border)',
                     borderRadius: 10, padding: '8px 16px', color: '#96a0b8',
                     fontSize: '13.5px', cursor: 'pointer',
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: "'Inter', sans-serif",
                   }}
                 >
                   Keep

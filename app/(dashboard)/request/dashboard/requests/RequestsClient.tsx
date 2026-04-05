@@ -332,7 +332,7 @@ export default function RequestsClient({
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.6rem', margin: '0 0 6px' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '1.6rem', margin: '0 0 6px' }}>
           All Requests
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>
@@ -356,7 +356,7 @@ export default function RequestsClient({
                 padding: '7px 16px',
                 color: active ? 'var(--accent)' : 'var(--muted)',
                 fontSize: '0.82rem',
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: "'Inter', sans-serif",
                 fontWeight: active ? 700 : 500,
                 cursor: 'pointer',
                 transition: 'all 0.15s',
@@ -399,7 +399,7 @@ export default function RequestsClient({
             width: '100%', boxSizing: 'border-box',
             background: '#16161f', border: '1px solid #333',
             borderRadius: 'var(--radius-sm)', padding: '9px 14px 9px 36px',
-            color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem',
+            color: 'var(--text)', fontFamily: "'Inter', sans-serif", fontSize: '0.88rem',
             outline: 'none', transition: 'border-color 0.15s',
           }}
           onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
@@ -472,13 +472,13 @@ export default function RequestsClient({
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, flexWrap: 'wrap' }}>
-                        <span style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.95rem', color: 'var(--text)' }}>
+                        <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.95rem', color: 'var(--text)' }}>
                           {booking.title || 'Untitled Request'}
                         </span>
                         <span style={{
                           fontSize: '0.7rem', fontWeight: 700, padding: '2px 10px',
                           borderRadius: 100, background: sc.bg, color: sc.color,
-                          fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em',
+                          fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em',
                           border: booking.status === 'draft' ? '1px solid #444' : 'none',
                         }}>
                           {statusLabel(booking.status)}
@@ -525,7 +525,7 @@ export default function RequestsClient({
                               <span key={rec.id} style={{
                                 display: 'inline-flex', alignItems: 'center', gap: 5,
                                 fontSize: '0.72rem', padding: '3px 10px',
-                                borderRadius: 100, fontFamily: "'DM Sans', sans-serif",
+                                borderRadius: 100, fontFamily: "'Inter', sans-serif",
                                 background: 'rgba(255,255,255,0.04)',
                                 border: '1px solid var(--border)',
                               }}>
@@ -575,7 +575,7 @@ export default function RequestsClient({
                     {/* Interpreter responses */}
                     <div style={{ marginBottom: 20 }}>
                       <h3 style={{
-                        fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem',
+                        fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.7rem',
                         letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)',
                         margin: '0 0 12px',
                       }}>
@@ -599,7 +599,7 @@ export default function RequestsClient({
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                                     <Link
                                       href={`/directory/${rec.interpreter_id}`}
-                                      style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)', textDecoration: 'none' }}
+                                      style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)', textDecoration: 'none' }}
                                       onMouseEnter={e => { e.currentTarget.style.textDecoration = 'underline' }}
                                       onMouseLeave={e => { e.currentTarget.style.textDecoration = 'none' }}
                                     >
@@ -607,7 +607,7 @@ export default function RequestsClient({
                                     </Link>
                                     <span style={{
                                       fontSize: '0.7rem', fontWeight: 600, color: recipientStatusColor(rec.status),
-                                      fontFamily: "'DM Sans', sans-serif",
+                                      fontFamily: "'Inter', sans-serif",
                                     }}>
                                       {recipientStatusLabel(rec.status)}
                                     </span>
@@ -626,7 +626,7 @@ export default function RequestsClient({
                                         background: 'var(--accent)', color: '#000',
                                         padding: '7px 16px', borderRadius: 'var(--radius-sm)',
                                         fontSize: '0.78rem', fontWeight: 700,
-                                        fontFamily: "'DM Sans', sans-serif",
+                                        fontFamily: "'Inter', sans-serif",
                                         textDecoration: 'none', whiteSpace: 'nowrap',
                                       }}
                                     >
@@ -639,7 +639,7 @@ export default function RequestsClient({
                                       background: 'none', border: '1px solid var(--border)',
                                       color: 'var(--muted)', padding: '7px 16px',
                                       borderRadius: 'var(--radius-sm)', fontSize: '0.78rem',
-                                      fontFamily: "'DM Sans', sans-serif",
+                                      fontFamily: "'Inter', sans-serif",
                                       textDecoration: 'none', whiteSpace: 'nowrap',
                                     }}
                                   >
@@ -685,7 +685,7 @@ export default function RequestsClient({
                               color: isUrgent ? 'var(--accent3)' : 'var(--accent)',
                               padding: '8px 16px', borderRadius: 'var(--radius-sm)',
                               fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
-                              fontFamily: "'DM Sans', sans-serif", whiteSpace: 'nowrap' as const,
+                              fontFamily: "'Inter', sans-serif", whiteSpace: 'nowrap' as const,
                             }}
                           >
                             Send to more interpreters
@@ -701,7 +701,7 @@ export default function RequestsClient({
                       return (
                         <div style={{ marginBottom: 16 }}>
                           <h3 style={{
-                            fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem',
+                            fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.7rem',
                             letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: 'var(--muted)',
                             margin: '0 0 10px',
                           }}>
@@ -743,7 +743,7 @@ export default function RequestsClient({
                             background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.25)',
                             borderRadius: 'var(--radius-sm)', padding: '9px 18px',
                             color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600,
-                            cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                            cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                             transition: 'all 0.15s',
                           }}
                           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.14)' }}
@@ -761,7 +761,7 @@ export default function RequestsClient({
                         border: '1px solid rgba(0,229,255,0.2)', borderRadius: 'var(--radius-sm)',
                       }}>
                         <h3 style={{
-                          fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '13px',
+                          fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px',
                           letterSpacing: '0.08em', textTransform: 'uppercase' as const,
                           color: 'var(--accent)', margin: '0 0 10px',
                         }}>
@@ -794,7 +794,7 @@ export default function RequestsClient({
                               background: 'none', border: '1px solid var(--border)',
                               borderRadius: 'var(--radius-sm)', padding: '10px 18px',
                               color: 'var(--muted)', fontSize: '0.82rem',
-                              cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                              cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                             }}
                           >
                             Cancel
@@ -817,7 +817,7 @@ export default function RequestsClient({
                             padding: '9px 18px', borderRadius: 'var(--radius-sm)',
                             background: 'rgba(0,229,255,0.06)', border: '1px solid rgba(0,229,255,0.2)',
                             color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600,
-                            textDecoration: 'none', fontFamily: "'DM Sans', sans-serif",
+                            textDecoration: 'none', fontFamily: "'Inter', sans-serif",
                             marginBottom: 16, transition: 'all 0.15s',
                           }}
                           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.12)' }}
@@ -836,7 +836,7 @@ export default function RequestsClient({
                           background: 'none', border: '1px solid rgba(255,107,133,0.3)',
                           color: 'var(--accent3)', padding: '9px 20px',
                           borderRadius: 'var(--radius-sm)', fontSize: '0.82rem',
-                          fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+                          fontFamily: "'Inter', sans-serif", fontWeight: 600,
                           cursor: 'pointer', transition: 'all 0.15s',
                         }}
                         onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,107,133,0.08)' }}
@@ -871,7 +871,7 @@ export default function RequestsClient({
             }}
             onClick={e => e.stopPropagation()}
           >
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: '0 0 12px' }}>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '1.15rem', margin: '0 0 12px' }}>
               Cancel this request?
             </h2>
             <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 16px' }}>
@@ -881,7 +881,7 @@ export default function RequestsClient({
             </p>
             <label style={{
               display: 'block', fontSize: '0.7rem', color: 'var(--muted)',
-              fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+              fontFamily: "'Inter', sans-serif", fontWeight: 700,
               letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6,
             }}>
               Reason (optional)
@@ -894,7 +894,7 @@ export default function RequestsClient({
                 width: '100%', boxSizing: 'border-box',
                 background: 'var(--surface2)', border: '1px solid var(--border)',
                 borderRadius: 'var(--radius-sm)', padding: '10px 14px',
-                color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem',
+                color: 'var(--text)', fontFamily: "'Inter', sans-serif", fontSize: '0.88rem',
                 outline: 'none', resize: 'vertical', marginBottom: 20,
               }}
               onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
@@ -908,7 +908,7 @@ export default function RequestsClient({
                   background: 'none', border: '1px solid var(--border)',
                   color: 'var(--muted)', padding: '11px 20px',
                   borderRadius: 'var(--radius-sm)', fontSize: '0.85rem',
-                  fontFamily: "'DM Sans', sans-serif", cursor: 'pointer',
+                  fontFamily: "'Inter', sans-serif", cursor: 'pointer',
                   minHeight: 44,
                 }}
               >
@@ -921,7 +921,7 @@ export default function RequestsClient({
                   background: 'rgba(255,107,133,0.15)', border: '1px solid rgba(255,107,133,0.4)',
                   color: 'var(--accent3)', padding: '11px 20px',
                   borderRadius: 'var(--radius-sm)', fontSize: '0.85rem',
-                  fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+                  fontFamily: "'Inter', sans-serif", fontWeight: 700,
                   cursor: cancelling ? 'not-allowed' : 'pointer',
                   opacity: cancelling ? 0.6 : 1,
                   minHeight: 44,
@@ -955,7 +955,7 @@ export default function RequestsClient({
               }}
               onClick={e => e.stopPropagation()}
             >
-              <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: '0 0 12px' }}>
+              <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '1.15rem', margin: '0 0 12px' }}>
                 Send to more interpreters?
               </h2>
               <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 20px' }}>
@@ -968,7 +968,7 @@ export default function RequestsClient({
                     background: 'none', border: '1px solid var(--border)',
                     color: 'var(--muted)', padding: '11px 20px',
                     borderRadius: 'var(--radius-sm)', fontSize: '0.85rem',
-                    fontFamily: "'DM Sans', sans-serif", cursor: 'pointer',
+                    fontFamily: "'Inter', sans-serif", cursor: 'pointer',
                     minHeight: 44,
                   }}
                 >
@@ -1016,12 +1016,12 @@ function DetailRow({ label, value }: { label: string; value: string }) {
     <div>
       <div style={{
         fontSize: '0.7rem', fontWeight: 700, color: 'var(--muted)',
-        fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.08em',
+        fontFamily: "'Inter', sans-serif", letterSpacing: '0.08em',
         textTransform: 'uppercase', marginBottom: 4,
       }}>
         {label}
       </div>
-      <div style={{ fontSize: '0.85rem', color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", lineHeight: 1.5 }}>
+      <div style={{ fontSize: '0.85rem', color: 'var(--text)', fontFamily: "'Inter', sans-serif", lineHeight: 1.5 }}>
         {value}
       </div>
     </div>

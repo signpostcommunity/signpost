@@ -207,7 +207,7 @@ export default function AcceptClient({
         style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
           color: 'var(--muted)', fontSize: '0.82rem', textDecoration: 'none',
-          fontFamily: "'DM Sans', sans-serif", marginBottom: 24,
+          fontFamily: "'Inter', sans-serif", marginBottom: 24,
         }}
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -216,7 +216,7 @@ export default function AcceptClient({
         Back to All Requests
       </Link>
 
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.5rem', margin: '0 0 8px' }}>
+      <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '1.5rem', margin: '0 0 8px' }}>
         Review & Accept
       </h1>
       <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: '0 0 32px' }}>
@@ -266,7 +266,7 @@ export default function AcceptClient({
         </div>
         {recipient.response_notes && (
           <div style={{ marginTop: 16, padding: '14px 18px', background: 'rgba(0,229,255,0.04)', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(0,229,255,0.1)' }}>
-            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6, fontFamily: "'DM Sans', sans-serif" }}>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6, fontFamily: "'Inter', sans-serif" }}>
               Interpreter&apos;s Note
             </div>
             <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6, fontStyle: 'italic' }}>
@@ -282,7 +282,7 @@ export default function AcceptClient({
           background: '#111118', border: '1px solid rgba(0,229,255,0.15)',
           borderRadius: 'var(--radius-sm)', padding: '20px 24px',
         }}>
-          <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.95rem', color: 'var(--accent)', marginBottom: 12 }}>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.95rem', color: 'var(--accent)', marginBottom: 12 }}>
             $15.00 per interpreter, per confirmed booking
           </div>
           <p style={{ color: 'var(--muted)', fontSize: '0.82rem', lineHeight: 1.7, margin: '0 0 12px' }}>
@@ -294,10 +294,10 @@ export default function AcceptClient({
             You pay the interpreter directly using their preferred payment method.
           </p>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: 12, borderTop: '1px solid var(--border)' }}>
-            <span style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.88rem', color: 'var(--text)' }}>
+            <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.88rem', color: 'var(--text)' }}>
               Fee for this booking:
             </span>
-            <span style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent)' }}>
+            <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent)' }}>
               $15.00
             </span>
           </div>
@@ -314,7 +314,7 @@ export default function AcceptClient({
           className="btn-primary"
           style={{
             padding: '14px 32px', fontSize: '0.92rem',
-            fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+            fontFamily: "'Inter', sans-serif", fontWeight: 700,
             cursor: 'pointer', border: 'none',
           }}
         >
@@ -327,7 +327,7 @@ export default function AcceptClient({
               background: 'none', border: '1px solid var(--border)',
               color: 'var(--muted)', padding: '14px 24px',
               borderRadius: 'var(--radius-sm)', fontSize: '0.88rem',
-              fontFamily: "'DM Sans', sans-serif", cursor: 'pointer',
+              fontFamily: "'Inter', sans-serif", cursor: 'pointer',
             }}
           >
             Decline This Interpreter
@@ -336,7 +336,7 @@ export default function AcceptClient({
           <div style={{ flex: '1 1 100%', marginTop: 8 }}>
             <label style={{
               display: 'block', fontSize: '0.7rem', color: 'var(--muted)',
-              fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+              fontFamily: "'Inter', sans-serif", fontWeight: 700,
               letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 6,
             }}>
               Reason (optional)
@@ -349,7 +349,7 @@ export default function AcceptClient({
                 width: '100%', maxWidth: 400, boxSizing: 'border-box',
                 background: 'var(--surface2)', border: '1px solid var(--border)',
                 borderRadius: 'var(--radius-sm)', padding: '10px 14px',
-                color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.85rem',
+                color: 'var(--text)', fontFamily: "'Inter', sans-serif", fontSize: '0.85rem',
                 outline: 'none', resize: 'vertical', marginBottom: 10,
               }}
             />
@@ -361,7 +361,7 @@ export default function AcceptClient({
                   background: 'rgba(255,107,133,0.12)', border: '1px solid rgba(255,107,133,0.3)',
                   color: 'var(--accent3)', padding: '9px 20px',
                   borderRadius: 'var(--radius-sm)', fontSize: '0.82rem',
-                  fontFamily: "'DM Sans', sans-serif", fontWeight: 700, cursor: 'pointer',
+                  fontFamily: "'Inter', sans-serif", fontWeight: 700, cursor: 'pointer',
                   opacity: declining ? 0.6 : 1,
                 }}
               >
@@ -373,7 +373,7 @@ export default function AcceptClient({
                   background: 'none', border: '1px solid var(--border)',
                   color: 'var(--muted)', padding: '9px 16px',
                   borderRadius: 'var(--radius-sm)', fontSize: '0.82rem',
-                  fontFamily: "'DM Sans', sans-serif", cursor: 'pointer',
+                  fontFamily: "'Inter', sans-serif", cursor: 'pointer',
                 }}
               >
                 Cancel
@@ -385,7 +385,7 @@ export default function AcceptClient({
           href="/request/dashboard/inbox"
           style={{
             color: 'var(--accent)', fontSize: '0.85rem',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "'Inter', sans-serif",
             textDecoration: 'underline', textUnderlineOffset: '3px',
             padding: '14px 8px',
           }}
@@ -412,7 +412,7 @@ export default function AcceptClient({
             }}
             onClick={e => e.stopPropagation()}
           >
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem', margin: '0 0 12px' }}>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '1.1rem', margin: '0 0 12px' }}>
               Confirm this booking?
             </h2>
             <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 20px' }}>
@@ -428,7 +428,7 @@ export default function AcceptClient({
                   background: 'none', border: '1px solid var(--border)',
                   color: 'var(--muted)', padding: '11px 20px',
                   borderRadius: 'var(--radius-sm)', fontSize: '0.85rem',
-                  fontFamily: "'DM Sans', sans-serif", cursor: 'pointer',
+                  fontFamily: "'Inter', sans-serif", cursor: 'pointer',
                   minHeight: 44,
                 }}
               >
@@ -440,7 +440,7 @@ export default function AcceptClient({
                 className="btn-primary"
                 style={{
                   padding: '11px 24px', fontSize: '0.85rem',
-                  fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+                  fontFamily: "'Inter', sans-serif", fontWeight: 700,
                   cursor: confirming ? 'not-allowed' : 'pointer',
                   opacity: confirming ? 0.6 : 1, border: 'none',
                   minHeight: 44,
@@ -481,7 +481,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <div style={{ marginBottom: 34 }}>
       <h2 style={{
-        fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem',
+        fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.7rem',
         letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)',
         margin: '0 0 14px',
       }}>
@@ -504,7 +504,7 @@ function DetailRow({ label, value, accent }: { label: string; value: string; acc
     <div>
       <div style={{
         fontSize: '0.7rem', fontWeight: 700, color: 'var(--muted)',
-        fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.08em',
+        fontFamily: "'Inter', sans-serif", letterSpacing: '0.08em',
         textTransform: 'uppercase', marginBottom: 4,
       }}>
         {label}
@@ -512,7 +512,7 @@ function DetailRow({ label, value, accent }: { label: string; value: string; acc
       <div style={{
         fontSize: accent ? '1rem' : '0.85rem',
         color: accent ? 'var(--accent)' : 'var(--text)',
-        fontFamily: "'DM Sans', sans-serif",
+        fontFamily: "'Inter', sans-serif",
         fontWeight: accent ? 700 : 400,
         lineHeight: 1.5,
       }}>

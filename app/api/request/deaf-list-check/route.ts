@@ -32,6 +32,10 @@ export async function POST(request: NextRequest) {
 
     const requesterName = reqProfile?.org_name || reqProfile?.name || 'A requester'
 
+    // IMPORTANT: Multi-role users always have their deaf_roster
+    // queried when tagged. Lookup is by deaf_profiles existence,
+    // never by current_role. A user can be an interpreter AND Deaf.
+
     // Look up the Deaf user by email in auth.users, or by phone in deaf_profiles
     let deafAuthUser: { id: string; email?: string } | null = null
     let deafProfile: { id: string; user_id: string; first_name: string | null; auto_share_pref_list: boolean } | null = null

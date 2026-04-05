@@ -56,7 +56,7 @@ function Avatar({ name, size = 40 }: { name: string | null; size?: number }) {
       width: size, height: size, borderRadius: '50%', flexShrink: 0,
       background: getGradient(name),
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+      fontFamily: "'Inter', sans-serif", fontWeight: 700,
       fontSize: size <= 36 ? '0.75rem' : '0.88rem', color: '#fff',
     }}>
       {getInitials(name)}
@@ -292,7 +292,7 @@ export default function InboxPage() {
       <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
         <button
           onClick={() => setActiveThread(null)}
-          style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '0.85rem', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'DM Sans', sans-serif", padding: 0 }}
+          style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '0.85rem', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 6, fontFamily: "'Inter', sans-serif", padding: 0 }}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5" /><path d="M12 19l-7-7 7-7" /></svg>
           Back to Inbox
@@ -301,7 +301,7 @@ export default function InboxPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
           <Avatar name={active.sender_name} size={40} />
           <div>
-            <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1rem' }}>{active.sender_name || 'Unknown'}</div>
+            <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1rem' }}>{active.sender_name || 'Unknown'}</div>
             <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 2 }}>{active.subject || '(no subject)'}</div>
           </div>
           {active.is_seed && <DemoBadge />}
@@ -355,7 +355,7 @@ export default function InboxPage() {
               width: '100%', boxSizing: 'border-box',
               background: 'var(--surface2)', border: '1px solid var(--border)',
               borderRadius: 'var(--radius-sm)', padding: '10px 14px',
-              color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem',
+              color: 'var(--text)', fontFamily: "'Inter', sans-serif", fontSize: '0.88rem',
               outline: 'none', resize: 'vertical', minHeight: 80, marginBottom: 12,
             }}
             onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
@@ -390,7 +390,7 @@ export default function InboxPage() {
           onClick={() => setActiveTab('messages')}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            padding: '10px 20px', fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+            padding: '10px 20px', fontFamily: "'Inter', sans-serif", fontWeight: 700,
             fontSize: '0.88rem',
             color: activeTab === 'messages' ? 'var(--accent)' : 'var(--muted)',
             borderBottom: activeTab === 'messages' ? '2px solid var(--accent)' : '2px solid transparent',
@@ -403,7 +403,7 @@ export default function InboxPage() {
           onClick={() => setActiveTab('notifications')}
           style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            padding: '10px 20px', fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+            padding: '10px 20px', fontFamily: "'Inter', sans-serif", fontWeight: 700,
             fontSize: '0.88rem',
             color: activeTab === 'notifications' ? 'var(--accent)' : 'var(--muted)',
             borderBottom: activeTab === 'notifications' ? '2px solid var(--accent)' : '2px solid transparent',
@@ -414,7 +414,7 @@ export default function InboxPage() {
           Notifications
           {unreadNotifCount > 0 && (
             <span style={{
-              background: 'var(--accent)', color: '#000', fontFamily: "'DM Sans', sans-serif",
+              background: 'var(--accent)', color: '#000', fontFamily: "'Inter', sans-serif",
               fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20,
               lineHeight: '1.4',
             }}>
@@ -441,7 +441,7 @@ export default function InboxPage() {
                   padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10,
                   borderBottom: '1px solid var(--border)',
                 }}>
-                  <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
+                  <h2 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
                     Conversations
                   </h2>
                 </div>
@@ -465,12 +465,12 @@ export default function InboxPage() {
                     padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10,
                     borderBottom: '1px solid var(--border)',
                   }}>
-                    <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
+                    <h2 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
                       Inquiries
                     </h2>
                     {unreadMsgCount > 0 && (
                       <span style={{
-                        background: 'var(--accent)', color: '#000', fontFamily: "'DM Sans', sans-serif",
+                        background: 'var(--accent)', color: '#000', fontFamily: "'Inter', sans-serif",
                         fontSize: '0.7rem', fontWeight: 700, padding: '2px 8px', borderRadius: 20,
                         lineHeight: '1.4',
                       }}>
@@ -482,7 +482,7 @@ export default function InboxPage() {
                       style={{
                         background: 'none', border: 'none', cursor: 'pointer',
                         color: showArchived ? 'var(--accent)' : 'var(--muted)', fontSize: '0.76rem',
-                        fontFamily: "'DM Sans', sans-serif", fontWeight: 600, whiteSpace: 'nowrap',
+                        fontFamily: "'Inter', sans-serif", fontWeight: 600, whiteSpace: 'nowrap',
                         padding: '2px 4px',
                       }}
                     >
@@ -518,7 +518,7 @@ export default function InboxPage() {
                 padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 10,
                 borderBottom: '1px solid var(--border)',
               }}>
-                <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
+                <h2 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.95rem', margin: 0, color: 'var(--text)', flex: 1 }}>
                   Notifications
                 </h2>
                 {unreadNotifCount > 0 && (
@@ -526,7 +526,7 @@ export default function InboxPage() {
                     onClick={markAllNotificationsAsRead}
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer',
-                      color: 'var(--accent)', fontSize: '0.76rem', fontFamily: "'DM Sans', sans-serif",
+                      color: 'var(--accent)', fontSize: '0.76rem', fontFamily: "'Inter', sans-serif",
                       fontWeight: 600, whiteSpace: 'nowrap', padding: '2px 4px',
                     }}
                   >
@@ -540,7 +540,7 @@ export default function InboxPage() {
                 borderRadius: '0 0 var(--radius) var(--radius)',
               }}>
                 {notifications.length === 0 ? (
-                  <div style={{ padding: '28px 20px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem', fontFamily: "'DM Sans', sans-serif" }}>
+                  <div style={{ padding: '28px 20px', textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem', fontFamily: "'Inter', sans-serif" }}>
                     No notifications yet.
                   </div>
                 ) : (
@@ -628,20 +628,20 @@ function NotificationRow({ notif, expanded, onToggle, onDelete, prefsHref }: {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: expanded ? 0 : 3 }}>
             <span style={{
-              fontFamily: "'DM Sans', sans-serif", fontSize: '0.86rem',
+              fontFamily: "'Inter', sans-serif", fontSize: '0.86rem',
               fontWeight: isUnread ? 600 : 400, color: 'var(--text)',
               ...(expanded ? {} : { whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis' }),
             }}>
               {notif.subject || '(no subject)'}
             </span>
-            <span style={{ fontSize: '0.72rem', color: 'var(--muted)', flexShrink: 0, fontFamily: "'DM Sans', sans-serif" }}>
+            <span style={{ fontSize: '0.72rem', color: 'var(--muted)', flexShrink: 0, fontFamily: "'Inter', sans-serif" }}>
               {timeAgo(notif.created_at)}
             </span>
           </div>
           {!expanded && notif.body && (
             <p style={{
               margin: 0, fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.45,
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "'Inter', sans-serif",
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}>
               {notif.body}
@@ -684,18 +684,18 @@ function NotificationRow({ notif, expanded, onToggle, onDelete, prefsHref }: {
           {notif.body && (
             <p style={{
               margin: '0 0 12px', fontSize: '0.85rem', color: '#b0b0b0', lineHeight: 1.65,
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "'Inter', sans-serif",
             }}>
               {notif.body}
             </p>
           )}
-          <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginBottom: 8, fontFamily: "'DM Sans', sans-serif" }}>
+          <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginBottom: 8, fontFamily: "'Inter', sans-serif" }}>
             {new Date(notif.created_at).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}
           </div>
           <Link
             href={prefsHref}
             style={{
-              fontSize: '0.75rem', color: 'var(--muted)', fontFamily: "'DM Sans', sans-serif",
+              fontSize: '0.75rem', color: 'var(--muted)', fontFamily: "'Inter', sans-serif",
               textDecoration: 'none', opacity: 0.7,
             }}
           >
@@ -731,7 +731,7 @@ function MessageRow({ msg, onClick, onArchive }: { msg: Message; onClick: () => 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 3 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
             <span style={{
-              fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.88rem',
+              fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.88rem',
               color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}>
               {msg.sender_name || 'Unknown'}
@@ -742,20 +742,20 @@ function MessageRow({ msg, onClick, onArchive }: { msg: Message; onClick: () => 
             {!msg.is_read && (
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block' }} />
             )}
-            <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontFamily: "'DM Sans', sans-serif" }}>
+            <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontFamily: "'Inter', sans-serif" }}>
               {timeAgo(msg.created_at)}
             </span>
           </div>
         </div>
         <div style={{
-          color: 'var(--muted)', fontSize: '0.78rem', fontFamily: "'DM Sans', sans-serif",
+          color: 'var(--muted)', fontSize: '0.78rem', fontFamily: "'Inter', sans-serif",
           marginBottom: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>
           {msg.subject || '(no subject)'}
         </div>
         <p style={{
           margin: 0, fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.45,
-          fontFamily: "'DM Sans', sans-serif", opacity: 0.75,
+          fontFamily: "'Inter', sans-serif", opacity: 0.75,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>
           {msg.preview || '(no preview)'}

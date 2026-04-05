@@ -94,7 +94,7 @@ function InterpreterTierCard({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "'Inter', sans-serif",
               fontWeight: 700,
               fontSize: '0.88rem',
               color: '#fff',
@@ -128,7 +128,7 @@ function InterpreterTierCard({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: "'Inter', sans-serif",
                 fontWeight: 700,
                 fontSize: '0.88rem',
                 color: '#fff',
@@ -144,7 +144,7 @@ function InterpreterTierCard({
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3, flexWrap: 'wrap' }}>
           {isDnb ? (
-            <span style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.92rem' }}>
+            <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.92rem' }}>
               {i.name}
             </span>
           ) : (
@@ -152,7 +152,7 @@ function InterpreterTierCard({
               href={`/directory/${i.id}`}
               className="interp-name-link"
               style={{
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: "'Inter', sans-serif",
                 fontWeight: 600,
                 fontSize: '0.92rem',
                 color: 'var(--text)',
@@ -308,7 +308,7 @@ export default function RecommendedInterpreters({ dhhUserId }: { dhhUserId: stri
             fontWeight: 600,
             color: 'var(--accent)',
             cursor: 'pointer',
-            fontFamily: "'DM Sans', sans-serif",
+            fontFamily: "'Inter', sans-serif",
           }}
         >
           Let them know

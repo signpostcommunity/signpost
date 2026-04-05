@@ -101,7 +101,7 @@ function InvoiceStatusBadge({ invoice }: { invoice: Invoice }) {
     <span style={{
       fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px',
       borderRadius: 100, background: s.bg, color: s.color,
-      fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em', whiteSpace: 'nowrap',
+      fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em', whiteSpace: 'nowrap',
       textDecoration: s.strike ? 'line-through' : 'none',
     }}>
       {s.label}
@@ -160,7 +160,7 @@ Thank you`
   const inputStyle: React.CSSProperties = {
     width: '100%', background: 'var(--card-bg)', border: '1px solid var(--border)',
     borderRadius: 'var(--radius-sm)', padding: '10px 14px',
-    color: 'var(--text)', fontSize: '0.88rem', fontFamily: "'DM Sans', sans-serif",
+    color: 'var(--text)', fontSize: '0.88rem', fontFamily: "'Inter', sans-serif",
     outline: 'none',
   }
 
@@ -175,7 +175,7 @@ Thank you`
         borderRadius: 'var(--radius)', padding: '28px 32px',
         width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto',
       }} onClick={e => e.stopPropagation()}>
-        <h2 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.2rem', margin: '0 0 20px' }}>
+        <h2 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1.2rem', margin: '0 0 20px' }}>
           Send Payment Reminder
         </h2>
 
@@ -427,7 +427,7 @@ export default function InvoicesPage() {
     padding: '6px 16px',
     fontSize: '0.8rem',
     fontWeight: active ? 700 : 500,
-    fontFamily: "'DM Sans', sans-serif",
+    fontFamily: "'Inter', sans-serif",
     cursor: 'pointer',
     transition: 'all 0.15s',
     whiteSpace: 'nowrap',
@@ -497,7 +497,7 @@ export default function InvoicesPage() {
                 }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'DM Sans', sans-serif" }}>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Inter', sans-serif" }}>
                         {b.title || 'Booking'}
                       </div>
                       <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>
@@ -509,7 +509,7 @@ export default function InvoicesPage() {
                       borderRadius: 100, whiteSpace: 'nowrap',
                       background: 'rgba(52,211,153,0.1)', color: '#34d399',
                       border: '1px solid rgba(52,211,153,0.3)',
-                      fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em',
+                      fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em',
                     }}>
                       Completed
                     </span>
@@ -555,7 +555,7 @@ export default function InvoicesPage() {
           style={{
             width: '100%', background: 'var(--card-bg)', border: '1px solid var(--border)',
             borderRadius: 'var(--radius-sm)', padding: '10px 16px',
-            color: 'var(--text)', fontSize: '0.88rem', fontFamily: "'DM Sans', sans-serif",
+            color: 'var(--text)', fontSize: '0.88rem', fontFamily: "'Inter', sans-serif",
             outline: 'none',
           }}
         />
@@ -597,7 +597,7 @@ export default function InvoicesPage() {
                 {/* Header row */}
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
                   <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'DM Sans', sans-serif" }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Inter', sans-serif" }}>
                       {inv.invoice_number}
                     </div>
                     <div style={{ color: 'var(--muted)', fontSize: '0.8rem', marginTop: 3 }}>
@@ -716,7 +716,7 @@ export default function InvoicesPage() {
             style={{
               background: 'none', border: 'none', cursor: 'pointer',
               color: 'var(--muted)', fontSize: '0.8rem',
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "'Inter', sans-serif",
               textDecoration: 'underline',
               padding: 0,
             }}

@@ -227,7 +227,7 @@ export default function InvoiceViewPage() {
           background: '#ffffff',
           color: '#1a1a1a',
           borderRadius: '12px',
-          fontFamily: "'DM Sans', sans-serif",
+          fontFamily: "'Inter', sans-serif",
           lineHeight: 1.6,
         }}
       >
@@ -236,7 +236,7 @@ export default function InvoiceViewPage() {
           <div>
             <span
               style={{
-                fontFamily: "'DM Sans', sans-serif",
+                fontFamily: "'Inter', sans-serif",
                 fontWeight: 700,
                 fontSize: '28px',
                 color: '#1a1a1a',

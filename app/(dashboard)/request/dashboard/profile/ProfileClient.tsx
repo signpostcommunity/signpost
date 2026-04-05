@@ -15,7 +15,7 @@ const inputStyle: React.CSSProperties = {
   padding: '11px 14px',
   color: 'var(--text)',
   fontSize: '15px',
-  fontFamily: "'DM Sans', sans-serif",
+  fontFamily: "'Inter', sans-serif",
   outline: 'none',
   boxSizing: 'border-box' as const,
 }
@@ -169,7 +169,7 @@ export default function ProfileClient({ profile, userEmail }: Props) {
       <div style={{ maxWidth: 680, margin: '0 auto' }}>
         {/* Header */}
         <h1 style={{
-          fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '27px',
+          fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '27px',
           color: '#f0f2f8', margin: '0 0 6px',
         }}>
           My Profile
@@ -318,7 +318,7 @@ export default function ProfileClient({ profile, userEmail }: Props) {
                 style={{
                   padding: '8px 16px', borderRadius: 100,
                   fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
-                  transition: 'all 0.15s', fontFamily: "'DM Sans', sans-serif",
+                  transition: 'all 0.15s', fontFamily: "'Inter', sans-serif",
                   background: commPrefs.includes(pref) ? 'rgba(0,229,255,0.12)' : 'var(--surface2)',
                   border: commPrefs.includes(pref) ? '1px solid rgba(0,229,255,0.4)' : '1px solid var(--border)',
                   color: commPrefs.includes(pref) ? 'var(--accent)' : 'var(--muted)',

@@ -121,7 +121,7 @@ function CalendarDropdown({ booking, onToast }: {
   const optStyle: React.CSSProperties = {
     display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none',
     padding: '9px 14px', color: 'var(--text)', fontSize: '0.82rem', cursor: 'pointer',
-    fontFamily: "'DM Sans', sans-serif", borderRadius: 6, transition: 'background 0.12s',
+    fontFamily: "'Inter', sans-serif", borderRadius: 6, transition: 'background 0.12s',
   }
 
   return (
@@ -162,7 +162,7 @@ function StatCard({ num, label, href }: { num: number; label: string; href: stri
           flex: 1,
         }}
       >
-        <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '2rem', letterSpacing: '-0.04em', color: 'var(--accent)' }}>{num}</div>
+        <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '2rem', letterSpacing: '-0.04em', color: 'var(--accent)' }}>{num}</div>
         <div style={{ color: 'var(--muted)', fontSize: '0.78rem', marginTop: 4 }}>{label}</div>
       </div>
     </Link>
@@ -430,7 +430,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
             href="/interpreter/dashboard/availability"
             style={{
               color: 'var(--accent)', fontSize: '0.85rem', fontWeight: 600,
-              fontFamily: "'DM Sans', sans-serif", textDecoration: 'none', whiteSpace: 'nowrap',
+              fontFamily: "'Inter', sans-serif", textDecoration: 'none', whiteSpace: 'nowrap',
             }}
           >
             Manage in Availability
@@ -439,7 +439,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       )}
 
       <div style={{ marginBottom: 30 }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
           Welcome back, {displayName}.
         </h1>
         <p style={{ fontWeight: 400, fontSize: '15px', color: '#96a0b8', margin: 0 }}>Here&apos;s a snapshot of your activity on signpost.</p>
@@ -492,17 +492,17 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                 <path d="M12 9v4m0 4h.01M12 2L2 22h20L12 2z" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '14px', color: '#f0f2f8' }}>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '14px', color: '#f0f2f8' }}>
                   Your profile is incomplete
                 </div>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 400, fontSize: '13px', color: '#96a0b8', marginTop: 2 }}>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: '13px', color: '#96a0b8', marginTop: 2 }}>
                   Complete your profile so clients can find and contact you.
                 </div>
               </div>
               <Link
                 href="/interpreter/dashboard/profile"
                 style={{
-                  fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: '13px',
+                  fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '13px',
                   color: '#f59e0b', textDecoration: 'none', whiteSpace: 'nowrap', marginLeft: 'auto', flexShrink: 0,
                 }}
               >
@@ -527,10 +527,10 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                 </div>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '14px', color: '#f0f2f8' }}>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '14px', color: '#f0f2f8' }}>
                   Your &ldquo;Book Me&rdquo; badge and custom URL are live.
                 </div>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 400, fontSize: '13px', color: '#96a0b8', marginTop: 2 }}>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: '13px', color: '#96a0b8', marginTop: 2 }}>
                   Share your badge in your email signature, on your LinkedIn page, or anywhere your clients find you. Your custom link leads directly to a booking page specific to you.
                 </div>
               </div>
@@ -538,7 +538,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                 <Link
                   href="/interpreter/dashboard/profile"
                   style={{
-                    fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: '13px',
+                    fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '13px',
                     color: '#00e5ff', textDecoration: 'none', whiteSpace: 'nowrap',
                   }}
                 >
@@ -560,10 +560,10 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                 <path d="M3 10h18M8 2v4M16 2v4" stroke="#96a0b8" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '14px', color: '#f0f2f8' }}>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '14px', color: '#f0f2f8' }}>
                   Calendar Sync
                 </div>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 400, fontSize: '13px', color: '#96a0b8', marginTop: 2 }}>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: '13px', color: '#96a0b8', marginTop: 2 }}>
                   Subscribe so confirmed bookings appear in your calendar automatically.
                 </div>
               </div>
@@ -571,7 +571,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                 <Link
                   href="/interpreter/dashboard/availability"
                   style={{
-                    fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: '13px',
+                    fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '13px',
                     color: '#96a0b8', textDecoration: 'none', whiteSpace: 'nowrap',
                   }}
                 >
@@ -584,7 +584,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                   }}
                   style={{
                     background: 'none', border: 'none', cursor: 'pointer',
-                    color: '#96a0b8', fontSize: '13px', fontFamily: "'DM Sans', sans-serif",
+                    color: '#96a0b8', fontSize: '13px', fontFamily: "'Inter', sans-serif",
                     fontWeight: 500, padding: '2px 4px', flexShrink: 0,
                   }}
                 >
@@ -608,17 +608,17 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                 <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '14px', color: '#f0f2f8' }}>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '14px', color: '#f0f2f8' }}>
                   {videoRequestCount} {videoRequestCount === 1 ? 'person has' : 'people have'} requested your intro video
                 </div>
-                <div style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 400, fontSize: '13px', color: '#96a0b8', marginTop: 2 }}>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: '13px', color: '#96a0b8', marginTop: 2 }}>
                   An intro video helps clients feel confident booking you.
                 </div>
               </div>
               <Link
                 href="/interpreter/dashboard/profile"
                 style={{
-                  fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: '13px',
+                  fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '13px',
                   color: '#00e5ff', textDecoration: 'none', whiteSpace: 'nowrap', marginLeft: 'auto', flexShrink: 0,
                 }}
               >
@@ -657,7 +657,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                 }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'DM Sans', sans-serif" }}>{inq.title || 'Booking Request'}</div>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Inter', sans-serif" }}>{inq.title || 'Booking Request'}</div>
                       <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>
                         From: {inq.requester_name || 'Unknown'} · {inq.specialization || 'General'}
                       </div>
@@ -706,7 +706,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                 }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 12 }}>
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'DM Sans', sans-serif" }}>{booking.title || 'Confirmed Booking'}</div>
+                      <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Inter', sans-serif" }}>{booking.title || 'Confirmed Booking'}</div>
                       <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>{booking.requester_name || 'Client'} · {booking.specialization || 'General'}</div>
                     </div>
                     <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
@@ -767,7 +767,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                             width: 32, height: 32, borderRadius: '50%',
                             background: member.avatar_color || 'linear-gradient(135deg, #00e5ff, #9d87ff)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+                            fontFamily: "'Inter', sans-serif", fontWeight: 700,
                             fontSize: '0.72rem', color: '#fff',
                           }}>
                             {initials.toUpperCase()}
@@ -775,7 +775,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                         )}
                       </Link>
                       <div style={{ minWidth: 0, flex: 1 }}>
-                        <Link href={`/directory/${member.id}`} className="interp-name-link" style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)', fontFamily: "'DM Sans', sans-serif", textDecoration: 'none', display: 'block' }}>
+                        <Link href={`/directory/${member.id}`} className="interp-name-link" style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)', fontFamily: "'Inter', sans-serif", textDecoration: 'none', display: 'block' }}>
                           {name}
                         </Link>
                         <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
@@ -828,7 +828,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
             <div className="modal-dialog" style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', width: '90%', maxWidth: 560, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '90vh' }} onClick={e => e.stopPropagation()}>
               <div style={{ padding: '24px 28px 20px', borderBottom: '1px solid var(--border)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                  <h3 style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>{bk.title || 'Booking Request'}</h3>
+                  <h3 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: 0 }}>{bk.title || 'Booking Request'}</h3>
                   <button onClick={() => setViewing(null)} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem', flexShrink: 0 }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>
                   </button>

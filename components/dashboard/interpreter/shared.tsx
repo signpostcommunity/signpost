@@ -7,7 +7,7 @@ import { useState } from 'react'
 export function DemoBadge() {
   return (
     <span style={{
-      fontSize: '0.7rem', fontWeight: 700, fontFamily: "'DM Sans', sans-serif",
+      fontSize: '0.7rem', fontWeight: 700, fontFamily: "'Inter', sans-serif",
       letterSpacing: '0.1em', textTransform: 'uppercase',
       background: 'rgba(255,107,43,0.15)', border: '1px solid rgba(255,107,43,0.4)',
       color: '#ff7e45', borderRadius: 100, padding: '2px 8px',
@@ -59,7 +59,7 @@ export function StatusBadge({ status }: { status: 'new' | 'responded' | 'confirm
     <span style={{
       fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px',
       borderRadius: 100, background: s.bg, color: s.color,
-      fontFamily: "'DM Sans', sans-serif", letterSpacing: '0.04em', whiteSpace: 'nowrap',
+      fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em', whiteSpace: 'nowrap',
     }}>
       {s.label}
     </span>
@@ -74,7 +74,7 @@ export function Avatar({ initials, gradient, size = 40 }: { initials: string; gr
       width: size, height: size, borderRadius: '50%', flexShrink: 0,
       background: gradient,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+      fontFamily: "'Inter', sans-serif", fontWeight: 700,
       fontSize: size <= 36 ? '0.75rem' : '0.88rem', color: '#fff',
     }}>
       {initials}
@@ -114,7 +114,7 @@ export function RequestCard({
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
           <Avatar initials={avatar} gradient={avatarGradient} size={36} />
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'DM Sans', sans-serif" }}>{title}</div>
+            <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Inter', sans-serif" }}>{title}</div>
             <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>
               {from && `From: ${from}`}{category && ` · ${category}`}{receivedDate && ` · ${receivedDate}`}
             </div>
@@ -181,7 +181,7 @@ export function GhostButton({ children, onClick, danger, disabled, 'aria-expande
         color: hover ? (danger ? 'var(--accent3)' : 'var(--accent)') : 'var(--muted)',
         fontSize: '0.82rem', padding: '8px 16px',
         cursor: disabled ? 'not-allowed' : 'pointer', transition: 'all 0.15s',
-        fontFamily: "'DM Sans', sans-serif",
+        fontFamily: "'Inter', sans-serif",
         opacity: disabled ? 0.5 : 1,
       }}
     >
