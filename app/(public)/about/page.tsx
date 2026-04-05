@@ -98,7 +98,7 @@ const faqSections: FaqSection[] = [
               For Deaf/DB/HH individuals: Free. Always. No fees for personal use, no credit card required.
             </p>
             <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.75, margin: 0 }}>
-              For requesters/organizations: $15 flat fee per interpreter, per confirmed booking. This is charged when you confirm an interpreter, not when you submit a request.
+              For requesters/organizations: signpost charges a $15 platform fee per interpreter, per confirmed booking. This fee is charged when you confirm an interpreter, not when you submit a request. This is the only fee that signpost collects. Interpreter rates are separate. Each interpreter communicates their rate directly to you during the request process and invoices you for their services independently. Interpreter rates go directly to the interpreter. signpost does not take a cut, add markups, or charge any additional fees.
             </p>
           </>
         ),
@@ -545,7 +545,7 @@ export default function AboutPage() {
               {/* Steps */}
               <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <div style={{
-                  fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+                  fontFamily: "'Inter', sans-serif", fontWeight: 600,
                   fontSize: 13, letterSpacing: '0.1em',
                   textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 16,
                 }}>
@@ -569,7 +569,7 @@ export default function AboutPage() {
             {/* Examples */}
             <div style={{ marginBottom: 48 }}>
               <div style={{
-                fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+                fontFamily: "'Inter', sans-serif", fontWeight: 600,
                 fontSize: 13, letterSpacing: '0.1em',
                 textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 16,
               }}>
@@ -596,7 +596,7 @@ export default function AboutPage() {
                 padding: 24, background: '#111118', border: '1px solid var(--border)', borderRadius: 12,
               }}>
                 <div style={{
-                  fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+                  fontFamily: "'Inter', sans-serif", fontWeight: 600,
                   fontSize: 13, letterSpacing: '0.1em',
                   textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 8,
                 }}>
@@ -610,7 +610,7 @@ export default function AboutPage() {
                 padding: 24, background: '#111118', border: '1px solid var(--border)', borderRadius: 12,
               }}>
                 <div style={{
-                  fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+                  fontFamily: "'Inter', sans-serif", fontWeight: 600,
                   fontSize: 13, letterSpacing: '0.1em',
                   textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 8,
                 }}>
@@ -630,7 +630,7 @@ export default function AboutPage() {
             {/* Cancellation */}
             <div style={{ marginBottom: 0 }}>
               <div style={{
-                fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+                fontFamily: "'Inter', sans-serif", fontWeight: 600,
                 fontSize: 13, letterSpacing: '0.1em',
                 textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 16,
               }}>
@@ -668,7 +668,7 @@ export default function AboutPage() {
             {/* Standards */}
             <div style={{ marginBottom: 40 }}>
               <div style={{
-                fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+                fontFamily: "'Inter', sans-serif", fontWeight: 600,
                 fontSize: 13, letterSpacing: '0.1em',
                 textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 14,
               }}>
@@ -682,7 +682,7 @@ export default function AboutPage() {
             {/* Screen Reader Support */}
             <div style={{ marginBottom: 40 }}>
               <div style={{
-                fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+                fontFamily: "'Inter', sans-serif", fontWeight: 600,
                 fontSize: 13, letterSpacing: '0.1em',
                 textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 14,
               }}>
@@ -696,7 +696,7 @@ export default function AboutPage() {
             {/* DeafBlind */}
             <div style={{ marginBottom: 40 }}>
               <div style={{
-                fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+                fontFamily: "'Inter', sans-serif", fontWeight: 600,
                 fontSize: 13, letterSpacing: '0.1em',
                 textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 14,
               }}>
@@ -711,7 +711,7 @@ export default function AboutPage() {
             {/* Ongoing */}
             <div style={{ marginBottom: 48 }}>
               <div style={{
-                fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+                fontFamily: "'Inter', sans-serif", fontWeight: 600,
                 fontSize: 13, letterSpacing: '0.1em',
                 textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 14,
               }}>
@@ -767,7 +767,7 @@ export default function AboutPage() {
                 display: 'flex', alignItems: 'center', gap: 16, marginBottom: 20,
               }}>
                 <div style={{
-                  fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+                  fontFamily: "'Inter', sans-serif", fontWeight: 600,
                   fontSize: 13, letterSpacing: '0.1em',
                   textTransform: 'uppercase', color: 'var(--accent)',
                   whiteSpace: 'nowrap',
@@ -813,7 +813,7 @@ export default function AboutPage() {
               <div key={section.title} style={{ marginBottom: 40 }}>
                 {/* Section header (L4) */}
                 <div style={{
-                  fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+                  fontFamily: "'Inter', sans-serif", fontWeight: 600,
                   fontSize: 13, letterSpacing: '0.1em',
                   textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 8,
                 }}>
@@ -923,7 +923,7 @@ export default function AboutPage() {
                   </p>
                   <div style={{ marginBottom: 8 }}>
                     <div style={{
-                      fontFamily: "'DM Sans', sans-serif", fontWeight: 600,
+                      fontFamily: "'Inter', sans-serif", fontWeight: 600,
                       fontSize: 13, letterSpacing: '0.1em',
                       textTransform: 'uppercase', color: 'var(--accent)', marginBottom: 10,
                     }}>
@@ -945,7 +945,7 @@ export default function AboutPage() {
                   <div className="contact-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
                     <div>
                       <label htmlFor="contact-name" style={{
-                        display: 'block', fontFamily: "'DM Sans', sans-serif", fontSize: 13,
+                        display: 'block', fontFamily: "'Inter', sans-serif", fontSize: 13,
                         fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
                         color: 'var(--muted)', marginBottom: 8,
                       }}>
@@ -966,7 +966,7 @@ export default function AboutPage() {
                     </div>
                     <div>
                       <label htmlFor="contact-email" style={{
-                        display: 'block', fontFamily: "'DM Sans', sans-serif", fontSize: 13,
+                        display: 'block', fontFamily: "'Inter', sans-serif", fontSize: 13,
                         fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
                         color: 'var(--muted)', marginBottom: 8,
                       }}>
@@ -989,7 +989,7 @@ export default function AboutPage() {
 
                   <div style={{ marginBottom: 20 }}>
                     <label htmlFor="contact-subject" style={{
-                      display: 'block', fontFamily: "'DM Sans', sans-serif", fontSize: 13,
+                      display: 'block', fontFamily: "'Inter', sans-serif", fontSize: 13,
                       fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
                       color: 'var(--muted)', marginBottom: 8,
                     }}>
@@ -1020,7 +1020,7 @@ export default function AboutPage() {
 
                   <div style={{ marginBottom: 28 }}>
                     <label htmlFor="contact-message" style={{
-                      display: 'block', fontFamily: "'DM Sans', sans-serif", fontSize: 13,
+                      display: 'block', fontFamily: "'Inter', sans-serif", fontSize: 13,
                       fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase',
                       color: 'var(--muted)', marginBottom: 8,
                     }}>
