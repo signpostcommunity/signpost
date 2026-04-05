@@ -30,6 +30,10 @@ export const smsTemplates = {
   bookingConfirmedRequester: (interpreterName: string, date: string) =>
     `[signpost] Booking confirmed with ${interpreterName} on ${date}. Details at signpost.community/request/dashboard`,
 
+  // Wave notifications (requester-facing)
+  waveUrgent: (bookingTitle: string) =>
+    `[signpost] Urgent: Your request "${bookingTitle}" is at risk. Send to more interpreters at signpost.community/request/dashboard`,
+
   // General
   newMessage: (senderName: string) =>
     `[signpost] New message from ${senderName}. Read at signpost.community`,

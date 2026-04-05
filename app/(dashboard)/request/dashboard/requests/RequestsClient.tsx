@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Toast from '@/components/ui/Toast'
+import RequesterInterpreterPicker from '@/components/requester/RequesterInterpreterPicker'
 
 /* ── Types ── */
 
@@ -27,6 +28,8 @@ interface Booking {
   status: string
   platform_fee_amount: number | null
   platform_fee_status: string | null
+  wave_alerts_sent: Record<string, boolean> | null
+  current_wave: number | null
   created_at: string
 }
 
@@ -35,6 +38,7 @@ interface Recipient {
   booking_id: string
   interpreter_id: string
   status: string
+  wave_number: number
   response_rate: number | null
   response_notes: string | null
   rate_profile_id: string | null
@@ -150,6 +154,11 @@ export default function RequestsClient({
   const [cancelReason, setCancelReason] = useState('')
   const [cancelling, setCancelling] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  // Wave: send to more state
+  const [sendMoreBookingId, setSendMoreBookingId] = useState<string | null>(null)
+  const [sendMoreStep, setSendMoreStep] = useState<'confirm' | 'pick'>('confirm')
+  const [sendMoreIds, setSendMoreIds] = useState<string[]>([])
+  const [sendMoreSubmitting, setSendMoreSubmitting] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Debounced search
@@ -241,6 +250,80 @@ export default function RequestsClient({
       setToast({ message: 'An error occurred. Please try again.', type: 'error' })
       setCancelling(false)
     }
+  }
+
+  // Wave: send to more handler
+  function openSendMore(bookingId: string, skipFriction = false) {
+    const recs = recipientsByBooking.get(bookingId) || []
+    const pending = recs.filter(r => r.status === 'sent' || r.status === 'viewed').length
+    setSendMoreBookingId(bookingId)
+    setSendMoreIds([])
+    // Skip friction dialog if most have responded or if triggered from banner
+    if (skipFriction || pending === 0) {
+      setSendMoreStep('pick')
+    } else {
+      setSendMoreStep('confirm')
+    }
+  }
+
+  async function handleSendMore() {
+    if (!sendMoreBookingId || sendMoreIds.length === 0) return
+    setSendMoreSubmitting(true)
+    try {
+      const res = await fetch('/api/request/wave-send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingId: sendMoreBookingId, interpreterIds: sendMoreIds }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setToast({ message: data.error || 'Failed to send', type: 'error' })
+        setSendMoreSubmitting(false)
+        return
+      }
+      setToast({ message: `Request sent to ${data.sentCount} more interpreter${data.sentCount !== 1 ? 's' : ''}.`, type: 'success' })
+      setSendMoreBookingId(null)
+      setSendMoreSubmitting(false)
+      router.refresh()
+    } catch {
+      setToast({ message: 'Something went wrong. Please try again.', type: 'error' })
+      setSendMoreSubmitting(false)
+    }
+  }
+
+  // Wave helpers
+  function getWaveStats(recs: Recipient[]) {
+    const waves = new Map<number, Recipient[]>()
+    for (const r of recs) {
+      const w = r.wave_number || 1
+      const list = waves.get(w) || []
+      list.push(r)
+      waves.set(w, list)
+    }
+    return waves
+  }
+
+  function getAlertBanner(booking: Booking, recs: Recipient[]) {
+    const alerts = booking.wave_alerts_sent || {}
+    const wave = booking.current_wave || 1
+    const pending = recs.filter(r => r.status === 'sent' || r.status === 'viewed').length
+    const interpretersNeeded = booking.interpreter_count || 1
+    const confirmed = recs.filter(r => r.status === 'confirmed').length
+    const declined = recs.filter(r => r.status === 'declined').length
+
+    if (alerts[`wave_${wave}_urgent`]) {
+      return {
+        type: 'urgent' as const,
+        message: `Your request for ${booking.title || 'this event'} is at risk. Only ${pending} interpreter${pending !== 1 ? 's' : ''} haven't responded and you still need ${interpretersNeeded - confirmed}. We recommend sending to more now.`,
+      }
+    }
+    if (alerts[`wave_${wave}_nudge`] || alerts[`wave_${wave}_all_responded`] || alerts[`wave_${wave}_timeout`]) {
+      return {
+        type: 'nudge' as const,
+        message: `${declined} interpreter${declined !== 1 ? 's' : ''} have declined this request. You can send to more interpreters to improve your chances.`,
+      }
+    }
+    return null
   }
 
   const cancelBooking = cancelModalId ? bookings.find(b => b.id === cancelModalId) : null
@@ -570,6 +653,156 @@ export default function RequestsClient({
                       )}
                     </div>
 
+                    {/* Wave alert banner */}
+                    {booking.status === 'open' && (() => {
+                      const banner = getAlertBanner(booking, recs)
+                      if (!banner) return null
+                      const isUrgent = banner.type === 'urgent'
+                      return (
+                        <div style={{
+                          padding: '14px 18px', borderRadius: 'var(--radius-sm)',
+                          marginBottom: 16,
+                          background: isUrgent ? 'rgba(255,107,133,0.06)' : 'rgba(0,229,255,0.06)',
+                          border: `1px solid ${isUrgent ? 'rgba(255,107,133,0.3)' : 'rgba(0,229,255,0.2)'}`,
+                          display: 'flex', alignItems: 'flex-start', gap: 12, flexWrap: 'wrap' as const,
+                        }}>
+                          <div style={{ flex: 1, minWidth: 200 }}>
+                            <p style={{
+                              fontSize: '0.82rem', color: isUrgent ? 'var(--accent3)' : 'var(--accent)',
+                              fontWeight: 600, margin: '0 0 4px', lineHeight: 1.5,
+                            }}>
+                              {isUrgent ? 'Action needed' : 'Heads up'}
+                            </p>
+                            <p style={{ fontSize: '0.82rem', color: 'var(--muted)', margin: 0, lineHeight: 1.5 }}>
+                              {banner.message}
+                            </p>
+                          </div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); openSendMore(booking.id, true) }}
+                            style={{
+                              background: isUrgent ? 'rgba(255,107,133,0.15)' : 'rgba(0,229,255,0.1)',
+                              border: `1px solid ${isUrgent ? 'rgba(255,107,133,0.4)' : 'rgba(0,229,255,0.3)'}`,
+                              color: isUrgent ? 'var(--accent3)' : 'var(--accent)',
+                              padding: '8px 16px', borderRadius: 'var(--radius-sm)',
+                              fontSize: '0.78rem', fontWeight: 700, cursor: 'pointer',
+                              fontFamily: "'DM Sans', sans-serif", whiteSpace: 'nowrap' as const,
+                            }}
+                          >
+                            Send to more interpreters
+                          </button>
+                        </div>
+                      )
+                    })()}
+
+                    {/* Wave history */}
+                    {recs.length > 0 && (() => {
+                      const waves = getWaveStats(recs)
+                      if (waves.size <= 1 && !booking.current_wave) return null
+                      return (
+                        <div style={{ marginBottom: 16 }}>
+                          <h3 style={{
+                            fontFamily: "'DM Sans', sans-serif", fontWeight: 700, fontSize: '0.7rem',
+                            letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: 'var(--muted)',
+                            margin: '0 0 10px',
+                          }}>
+                            Wave History
+                          </h3>
+                          <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 6 }}>
+                            {Array.from(waves.entries()).sort(([a], [b]) => a - b).map(([waveNum, waveRecs]) => {
+                              const d = waveRecs.filter(r => r.status === 'declined').length
+                              const resp = waveRecs.filter(r => r.status === 'responded' || r.status === 'confirmed').length
+                              const p = waveRecs.filter(r => r.status === 'sent' || r.status === 'viewed').length
+                              return (
+                                <div key={waveNum} style={{
+                                  fontSize: '0.78rem', color: 'var(--muted)', padding: '8px 14px',
+                                  background: 'rgba(255,255,255,0.02)', borderRadius: 'var(--radius-sm)',
+                                  border: '1px solid var(--border)',
+                                }}>
+                                  <span style={{ fontWeight: 600, color: 'var(--text)' }}>Wave {waveNum}:</span>{' '}
+                                  Sent to {waveRecs.length} interpreter{waveRecs.length !== 1 ? 's' : ''}
+                                  {' ('}
+                                  {d > 0 && <>{d} declined, </>}
+                                  {resp > 0 && <>{resp} responded, </>}
+                                  {p > 0 && <>{p} pending</>}
+                                  {p === 0 && d === 0 && resp === 0 && <>0 pending</>}
+                                  {')'}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      )
+                    })()}
+
+                    {/* Send to more interpreters button (always visible for open bookings) */}
+                    {(booking.status === 'open' || booking.status === 'filled') && (
+                      <div style={{ marginBottom: 16 }}>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); openSendMore(booking.id) }}
+                          style={{
+                            background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.25)',
+                            borderRadius: 'var(--radius-sm)', padding: '9px 18px',
+                            color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600,
+                            cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                            transition: 'all 0.15s',
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.14)' }}
+                          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.08)' }}
+                        >
+                          Send to more interpreters
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Inline send-to-more picker */}
+                    {sendMoreBookingId === booking.id && sendMoreStep === 'pick' && (
+                      <div style={{
+                        marginBottom: 16, padding: '20px', background: 'var(--surface)',
+                        border: '1px solid rgba(0,229,255,0.2)', borderRadius: 'var(--radius-sm)',
+                      }}>
+                        <h3 style={{
+                          fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '13px',
+                          letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+                          color: 'var(--accent)', margin: '0 0 10px',
+                        }}>
+                          SELECT MORE INTERPRETERS
+                        </h3>
+                        <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginBottom: 14, lineHeight: 1.6 }}>
+                          Select up to 10 new interpreters. Those already contacted for this request are filtered out.
+                        </p>
+                        <RequesterInterpreterPicker
+                          selectedIds={sendMoreIds}
+                          onChange={setSendMoreIds}
+                          excludeIds={recs.map(r => r.interpreter_id)}
+                        />
+                        <div style={{ display: 'flex', gap: 10, marginTop: 16, flexWrap: 'wrap' as const }}>
+                          <button
+                            disabled={sendMoreIds.length === 0 || sendMoreSubmitting}
+                            onClick={(e) => { e.stopPropagation(); handleSendMore() }}
+                            className="btn-primary"
+                            style={{
+                              padding: '10px 22px', fontSize: '0.85rem', fontWeight: 700,
+                              opacity: (sendMoreIds.length === 0 || sendMoreSubmitting) ? 0.5 : 1,
+                              cursor: (sendMoreIds.length === 0 || sendMoreSubmitting) ? 'not-allowed' : 'pointer',
+                            }}
+                          >
+                            {sendMoreSubmitting ? 'Sending...' : `Send to ${sendMoreIds.length} interpreter${sendMoreIds.length !== 1 ? 's' : ''}`}
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setSendMoreBookingId(null) }}
+                            style={{
+                              background: 'none', border: '1px solid var(--border)',
+                              borderRadius: 'var(--radius-sm)', padding: '10px 18px',
+                              color: 'var(--muted)', fontSize: '0.82rem',
+                              cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Smart directory link */}
                     {booking.status === 'open' && (() => {
                       const params = new URLSearchParams({ context: 'requester' })
@@ -700,6 +933,62 @@ export default function RequestsClient({
           </div>
         </div>
       )}
+
+      {/* Send-to-more friction dialog */}
+      {sendMoreBookingId && sendMoreStep === 'confirm' && (() => {
+        const recs = recipientsByBooking.get(sendMoreBookingId) || []
+        const pending = recs.filter(r => r.status === 'sent' || r.status === 'viewed').length
+        return (
+          <div
+            style={{
+              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              zIndex: 1000, padding: 20,
+            }}
+            onClick={() => setSendMoreBookingId(null)}
+          >
+            <div
+              style={{
+                background: 'var(--surface)', border: '1px solid var(--border)',
+                borderRadius: 'var(--radius)', padding: '28px 32px',
+                width: '100%', maxWidth: 480,
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: '0 0 12px' }}>
+                Send to more interpreters?
+              </h2>
+              <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 20px' }}>
+                You still have {pending} interpreter{pending !== 1 ? 's' : ''} who haven&apos;t responded yet. Waiting typically gets better response rates. Are you sure you want to send to more now?
+              </p>
+              <div className="req-modal-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => setSendMoreBookingId(null)}
+                  style={{
+                    background: 'none', border: '1px solid var(--border)',
+                    color: 'var(--muted)', padding: '11px 20px',
+                    borderRadius: 'var(--radius-sm)', fontSize: '0.85rem',
+                    fontFamily: "'DM Sans', sans-serif", cursor: 'pointer',
+                    minHeight: 44,
+                  }}
+                >
+                  Wait for responses
+                </button>
+                <button
+                  onClick={() => setSendMoreStep('pick')}
+                  className="btn-primary"
+                  style={{
+                    padding: '11px 20px', fontSize: '0.85rem', fontWeight: 700,
+                    minHeight: 44, cursor: 'pointer',
+                  }}
+                >
+                  Yes, send to more
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 

@@ -383,15 +383,48 @@ export default function NewRequestPage() {
         </div>
 
         {/* ── Section 3: Choose Interpreters ── */}
-        <h3 style={sectionLabelStyle}>Choose Interpreters (Optional)</h3>
-        <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginBottom: 16, lineHeight: 1.6 }}>
-          Select interpreters from your roster to send this request to directly. Each interpreter will receive your request and can respond with their rate.
+        <h3 style={{
+          fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '13px',
+          letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+          color: 'var(--accent)', margin: '32px 0 12px',
+        }}>CHOOSE INTERPRETERS</h3>
+        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, lineHeight: 1.6 }}>
+          Select up to 10 interpreters for this request. Each one will receive a personalized notification with your booking details and can respond with their availability and rates.
         </p>
+
+        {/* Why is there a limit? accordion */}
+        <details style={{
+          marginBottom: 20, background: 'var(--surface)', border: '1px solid var(--border)',
+          borderRadius: 'var(--radius-sm)', overflow: 'hidden',
+        }}>
+          <summary style={{
+            padding: '12px 16px', cursor: 'pointer', fontSize: '0.82rem',
+            fontWeight: 600, color: 'var(--accent)', fontFamily: "'DM Sans', sans-serif",
+            listStyle: 'none', display: 'flex', alignItems: 'center', gap: 8,
+          }}>
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, transition: 'transform 0.2s' }}>
+              <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Why is there a limit?
+          </summary>
+          <div style={{ padding: '0 16px 14px', fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.65 }}>
+            Interpreters respond best to requests from people who selected them for their skills. Sending targeted requests (rather than blasting hundreds of interpreters at once) means faster responses, better fit, and a better experience for everyone. If you need to reach more interpreters, signpost will monitor your request and make it easy to send additional rounds.
+          </div>
+        </details>
+
         <div style={{ marginBottom: 32 }}>
           <RequesterInterpreterPicker
             selectedIds={selectedInterpreters}
             onChange={setSelectedInterpreters}
           />
+          {selectedInterpreters.length >= 10 && (
+            <p style={{
+              fontSize: '0.82rem', color: 'var(--accent)', marginTop: 10, lineHeight: 1.6,
+              fontFamily: "'DM Sans', sans-serif",
+            }}>
+              Maximum reached for this round. If your selected interpreters are unavailable, signpost will notify you so you can send to more.
+            </p>
+          )}
         </div>
 
         {/* ── Section 4: Who is this interpreter for? ── */}

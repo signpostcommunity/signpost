@@ -17,6 +17,7 @@ export type NotificationType =
   | 'added_to_preferred_list_by_dhh'
   | 'preferred_list_requested'
   | 'preferred_list_shared'
+  | 'wave_nudge' | 'wave_urgent' | 'wave_timeout' | 'wave_all_responded'
 
 interface CreateNotificationParams {
   recipientUserId: string
@@ -79,6 +80,8 @@ function getSmsMessage(type: NotificationType, metadata: Record<string, unknown>
       return smsTemplates.interpreterResponded(interpreterName || 'An interpreter')
     case 'new_message':
       return smsTemplates.newMessage(senderName || 'Someone')
+    case 'wave_urgent':
+      return `[signpost] Urgent: Your request is at risk. Send to more interpreters at signpost.community/request/dashboard/requests`
     default:
       return null
   }
@@ -430,6 +433,60 @@ ${bookMeSection}
       ctaUrl: bookingId
         ? `https://signpost.community/request/dashboard`
         : 'https://signpost.community/request/dashboard',
+      preferencesUrl: preferencesUrlForRole('requester'),
+    }
+  }
+
+  // Wave notification types
+  if (type === 'wave_nudge' || type === 'wave_urgent' || type === 'wave_timeout' || type === 'wave_all_responded') {
+    const bookingTitle = (metadata.booking_title as string) || 'your request'
+    const bookingDate = (metadata.booking_date as string) || ''
+    const declinedCount = (metadata.declined_count as string) || '0'
+    const pendingCount = (metadata.pending_count as string) || '0'
+    const respondedCount = (metadata.responded_count as string) || '0'
+    const confirmedCount = (metadata.confirmed_count as string) || '0'
+    const waveNumber = (metadata.wave_number as string) || '1'
+
+    const contentBlocks: EmailContentBlock[] = [{
+      type: 'info_card',
+      data: {
+        'Request': bookingTitle,
+        ...(bookingDate ? { 'Date': bookingDate } : {}),
+        'Declined': declinedCount,
+        'Pending': pendingCount,
+        'Responded': respondedCount,
+        ...(confirmedCount !== '0' ? { 'Confirmed': confirmedCount } : {}),
+        'Wave': waveNumber,
+      },
+    }]
+
+    let subject = ''
+    let htmlBody = ''
+
+    if (type === 'wave_nudge') {
+      subject = `Your request for ${bookingTitle} needs more interpreters`
+      htmlBody = `<p>${declinedCount} interpreters have declined your request. ${pendingCount} are still pending and ${respondedCount} have responded. You can send to more interpreters to improve your chances.</p>`
+    } else if (type === 'wave_urgent') {
+      subject = `Urgent: Your request for ${bookingTitle} is at risk`
+      htmlBody = `<p>Your request is at risk. Only ${pendingCount} interpreters haven't responded yet. We recommend sending to more interpreters now to make sure your event is covered.</p>`
+      contentBlocks.push({
+        type: 'warning_card',
+        data: { title: 'Action needed', message: `Only ${pendingCount} interpreters haven't responded. Send to more now.` },
+      })
+    } else if (type === 'wave_timeout') {
+      subject = `${bookingTitle}: interpreters haven't responded yet`
+      htmlBody = `<p>It's been a while since your request was sent. ${respondedCount} have responded and ${pendingCount} haven't replied yet. You may want to send to more interpreters.</p>`
+    } else if (type === 'wave_all_responded') {
+      subject = `Your interpreters have responded. ${bookingTitle} still needs more.`
+      htmlBody = `<p>All interpreters in this wave have responded. ${confirmedCount} confirmed, ${declinedCount} declined, and ${respondedCount} responded with a rate. Send to more interpreters to fill your request.</p>`
+    }
+
+    return {
+      subject,
+      htmlBody,
+      ctaText: 'Send to more interpreters',
+      ctaUrl: 'https://signpost.community/request/dashboard/requests',
+      contentBlocks,
       preferencesUrl: preferencesUrlForRole('requester'),
     }
   }
