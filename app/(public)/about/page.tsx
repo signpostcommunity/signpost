@@ -312,7 +312,7 @@ export default function AboutPage() {
     <div>
       {/* Tab bar header */}
       <div style={{ background: '#1a1a24', paddingTop: 48 }}>
-        <div className="about-tab-header" style={{ width: '100%', padding: '0 40px' }}>
+        <div className="about-tab-header" style={{ maxWidth: 1200, margin: '0 auto', padding: '0 40px' }}>
           <h1 style={{
             fontFamily: 'var(--font-syne)', fontSize: 'clamp(1.4rem, 2.5vw, 1.8rem)',
             fontWeight: 775, letterSpacing: '-0.03em', lineHeight: 1.3,
@@ -351,7 +351,7 @@ export default function AboutPage() {
 
       {/* Tab content area */}
       <div style={{ background: 'var(--bg)', minHeight: '60vh' }}>
-        <div className="about-tab-content" style={{ width: '100%', padding: '48px 40px 80px' }}>
+        <div className="about-tab-content" style={{ maxWidth: 1200, margin: '0 auto', padding: '48px 40px 80px' }}>
 
           {/* Tab 1: About Us */}
           <div
