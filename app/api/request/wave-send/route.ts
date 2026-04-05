@@ -1,0 +1,132 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { createNotification } from '@/lib/notifications-server'
+import { sanitizeText } from '@/lib/sanitize'
+
+export const dynamic = 'force-dynamic'
+
+export async function POST(request: NextRequest) {
+  try {
+    const supabase = await createClient()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const { bookingId, interpreterIds } = body
+
+    if (!bookingId || !interpreterIds?.length) {
+      return NextResponse.json({ error: 'Missing bookingId or interpreterIds' }, { status: 400 })
+    }
+
+    if (interpreterIds.length > 10) {
+      return NextResponse.json({ error: 'Maximum 10 interpreters per wave' }, { status: 400 })
+    }
+
+    const admin = getSupabaseAdmin()
+
+    // Verify booking belongs to this requester
+    const { data: booking, error: bookingErr } = await admin
+      .from('bookings')
+      .select('id, requester_id, title, date, time_start, time_end, location, format, current_wave, status')
+      .eq('id', bookingId)
+      .eq('requester_id', user.id)
+      .maybeSingle()
+
+    if (bookingErr || !booking) {
+      return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
+    }
+
+    if (booking.status === 'cancelled' || booking.status === 'completed') {
+      return NextResponse.json({ error: 'Cannot send to more interpreters for this booking' }, { status: 400 })
+    }
+
+    // Check for duplicate interpreter IDs (already in any wave)
+    const { data: existingRecipients } = await admin
+      .from('booking_recipients')
+      .select('interpreter_id')
+      .eq('booking_id', bookingId)
+
+    const existingIds = new Set((existingRecipients || []).map(r => r.interpreter_id))
+    const newIds = interpreterIds.filter((id: string) => !existingIds.has(id))
+
+    if (newIds.length === 0) {
+      return NextResponse.json({ error: 'All selected interpreters have already been contacted' }, { status: 400 })
+    }
+
+    const newWave = (booking.current_wave || 1) + 1
+
+    // Get requester name
+    const { data: reqProfile } = await admin
+      .from('requester_profiles')
+      .select('name, org_name')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    const requesterName = reqProfile?.org_name || reqProfile?.name || 'Requester'
+    const bookingTitle = booking.title || 'Untitled'
+
+    // Insert new booking_recipients
+    for (const interpreterId of newIds) {
+      const { error: recipientErr } = await admin
+        .from('booking_recipients')
+        .insert({
+          booking_id: bookingId,
+          interpreter_id: interpreterId,
+          status: 'sent',
+          wave_number: newWave,
+          sent_at: new Date().toISOString(),
+        })
+
+      if (recipientErr) {
+        console.error('[wave-send] booking_recipients insert failed:', recipientErr.message)
+        continue
+      }
+
+      // Send notification to interpreter
+      try {
+        const { data: interpProfile } = await admin
+          .from('interpreter_profiles')
+          .select('user_id')
+          .eq('id', interpreterId)
+          .maybeSingle()
+
+        if (interpProfile?.user_id) {
+          await createNotification({
+            recipientUserId: interpProfile.user_id,
+            type: 'new_request',
+            subject: `New interpreter request: ${bookingTitle}`,
+            body: `${requesterName} has sent you an interpreter request${booking.date ? ` for ${booking.date}` : ''}. Review the details and respond with your rate.`,
+            metadata: {
+              booking_id: bookingId,
+              booking_title: bookingTitle,
+              booking_date: booking.date || '',
+              booking_time: booking.time_start && booking.time_end ? `${booking.time_start} - ${booking.time_end}` : '',
+              booking_location: booking.location || '',
+              booking_format: booking.format || '',
+              requester_name: requesterName,
+            },
+            ctaText: 'View Request',
+            ctaUrl: '/interpreter/dashboard/inquiries',
+            channel: 'both',
+          })
+        }
+      } catch (notifErr) {
+        console.error('[wave-send] notification send failed:', notifErr)
+      }
+    }
+
+    // Update booking current_wave
+    await admin
+      .from('bookings')
+      .update({ current_wave: newWave })
+      .eq('id', bookingId)
+
+    return NextResponse.json({ success: true, waveNumber: newWave, sentCount: newIds.length })
+  } catch (err) {
+    console.error('[wave-send] error:', err instanceof Error ? err.message : err)
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+  }
+}

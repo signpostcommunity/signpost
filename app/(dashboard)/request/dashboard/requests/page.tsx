@@ -19,7 +19,7 @@ export default async function AllRequestsPage() {
   // Fetch all bookings for this requester
   const { data: bookings, error: bookingsErr } = await supabase
     .from('bookings')
-    .select('id, title, description, notes, date, time_start, time_end, location, format, specialization, event_type, event_category, recurrence, interpreter_count, interpreters_confirmed, status, platform_fee_amount, platform_fee_status, created_at')
+    .select('id, title, description, notes, date, time_start, time_end, location, format, specialization, event_type, event_category, recurrence, interpreter_count, interpreters_confirmed, status, platform_fee_amount, platform_fee_status, wave_alerts_sent, current_wave, created_at')
     .eq('requester_id', user.id)
     .order('date', { ascending: false })
 
@@ -36,6 +36,7 @@ export default async function AllRequestsPage() {
     booking_id: string
     interpreter_id: string
     status: string
+    wave_number: number
     response_rate: number | null
     response_notes: string | null
     rate_profile_id: string | null
@@ -46,7 +47,7 @@ export default async function AllRequestsPage() {
   if (bookingIds.length > 0) {
     const { data: recipients, error: recipErr } = await supabase
       .from('booking_recipients')
-      .select('id, booking_id, interpreter_id, status, response_rate, response_notes, rate_profile_id, confirmed_at, declined_at')
+      .select('id, booking_id, interpreter_id, status, wave_number, response_rate, response_notes, rate_profile_id, confirmed_at, declined_at')
       .in('booking_id', bookingIds)
 
     if (recipErr) {

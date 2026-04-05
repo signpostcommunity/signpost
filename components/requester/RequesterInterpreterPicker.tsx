@@ -19,9 +19,11 @@ interface RosterInterpreter {
 export default function RequesterInterpreterPicker({
   selectedIds,
   onChange,
+  excludeIds = [],
 }: {
   selectedIds: string[]
   onChange: (ids: string[]) => void
+  excludeIds?: string[]
 }) {
   const [interpreters, setInterpreters] = useState<RosterInterpreter[]>([])
   const [loading, setLoading] = useState(true)
@@ -100,14 +102,19 @@ export default function RequesterInterpreterPicker({
           }
         })
 
+      // Filter out excluded interpreters (already in previous waves)
+      const filtered = excludeIds.length > 0
+        ? mapped.filter(i => !excludeIds.includes(i.id))
+        : mapped
+
       // Sort: preferred first, then alphabetical
-      mapped.sort((a, b) => {
+      filtered.sort((a, b) => {
         if (a.tier === 'preferred' && b.tier !== 'preferred') return -1
         if (a.tier !== 'preferred' && b.tier === 'preferred') return 1
         return a.name.localeCompare(b.name)
       })
 
-      setInterpreters(mapped)
+      setInterpreters(filtered)
       setLoading(false)
     }
     fetchRoster()
