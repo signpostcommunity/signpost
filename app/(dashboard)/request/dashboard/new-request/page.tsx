@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Toast from '@/components/ui/Toast'
+import RequesterInterpreterPicker from '@/components/requester/RequesterInterpreterPicker'
 
 /* ── Constants ── */
 
@@ -103,6 +104,7 @@ export default function NewRequestPage() {
   const [spokenLanguage, setSpokenLanguage] = useState('English')
   const [interpreterCount, setInterpreterCount] = useState(1)
   const [specialization, setSpecialization] = useState('')
+  const [selectedInterpreters, setSelectedInterpreters] = useState<string[]>([])
   const [notes, setNotes] = useState('')
 
   // DHH client info
@@ -145,6 +147,7 @@ export default function NewRequestPage() {
       specialization: specialization || null,
       recurrence: recurrence.toLowerCase().replace('-', '_'),
       interpreterCount,
+      interpreterIds: selectedInterpreters.length > 0 ? selectedInterpreters : undefined,
       description: `Sign language: ${signLanguage}. Spoken language: ${spokenLanguage}.`,
       notes: notes || null,
     }
@@ -179,7 +182,7 @@ export default function NewRequestPage() {
 
     // Gate: require payment method for non-draft submissions
     if (!hasPaymentMethod) {
-      setToast({ message: 'Add a payment method before submitting requests.', type: 'error' })
+      setToast({ message: 'Please add a payment method before submitting a request.', type: 'error' })
       if (paymentNoticeRef.current) {
         paymentNoticeRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' })
         paymentNoticeRef.current.style.animation = 'none'
@@ -376,7 +379,19 @@ export default function NewRequestPage() {
           />
         </div>
 
-        {/* ── Section 3: Who is this interpreter for? ── */}
+        {/* ── Section 3: Choose Interpreters ── */}
+        <h3 style={sectionLabelStyle}>Choose Interpreters (Optional)</h3>
+        <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginBottom: 16, lineHeight: 1.6 }}>
+          Select interpreters from your roster to send this request to directly. Each interpreter will receive your request and can respond with their rate.
+        </p>
+        <div style={{ marginBottom: 32 }}>
+          <RequesterInterpreterPicker
+            selectedIds={selectedInterpreters}
+            onChange={setSelectedInterpreters}
+          />
+        </div>
+
+        {/* ── Section 4: Who is this interpreter for? ── */}
         <h3 style={sectionLabelStyle}>Who is this interpreter for?</h3>
         <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginBottom: 16, lineHeight: 1.6 }}>
           Is this booking for a Deaf, DeafBlind, or Hard of Hearing individual?
@@ -621,22 +636,39 @@ export default function NewRequestPage() {
             ref={paymentNoticeRef}
             style={{
               marginTop: 24,
-              padding: '14px 18px',
-              background: 'rgba(239,68,68,0.06)',
-              border: '1px solid rgba(239,68,68,0.2)',
+              padding: '20px 24px',
+              background: 'rgba(255,107,133,0.06)',
+              border: '1px solid rgba(255,107,133,0.25)',
               borderRadius: 'var(--radius-sm)',
-              fontSize: '14px',
-              color: '#c8cdd8',
               lineHeight: 1.6,
             }}
           >
-            <Link
-              href="/request/dashboard/profile"
-              style={{ color: 'var(--accent)', fontWeight: 600, textDecoration: 'underline' }}
-            >
-              Add a payment method
-            </Link>
-            {' '}to submit requests. You&apos;ll only be charged when a booking is confirmed.
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 2 }}>
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <div>
+                <p style={{ fontSize: '14.5px', fontWeight: 600, color: 'var(--text)', margin: '0 0 6px' }}>
+                  Payment method required
+                </p>
+                <p style={{ fontSize: '14px', color: '#c8cdd8', margin: '0 0 14px' }}>
+                  Please add a payment method before submitting a request. You won&apos;t be charged until you confirm an interpreter.
+                </p>
+                <Link
+                  href="/request/dashboard/profile"
+                  className="btn-primary"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 6,
+                    padding: '10px 20px', fontSize: '14px', fontWeight: 600,
+                    textDecoration: 'none',
+                  }}
+                >
+                  Go to Profile to add payment method
+                </Link>
+              </div>
+            </div>
           </div>
         )}
 
