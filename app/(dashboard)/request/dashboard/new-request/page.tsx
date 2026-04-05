@@ -437,7 +437,7 @@ export default function NewRequestPage() {
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       <div style={{ maxWidth: 680, margin: '0 auto' }}>
         {/* Header */}
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '27px', letterSpacing: '-0.02em', margin: '0 0 6px', color: '#f0f2f8' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 650, fontSize: '27px', letterSpacing: '-0.02em', margin: '0 0 6px', color: '#f0f2f8' }}>
           New Interpreter Request
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: '0 0 26px' }}>

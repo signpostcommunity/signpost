@@ -726,7 +726,7 @@ function AwayModal({
         onClick={e => e.stopPropagation()}
       >
         <div style={{
-          fontFamily: "'Syne', sans-serif", fontSize: '1.1rem', fontWeight: 600,
+          fontFamily: "'Syne', sans-serif", fontSize: '1.1rem', fontWeight: 650,
           marginBottom: 24,
         }}>
           Schedule Time Away

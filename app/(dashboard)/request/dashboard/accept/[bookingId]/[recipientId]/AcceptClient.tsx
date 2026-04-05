@@ -216,7 +216,7 @@ export default function AcceptClient({
         Back to All Requests
       </Link>
 
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '1.5rem', margin: '0 0 8px' }}>
+      <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 650, fontSize: '1.5rem', margin: '0 0 8px' }}>
         Review & Accept
       </h1>
       <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: '0 0 32px' }}>
@@ -412,7 +412,7 @@ export default function AcceptClient({
             }}
             onClick={e => e.stopPropagation()}
           >
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '1.1rem', margin: '0 0 12px' }}>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 650, fontSize: '1.1rem', margin: '0 0 12px' }}>
               Confirm this booking?
             </h2>
             <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 20px' }}>

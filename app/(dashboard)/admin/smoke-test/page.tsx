@@ -44,7 +44,7 @@ export default function SmokeTestPage() {
 
   return (
     <div style={{ padding: '32px 24px', color: 'var(--text)' }}>
-      <h1 style={{ fontFamily: 'var(--font-syne)', fontSize: 28, fontWeight: 600, marginBottom: 8 }}>
+      <h1 style={{ fontFamily: 'var(--font-syne)', fontSize: 28, fontWeight: 650, marginBottom: 8 }}>
         RLS Smoke Tests
       </h1>
       <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 24 }}>
@@ -128,7 +128,7 @@ export default function SmokeTestPage() {
           </div>
 
           {/* Storage buckets */}
-          <h2 style={{ fontFamily: 'var(--font-syne)', fontSize: 20, fontWeight: 600, marginTop: 40, marginBottom: 16 }}>
+          <h2 style={{ fontFamily: 'var(--font-syne)', fontSize: 20, fontWeight: 650, marginTop: 40, marginBottom: 16 }}>
             Storage Buckets
           </h2>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>

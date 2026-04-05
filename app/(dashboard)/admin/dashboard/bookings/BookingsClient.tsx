@@ -93,7 +93,7 @@ function BookingDetailModal({ booking, onClose }: { booking: Booking; onClose: (
         maxHeight: '80vh', overflowY: 'auto',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
-          <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.15rem', fontWeight: 600 }}>
+          <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.15rem', fontWeight: 650 }}>
             Booking Details
           </h3>
           <button onClick={onClose} aria-label="Close" style={{
@@ -164,7 +164,7 @@ export default function BookingsClient() {
 
   return (
     <div style={{ padding: '32px 40px', maxWidth: 1200 }}>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 600, marginBottom: 8 }}>
+      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 650, marginBottom: 8 }}>
         Bookings
       </h1>
       <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: 24 }}>
