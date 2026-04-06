@@ -315,35 +315,338 @@ function ClientCard({ client, onToggle }: { client: ClientData; onToggle: () => 
   )
 }
 
+// ── Lookup Result Types ──────────────────────────────────────────────────────
+
+type LookupResult =
+  | { status: 'list_available'; userId: string; displayName: string; interpreters: LookupInterpreter[] }
+  | { status: 'approval_pending'; userId: string; displayName: string }
+  | { status: 'not_on_signpost'; userId: null }
+  | null
+
+type LookupInterpreter = {
+  id: string
+  name: string
+  certifications: string[]
+  specializations: string[]
+  tier: string
+  avatar_url: string | null
+  avatar_color: string | null
+  is_dnb: boolean
+}
+
+// ── Connection Row ───────────────────────────────────────────────────────────
+
+type ConnectionRow = {
+  id: string
+  dhhUserId: string | null
+  clientName: string
+  status: 'active' | 'pending'
+  createdAt: string
+}
+
+// ── Request List Section ─────────────────────────────────────────────────────
+
+function RequestListSection({ onListUpdated }: { onListUpdated: () => void }) {
+  const [identifier, setIdentifier] = useState('')
+  const [lookupLoading, setLookupLoading] = useState(false)
+  const [lookupResult, setLookupResult] = useState<LookupResult>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+
+  useEffect(() => {
+    if (toast) {
+      const t = setTimeout(() => setToast(null), 4000)
+      return () => clearTimeout(t)
+    }
+  }, [toast])
+
+  async function handleLookup() {
+    if (!identifier.trim()) return
+    setLookupLoading(true)
+    setLookupResult(null)
+
+    try {
+      const res = await fetch('/api/request/deaf-list-check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deafUserIdentifier: identifier.trim() }),
+      })
+
+      if (!res.ok) {
+        setToast({ message: 'Something went wrong. Please try again.', type: 'error' })
+        setLookupLoading(false)
+        return
+      }
+
+      const data = await res.json()
+      setLookupResult(data as LookupResult)
+
+      if (data.status === 'list_available' || data.status === 'approval_pending') {
+        onListUpdated()
+      }
+    } catch {
+      setToast({ message: 'Network error. Please try again.', type: 'error' })
+    }
+
+    setLookupLoading(false)
+  }
+
+  async function handleSendInvite() {
+    setToast({ message: 'Invite feature coming soon.', type: 'success' })
+  }
+
+  return (
+    <div style={{
+      background: 'var(--card-bg)', border: '1px solid var(--border)',
+      borderRadius: 'var(--radius)', padding: '24px 28px', marginBottom: 32,
+    }}>
+      <div style={{
+        fontFamily: "'Inter', sans-serif", fontWeight: 600,
+        fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+        color: '#00e5ff', marginBottom: 14,
+      }}>
+        Request a client&apos;s preferred list
+      </div>
+      <p style={{ color: 'var(--muted)', fontSize: '0.85rem', margin: '0 0 16px', lineHeight: 1.5 }}>
+        Enter a Deaf client&apos;s email or phone number to request access to their preferred interpreter list.
+      </p>
+
+      <div className="cl-lookup-row" style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+        <input
+          type="text"
+          value={identifier}
+          onChange={e => { setIdentifier(e.target.value); setLookupResult(null) }}
+          placeholder="Email or phone number"
+          onKeyDown={e => { if (e.key === 'Enter') handleLookup() }}
+          style={{
+            flex: 1, padding: '11px 14px',
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)', color: 'var(--text)',
+            fontSize: '15px', outline: 'none',
+            fontFamily: "'Inter', sans-serif",
+          }}
+        />
+        <button
+          onClick={handleLookup}
+          disabled={lookupLoading || !identifier.trim()}
+          style={{
+            padding: '10px 20px', borderRadius: 'var(--radius-sm)',
+            background: '#00e5ff', border: 'none',
+            color: '#0a0a0f', fontSize: '14.5px', fontWeight: 600,
+            cursor: lookupLoading || !identifier.trim() ? 'not-allowed' : 'pointer',
+            opacity: lookupLoading || !identifier.trim() ? 0.5 : 1,
+            transition: 'opacity 0.15s', whiteSpace: 'nowrap',
+            fontFamily: "'Inter', sans-serif",
+          }}
+        >
+          {lookupLoading ? 'Looking up...' : 'Request list access'}
+        </button>
+      </div>
+
+      {/* Result states */}
+      {lookupResult?.status === 'list_available' && (
+        <div style={{
+          padding: '16px 20px', borderRadius: 10,
+          background: 'rgba(0,229,255,0.06)', border: '1px solid rgba(0,229,255,0.2)',
+        }}>
+          <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--accent)', marginBottom: 6 }}>
+            {lookupResult.displayName}&apos;s preferred interpreter list has been shared with you.
+          </div>
+          <p style={{ color: 'var(--muted)', fontSize: '0.82rem', margin: 0 }}>
+            Their interpreters are now visible below. You can reference this list when booking interpreters on their behalf.
+          </p>
+          {lookupResult.interpreters.filter(i => !i.is_dnb).length > 0 && (
+            <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {lookupResult.interpreters.filter(i => !i.is_dnb).map(interp => (
+                <div key={interp.id} style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '8px 14px', borderRadius: 8,
+                  background: 'rgba(0,229,255,0.04)', border: '1px solid rgba(0,229,255,0.12)',
+                }}>
+                  <span style={{
+                    padding: '2px 8px', borderRadius: 12,
+                    background: interp.tier === 'preferred' ? 'rgba(167,139,250,0.15)' : 'rgba(0,229,255,0.1)',
+                    color: interp.tier === 'preferred' ? '#a78bfa' : 'var(--accent)',
+                    fontSize: '0.65rem', fontWeight: 600, textTransform: 'uppercase' as const,
+                    letterSpacing: '0.06em',
+                  }}>
+                    {interp.tier === 'preferred' ? 'Preferred' : 'Approved'}
+                  </span>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text)' }}>{interp.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {lookupResult?.status === 'approval_pending' && (
+        <div style={{
+          padding: '16px 20px', borderRadius: 10,
+          background: 'rgba(245,166,35,0.06)', border: '1px solid rgba(245,166,35,0.2)',
+        }}>
+          <div style={{ fontWeight: 600, fontSize: '0.9rem', color: '#f5a623', marginBottom: 6 }}>
+            Approval request sent to {lookupResult.displayName}.
+          </div>
+          <p style={{ color: 'var(--muted)', fontSize: '0.82rem', margin: 0 }}>
+            We have sent {lookupResult.displayName} a request to share their preferred interpreter list. You will be notified when they respond.
+          </p>
+        </div>
+      )}
+
+      {lookupResult?.status === 'not_on_signpost' && (
+        <div style={{
+          padding: '16px 20px', borderRadius: 10,
+          background: 'rgba(200,207,224,0.04)', border: '1px solid rgba(200,207,224,0.15)',
+        }}>
+          <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--muted)', marginBottom: 6 }}>
+            This person does not have a signpost account yet.
+          </div>
+          <p style={{ color: 'var(--muted)', fontSize: '0.82rem', margin: '0 0 12px' }}>
+            You can invite them to create one so they can build their preferred interpreter list.
+          </p>
+          <button
+            onClick={handleSendInvite}
+            style={{
+              padding: '8px 16px', borderRadius: 'var(--radius-sm)',
+              background: 'transparent', border: '1px solid rgba(0,229,255,0.3)',
+              color: 'var(--accent)', fontSize: '13.5px', fontWeight: 600,
+              cursor: 'pointer', fontFamily: "'Inter', sans-serif",
+            }}
+          >
+            Send invite
+          </button>
+        </div>
+      )}
+
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: 24, right: 24, zIndex: 9999,
+          padding: '12px 20px', borderRadius: 10,
+          background: toast.type === 'success' ? 'rgba(0,229,255,0.15)' : 'rgba(255,107,133,0.15)',
+          border: `1px solid ${toast.type === 'success' ? 'rgba(0,229,255,0.3)' : 'rgba(255,107,133,0.3)'}`,
+          color: toast.type === 'success' ? 'var(--accent)' : 'var(--accent3)',
+          fontSize: '0.85rem', fontWeight: 500,
+        }}>
+          {toast.message}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Connections List ─────────────────────────────────────────────────────────
+
+function ConnectionsList({ connections }: { connections: ConnectionRow[] }) {
+  if (connections.length === 0) return null
+
+  return (
+    <div style={{ marginBottom: 32 }}>
+      <div style={{
+        fontFamily: "'Inter', sans-serif", fontWeight: 600,
+        fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+        color: '#00e5ff', marginBottom: 14,
+      }}>
+        All Connections
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {connections.map(conn => (
+          <div key={conn.id} style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '12px 18px', background: 'var(--card-bg)',
+            border: '1px solid var(--border)', borderRadius: 10,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontWeight: 700, fontSize: '0.7rem', color: '#fff', flexShrink: 0,
+              }}>
+                {conn.clientName.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()}
+              </div>
+              <div>
+                <div style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)' }}>
+                  {conn.clientName}
+                </div>
+                <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 1 }}>
+                  Connected {new Date(conn.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </div>
+              </div>
+            </div>
+            {conn.status === 'active' ? (
+              <span style={{
+                padding: '3px 10px', borderRadius: 12,
+                background: 'rgba(0,229,255,0.1)', color: 'var(--accent)',
+                fontSize: '0.72rem', fontWeight: 600,
+              }}>
+                View list
+              </span>
+            ) : (
+              <span style={{
+                padding: '3px 10px', borderRadius: 12,
+                background: 'rgba(245,166,35,0.1)', color: '#f5a623',
+                fontSize: '0.72rem', fontWeight: 600,
+              }}>
+                Pending approval
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function ClientListsClient() {
   const [clients, setClients] = useState<ClientData[]>([])
+  const [connections, setConnections] = useState<ConnectionRow[]>([])
   const [loading, setLoading] = useState(true)
 
-  const fetchClients = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setLoading(false); return }
 
-    // Step 1: Fetch active connections
-    const { data: connections, error: connErr } = await supabase
+    // Fetch all connections (active + pending) for the connections list
+    const { data: allConnections } = await supabase
       .from('dhh_requester_connections')
-      .select('id, dhh_user_id, created_at, confirmed_at')
+      .select('id, dhh_user_id, status, created_at, confirmed_at')
       .eq('requester_id', user.id)
-      .eq('status', 'active')
+      .in('status', ['active', 'pending'])
+      .order('created_at', { ascending: false })
 
-    if (connErr || !connections || connections.length === 0) {
-      if (connErr) console.error('[client-lists] connections error:', connErr.message)
-      setClients([])
-      setLoading(false)
-      return
+    // Build connections list with names
+    const connRows: ConnectionRow[] = []
+    if (allConnections) {
+      for (const conn of allConnections) {
+        let clientName = 'Client'
+        if (conn.dhh_user_id) {
+          const { data: dp } = await supabase
+            .from('deaf_profiles')
+            .select('first_name, last_name')
+            .eq('id', conn.dhh_user_id)
+            .maybeSingle()
+          if (dp) clientName = `${dp.first_name || ''} ${dp.last_name || ''}`.trim() || 'Client'
+        }
+        connRows.push({
+          id: conn.id,
+          dhhUserId: conn.dhh_user_id,
+          clientName,
+          status: conn.status as 'active' | 'pending',
+          createdAt: conn.confirmed_at || conn.created_at,
+        })
+      }
     }
+    setConnections(connRows)
 
-    // Step 2: Fetch each client's roster via the preferences API (uses service role)
+    // Fetch active connections' rosters for full client cards
+    const activeConns = (allConnections || []).filter(c => c.status === 'active')
     const clientDataArr: ClientData[] = []
 
-    for (const conn of connections) {
+    for (const conn of activeConns) {
       if (!conn.dhh_user_id) continue
 
       try {
@@ -357,7 +660,6 @@ export default function ClientListsClient() {
           ? dhhUser.first_name
           : dhhUser?.name || 'Client'
 
-        // Fetch client's photo separately (API doesn't include it)
         const { data: deafProfile } = await supabase
           .from('deaf_profiles')
           .select('first_name, last_name, photo_url')
@@ -388,7 +690,7 @@ export default function ClientListsClient() {
     setLoading(false)
   }, [])
 
-  useEffect(() => { fetchClients() }, [fetchClients])
+  useEffect(() => { fetchData() }, [fetchData])
 
   function toggleExpand(idx: number) {
     setClients(prev => prev.map((c, i) => i === idx ? { ...c, expanded: !c.expanded } : c))
@@ -406,7 +708,7 @@ export default function ClientListsClient() {
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 650, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
           Client Interpreter Lists
         </h1>
         <p style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', margin: 0 }}>
@@ -414,34 +716,50 @@ export default function ClientListsClient() {
         </p>
       </div>
 
-      {clients.length === 0 ? (
+      {/* Request list access section */}
+      <RequestListSection onListUpdated={() => fetchData()} />
+
+      {/* Connections list */}
+      <ConnectionsList connections={connections} />
+
+      {/* Shared client lists */}
+      {clients.length > 0 && (
+        <>
+          <div style={{
+            fontFamily: "'Inter', sans-serif", fontWeight: 600,
+            fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+            color: '#00e5ff', marginBottom: 14,
+          }}>
+            Shared Interpreter Lists
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {clients.map((client, idx) => (
+              <ClientCard
+                key={client.connectionId}
+                client={client}
+                onToggle={() => toggleExpand(idx)}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      {clients.length === 0 && connections.filter(c => c.status === 'active').length === 0 && (
         <div style={{
-          textAlign: 'center', padding: '60px 24px',
+          textAlign: 'center', padding: '40px 24px',
           background: 'var(--surface)', border: '1px dashed var(--border)',
           borderRadius: 'var(--radius)',
         }}>
-          <div style={{ fontWeight: 600, fontSize: '0.95rem', marginBottom: 10 }}>
-            No Deaf clients have shared their interpreter lists with you yet.
-          </div>
-          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', maxWidth: 460, margin: '0 auto 20px' }}>
-            When a Deaf client connects with your organization on signpost, their preferred interpreter list will appear here.
+          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', maxWidth: 460, margin: '0 auto' }}>
+            No lists shared yet. Use the form above to request access to a Deaf client&apos;s preferred interpreter list.
           </p>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {clients.map((client, idx) => (
-            <ClientCard
-              key={client.connectionId}
-              client={client}
-              onToggle={() => toggleExpand(idx)}
-            />
-          ))}
         </div>
       )}
 
       <style>{`
         @media (max-width: 768px) {
           .dash-page-content { padding: 24px 20px !important; }
+          .cl-lookup-row { flex-direction: column !important; }
         }
         @media (max-width: 480px) {
           .dash-page-content { padding: 20px 16px !important; }

@@ -65,13 +65,6 @@ const NAV: NavGroup[] = [
         badgeColor: '#f5a623',
       },
       {
-        label: 'Secondary Tier',
-        href: '/request/dashboard/interpreters/secondary',
-        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="currentColor" strokeWidth="1.3"/><path d="M8 5v3l2 1.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>,
-        badgeKey: 'secondary',
-        badgeColor: 'var(--accent2)',
-      },
-      {
         label: 'Client Interpreter Lists',
         href: '/request/dashboard/client-lists',
         icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="5.5" cy="7" r="1.5" stroke="currentColor" strokeWidth="1.1"/><circle cx="10.5" cy="7" r="1.5" stroke="currentColor" strokeWidth="1.1"/><path d="M4 11c0-1 .7-1.8 1.5-1.8S7 10 7 11M9 11c0-1 .7-1.8 1.5-1.8S12 10 12 11" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/><rect x="2" y="3" width="12" height="10" rx="2" stroke="currentColor" strokeWidth="1.2"/></svg>,
@@ -357,13 +350,6 @@ export default function RequesterDashboardSidebar({ userName = 'User', userIniti
         .eq('requester_user_id', user.id)
         .eq('tier', 'preferred')
 
-      // Secondary interpreters count
-      const { count: secCount } = await supabase
-        .from('requester_roster')
-        .select('id', { count: 'exact' }).limit(1)
-        .eq('requester_user_id', user.id)
-        .eq('tier', 'secondary')
-
       // Client interpreter lists count (active connections)
       const { count: clientListsCount } = await supabase
         .from('dhh_requester_connections')
@@ -376,7 +362,6 @@ export default function RequesterDashboardSidebar({ userName = 'User', userIniti
         notifications: notifCount ?? 0,
         inbox: inboxCount + pendingRateResponses,
         preferred: prefCount ?? 0,
-        secondary: secCount ?? 0,
         clientLists: clientListsCount ?? 0,
       })
     }

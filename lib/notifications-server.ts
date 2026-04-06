@@ -82,6 +82,10 @@ function getSmsMessage(type: NotificationType, metadata: Record<string, unknown>
       return smsTemplates.newMessage(senderName || 'Someone')
     case 'wave_urgent':
       return `[signpost] Urgent: Your request is at risk. Send to more interpreters at signpost.community/request/dashboard/requests`
+    case 'preferred_list_requested': {
+      const requesterName = (metadata.requester_name as string) || 'A requester'
+      return smsTemplates.preferredListRequested(requesterName)
+    }
     default:
       return null
   }

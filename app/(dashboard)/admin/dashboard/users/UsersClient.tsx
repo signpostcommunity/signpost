@@ -286,7 +286,7 @@ function UserDetailPanel({ userId, onClose, onAction }: {
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
           <div>
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.3rem', fontWeight: 650, marginBottom: 4 }}>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.3rem', fontWeight: 700, marginBottom: 4 }}>
               {userName}
             </h2>
             <p style={{ color: 'var(--muted)', fontSize: '0.84rem' }}>
@@ -596,7 +596,7 @@ export default function UsersClient({ users, currentUserId }: { users: User[]; c
 
   return (
     <div className="admin-users-content" style={{ padding: '32px 40px', maxWidth: 1200 }}>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 650, marginBottom: 8 }}>
+      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 700, marginBottom: 8 }}>
         Users
       </h1>
       <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: 24 }}>

@@ -188,7 +188,7 @@ export default function InterpretersClient({ interpreters }: { interpreters: Int
 
   return (
     <div className="admin-interp-content" style={{ padding: '32px 40px', maxWidth: 1200 }}>
-      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 650, marginBottom: 8 }}>
+      <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 700, marginBottom: 8 }}>
         Interpreters
       </h1>
       <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: 24 }}>

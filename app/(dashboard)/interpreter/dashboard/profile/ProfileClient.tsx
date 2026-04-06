@@ -930,7 +930,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
         background: 'var(--card-bg)', border: '1px solid var(--border)',
         borderRadius: 'var(--radius)', padding: '24px 28px', marginBottom: 28,
       }}>
-        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 650, fontSize: '1.3rem' }}>{displayName}</div>
+        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.3rem' }}>{displayName}</div>
         {(p.city || p.state) && (
           <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: 4 }}>
             {[p.city, p.state].filter(Boolean).join(', ')}

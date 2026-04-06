@@ -34,6 +34,10 @@ export const smsTemplates = {
   waveUrgent: (bookingTitle: string) =>
     `[signpost] Urgent: Your request "${bookingTitle}" is at risk. Send to more interpreters at signpost.community/request/dashboard`,
 
+  // Preferred list sharing (Deaf-facing)
+  preferredListRequested: (requesterName: string) =>
+    `[signpost] ${requesterName} has requested your preferred interpreter list. Approve or decline at signpost.community`,
+
   // General
   newMessage: (senderName: string) =>
     `[signpost] New message from ${senderName}. Read at signpost.community`,

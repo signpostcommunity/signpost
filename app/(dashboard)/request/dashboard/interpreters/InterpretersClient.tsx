@@ -379,7 +379,7 @@ export default function InterpretersClient() {
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       {/* Page Header */}
       <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 650, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
           Preferred Interpreters
         </h1>
         <p style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', margin: 0 }}>
@@ -391,7 +391,7 @@ export default function InterpretersClient() {
       <div style={{ marginBottom: 36 }}>
         <div className="req-section-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 650, fontSize: '20px', color: '#f0f2f8', marginBottom: 2 }}>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px', color: '#f0f2f8', marginBottom: 2 }}>
               Preferred Interpreters
               <span style={{
                 marginLeft: 10, fontSize: '0.75rem', fontWeight: 600,
@@ -495,7 +495,7 @@ export default function InterpretersClient() {
       <div style={{ marginBottom: 36 }}>
         <div className="req-section-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
           <div>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 650, fontSize: '20px', color: '#f0f2f8', marginBottom: 2 }}>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px', color: '#f0f2f8', marginBottom: 2 }}>
               Secondary Tier
               <span style={{
                 marginLeft: 10, fontSize: '0.75rem', fontWeight: 600,
