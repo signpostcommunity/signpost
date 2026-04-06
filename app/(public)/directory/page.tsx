@@ -7,12 +7,33 @@ import DirectoryClient from './DirectoryClient';
 export default async function DirectoryPage() {
   const supabase = await createClient();
 
-  const { data: rows } = await supabase
+  // Check if current user is a requester (for seed-only filter)
+  const { data: { user } } = await supabase.auth.getUser()
+  let isRequester = false
+  if (user) {
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle()
+    if (profile?.role === 'requester' || profile?.role === 'org') {
+      isRequester = true
+    }
+  }
+
+  let query = supabase
     .from('interpreter_profiles')
-    .select('id, user_id, name, first_name, last_name, city, country, state, sign_languages, spoken_languages, specializations, specialized_skills, regions, rating, review_count, available, avatar_color, bio, video_url, interpreter_type, status, photo_url, draft_data, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, latitude, longitude, years_experience, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_types_offering, mentorship_types_seeking, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking, interpreter_certifications(name, issuing_body, year, verification_url), interpreter_videos(video_url)')
+    .select('id, user_id, name, first_name, last_name, city, country, state, sign_languages, spoken_languages, specializations, specialized_skills, regions, rating, review_count, available, avatar_color, bio, video_url, interpreter_type, status, photo_url, draft_data, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, latitude, longitude, years_experience, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_types_offering, mentorship_types_seeking, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking, is_seed, interpreter_certifications(name, issuing_body, year, verification_url), interpreter_videos(video_url)')
     .eq('status', 'approved')
     .order('photo_url', { ascending: false, nullsFirst: false })
-    .order('last_name', { ascending: true, nullsFirst: false });
+    .order('last_name', { ascending: true, nullsFirst: false })
+
+  // BETA ONLY: Remove this filter at launch
+  if (isRequester) {
+    query = query.eq('is_seed', true)
+  }
+
+  const { data: rows } = await query;
 
   const interpreters: Interpreter[] = (rows || []).map((r) => {
     const fullName = r.name || [r.first_name, r.last_name].filter(Boolean).join(' ') || 'Interpreter';

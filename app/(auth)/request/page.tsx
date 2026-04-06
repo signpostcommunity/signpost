@@ -2,7 +2,82 @@
 
 export const dynamic = 'force-dynamic';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+
+function BetaWelcomeBanner() {
+  const [dismissed, setDismissed] = useState(true)
+
+  useEffect(() => {
+    const val = localStorage.getItem('requester_beta_welcome_dismissed')
+    if (val !== 'true') setDismissed(false)
+  }, [])
+
+  if (dismissed) return null
+
+  return (
+    <div style={{
+      maxWidth: 760,
+      margin: '0 auto 40px',
+      background: '#111118',
+      borderTop: '3px solid #f97316',
+      borderRadius: 'var(--radius)',
+      padding: 32,
+    }}>
+      <h2 style={{
+        fontFamily: "'Syne', sans-serif",
+        fontWeight: 725,
+        fontSize: '20px',
+        color: '#f0f2f8',
+        margin: '0 0 18px',
+      }}>
+        Welcome to the signpost Requester Beta
+      </h2>
+      <div style={{
+        color: '#c8cdd8',
+        fontSize: '14px',
+        lineHeight: 1.65,
+        fontFamily: "'Inter', sans-serif",
+      }}>
+        <p style={{ margin: '0 0 14px' }}>
+          You are among the first organizations and individuals to test signpost&apos;s interpreter booking system. The site you see is fully functional, but still being refined based on your feedback.
+        </p>
+        <p style={{ margin: '0 0 14px' }}>
+          You will see sample requests and sample interpreter profiles throughout your portal. These are here so you can explore every feature without affecting real data. The interpreter profiles in the directory during beta are test profiles for you to practice with.
+        </p>
+        <p style={{ margin: '0 0 14px' }}>
+          To get started, click &quot;Create My First Request&quot; and follow the process.
+        </p>
+        <p style={{ margin: '0 0 14px' }}>
+          Once you have created your account, a feedback panel will appear in orange on the right side of every page. You will also notice orange &apos;Try This!&apos; prompts on several pages. These will help you try out some of our most exciting features.
+        </p>
+        <p style={{ margin: '0 0 14px' }}>
+          Please share your honest thoughts as you go. Your experience shapes everything we build.
+        </p>
+        <p style={{ margin: '0 0 22px' }}>
+          Questions? Reach us at hello@signpost.community
+        </p>
+      </div>
+      <button
+        className="btn-primary"
+        onClick={() => {
+          localStorage.setItem('requester_beta_welcome_dismissed', 'true')
+          setDismissed(true)
+        }}
+        style={{
+          padding: '12px 32px',
+          fontSize: '14.5px',
+          fontWeight: 600,
+          borderRadius: '10px',
+          cursor: 'pointer',
+          border: 'none',
+        }}
+      >
+        Let&apos;s Go
+      </button>
+    </div>
+  )
+}
 
 export default function RequestPortalPage() {
   return (
@@ -16,6 +91,9 @@ export default function RequestPortalPage() {
         margin: '0 auto',
       }}
     >
+      {/* Beta Welcome Banner */}
+      <BetaWelcomeBanner />
+
       {/* Back link */}
       <div style={{ marginBottom: '28px' }}>
         <Link

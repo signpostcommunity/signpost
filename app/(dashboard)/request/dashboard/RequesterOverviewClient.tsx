@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import BetaTryThis from '@/components/ui/BetaTryThis'
 
 /* ── Types ── */
 
@@ -170,6 +171,11 @@ export default function RequesterOverviewClient({
       {/* How Billing Works */}
       <BillingInfoCard />
 
+      {/* Try This banner */}
+      <BetaTryThis storageKey="beta_try_dashboard_recent">
+        Click on any of the sample requests below to see their details, interpreter responses, and status tracking. Try the &apos;Staff Training Workshop&apos; request to see how interpreter rate responses work.
+      </BetaTryThis>
+
       {/* Recent Requests */}
       <div style={{ marginBottom: 34 }}>
         <h3 style={{
@@ -191,7 +197,7 @@ export default function RequesterOverviewClient({
         ) : (
           <>
             {recentBookings.map(booking => (
-              <Link key={booking.id} href="/request/dashboard/requests" style={{ textDecoration: 'none', display: 'block', marginBottom: 12 }}>
+              <Link key={booking.id} href={`/request/dashboard/requests?expand=${booking.id}`} style={{ textDecoration: 'none', display: 'block', marginBottom: 12 }}>
               <div
                 className="recent-request-card"
                 style={{
@@ -201,8 +207,17 @@ export default function RequesterOverviewClient({
               }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Inter', sans-serif" }}>
-                      {booking.title || 'Untitled Request'}
+                    <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Inter', sans-serif", display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {(booking.title || '').startsWith('[Sample]') && (
+                        <span style={{
+                          fontSize: '10px', fontWeight: 600, textTransform: 'uppercase',
+                          letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 4,
+                          background: 'rgba(249, 115, 22, 0.15)', color: '#f97316',
+                          border: '1px solid rgba(249, 115, 22, 0.3)',
+                          fontFamily: "'Inter', sans-serif", whiteSpace: 'nowrap',
+                        }}>SAMPLE</span>
+                      )}
+                      {(booking.title || '').startsWith('[Sample] ') ? (booking.title || '').replace('[Sample] ', '') : (booking.title || 'Untitled Request')}
                     </div>
                     {booking.event_category && (
                       <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>

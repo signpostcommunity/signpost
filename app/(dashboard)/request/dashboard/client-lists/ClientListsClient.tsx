@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import BetaTryThis from '@/components/ui/BetaTryThis'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -715,6 +716,10 @@ export default function ClientListsClient() {
           View your connected Deaf clients&apos; preferred interpreter lists. These are shared with you so you can book the right interpreters.
         </p>
       </div>
+
+      <BetaTryThis storageKey="beta_try_client_lists">
+        Enter jordan.rivera.test@signpost.community below to see how requesting a Deaf client&apos;s preferred interpreter list works.
+      </BetaTryThis>
 
       {/* Request list access section */}
       <RequestListSection onListUpdated={() => fetchData()} />

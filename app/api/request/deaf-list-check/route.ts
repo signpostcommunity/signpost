@@ -51,8 +51,23 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Also search deaf_profiles.email for seed/test
+    // profiles that may not have auth.users entries
+    if (!deafAuthUser && identifier.includes('@')) {
+      const { data: dpByEmail } = await admin
+        .from('deaf_profiles')
+        .select('id, user_id, first_name, auto_share_pref_list')
+        .eq('email', identifier)
+        .maybeSingle()
+
+      if (dpByEmail) {
+        deafProfile = dpByEmail
+        deafAuthUser = { id: dpByEmail.user_id }
+      }
+    }
+
     // If found by email, look up deaf_profiles
-    if (deafAuthUser) {
+    if (deafAuthUser && !deafProfile) {
       const { data: dp } = await admin
         .from('deaf_profiles')
         .select('id, user_id, first_name, auto_share_pref_list')
@@ -60,7 +75,7 @@ export async function POST(request: NextRequest) {
         .maybeSingle()
 
       deafProfile = dp
-    } else {
+    } else if (!deafAuthUser) {
       // Try phone lookup in deaf_profiles directly
       const { data: dp } = await admin
         .from('deaf_profiles')

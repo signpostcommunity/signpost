@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Toast from '@/components/ui/Toast'
 import PaymentMethodSection from '@/components/dashboard/requester/PaymentMethodSection'
+import BetaTryThis from '@/components/ui/BetaTryThis'
 
 /* ── Shared styles ── */
 
@@ -331,6 +332,9 @@ export default function ProfileClient({ profile, userEmail }: Props) {
         </div>
 
         {/* Section 5 — Payment Method */}
+        <BetaTryThis storageKey="beta_try_payment_method">
+          Try adding a payment method using test card number 4242 4242 4242 4242 with any future expiry date and any CVC.
+        </BetaTryThis>
         <PaymentMethodSection
           onToast={(msg, type) => setToast({ message: msg, type })}
         />

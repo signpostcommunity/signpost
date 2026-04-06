@@ -2,10 +2,11 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import Toast from '@/components/ui/Toast'
 import RequesterInterpreterPicker from '@/components/requester/RequesterInterpreterPicker'
+import BetaTryThis from '@/components/ui/BetaTryThis'
 
 /* ── Types ── */
 
@@ -146,10 +147,11 @@ export default function RequestsClient({
   dhhClients: DhhClient[]
 }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState<TabKey>('all')
   const [search, setSearch] = useState('')
   const [localSearch, setLocalSearch] = useState('')
-  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [expandedId, setExpandedId] = useState<string | null>(searchParams.get('expand'))
   const [cancelModalId, setCancelModalId] = useState<string | null>(null)
   const [cancelReason, setCancelReason] = useState('')
   const [cancelling, setCancelling] = useState(false)
@@ -340,6 +342,10 @@ export default function RequestsClient({
         </p>
       </div>
 
+      <BetaTryThis storageKey="beta_try_all_requests">
+        Open the &apos;Staff Training Workshop&apos; request to see interpreter responses with their rates. Try accepting one of the rates to see the confirmation flow.
+      </BetaTryThis>
+
       {/* Status tabs */}
       <div style={{ display: 'flex', gap: 6, marginBottom: 20, flexWrap: 'wrap' }}>
         {TABS.map(tab => {
@@ -472,8 +478,17 @@ export default function RequestsClient({
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, flexWrap: 'wrap' }}>
+                        {(booking.title || '').startsWith('[Sample]') && (
+                          <span style={{
+                            fontSize: '10px', fontWeight: 600, textTransform: 'uppercase',
+                            letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 4,
+                            background: 'rgba(249, 115, 22, 0.15)', color: '#f97316',
+                            border: '1px solid rgba(249, 115, 22, 0.3)',
+                            fontFamily: "'Inter', sans-serif", whiteSpace: 'nowrap',
+                          }}>SAMPLE</span>
+                        )}
                         <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.95rem', color: 'var(--text)' }}>
-                          {booking.title || 'Untitled Request'}
+                          {(booking.title || '').startsWith('[Sample] ') ? (booking.title || '').replace('[Sample] ', '') : (booking.title || 'Untitled Request')}
                         </span>
                         <span style={{
                           fontSize: '0.7rem', fontWeight: 700, padding: '2px 10px',

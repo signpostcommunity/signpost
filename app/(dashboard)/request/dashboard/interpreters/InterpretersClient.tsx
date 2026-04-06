@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import AddToListModal from '@/components/directory/AddToListModal'
 import Toast from '@/components/ui/Toast'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
+import BetaTryThis from '@/components/ui/BetaTryThis'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -386,6 +387,10 @@ export default function InterpretersClient() {
           Manage your preferred and secondary tier interpreter roster.
         </p>
       </div>
+
+      <BetaTryThis storageKey="beta_try_preferred_interp">
+        Browse the interpreter directory and add a few interpreters to your preferred list. Try moving one to your secondary tier.
+      </BetaTryThis>
 
       {/* ── Preferred Section ── */}
       <div style={{ marginBottom: 36 }}>

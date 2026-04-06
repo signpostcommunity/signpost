@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Toast from '@/components/ui/Toast'
 import RequesterInterpreterPicker from '@/components/requester/RequesterInterpreterPicker'
+import BetaTryThis from '@/components/ui/BetaTryThis'
 
 /* -- Constants -- */
 
@@ -606,6 +607,10 @@ export default function NewRequestPage() {
         {/* ================================================================ */}
         {/* SECTION 2: WHO IS THIS FOR?                                      */}
         {/* ================================================================ */}
+        <BetaTryThis storageKey="beta_try_new_request_deaf">
+          Try entering jordan.rivera.test@signpost.community in the field below to see how a Deaf client&apos;s preferred interpreter list works. Then click &apos;+ Add another person&apos; and enter maria.chen.test@signpost.community. Notice which interpreters are recommended because they appear on both lists.
+        </BetaTryThis>
+
         <h3 style={sectionLabelStyle}>Who is this for?</h3>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, lineHeight: 1.6 }}>
           Enter the email or phone number of the Deaf, DeafBlind, or Hard of Hearing person this interpreter is for. Their preferred interpreter list will help you find the best match.
@@ -878,6 +883,12 @@ export default function NewRequestPage() {
         {/* ================================================================ */}
         {/* SECTION 3: CHOOSE INTERPRETERS                                   */}
         {/* ================================================================ */}
+        {hasDeafLists && (
+          <BetaTryThis storageKey="beta_try_new_request_interp">
+            The interpreters below come from your tagged client&apos;s preferred list. These are interpreters the Deaf client trusts. Notice how they appear above your own roster, giving priority to the client&apos;s preferences.
+          </BetaTryThis>
+        )}
+
         <h3 style={sectionLabelStyle}>Choose Interpreters</h3>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, lineHeight: 1.6 }}>
           Select up to 10 interpreters for this request. Each one will receive a personalized notification with your booking details and can respond with their availability and rates.
