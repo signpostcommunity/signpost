@@ -97,24 +97,27 @@ export function InterpreterProfileInvite({ recipientName = 'there' }: Interprete
         <strong>Molly or Regina will take you out for coffee (or send you a gift card if you're not in the Seattle area)!</strong>
       </Text>
 
-      {/* Forwarding buttons - table layout for email client compatibility */}
+      {/* Forwarding buttons - plain <a> tags to avoid target="_blank" popup blockers */}
       <Section style={{ margin: '20px 0 28px' }}>
         <table cellPadding="0" cellSpacing="0" role="presentation" style={{ borderCollapse: 'separate' }}>
           <tbody>
             <tr>
               <td style={{ paddingRight: '10px' }}>
-                <Link href={MAILTO_HREF} style={outlineBtn}>
+                <a href={MAILTO_HREF} style={outlineBtn}>
                   Send invite via email
-                </Link>
+                </a>
               </td>
               <td>
-                <Link href={SMS_HREF} style={outlineBtn}>
+                <a href={SMS_HREF} style={outlineBtn}>
                   Send invite via text
-                </Link>
+                </a>
               </td>
             </tr>
           </tbody>
         </table>
+        <Text style={{ color: '#96a0b8', fontSize: '12px', margin: '10px 0 0', lineHeight: '1.4' }}>
+          Text button works on mobile devices
+        </Text>
       </Section>
 
       <Text style={bodyText}>
