@@ -92,6 +92,7 @@ export default function NewRequestPage() {
   const [submitting, setSubmitting] = useState(false)
   const [hasPaymentMethod, setHasPaymentMethod] = useState<boolean | null>(null)
   const paymentNoticeRef = useRef<HTMLDivElement>(null)
+  const lookupInputRef = useRef<HTMLInputElement>(null)
   const [draftId, setDraftId] = useState<string | null>(null)
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
 
@@ -132,6 +133,7 @@ export default function NewRequestPage() {
   const [lookupError, setLookupError] = useState<string | null>(null)
   const [skipDeafTag, setSkipDeafTag] = useState(false)
   const [continuedWithoutList, setContinuedWithoutList] = useState(false)
+  const [inviteSending, setInviteSending] = useState<Record<number, 'idle' | 'sending' | 'sent' | 'error'>>({})
 
   // Section 3: Interpreter selection
   const [selectedInterpreters, setSelectedInterpreters] = useState<string[]>([])
@@ -319,6 +321,24 @@ export default function NewRequestPage() {
 
   function removeTaggedPerson(idx: number) {
     setTaggedDeafPersons(prev => prev.filter((_, i) => i !== idx))
+  }
+
+  async function handleSendInvite(idx: number, identifier: string) {
+    setInviteSending(prev => ({ ...prev, [idx]: 'sending' }))
+    try {
+      const res = await fetch('/api/notifications/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: identifier,
+          template: 'dhh-invite',
+        }),
+      })
+      if (!res.ok) throw new Error('Failed to send')
+      setInviteSending(prev => ({ ...prev, [idx]: 'sent' }))
+    } catch {
+      setInviteSending(prev => ({ ...prev, [idx]: 'error' }))
+    }
   }
 
   // Build interpreter groups from Deaf person lists
@@ -708,6 +728,42 @@ export default function NewRequestPage() {
                     <p style={{ fontSize: '0.78rem', color: 'var(--muted)', margin: '6px 0 0', lineHeight: 1.5 }}>
                       You can invite them to create one so their interpreter preferences are included in future bookings.
                     </p>
+                    <div style={{ marginTop: 10 }}>
+                      {(!inviteSending[idx] || inviteSending[idx] === 'idle') && (
+                        <button
+                          type="button"
+                          onClick={() => handleSendInvite(idx, person.identifier)}
+                          style={{
+                            padding: '8px 16px',
+                            background: 'rgba(0,229,255,0.08)',
+                            border: '1px solid rgba(0,229,255,0.3)',
+                            borderRadius: 'var(--radius-sm)',
+                            color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600,
+                            cursor: 'pointer', fontFamily: "'Inter', sans-serif",
+                          }}
+                        >
+                          Send invite
+                        </button>
+                      )}
+                      {inviteSending[idx] === 'sending' && (
+                        <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>Sending...</span>
+                      )}
+                      {inviteSending[idx] === 'sent' && (
+                        <span style={{ fontSize: '0.82rem', color: '#34d399' }}>Invite sent to {person.identifier}</span>
+                      )}
+                      {inviteSending[idx] === 'error' && (
+                        <span style={{ fontSize: '0.82rem', color: 'var(--accent3)' }}>
+                          Failed to send invite.{' '}
+                          <button
+                            type="button"
+                            onClick={() => handleSendInvite(idx, person.identifier)}
+                            style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem', padding: 0 }}
+                          >
+                            Retry
+                          </button>
+                        </span>
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -735,6 +791,7 @@ export default function NewRequestPage() {
             {/* Lookup input */}
             <div style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
               <input
+                ref={lookupInputRef}
                 type="text"
                 value={currentLookupInput}
                 onChange={e => { setCurrentLookupInput(e.target.value); setLookupError(null) }}
@@ -765,7 +822,7 @@ export default function NewRequestPage() {
             {taggedDeafPersons.length > 0 && (
               <button
                 type="button"
-                onClick={() => setCurrentLookupInput('')}
+                onClick={() => { setCurrentLookupInput(''); setLookupError(null); setTimeout(() => lookupInputRef.current?.focus(), 0) }}
                 style={{
                   background: 'none', border: 'none', padding: '4px 0',
                   color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600,
