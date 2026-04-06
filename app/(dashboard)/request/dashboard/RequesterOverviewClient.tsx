@@ -191,9 +191,13 @@ export default function RequesterOverviewClient({
         ) : (
           <>
             {recentBookings.map(booking => (
-              <div key={booking.id} style={{
+              <Link key={booking.id} href="/request/dashboard/requests" style={{ textDecoration: 'none', display: 'block', marginBottom: 12 }}>
+              <div
+                className="recent-request-card"
+                style={{
                 background: 'var(--card-bg)', border: '1px solid var(--border)',
-                borderRadius: 'var(--radius)', padding: '20px 24px', marginBottom: 12,
+                borderRadius: 'var(--radius)', padding: '20px 24px',
+                cursor: 'pointer', transition: 'border-color 0.15s',
               }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
                   <div>
@@ -243,6 +247,7 @@ export default function RequesterOverviewClient({
                   )
                 })()}
               </div>
+              </Link>
             ))}
             <Link
               href="/request/dashboard/requests"
@@ -285,6 +290,9 @@ export default function RequesterOverviewClient({
 
       {/* Mobile styles */}
       <style>{`
+        .recent-request-card:hover {
+          border-color: rgba(0,229,255,0.3) !important;
+        }
         @media (max-width: 768px) {
           .dash-page-content { padding: 24px 20px !important; }
         }
