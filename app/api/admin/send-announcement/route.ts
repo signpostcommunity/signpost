@@ -6,6 +6,7 @@ import { render } from '@react-email/components'
 import { BetaInterpreterUpdate } from '@/emails/BetaInterpreterUpdate'
 import { InterpreterInvitation } from '@/emails/InterpreterInvitation'
 import { CustomEmail } from '@/emails/CustomEmail'
+import { InterpreterProfileInvite } from '@/emails/InterpreterProfileInvite'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,6 +18,10 @@ const TEMPLATES = {
   'invitation': {
     subject: 'I built something I think you will want to see',
     component: InterpreterInvitation,
+  },
+  'profile-invite': {
+    subject: 'signpost is opening soon. Help us one more time and coffee\'s on us!',
+    component: InterpreterProfileInvite,
   },
 } as const
 
@@ -191,7 +196,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Template is required' }, { status: 400 })
     }
 
-    const validTemplates = ['beta-update', 'invitation', 'custom']
+    const validTemplates = ['beta-update', 'invitation', 'profile-invite', 'custom']
     if (!validTemplates.includes(template)) {
       return NextResponse.json(
         { error: `Invalid template. Must be one of: ${validTemplates.join(', ')}` },
