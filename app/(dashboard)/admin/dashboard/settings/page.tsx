@@ -22,7 +22,7 @@ const ALERT_CATEGORIES: { key: AlertType; label: string; description: string }[]
   { key: 'payment_failed', label: 'PAYMENT FAILED', description: 'When a platform fee charge fails' },
   { key: 'dispute_opened', label: 'STRIPE DISPUTE OPENED', description: 'When a payment dispute is created' },
   { key: 'new_signup_daily', label: 'DAILY SIGNUP SUMMARY', description: 'Daily digest of new signups' },
-  { key: 'negative_review', label: 'NEGATIVE REVIEW (3+ FLAGS)', description: 'When an interpreter accumulates multiple flags' },
+  { key: 'negative_review', label: 'QUALITY CONCERN', description: 'When interpreter quality signals reach orange or red (ratings, cancellations, DNB patterns, flags)' },
 ]
 
 const DEFAULT_PREFS: Preferences = {

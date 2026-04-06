@@ -111,16 +111,18 @@ export async function POST(request: NextRequest) {
     })
 
     // Fire-and-forget quality check after rating
-    admin
-      .from('interpreter_profiles')
-      .select('name, first_name, last_name')
-      .eq('id', interpreterId)
-      .maybeSingle()
+    Promise.resolve(
+      admin
+        .from('interpreter_profiles')
+        .select('name, first_name, last_name')
+        .eq('id', interpreterId)
+        .maybeSingle()
+    )
       .then(({ data: ip }) => {
         const name = ip?.first_name ? `${ip.first_name} ${ip.last_name || ''}`.trim() : ip?.name || 'Interpreter'
         processQualityAlerts(interpreterId, name)
       })
-      .catch(e => console.error('[dhh/ratings] quality check failed:', e))
+      .catch((e: unknown) => console.error('[dhh/ratings] quality check failed:', e))
 
     // If shared_with_interpreter is true and there's feedback text, send as a message
     if (sharedWithInterpreter && feedbackText?.trim()) {

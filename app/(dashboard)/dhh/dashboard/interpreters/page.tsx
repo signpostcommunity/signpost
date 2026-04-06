@@ -203,6 +203,16 @@ export default function DeafDashboardPage() {
       setRoster(prev => prev.map(r => r.roster_id === rosterId ? { ...r, tier: newTier, approve_work: false, approve_personal: false } : r));
       const { error } = await supabase.from('deaf_roster').update({ tier: newTier, approve_work: false, approve_personal: false, do_not_book: true }).eq('id', rosterId);
       if (error) console.error('DNB update error:', error);
+
+      // Fire-and-forget quality check for DNB addition
+      const item = roster.find(r => r.roster_id === rosterId);
+      if (item) {
+        fetch('/api/admin/quality-check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ interpreterId: item.interpreter_id }),
+        }).catch(() => {});
+      }
     } else {
       // Moving FROM DNB: reset approvals, clear do_not_book flag
       const item = roster.find(r => r.roster_id === rosterId);

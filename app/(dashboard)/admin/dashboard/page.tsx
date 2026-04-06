@@ -32,6 +32,14 @@ export default async function AdminDashboardPage() {
     .order('created_at', { ascending: false })
     .limit(10)
 
+  // Quality alerts
+  const { data: qualityAlerts } = await supabase
+    .from('admin_quality_alerts')
+    .select('id, interpreter_id, interpreter_name, alert_level, signal_type, signal_details, status, admin_notes, reviewed_by, reviewed_at, created_at')
+    .eq('status', 'active')
+    .order('created_at', { ascending: false })
+    .limit(20)
+
   // Recent flags
   const { data: recentFlags } = await supabase
     .from('profile_flags')
@@ -73,6 +81,16 @@ export default async function AdminDashboardPage() {
       }}
       recentUsers={recentUsers || []}
       recentFlags={flagsWithNames}
+      qualityAlerts={(qualityAlerts || []).map(a => ({
+        id: a.id,
+        interpreter_id: a.interpreter_id,
+        interpreter_name: a.interpreter_name || 'Unknown',
+        alert_level: a.alert_level as 'yellow' | 'orange' | 'red',
+        signal_type: a.signal_type,
+        signal_details: a.signal_details || {},
+        status: a.status,
+        created_at: a.created_at,
+      }))}
     />
   )
 }

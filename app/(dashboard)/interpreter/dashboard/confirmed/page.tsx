@@ -1729,6 +1729,16 @@ export default function ConfirmedPage() {
         : b
     ))
     showToast('Booking cancelled. The requester has been notified.')
+
+    // Fire-and-forget quality check for interpreter-initiated cancellation
+    if (interpreterId) {
+      fetch('/api/admin/quality-check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ interpreterId }),
+      }).catch(() => {})
+    }
+
     // Refetch to get the actual reason from DB
     fetchBookings()
   }

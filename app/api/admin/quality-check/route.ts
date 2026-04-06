@@ -10,10 +10,22 @@ export const dynamic = 'force-dynamic'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { interpreterId, interpreterName } = body
+    const { interpreterId } = body
+    let { interpreterName } = body
 
-    if (!interpreterId || !interpreterName) {
-      return NextResponse.json({ error: 'Missing interpreterId or interpreterName' }, { status: 400 })
+    if (!interpreterId) {
+      return NextResponse.json({ error: 'Missing interpreterId' }, { status: 400 })
+    }
+
+    // Look up name if not provided
+    if (!interpreterName) {
+      const admin = getSupabaseAdmin()
+      const { data: ip } = await admin
+        .from('interpreter_profiles')
+        .select('name, first_name, last_name')
+        .eq('id', interpreterId)
+        .maybeSingle()
+      interpreterName = ip?.first_name ? `${ip.first_name} ${ip.last_name || ''}`.trim() : ip?.name || 'Interpreter'
     }
 
     // Fire-and-forget: don't block the response
