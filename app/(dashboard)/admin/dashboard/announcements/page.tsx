@@ -6,7 +6,7 @@ import { useState, useRef, useEffect } from 'react'
 
 const ORANGE = '#ff7e45'
 
-type TemplateName = 'beta-update' | 'invitation' | 'custom'
+type TemplateName = 'beta-update' | 'invitation' | 'profile-invite' | 'custom'
 type RecipientMode = 'role' | 'manual'
 type ManualMode = 'single' | 'batch'
 type RoleName = 'interpreter' | 'deaf' | 'requester'
@@ -38,6 +38,11 @@ const TEMPLATES: { key: TemplateName; label: string; description: string }[] = [
     description: 'For friends and colleagues who haven\'t used signpost yet. Personal intro, explains the platform, asks them to join.',
   },
   {
+    key: 'profile-invite',
+    label: 'Interpreter beta: complete profile + invite',
+    description: 'Thanks interpreters for beta feedback, asks them to complete their profile and invite colleagues. Includes forwarding buttons and feature highlights.',
+  },
+  {
     key: 'custom',
     label: 'Custom email',
     description: 'Write your own email with signpost branding applied automatically.',
@@ -47,6 +52,7 @@ const TEMPLATES: { key: TemplateName; label: string; description: string }[] = [
 const TEMPLATE_SUBJECTS: Record<string, string> = {
   'beta-update': 'signpost is almost ready. We need your help.',
   'invitation': 'I built something I think you will want to see',
+  'profile-invite': 'signpost is opening soon. Help us one more time and coffee\'s on us!',
 }
 
 const TEMPLATE_PREVIEWS: Record<string, string> = {
@@ -76,6 +82,27 @@ Thank you for helping us build something the community actually needs. We couldn
 
 Molly Sano-Mahgoub
 Co-founder, signpost`,
+  'profile-invite': `Hey [name]!
+
+Thank you SO MUCH for being part of the signpost beta. Your feedback shaped every part of this platform, and we want you to see what it turned into.
+
+We are very close to going live. Several requesters are already knocking on our door asking how soon we'll be ready for real requests.
+
+Two things would make the biggest difference right now:
+
+1. Complete your profile.
+Upload a photo, fill in your bio, set your rate profiles, etc.
+
+2. Invite interpreters you love working with.
+Send this invite to the interpreters you want on your team, and Molly or Regina will take you out for coffee!
+
+[ Send invite via email ]  [ Send invite via text ]
+
+Feature highlights: Mentorship Matching, Confidential Interpreter Ratings, "Book Me" Badge.
+
+Thank you for helping us build something special.
+
+Molly and Regina`,
   'invitation': `Hi [name],
 
 I've been building something over the past few months and I'd love for you to check it out.
@@ -123,6 +150,7 @@ function timeAgo(date: Date): string {
 function templateLabel(t: TemplateName): string {
   if (t === 'beta-update') return 'beta update'
   if (t === 'invitation') return 'invitation'
+  if (t === 'profile-invite') return 'profile + invite'
   return 'custom'
 }
 
