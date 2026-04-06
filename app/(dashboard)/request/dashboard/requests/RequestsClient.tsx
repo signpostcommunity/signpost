@@ -332,7 +332,7 @@ export default function RequestsClient({
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.6rem', margin: '0 0 6px' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 750, fontSize: '1.6rem', margin: '0 0 6px' }}>
           All Requests
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>
@@ -871,7 +871,7 @@ export default function RequestsClient({
             }}
             onClick={e => e.stopPropagation()}
           >
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: '0 0 12px' }}>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 750, fontSize: '1.15rem', margin: '0 0 12px' }}>
               Cancel this request?
             </h2>
             <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 16px' }}>
@@ -955,7 +955,7 @@ export default function RequestsClient({
               }}
               onClick={e => e.stopPropagation()}
             >
-              <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.15rem', margin: '0 0 12px' }}>
+              <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 750, fontSize: '1.15rem', margin: '0 0 12px' }}>
                 Send to more interpreters?
               </h2>
               <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 20px' }}>

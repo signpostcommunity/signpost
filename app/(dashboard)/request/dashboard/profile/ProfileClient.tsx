@@ -169,7 +169,7 @@ export default function ProfileClient({ profile, userEmail }: Props) {
       <div style={{ maxWidth: 680, margin: '0 auto' }}>
         {/* Header */}
         <h1 style={{
-          fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '27px',
+          fontFamily: "'Syne', sans-serif", fontWeight: 750, fontSize: '27px',
           color: '#f0f2f8', margin: '0 0 6px',
         }}>
           My Profile
