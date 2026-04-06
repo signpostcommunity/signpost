@@ -205,7 +205,7 @@ export default function AdminSettingsPage() {
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       {/* Page header */}
       <h1 style={{
-        fontFamily: "'Syne', sans-serif", fontWeight: 750, fontSize: '27px',
+        fontFamily: "'Syne', sans-serif", fontWeight: 725, fontSize: '27px',
         color: '#f0f2f8', letterSpacing: '-0.02em', margin: '0 0 6px',
       }}>
         Settings

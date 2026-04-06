@@ -168,7 +168,7 @@ export default function TrustedDeafCirclePage() {
       {/* Title row with invite button */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 8 }}>
         <h1 style={{
-          fontFamily: "'Syne', sans-serif", fontWeight: 750, fontSize: '27px',
+          fontFamily: "'Syne', sans-serif", fontWeight: 725, fontSize: '27px',
           margin: 0, color: '#f0f2f8',
         }}>
           Your trusted Deaf circle
@@ -561,7 +561,7 @@ function InviteModal({ email, setEmail, loading, error, onSubmit, onClose }: {
         }}
       >
         <h2 style={{
-          fontFamily: "'Syne', sans-serif", fontWeight: 750, fontSize: '20px',
+          fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px',
           margin: '0 0 8px', color: '#f0f2f8',
         }}>
           Invite someone to your Deaf circle
@@ -757,7 +757,7 @@ function ViewListModal({ userName, roster, loading, tierBadge, onClose }: {
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <h2 style={{
-            fontFamily: "'Syne', sans-serif", fontWeight: 750, fontSize: '20px',
+            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px',
             margin: 0, color: '#f0f2f8',
           }}>
             {userName}&apos;s interpreter list
