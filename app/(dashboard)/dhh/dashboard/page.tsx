@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import RequestTracker from '@/components/dashboard/dhh/RequestTracker'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
+import { decryptBatchClient } from '@/lib/decrypt-client'
 import InterpreterRequestLinkCard from '@/components/dashboard/dhh/InterpreterRequestLinkCard'
 import PendingRolesNudge from '@/components/shared/PendingRolesNudge'
 
@@ -756,7 +757,8 @@ export default function DeafDashboardOverview() {
           .order('date', { ascending: false })
           .limit(3)
         if (bookingsData) {
-          setRecentBookings(bookingsData.map(b => ({
+          const decrypted = await decryptBatchClient(bookingsData, ['title'])
+          setRecentBookings(decrypted.map(b => ({
             ...b, event_type: null, event_category: null, description: null,
             notes: null, interpreter_count: null, cancellation_reason: null,
             requester_name: null, recipients: [],

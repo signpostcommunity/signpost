@@ -199,6 +199,7 @@ export default function NewRequestPage() {
       }
       if (data.bookingId) setDraftId(data.bookingId)
       setSaveState('saved')
+      setToast({ message: 'Draft saved. You can find it in your All Requests page under Drafts.', type: 'success' })
       setTimeout(() => setSaveState('idle'), 2000)
     } catch {
       setSaveState('error')

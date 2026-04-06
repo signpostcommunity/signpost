@@ -9,6 +9,7 @@ import { PageHeader, SectionLabel, DemoBadge, GhostButton, Avatar, DashMobileSty
 import VideoRecorder from '@/components/ui/VideoRecorder'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
 import BookingFilterBar, { filterBySearch, filterByDateRange, groupByTimeCategory, timeCategoryHeaderStyle } from '@/components/dashboard/shared/BookingFilterBar'
+import { decryptBatchClient } from '@/lib/decrypt-client'
 
 /* ── Types ── */
 
@@ -825,11 +826,13 @@ export default function DhhBookingsPage() {
             ],
           }])
         } else {
-          setSelfBookings(realSelfBookings)
+          const decryptedSelf = await decryptBatchClient(realSelfBookings, ['title'])
+          setSelfBookings(decryptedSelf)
         }
 
         if (realOnBehalfBookings.length > 0) {
-          setOnBehalfBookings(realOnBehalfBookings)
+          const decryptedOnBehalf = await decryptBatchClient(realOnBehalfBookings, ['title'])
+          setOnBehalfBookings(decryptedOnBehalf)
         }
         // If no real on-behalf bookings, keep the mock data
       }

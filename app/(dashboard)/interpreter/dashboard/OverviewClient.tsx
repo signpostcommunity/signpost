@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { SectionLabel, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import PendingRolesNudge from '@/components/shared/PendingRolesNudge'
 import BookMeBadge from '@/components/interpreter/BookMeBadge'
+import { decryptBatchClient } from '@/lib/decrypt-client'
 import SendMessageModal from '@/components/messaging/SendMessageModal'
 import { getMentorshipLabel } from '@/lib/mentorship-categories'
 
@@ -349,7 +350,8 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
             console.error('[overview] upcoming bookings fetch error:', upcomingErr.message, upcomingErr.details)
           }
           if (upcomingData) {
-            setConfirmedBookings(upcomingData as Booking[])
+            const decrypted = await decryptBatchClient(upcomingData as Booking[], ['title', 'notes'])
+            setConfirmedBookings(decrypted)
           }
         }
       }

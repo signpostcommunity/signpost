@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { decryptFields, BOOKING_ENCRYPTED_FIELDS } from '@/lib/encryption'
 import RequestsClient from './RequestsClient'
 
 export const dynamic = 'force-dynamic'
@@ -27,7 +28,7 @@ export default async function AllRequestsPage() {
     console.error('[requests] bookings fetch error:', bookingsErr.message)
   }
 
-  const allBookings = bookings || []
+  const allBookings = (bookings || []).map(b => decryptFields(b, [...BOOKING_ENCRYPTED_FIELDS]))
   const bookingIds = allBookings.map(b => b.id)
 
   // Fetch booking_recipients for all bookings (separate query)

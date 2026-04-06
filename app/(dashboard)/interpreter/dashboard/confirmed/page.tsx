@@ -9,6 +9,7 @@ import { PageHeader, SectionLabel, StatusBadge, DemoBadge, GhostButton, Avatar, 
 import { sendNotification } from '@/lib/notifications'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
 import BookingFilterBar, { filterByDateRange, groupByTimeCategory, timeCategoryHeaderStyle } from '@/components/dashboard/shared/BookingFilterBar'
+import { decryptBatchClient } from '@/lib/decrypt-client'
 
 /* ── Types ── */
 
@@ -1670,7 +1671,9 @@ export default function ConfirmedPage() {
           } as unknown as Booking
         })
         .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
-      setBookings(data)
+      // Decrypt encrypted fields (title, description, notes) server-side
+      const decrypted = await decryptBatchClient(data, ['title', 'description', 'notes'])
+      setBookings(decrypted)
 
       // Fetch invoice status for all bookings
       const bookingIds = (data || []).map(b => b.id)

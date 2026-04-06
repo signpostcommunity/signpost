@@ -8,6 +8,7 @@ import { PageHeader, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } fro
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
 import { sendNotification } from '@/lib/notifications'
 import BookingFilterBar, { filterBySearch, filterByDateRange, groupByTimeCategory, timeCategoryHeaderStyle } from '@/components/dashboard/shared/BookingFilterBar'
+import { decryptBatchClient } from '@/lib/decrypt-client'
 
 /* ── Types ── */
 
@@ -708,7 +709,9 @@ export default function InquiriesPage() {
         }
       }
 
-      setBookings(mapped)
+      // Decrypt encrypted fields (title, notes) server-side
+      const decrypted = await decryptBatchClient(mapped, ['title', 'notes'])
+      setBookings(decrypted)
     }
     setLoading(false)
   }, [])
