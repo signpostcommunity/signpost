@@ -93,7 +93,7 @@ Two things would make the biggest difference right now:
 1. Complete your profile.
 Upload a photo, fill in your bio, set your rate profiles, etc.
 
-2. Invite interpreters you love working with.
+2. Invite interpreters you love working with and get free coffee!
 Send this invite to the interpreters you want on your team, and Molly or Regina will take you out for coffee!
 
 [ Send invite via email ]  [ Send invite via text ]

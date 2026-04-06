@@ -90,7 +90,7 @@ export function InterpreterProfileInvite({ recipientName = 'there' }: Interprete
       </Text>
 
       <Text style={ctaHeader}>
-        2. Invite interpreters you love working with.
+        2. Invite interpreters you love working with and get free coffee!
       </Text>
       <Text style={bodyText}>
         The best part of our job is working with Deaf folks and interpreters we love. Interpreters can be from anywhere, not just your region. Send this invite to the interpreters you want on your team, and{' '}
