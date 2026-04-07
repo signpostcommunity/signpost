@@ -46,21 +46,6 @@ const hrStyle: React.CSSProperties = {
   margin: '28px 0',
 }
 
-const outlineBtn: React.CSSProperties = {
-  display: 'inline-block',
-  padding: '10px 18px',
-  border: '1px solid #00e5ff',
-  color: '#00e5ff',
-  borderRadius: '8px',
-  textDecoration: 'none',
-  fontSize: '14px',
-  fontWeight: 600,
-}
-
-const MAILTO_HREF = 'mailto:?subject=Join%20me%20on%20signpost&body=I%20love%20working%20with%20you%20and%20would%20like%20to%20add%20you%20to%20my%20Preferred%20Team%20list%20on%20signpost!%20It%27s%20a%20new%20directory%20and%20booking%20platform%20built%20by%20interpreters%2C%20for%20interpreters.%20You%20set%20your%20own%20rates%2C%20keep%20100%25%20of%20your%20pay%2C%20and%20connect%20directly%20with%20clients.%20Click%20here%20to%20join%20so%20we%20can%20team%20together%3A%20https%3A%2F%2Fsignpost.community%2Finterpreter%2Fsignup'
-
-const SMS_HREF = 'sms:?body=Hey!%20I%20love%20working%20with%20you%20and%20would%20like%20to%20add%20you%20to%20my%20Preferred%20Team%20list%20on%20signpost.%20It%27s%20a%20new%20interpreter%20directory%20and%20booking%20platform.%20You%20set%20your%20own%20rates%20and%20keep%20100%25%20of%20your%20pay.%20Join%20here%3A%20signpost.community%2Finterpreter%2Fsignup'
-
 export function InterpreterProfileInvite({ recipientName = 'there' }: InterpreterProfileInviteProps) {
   return (
     <SignpostEmail preview="signpost is opening soon. Help us one more time and coffee's on us!">
@@ -97,28 +82,27 @@ export function InterpreterProfileInvite({ recipientName = 'there' }: Interprete
         <strong>Molly or Regina will take you out for coffee (or send you a gift card if you're not in the Seattle area)!</strong>
       </Text>
 
-      {/* Forwarding buttons - plain <a> tags to avoid target="_blank" popup blockers */}
-      <Section style={{ margin: '20px 0 28px' }}>
-        <table cellPadding="0" cellSpacing="0" role="presentation" style={{ borderCollapse: 'separate' }}>
-          <tbody>
-            <tr>
-              <td style={{ paddingRight: '10px' }}>
-                <a href={MAILTO_HREF} style={outlineBtn}>
-                  Send invite via email
-                </a>
-              </td>
-              <td>
-                <a href={SMS_HREF} style={outlineBtn}>
-                  Send invite via text
-                </a>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <Text style={{ color: '#96a0b8', fontSize: '12px', margin: '10px 0 0', lineHeight: '1.4' }}>
-          Text button works on mobile devices
-        </Text>
+      {/* Single CTA to /invite page (mailto/sms/copy buttons live there to avoid email client blockers) */}
+      <Section style={{ margin: '20px 0 12px' }}>
+        <a
+          href="https://signpost.community/invite"
+          style={{
+            display: 'inline-block',
+            padding: '12px 24px',
+            background: '#00e5ff',
+            color: '#0a0a0f',
+            borderRadius: '8px',
+            textDecoration: 'none',
+            fontSize: '14px',
+            fontWeight: 700,
+          }}
+        >
+          Send an invite
+        </a>
       </Section>
+      <Text style={{ color: '#96a0b8', fontSize: '12px', margin: '0 0 28px', lineHeight: '1.5' }}>
+        Choose email, text, or copy to clipboard on the next page.
+      </Text>
 
       <Text style={bodyText}>
         If you're not ready to be visible to requesters yet, just let me know and I can hide your profile until you are. No pressure.
