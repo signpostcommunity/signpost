@@ -48,7 +48,7 @@ const hrStyle: React.CSSProperties = {
 
 export function InterpreterProfileInvite({ recipientName = 'there' }: InterpreterProfileInviteProps) {
   return (
-    <SignpostEmail preview="signpost is opening soon. Help us one more time and coffee's on us!">
+    <SignpostEmail wide preview="signpost is opening soon. Help us one more time and coffee's on us!">
       <Text style={greetingStyle}>Hey {recipientName}!</Text>
 
       <Text style={bodyText}>
@@ -110,7 +110,10 @@ export function InterpreterProfileInvite({ recipientName = 'there' }: Interprete
 
       <Hr style={hrStyle} />
 
-      <Text style={bodyText}>
+      <Text style={{ color: '#f0f2f8', fontSize: '18px', fontWeight: 700, margin: '32px 0 4px' }}>
+        What's new on signpost
+      </Text>
+      <Text style={{ color: '#96a0b8', fontSize: '14px', margin: '0 0 24px', lineHeight: '1.5' }}>
         Here are just a couple of the things we built based on your feedback:
       </Text>
 

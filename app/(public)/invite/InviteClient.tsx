@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 
-const INVITE_TEXT = "I love working with you and would like to add you to my Preferred Team list on signpost! It's a new directory and booking platform built by interpreters, for interpreters. You set your own rates, keep 100% of your pay, and connect directly with clients. Click here to join so we can team together: https://signpost.community/interpreter/signup"
+const INVITE_TEXT = "Hey! I love working with you and would like to add you to my Preferred Team list on signpost! It's a directory and booking platform to connect freelance interpreters and requesters directly, with no agency in the middle. You create your profile, set your own rates and terms, and connect directly with clients. Click here to join so we can team together: https://signpost.community/interpreter/signup"
 
-const SHORT_SMS_TEXT = "Hey! I'd love to add you to my team on signpost, a new interpreter directory and booking platform. You set your own rates and keep 100% of your pay. Join here: signpost.community/interpreter/signup"
+const SHORT_SMS_TEXT = "Hey! Join me on signpost, a platform to connect freelance interpreters and requesters directly. You set your own rates and terms, no agency in the middle. Join here: signpost.community/interpreter/signup"
 
 export default function InviteClient() {
   const [copied, setCopied] = useState(false)
@@ -125,7 +125,7 @@ export default function InviteClient() {
               margin: 0,
             }}
           >
-            I love working with you and would like to add you to my Preferred Team list on signpost! It's a new directory and booking platform built by interpreters, for interpreters. You set your own rates, keep 100% of your pay, and connect directly with clients. Click here to join so we can team together:{' '}
+            Hey! I love working with you and would like to add you to my Preferred Team list on signpost! It's a directory and booking platform to connect freelance interpreters and requesters directly, with no agency in the middle. You create your profile, set your own rates and terms, and connect directly with clients. Click here to join so we can team together:{' '}
             <a
               href="https://signpost.community/interpreter/signup"
               style={{ color: '#00e5ff', textDecoration: 'none' }}

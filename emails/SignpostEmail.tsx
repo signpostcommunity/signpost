@@ -7,6 +7,7 @@ import * as React from 'react'
 interface SignpostEmailProps {
   preview?: string
   children: React.ReactNode
+  wide?: boolean
 }
 
 // Brand colors
@@ -109,14 +110,20 @@ const footerMuted: React.CSSProperties = {
   margin: '0',
 }
 
-export function SignpostEmail({ preview, children }: SignpostEmailProps) {
+export function SignpostEmail({ preview, children, wide = false }: SignpostEmailProps) {
+  const outer = wide
+    ? { ...outerContainer, maxWidth: '640px' }
+    : outerContainer
+  const inner = wide
+    ? { ...innerContainer, maxWidth: '600px', padding: '40px 20px' }
+    : innerContainer
   return (
     <Html>
       <Head />
       {preview && <Preview>{preview}</Preview>}
       <Body style={bodyStyle}>
-        <Container style={outerContainer}>
-          <Section style={innerContainer}>
+        <Container style={outer}>
+          <Section style={inner}>
             {/* Header: signpost logo */}
             <Section style={header}>
               <Img
