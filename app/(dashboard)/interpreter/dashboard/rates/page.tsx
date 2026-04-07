@@ -7,6 +7,8 @@ import { createClient } from '@/lib/supabase/client'
 import { PageHeader, InfoBox } from '@/components/dashboard/interpreter/shared'
 import Toast from '@/components/ui/Toast'
 
+type CustomFee = { label: string; amount: string; per: 'flat' | 'hour' | 'day' }
+
 type RateProfile = {
   id: string
   name: string
@@ -19,7 +21,46 @@ type RateProfile = {
   lateFee: string
   notes: string
   travel: string[]
+  afterHoursOn: boolean
+  afterHoursDiff: string
+  afterHoursDescription: string
+  customFees: CustomFee[]
   dbId?: string // Supabase row id
+}
+
+const MAX_CUSTOM_FEES = 5
+
+function parseTravelExpenses(raw: unknown): { items: string[]; custom: CustomFee[] } {
+  if (!raw) return { items: [], custom: [] }
+  if (Array.isArray(raw)) return { items: raw as string[], custom: [] }
+  if (typeof raw === 'object') {
+    const obj = raw as Record<string, unknown>
+    if (Array.isArray(obj.items)) {
+      const custom = Array.isArray(obj.custom)
+        ? (obj.custom as Array<Record<string, unknown>>).map(c => ({
+            label: String(c.label ?? ''),
+            amount: c.amount == null ? '' : String(c.amount),
+            per: (c.per === 'hour' || c.per === 'day' ? c.per : 'flat') as CustomFee['per'],
+          }))
+        : []
+      return { items: obj.items as string[], custom }
+    }
+    // Legacy boolean-keyed format
+    const items: string[] = []
+    for (const opt of TRAVEL_OPTIONS) {
+      const key = opt.toLowerCase().replace(/[^a-z]+/g, '_')
+      if (obj[key] || obj[opt]) items.push(opt)
+    }
+    const custom = Array.isArray(obj.custom)
+      ? (obj.custom as Array<Record<string, unknown>>).map(c => ({
+          label: String(c.label ?? ''),
+          amount: c.amount == null ? '' : String(c.amount),
+          per: (c.per === 'hour' || c.per === 'day' ? c.per : 'flat') as CustomFee['per'],
+        }))
+      : []
+    return { items, custom }
+  }
+  return { items: [], custom: [] }
 }
 
 const TRAVEL_OPTIONS = ['Mileage', 'Parking', 'Tolls', 'Ferry', 'Public Transit', 'Airfare', 'Lodging', 'Per diem / Meals']
@@ -30,6 +71,7 @@ const DEFAULT_PROFILES: RateProfile[] = [
     hourlyRate: '', currency: 'USD — US Dollar', minBooking: 'No minimum',
     cancellationPolicy: '48 hours notice required', lateFee: '100% of booking fee',
     notes: '', travel: [],
+    afterHoursOn: false, afterHoursDiff: '', afterHoursDescription: '', customFees: [],
   },
 ]
 
@@ -65,7 +107,7 @@ export default function RatesPage() {
 
     const { data: rates, error: ratesError } = await supabase
       .from('interpreter_rate_profiles')
-      .select('id, interpreter_id, label, is_default, color, hourly_rate, currency, after_hours_diff, min_booking, cancellation_policy, late_cancel_fee, travel_expenses, eligibility_criteria, additional_terms')
+      .select('id, interpreter_id, label, is_default, color, hourly_rate, currency, after_hours_diff, after_hours_description, min_booking, cancellation_policy, late_cancel_fee, travel_expenses, eligibility_criteria, additional_terms')
       .eq('interpreter_id', profile.id)
       .order('id', { ascending: true })
 
@@ -79,20 +121,27 @@ export default function RatesPage() {
     }
 
     if (rates && rates.length > 0) {
-      setProfiles(rates.map((r, i) => ({
-        id: r.id,
-        dbId: r.id,
-        name: r.label,
-        color: r.color || (i === 0 ? '#00e5ff' : i === 1 ? '#34d399' : '#a78bfa'),
-        isDefault: r.is_default ?? i === 0,
-        hourlyRate: r.hourly_rate?.toString() || '',
-        currency: r.currency ? `${r.currency} — ${r.currency === 'USD' ? 'US Dollar' : r.currency === 'GBP' ? 'British Pound' : r.currency === 'EUR' ? 'Euro' : r.currency === 'CAD' ? 'Canadian Dollar' : r.currency === 'AUD' ? 'Australian Dollar' : r.currency}` : 'USD — US Dollar',
-        minBooking: r.min_booking ? `${r.min_booking / 60} hour${r.min_booking > 60 ? 's' : ''}` : 'No minimum',
-        cancellationPolicy: r.cancellation_policy || '48 hours notice required',
-        lateFee: r.late_cancel_fee == null ? 'No fee' : r.late_cancel_fee === 100 ? '100% of booking fee' : r.late_cancel_fee === 50 ? '50% of booking fee' : `${r.late_cancel_fee}`,
-        notes: r.additional_terms || '',
-        travel: (r.travel_expenses as string[]) || [],
-      })))
+      setProfiles(rates.map((r, i) => {
+        const te = parseTravelExpenses(r.travel_expenses)
+        return {
+          id: r.id,
+          dbId: r.id,
+          name: r.label,
+          color: r.color || (i === 0 ? '#00e5ff' : i === 1 ? '#34d399' : '#a78bfa'),
+          isDefault: r.is_default ?? i === 0,
+          hourlyRate: r.hourly_rate?.toString() || '',
+          currency: r.currency ? `${r.currency} — ${r.currency === 'USD' ? 'US Dollar' : r.currency === 'GBP' ? 'British Pound' : r.currency === 'EUR' ? 'Euro' : r.currency === 'CAD' ? 'Canadian Dollar' : r.currency === 'AUD' ? 'Australian Dollar' : r.currency}` : 'USD — US Dollar',
+          minBooking: r.min_booking ? `${r.min_booking / 60} hour${r.min_booking > 60 ? 's' : ''}` : 'No minimum',
+          cancellationPolicy: r.cancellation_policy || '48 hours notice required',
+          lateFee: r.late_cancel_fee == null ? 'No fee' : r.late_cancel_fee === 100 ? '100% of booking fee' : r.late_cancel_fee === 50 ? '50% of booking fee' : `${r.late_cancel_fee}`,
+          notes: r.additional_terms || '',
+          travel: te.items,
+          afterHoursOn: r.after_hours_diff != null && Number(r.after_hours_diff) > 0,
+          afterHoursDiff: r.after_hours_diff != null ? String(r.after_hours_diff) : '',
+          afterHoursDescription: r.after_hours_description || '',
+          customFees: te.custom,
+        }
+      }))
       setOpen([rates[0]?.id])
       return
     }
@@ -118,20 +167,27 @@ export default function RatesPage() {
       return
     }
     if (seeded && seeded.length > 0) {
-      setProfiles(seeded.map((r, i) => ({
-        id: r.id,
-        dbId: r.id,
-        name: r.label,
-        color: r.color || (i === 0 ? '#a78bfa' : i === 1 ? '#34d399' : '#00e5ff'),
-        isDefault: r.is_default ?? i === 0,
-        hourlyRate: r.hourly_rate?.toString() || '',
-        currency: r.currency ? `${r.currency} — ${r.currency === 'USD' ? 'US Dollar' : r.currency}` : 'USD — US Dollar',
-        minBooking: r.min_booking ? `${r.min_booking / 60} hour${r.min_booking > 60 ? 's' : ''}` : 'No minimum',
-        cancellationPolicy: r.cancellation_policy || '48 hours notice required',
-        lateFee: r.late_cancel_fee == null ? 'No fee' : r.late_cancel_fee === 100 ? '100% of booking fee' : r.late_cancel_fee === 50 ? '50% of booking fee' : `${r.late_cancel_fee}`,
-        notes: r.additional_terms || '',
-        travel: (r.travel_expenses as string[]) || [],
-      })))
+      setProfiles(seeded.map((r, i) => {
+        const te = parseTravelExpenses(r.travel_expenses)
+        return {
+          id: r.id,
+          dbId: r.id,
+          name: r.label,
+          color: r.color || (i === 0 ? '#a78bfa' : i === 1 ? '#34d399' : '#00e5ff'),
+          isDefault: r.is_default ?? i === 0,
+          hourlyRate: r.hourly_rate?.toString() || '',
+          currency: r.currency ? `${r.currency} — ${r.currency === 'USD' ? 'US Dollar' : r.currency}` : 'USD — US Dollar',
+          minBooking: r.min_booking ? `${r.min_booking / 60} hour${r.min_booking > 60 ? 's' : ''}` : 'No minimum',
+          cancellationPolicy: r.cancellation_policy || '48 hours notice required',
+          lateFee: r.late_cancel_fee == null ? 'No fee' : r.late_cancel_fee === 100 ? '100% of booking fee' : r.late_cancel_fee === 50 ? '50% of booking fee' : `${r.late_cancel_fee}`,
+          notes: r.additional_terms || '',
+          travel: te.items,
+          afterHoursOn: r.after_hours_diff != null && Number(r.after_hours_diff) > 0,
+          afterHoursDiff: r.after_hours_diff != null ? String(r.after_hours_diff) : '',
+          afterHoursDescription: (r as { after_hours_description?: string | null }).after_hours_description || '',
+          customFees: te.custom,
+        }
+      }))
       setOpen([seeded[0].id])
     }
   }
@@ -197,8 +253,25 @@ export default function RatesPage() {
       min_booking: parseMinBooking(profile.minBooking),
       cancellation_policy: profile.cancellationPolicy,
       late_cancel_fee: profile.lateFee === 'No fee' ? null : parseFloat(profile.lateFee.replace(/[^0-9.]/g, '')) || null,
-      travel_expenses: profile.travel,
+      travel_expenses: {
+        items: profile.travel,
+        custom: profile.customFees
+          .filter(f => f.label.trim() && f.amount.trim())
+          .map(f => ({ label: f.label.trim(), amount: parseFloat(f.amount) || 0, per: f.per })),
+      },
+      after_hours_diff: profile.afterHoursOn && profile.afterHoursDiff
+        ? parseFloat(profile.afterHoursDiff) || null
+        : null,
+      after_hours_description: profile.afterHoursOn && profile.afterHoursDescription.trim()
+        ? profile.afterHoursDescription.trim()
+        : null,
       additional_terms: profile.notes || null,
+    }
+
+    if (profile.afterHoursOn && (!profile.afterHoursDiff || !(parseFloat(profile.afterHoursDiff) > 0))) {
+      setSaving(null)
+      setToast({ message: 'Enter an after-hours differential amount or turn the toggle off.', type: 'error' })
+      return
     }
 
     let result
@@ -382,6 +455,58 @@ export default function RatesPage() {
                   </div>
                 </div>
 
+                {/* After-hours differential */}
+                <div style={{ marginBottom: 16, padding: '14px 16px', background: '#111118', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={profile.afterHoursOn}
+                      onChange={e => updateProfile(profile.id, { afterHoursOn: e.target.checked })}
+                      style={{ accentColor: '#00e5ff', width: 16, height: 16 }}
+                    />
+                    <span style={{ color: '#c8cdd8', fontSize: '13px', fontWeight: 500 }}>
+                      I charge a different rate outside standard hours
+                    </span>
+                  </label>
+                  {profile.afterHoursOn && (
+                    <div style={{ marginTop: 14 }}>
+                      <div style={{ fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 12 }}>
+                        After-Hours Differential
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: 12 }}>
+                        <div>
+                          <label style={{ display: 'block', color: '#96a0b8', fontSize: '12px', fontWeight: 500, marginBottom: 6 }}>Additional charge</label>
+                          <div style={{ position: 'relative' }}>
+                            <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }}>+$</span>
+                            <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', fontSize: '0.78rem' }}>/hr</span>
+                            <input
+                              type="text"
+                              value={profile.afterHoursDiff}
+                              placeholder="0.00"
+                              onChange={e => updateProfile(profile.id, { afterHoursDiff: e.target.value })}
+                              style={{ ...inputStyle, paddingLeft: 32, paddingRight: 32 }}
+                              onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+                              onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label style={{ display: 'block', color: '#96a0b8', fontSize: '12px', fontWeight: 500, marginBottom: 6 }}>Hours description</label>
+                          <input
+                            type="text"
+                            value={profile.afterHoursDescription}
+                            placeholder="e.g. Mon-Fri 8am-5pm. Differential applies outside these hours, weekends, and holidays."
+                            onChange={e => updateProfile(profile.id, { afterHoursDescription: e.target.value })}
+                            style={inputStyle}
+                            onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+                            onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
                   <div>
                     <label style={{ display: 'block', color: '#c8cdd8', fontSize: '13px', fontWeight: 500, marginBottom: 6 }}>Minimum Booking</label>
@@ -452,6 +577,97 @@ export default function RatesPage() {
                       </label>
                     )
                   })}
+                </div>
+
+                {/* Custom fees */}
+                <div style={{ marginBottom: 16 }}>
+                  {profile.customFees.map((fee, idx) => (
+                    <div key={idx} style={{ display: 'flex', gap: 12, alignItems: 'flex-end', marginBottom: 10 }}>
+                      <div style={{ flex: 2 }}>
+                        {idx === 0 && <label style={{ display: 'block', color: '#96a0b8', fontSize: '12px', fontWeight: 500, marginBottom: 6 }}>Fee name</label>}
+                        <input
+                          type="text"
+                          value={fee.label}
+                          placeholder="e.g. Equipment rental"
+                          onChange={e => {
+                            const next = [...profile.customFees]
+                            next[idx] = { ...next[idx], label: e.target.value }
+                            updateProfile(profile.id, { customFees: next })
+                          }}
+                          style={inputStyle}
+                          onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+                          onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
+                        />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        {idx === 0 && <label style={{ display: 'block', color: '#96a0b8', fontSize: '12px', fontWeight: 500, marginBottom: 6 }}>Amount</label>}
+                        <div style={{ position: 'relative' }}>
+                          <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }}>$</span>
+                          <input
+                            type="text"
+                            value={fee.amount}
+                            placeholder="0.00"
+                            onChange={e => {
+                              const next = [...profile.customFees]
+                              next[idx] = { ...next[idx], amount: e.target.value }
+                              updateProfile(profile.id, { customFees: next })
+                            }}
+                            style={{ ...inputStyle, paddingLeft: 24 }}
+                            onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+                            onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
+                          />
+                        </div>
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        {idx === 0 && <label style={{ display: 'block', color: '#96a0b8', fontSize: '12px', fontWeight: 500, marginBottom: 6 }}>Per</label>}
+                        <select
+                          value={fee.per}
+                          onChange={e => {
+                            const next = [...profile.customFees]
+                            next[idx] = { ...next[idx], per: e.target.value as CustomFee['per'] }
+                            updateProfile(profile.id, { customFees: next })
+                          }}
+                          style={inputStyle}
+                          onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+                          onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
+                        >
+                          <option value="flat">flat fee</option>
+                          <option value="hour">per hour</option>
+                          <option value="day">per day</option>
+                        </select>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const next = profile.customFees.filter((_, i) => i !== idx)
+                          updateProfile(profile.id, { customFees: next })
+                        }}
+                        aria-label="Remove fee"
+                        style={{
+                          background: 'none', border: '1px solid var(--border)',
+                          borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
+                          width: 36, height: 38, cursor: 'pointer', fontSize: '0.95rem',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.color = '#ff6b85'; e.currentTarget.style.borderColor = '#ff6b85' }}
+                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.borderColor = 'var(--border)' }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                  {profile.customFees.length < MAX_CUSTOM_FEES && (
+                    <button
+                      type="button"
+                      onClick={() => updateProfile(profile.id, { customFees: [...profile.customFees, { label: '', amount: '', per: 'flat' }] })}
+                      style={{
+                        background: 'none', border: 'none', color: 'var(--accent)',
+                        fontFamily: "'Inter', sans-serif", fontSize: '0.85rem',
+                        fontWeight: 500, cursor: 'pointer', padding: '6px 0',
+                      }}
+                    >
+                      + Add Custom Fee
+                    </button>
+                  )}
                 </div>
 
                 {/* Notes */}

@@ -36,9 +36,10 @@ interface RateProfileData {
   currency: string | null
   min_booking: number | null
   after_hours_diff: number | null
+  after_hours_description: string | null
   cancellation_policy: string | null
   late_cancel_fee: number | null
-  travel_expenses: Record<string, unknown> | null
+  travel_expenses: Record<string, unknown> | unknown[] | null
   additional_terms: string | null
 }
 
@@ -247,7 +248,12 @@ export default function AcceptClient({
             <DetailRow label="Minimum Booking" value={`${rateProfile.min_booking} hour${rateProfile.min_booking > 1 ? 's' : ''}`} />
           )}
           {rateProfile?.after_hours_diff != null && rateProfile.after_hours_diff > 0 && (
-            <DetailRow label="After-Hours Differential" value={`+$${rateProfile.after_hours_diff}/hr`} />
+            <div style={{ gridColumn: '1 / -1' }}>
+              <DetailRow
+                label="After-Hours Differential"
+                value={`+$${rateProfile.after_hours_diff}/hr${rateProfile.after_hours_description ? `. ${rateProfile.after_hours_description}` : ''}`}
+              />
+            </div>
           )}
           {rateProfile?.cancellation_policy && (
             <DetailRow label="Cancellation Policy" value={rateProfile.cancellation_policy} />
@@ -255,9 +261,43 @@ export default function AcceptClient({
           {rateProfile?.late_cancel_fee != null && rateProfile.late_cancel_fee > 0 && (
             <DetailRow label="Late Cancellation Fee" value={`$${rateProfile.late_cancel_fee}`} />
           )}
-          {rateProfile?.travel_expenses && Object.keys(rateProfile.travel_expenses).length > 0 && (
-            <DetailRow label="Travel Expenses" value="May apply — see interpreter's rate card" />
-          )}
+          {(() => {
+            const raw = rateProfile?.travel_expenses
+            if (!raw) return null
+            let items: string[] = []
+            let custom: Array<{ label: string; amount: number; per: string }> = []
+            if (Array.isArray(raw)) {
+              items = raw as string[]
+            } else if (typeof raw === 'object') {
+              const obj = raw as Record<string, unknown>
+              if (Array.isArray(obj.items)) items = obj.items as string[]
+              if (Array.isArray(obj.custom)) custom = obj.custom as typeof custom
+            }
+            return (
+              <>
+                {items.length > 0 && (
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <DetailRow label="Travel & Incidentals" value={`${items.join(', ')} (billed at cost)`} />
+                  </div>
+                )}
+                {custom.length > 0 && (
+                  <div style={{ gridColumn: '1 / -1' }}>
+                    <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6, fontFamily: "'Inter', sans-serif" }}>
+                      Additional Fees
+                    </div>
+                    {custom.map((f, i) => {
+                      const perLabel = f.per === 'hour' ? '/hr' : f.per === 'day' ? '/day' : ' (flat fee)'
+                      return (
+                        <div key={i} style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6 }}>
+                          {f.label}: ${Number(f.amount).toFixed(2)}{perLabel}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </>
+            )
+          })()}
           {rateProfile?.additional_terms && (
             <div style={{ gridColumn: '1 / -1' }}>
               <DetailRow label="Additional Terms" value={rateProfile.additional_terms} />

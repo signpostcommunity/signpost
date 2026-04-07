@@ -54,6 +54,7 @@ export default async function AcceptPage({ params }: { params: Promise<{ booking
     currency: string | null
     min_booking: number | null
     after_hours_diff: number | null
+    after_hours_description: string | null
     cancellation_policy: string | null
     late_cancel_fee: number | null
     travel_expenses: Record<string, unknown> | null
@@ -63,7 +64,7 @@ export default async function AcceptPage({ params }: { params: Promise<{ booking
   if (recipient.rate_profile_id) {
     const { data: rp } = await admin
       .from('interpreter_rate_profiles')
-      .select('hourly_rate, currency, min_booking, after_hours_diff, cancellation_policy, late_cancel_fee, travel_expenses, additional_terms')
+      .select('hourly_rate, currency, min_booking, after_hours_diff, after_hours_description, cancellation_policy, late_cancel_fee, travel_expenses, additional_terms')
       .eq('id', recipient.rate_profile_id)
       .single()
 
