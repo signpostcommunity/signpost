@@ -74,16 +74,10 @@ export default async function RequesterDashboardPage() {
       }))
     }
 
-    // Seed demo data if needed
-    const { count: seedCount } = await supabase
-      .from('bookings')
-      .select('id', { count: 'exact' }).limit(1)
-      .eq('requester_id', user.id)
-      .eq('is_seed', true)
-
-    if ((seedCount ?? 0) === 0) {
-      await seedRequesterData(user.id)
-    }
+    // Auto-seed disabled. Re-enable manually from admin if needed.
+    // Previous behavior re-created [Sample] bookings every visit when none existed,
+    // making DB deletion ineffective. seedRequesterData remains importable.
+    void seedRequesterData
 
     // Fetch profile, stats, and recent bookings in parallel — allSettled so one failure doesn't crash the page
     const [profileRes, activeRes, filledRes, rosterRes, bookingsRes, recentRes] = await Promise.allSettled([

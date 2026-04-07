@@ -26,9 +26,19 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to fetch bookings' }, { status: 500 })
   }
 
+  type AlertEntry = { sent_at: string; type: string; booking_id?: string }
   for (const booking of bookings) {
-    const alerts: Record<string, boolean> = (booking.wave_alerts_sent as Record<string, boolean>) || {}
+    const alerts: Record<string, AlertEntry> =
+      (booking.wave_alerts_sent as Record<string, AlertEntry>) || {}
     const wave = booking.current_wave || 1
+    const waveKey = String(wave)
+    const nowIso = now.toISOString()
+
+    // Primary dedup: if we've already recorded an entry for this wave, skip the entire booking.
+    // No new triggers fire on subsequent ticks until current_wave advances.
+    if (alerts[waveKey]) {
+      continue
+    }
 
     // Fetch recipients for current wave
     const { data: recipients } = await admin
@@ -57,6 +67,9 @@ export async function GET(request: NextRequest) {
     const bookingTitle = booking.title || 'Untitled request'
     const bookingDate = booking.date || ''
 
+    // Record initial entry for this wave so subsequent ticks skip the booking.
+    alerts[waveKey] = { sent_at: nowIso, type: wave === 1 ? 'initial' : 'escalation' }
+
     // TRIGGER A: Nudge (5+ declined)
     if (declined >= 5 && !alerts[nudgeKey]) {
       await createNotification({
@@ -78,7 +91,7 @@ export async function GET(request: NextRequest) {
         ctaUrl: 'https://signpost.community/request/dashboard/requests',
         channel: 'both',
       })
-      alerts[nudgeKey] = true
+      alerts[nudgeKey] = { sent_at: nowIso, type: 'nudge', booking_id: booking.id }
       triggered++
     }
 
@@ -104,7 +117,7 @@ export async function GET(request: NextRequest) {
         ctaUrl: 'https://signpost.community/request/dashboard/requests',
         channel: 'both',
       })
-      alerts[urgentKey] = true
+      alerts[urgentKey] = { sent_at: nowIso, type: 'urgent', booking_id: booking.id }
       triggered++
     }
 
@@ -143,7 +156,7 @@ export async function GET(request: NextRequest) {
             ctaUrl: 'https://signpost.community/request/dashboard/requests',
             channel: 'both',
           })
-          alerts[timeoutKey] = true
+          alerts[timeoutKey] = { sent_at: nowIso, type: 'timeout', booking_id: booking.id }
           triggered++
         }
       }
@@ -171,16 +184,17 @@ export async function GET(request: NextRequest) {
         ctaUrl: 'https://signpost.community/request/dashboard/requests',
         channel: 'both',
       })
-      alerts[allRespondedKey] = true
+      alerts[allRespondedKey] = { sent_at: nowIso, type: 'all_responded', booking_id: booking.id }
       triggered++
     }
 
-    // Update wave_alerts_sent if any triggers fired
-    if (Object.keys(alerts).length > Object.keys((booking.wave_alerts_sent as Record<string, boolean>) || {}).length) {
-      await admin
-        .from('bookings')
-        .update({ wave_alerts_sent: alerts })
-        .eq('id', booking.id)
+    // Always persist alerts after first processing of a wave so subsequent ticks dedup.
+    const { error: updErr } = await admin
+      .from('bookings')
+      .update({ wave_alerts_sent: alerts })
+      .eq('id', booking.id)
+    if (updErr) {
+      console.error('[wave-monitor] failed to persist wave_alerts_sent for', booking.id, updErr.message)
     }
   }
 
