@@ -870,50 +870,6 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
 
   return (
     <>
-    {/* Sticky preview bar — stays visible while scrolling the profile form */}
-    {p.id && (
-      <div style={{
-        background: '#111118',
-        borderBottom: '1px solid #1e2433',
-        padding: '10px 20px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        position: 'sticky',
-        top: 57,
-        zIndex: 10,
-      }}>
-        <span style={{
-          fontFamily: "'Inter', 'Inter', sans-serif",
-          fontWeight: 500,
-          fontSize: 14,
-          color: '#f0f2f8',
-        }}>
-          {displayName}
-        </span>
-        <a
-          href={`/directory/${p.id}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            fontFamily: "'Inter', 'Inter', sans-serif",
-            fontWeight: 600,
-            fontSize: 13,
-            color: '#00e5ff',
-            textDecoration: 'none',
-            background: 'transparent',
-            border: '1.5px solid #00e5ff',
-            padding: '8px 16px',
-            borderRadius: 8,
-            transition: 'background 0.15s',
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0,229,255,0.08)'; e.currentTarget.style.textDecoration = 'none' }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.textDecoration = 'none' }}
-        >
-          Preview Profile
-        </a>
-      </div>
-    )}
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16 }}>
         <PageHeader
@@ -925,16 +881,43 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
         />
       </div>
 
-      {/* Profile header card */}
+      {/* Profile header card with Preview Profile button */}
       <div style={{
         background: 'var(--card-bg)', border: '1px solid var(--border)',
         borderRadius: 'var(--radius)', padding: '24px 28px', marginBottom: 28,
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       }}>
-        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.3rem' }}>{displayName}</div>
-        {(p.city || p.state) && (
-          <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: 4 }}>
-            {[p.city, p.state].filter(Boolean).join(', ')}
-          </div>
+        <div>
+          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.3rem' }}>{displayName}</div>
+          {(p.city || p.state) && (
+            <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: 4 }}>
+              {[p.city, p.state].filter(Boolean).join(', ')}
+            </div>
+          )}
+        </div>
+        {p.id && (
+          <a
+            href={`/directory/${p.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 600,
+              fontSize: 13,
+              color: '#00e5ff',
+              textDecoration: 'none',
+              background: 'transparent',
+              border: '1px solid #00e5ff',
+              padding: '8px 16px',
+              borderRadius: 10,
+              transition: 'background 0.15s',
+              whiteSpace: 'nowrap',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0,229,255,0.08)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent' }}
+          >
+            Preview Profile
+          </a>
         )}
       </div>
 

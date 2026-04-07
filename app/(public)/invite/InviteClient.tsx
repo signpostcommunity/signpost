@@ -11,12 +11,6 @@ export default function InviteClient() {
   const [hover, setHover] = useState<string | null>(null)
   const [active, setActive] = useState<string | null>(null)
 
-  function handleEmail() {
-    const subject = encodeURIComponent('Join me on signpost')
-    const body = encodeURIComponent(INVITE_TEXT)
-    window.location.href = `mailto:?subject=${subject}&body=${body}`
-  }
-
   function handleSms() {
     window.location.href = `sms:?body=${encodeURIComponent(SHORT_SMS_TEXT)}`
   }
@@ -104,7 +98,7 @@ export default function InviteClient() {
             margin: '0 0 28px',
           }}
         >
-          Know an interpreter who'd be a great fit? Send them this invite. It takes 10 seconds.
+          Know an interpreter who'd be a great fit? Text them this invite or copy it to share however you like.
         </p>
 
         <div
@@ -143,18 +137,6 @@ export default function InviteClient() {
             gap: '10px',
           }}
         >
-          <button
-            type="button"
-            onClick={handleEmail}
-            onMouseEnter={() => setHover('email')}
-            onMouseLeave={() => { setHover(null); setActive(null) }}
-            onMouseDown={() => setActive('email')}
-            onMouseUp={() => setActive(null)}
-            style={btnStyle('email')}
-          >
-            Send via email
-          </button>
-
           <button
             type="button"
             onClick={handleSms}

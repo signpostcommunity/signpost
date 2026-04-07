@@ -110,8 +110,8 @@ export function InterpreterProfileInvite({ recipientName = 'there' }: Interprete
 
       <Hr style={hrStyle} />
 
-      <Text style={{ color: '#f0f2f8', fontSize: '18px', fontWeight: 700, margin: '32px 0 4px' }}>
-        What's new on signpost
+      <Text style={{ color: '#00e5ff', fontSize: '18px', fontWeight: 700, margin: '32px 0 4px' }}>
+        What you helped build
       </Text>
       <Text style={{ color: '#96a0b8', fontSize: '14px', margin: '0 0 24px', lineHeight: '1.5' }}>
         Here are just a couple of the things we built based on your feedback:
