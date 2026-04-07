@@ -1590,6 +1590,7 @@ export default function ConfirmedPage() {
   const [invoicingPref, setInvoicingPref] = useState<string>('own')
   const [invoiceMap, setInvoiceMap] = useState<Record<string, InvoiceInfo>>({})
   const backfillDone = useRef(false)
+  void backfillDone
 
   const fetchBookings = useCallback(async () => {
     const supabase = createClient()
@@ -1606,23 +1607,8 @@ export default function ConfirmedPage() {
     setInterpreterId(profile.id)
     setInvoicingPref(profile.invoicing_preference || 'own')
 
-    // Backfill completed seed bookings for existing accounts (runs once, no-ops if already seeded)
-    if (!backfillDone.current) {
-      backfillDone.current = true
-      fetch('/api/seed-completed-bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ interpreterProfileId: profile.id }),
-      })
-        .then(res => res.json())
-        .then(result => {
-          if (result.inserted && result.inserted > 0) {
-            // Re-fetch bookings to include newly seeded completed bookings
-            fetchBookings()
-          }
-        })
-        .catch(err => console.error('[confirmed] backfill failed:', err))
-    }
+    // Auto-seed disabled. Re-enable manually when needed.
+    // Previously: POST /api/seed-completed-bookings to backfill completed seed bookings.
 
     // Two-step fetch to avoid RLS nested embed bug (bookings RLS doesn't recognize
     // interpreter via booking_recipients, only via bookings.interpreter_id)

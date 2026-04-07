@@ -29,8 +29,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Profile not found or not yours' }, { status: 403 })
     }
 
-    const result = await seedInterpreterData(interpreterProfileId)
-    return NextResponse.json(result)
+    // Auto-seed disabled. Re-enable manually when needed.
+    void seedInterpreterData
+    void profile
+    void interpreterProfileId
+    return NextResponse.json({ message: 'Seeding disabled' }, { status: 200 })
   } catch (err) {
     console.error('[api/seed-interpreter] error:', err)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })
