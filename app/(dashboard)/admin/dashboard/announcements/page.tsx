@@ -26,6 +26,12 @@ interface RoleCounts {
   requester: number
 }
 
+interface RoleRecipient {
+  user_id: string
+  email: string
+  name: string
+}
+
 const TEMPLATES: { key: TemplateName; label: string; description: string }[] = [
   {
     key: 'beta-update',
@@ -231,6 +237,9 @@ export default function AdminAnnouncementsPage() {
   const [sentLog, setSentLog] = useState<SentEntry[]>([])
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [counts, setCounts] = useState<RoleCounts | null>(null)
+  const [roleRecipients, setRoleRecipients] = useState<RoleRecipient[] | null>(null)
+  const [loadingList, setLoadingList] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const sentEmails = useRef(new Set<string>())
 
   // Fetch role counts on mount
@@ -333,30 +342,74 @@ export default function AdminAnnouncementsPage() {
     setSending(false)
   }
 
+  // Fetch recipient list when role changes
+  useEffect(() => {
+    if (!selectedRole) {
+      setRoleRecipients(null)
+      setSelectedIds(new Set())
+      return
+    }
+    setLoadingList(true)
+    setRoleRecipients(null)
+    setSelectedIds(new Set())
+    fetch(`/api/admin/send-announcement?action=list&role=${selectedRole}`, { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.recipients) {
+          setRoleRecipients(data.recipients)
+          // Select all by default
+          setSelectedIds(new Set(data.recipients.map((r: RoleRecipient) => r.user_id)))
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingList(false))
+  }, [selectedRole])
+
+  function toggleRecipient(userId: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(userId)) next.delete(userId)
+      else next.add(userId)
+      return next
+    })
+  }
+
+  function toggleSelectAll() {
+    if (!roleRecipients) return
+    if (selectedIds.size === roleRecipients.length) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(roleRecipients.map(r => r.user_id)))
+    }
+  }
+
   async function handleRoleSend() {
-    if (!template || !selectedRole) return
+    if (!template || !selectedRole || !roleRecipients) return
     if (template === 'custom' && !customSubject.trim()) { showToast('Subject is required for custom emails', 'error'); return }
+
+    const targets = roleRecipients.filter(r => selectedIds.has(r.user_id))
+    if (targets.length === 0) {
+      showToast('Select at least one recipient', 'error')
+      return
+    }
 
     setSending(true)
     setRoleResult(null)
+    setProgress({ current: 0, total: targets.length })
 
-    try {
-      const res = await fetch('/api/admin/send-announcement', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(getPayload({ role: selectedRole })),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        showToast(data.error || 'Failed to send', 'error')
-      } else {
-        setRoleResult({ sent: data.sent, failed: data.failed })
-        showToast(`Complete: ${data.sent} sent, ${data.failed} failed`, data.failed === 0 ? 'success' : 'error')
-      }
-    } catch {
-      showToast('Network error', 'error')
+    let successCount = 0
+    let failCount = 0
+
+    for (let i = 0; i < targets.length; i++) {
+      setProgress({ current: i + 1, total: targets.length })
+      const ok = await sendSingle(targets[i].email, targets[i].name)
+      if (ok) successCount++
+      else failCount++
     }
+
+    setProgress(null)
+    setRoleResult({ sent: successCount, failed: failCount })
+    showToast(`Complete: ${successCount} sent, ${failCount} failed`, failCount === 0 ? 'success' : 'error')
     setSending(false)
   }
 
@@ -542,41 +595,119 @@ export default function AdminAnnouncementsPage() {
 
               {selectedRole && (
                 <div>
-                  <p style={{ color: '#96a0b8', fontSize: '0.85rem', margin: '0 0 14px', fontFamily: "'Inter', sans-serif" }}>
-                    Sending to: {ROLE_LABELS[selectedRole]} ({counts ? counts[selectedRole] : '...'} recipients)
-                  </p>
-
-                  {sending && progress && (
-                    <div style={{ marginBottom: 14 }}>
-                      <div style={{ fontSize: '0.82rem', color: '#96a0b8', fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>
-                        Sending... {progress.current} of {progress.total}
-                      </div>
-                      <div style={{ height: 4, borderRadius: 2, background: 'var(--border)', overflow: 'hidden' }}>
-                        <div style={{
-                          height: '100%', borderRadius: 2, background: '#00e5ff',
-                          width: `${(progress.current / progress.total) * 100}%`,
-                          transition: 'width 0.3s',
-                        }} />
-                      </div>
-                    </div>
-                  )}
-
-                  {roleResult && (
-                    <p style={{
-                      fontSize: '0.85rem', fontFamily: "'Inter', sans-serif", margin: '0 0 14px',
-                      color: roleResult.failed === 0 ? '#34d399' : '#ff6b85',
-                    }}>
-                      Complete: {roleResult.sent} sent, {roleResult.failed} failed
+                  {loadingList && (
+                    <p style={{ color: '#96a0b8', fontSize: '0.85rem', margin: '0 0 14px', fontFamily: "'Inter', sans-serif" }}>
+                      Loading recipients...
                     </p>
                   )}
 
-                  <button
-                    onClick={handleRoleSend}
-                    disabled={sending}
-                    style={primaryBtn(sending)}
-                  >
-                    {sending ? 'Sending...' : `Send to ${ROLE_LABELS[selectedRole]}`}
-                  </button>
+                  {!loadingList && roleRecipients && roleRecipients.length === 0 && (
+                    <p style={{ color: '#96a0b8', fontSize: '0.85rem', margin: '0 0 14px', fontFamily: "'Inter', sans-serif" }}>
+                      No recipients found for {ROLE_LABELS[selectedRole]}.
+                    </p>
+                  )}
+
+                  {!loadingList && roleRecipients && roleRecipients.length > 0 && (
+                    <div>
+                      <div style={{
+                        background: '#111118',
+                        border: '1px solid var(--border)',
+                        borderRadius: 'var(--radius)',
+                        overflow: 'hidden',
+                        marginBottom: 12,
+                      }}>
+                        {/* Select all */}
+                        <label style={{
+                          display: 'flex', alignItems: 'center', gap: 12,
+                          padding: '12px 16px',
+                          borderBottom: '1px solid var(--border)',
+                          cursor: 'pointer',
+                          fontFamily: "'Inter', sans-serif",
+                        }}>
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.size === roleRecipients.length && roleRecipients.length > 0}
+                            onChange={toggleSelectAll}
+                            disabled={sending}
+                            style={{ accentColor: '#00e5ff', width: 16, height: 16, cursor: 'pointer' }}
+                          />
+                          <span style={{ color: 'var(--text)', fontSize: '0.85rem', fontWeight: 600 }}>
+                            Select All ({roleRecipients.length} {selectedRole === 'interpreter' ? 'real interpreters' : selectedRole === 'deaf' ? 'Deaf/DB/HH users' : 'requesters'})
+                          </span>
+                        </label>
+
+                        {/* Recipient list */}
+                        <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+                          {roleRecipients.map(r => {
+                            const checked = selectedIds.has(r.user_id)
+                            return (
+                              <label
+                                key={r.user_id}
+                                className="recipient-row"
+                                style={{
+                                  display: 'flex', alignItems: 'center', gap: 12,
+                                  padding: '8px 16px',
+                                  cursor: sending ? 'not-allowed' : 'pointer',
+                                  fontFamily: "'Inter', sans-serif",
+                                  borderBottom: '1px solid rgba(30,36,51,0.5)',
+                                }}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() => toggleRecipient(r.user_id)}
+                                  disabled={sending}
+                                  style={{ accentColor: '#00e5ff', width: 16, height: 16, cursor: sending ? 'not-allowed' : 'pointer', flexShrink: 0 }}
+                                />
+                                <span style={{ color: 'var(--text)', fontSize: '0.82rem', flexShrink: 0, minWidth: 0 }}>
+                                  {r.name}
+                                </span>
+                                <span style={{ color: '#96a0b8', fontSize: '0.78rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                                  {r.email}
+                                </span>
+                              </label>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      <p style={{ color: '#96a0b8', fontSize: '0.82rem', margin: '0 0 14px', fontFamily: "'Inter', sans-serif" }}>
+                        {selectedIds.size} of {roleRecipients.length} selected
+                      </p>
+
+                      {sending && progress && (
+                        <div style={{ marginBottom: 14 }}>
+                          <div style={{ fontSize: '0.82rem', color: '#96a0b8', fontFamily: "'Inter', sans-serif", marginBottom: 6 }}>
+                            Sending... {progress.current} of {progress.total}
+                          </div>
+                          <div style={{ height: 4, borderRadius: 2, background: 'var(--border)', overflow: 'hidden' }}>
+                            <div style={{
+                              height: '100%', borderRadius: 2, background: '#00e5ff',
+                              width: `${(progress.current / progress.total) * 100}%`,
+                              transition: 'width 0.3s',
+                            }} />
+                          </div>
+                        </div>
+                      )}
+
+                      {roleResult && (
+                        <p style={{
+                          fontSize: '0.85rem', fontFamily: "'Inter', sans-serif", margin: '0 0 14px',
+                          color: roleResult.failed === 0 ? '#34d399' : '#ff6b85',
+                        }}>
+                          Complete: {roleResult.sent} sent, {roleResult.failed} failed
+                        </p>
+                      )}
+
+                      <button
+                        onClick={handleRoleSend}
+                        disabled={sending || selectedIds.size === 0}
+                        style={primaryBtn(sending || selectedIds.size === 0)}
+                      >
+                        {sending ? 'Sending...' : `Send to ${selectedIds.size} Selected`}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -722,6 +853,9 @@ export default function AdminAnnouncementsPage() {
       <style>{`
         @media (max-width: 768px) {
           .dash-page-content { padding: 24px 20px !important; }
+        }
+        .recipient-row:hover {
+          background: rgba(0, 229, 255, 0.04);
         }
       `}</style>
     </div>

@@ -141,6 +141,72 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url)
     const action = url.searchParams.get('action')
 
+    if (action === 'list') {
+      const role = url.searchParams.get('role')
+      if (!role || !['interpreter', 'deaf', 'requester'].includes(role)) {
+        return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
+      }
+
+      const adminClient = getSupabaseAdmin()
+      const recipients: { user_id: string; email: string; name: string }[] = []
+
+      if (role === 'interpreter') {
+        const { data } = await adminClient
+          .from('interpreter_profiles')
+          .select('user_id, first_name, last_name, email, is_seed')
+          .order('first_name', { ascending: true })
+
+        if (data) {
+          for (const p of data) {
+            if (p.is_seed === true) continue
+            const email = (p.email || '').trim()
+            if (!email || email.toLowerCase().endsWith('@signpost.test')) continue
+            recipients.push({
+              user_id: p.user_id,
+              email,
+              name: [p.first_name, p.last_name].filter(Boolean).join(' ') || 'there',
+            })
+          }
+        }
+      } else if (role === 'deaf') {
+        const { data } = await adminClient
+          .from('deaf_profiles')
+          .select('user_id, first_name, last_name, email')
+          .order('first_name', { ascending: true })
+
+        if (data) {
+          for (const p of data) {
+            const email = (p.email || '').trim()
+            if (!email || email.toLowerCase().endsWith('@signpost.test')) continue
+            recipients.push({
+              user_id: p.user_id,
+              email,
+              name: [p.first_name, p.last_name].filter(Boolean).join(' ') || 'there',
+            })
+          }
+        }
+      } else if (role === 'requester') {
+        const { data } = await adminClient
+          .from('requester_profiles')
+          .select('user_id, first_name, last_name, email')
+          .order('first_name', { ascending: true })
+
+        if (data) {
+          for (const p of data) {
+            const email = (p.email || '').trim()
+            if (!email || email.toLowerCase().endsWith('@signpost.test')) continue
+            recipients.push({
+              user_id: p.user_id,
+              email,
+              name: [p.first_name, p.last_name].filter(Boolean).join(' ') || 'there',
+            })
+          }
+        }
+      }
+
+      return NextResponse.json({ recipients })
+    }
+
     if (action === 'counts') {
       const adminClient = getSupabaseAdmin()
 
