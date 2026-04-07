@@ -898,8 +898,6 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
         {p.id && (
           <a
             href={`/directory/${p.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
             style={{
               fontFamily: "'Inter', sans-serif",
               fontWeight: 600,
