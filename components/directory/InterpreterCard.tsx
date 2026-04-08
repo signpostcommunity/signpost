@@ -55,7 +55,7 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
         {/* Card header / visual */}
         <div
           style={{
-            aspectRatio: '3 / 4',
+            aspectRatio: '1 / 1',
             background: i.color,
             position: 'relative',
             overflow: 'hidden',
@@ -74,7 +74,7 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
                 width: '100%',
                 height: '100%',
                 objectFit: 'cover',
-                objectPosition: 'center 25%',
+                objectPosition: 'center 20%',
               }}
             />
           ) : (
