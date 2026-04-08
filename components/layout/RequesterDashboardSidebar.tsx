@@ -52,6 +52,13 @@ const NAV: NavGroup[] = [
         badgeKey: 'inbox',
         redDot: true,
       },
+      {
+        label: 'Invoices',
+        href: '/request/dashboard/invoices',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 2h7l3 3v9a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/><path d="M5 8h6M5 10.5h6M5 6h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>,
+        badgeKey: 'invoices',
+        badgeColor: 'var(--accent)',
+      },
     ],
   },
   {

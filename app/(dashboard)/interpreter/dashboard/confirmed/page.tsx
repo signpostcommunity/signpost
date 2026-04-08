@@ -1122,25 +1122,59 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
       const { data: numData } = await supabase.rpc('generate_invoice_number')
       if (numData) setInvoiceNumber(numData as string)
 
-      // Fetch rate profile if linked
+      // Fetch rate profile if linked (pre-populate rate, minimum hours, travel + after-hours fees)
+      const rateCols = 'hourly_rate, min_booking, after_hours_diff, travel_expenses, late_cancel_fee'
+      let rp: { hourly_rate?: number | null; min_booking?: number | null; after_hours_diff?: number | null; travel_expenses?: unknown; late_cancel_fee?: number | null } | null = null
       if (booking.rate_profile_id) {
-        const { data: rp } = await supabase
+        const { data } = await supabase
           .from('interpreter_rate_profiles')
-          .select('hourly_rate')
+          .select(rateCols)
           .eq('id', booking.rate_profile_id)
           .single()
-        if (rp?.hourly_rate) setHourlyRate(Number(rp.hourly_rate))
+        rp = data
       } else {
-        // Fallback: get default rate
-        const { data: defaultRate } = await supabase
+        const { data } = await supabase
           .from('interpreter_rate_profiles')
-          .select('hourly_rate')
+          .select(rateCols)
           .eq('interpreter_id', interpreterId)
           .eq('is_default', true)
           .limit(1)
-        if (defaultRate && defaultRate.length > 0 && defaultRate[0].hourly_rate) {
-          setHourlyRate(Number(defaultRate[0].hourly_rate))
+        rp = data && data.length > 0 ? data[0] : null
+      }
+      if (rp) {
+        if (rp.hourly_rate) setHourlyRate(Number(rp.hourly_rate))
+
+        // Enforce minimum booking hours: max(actualHours, min_booking_hours)
+        if (rp.min_booking) {
+          const minHrs = Number(rp.min_booking) / 60
+          setActualHours(prev => Math.max(prev, minHrs))
         }
+
+        // Pre-populate travel expense line items from rate profile (amounts blank for interpreter to fill in)
+        const seedCosts: AdditionalCost[] = []
+        if (Array.isArray(rp.travel_expenses)) {
+          for (const t of rp.travel_expenses as Array<{ label?: string; description?: string; amount?: number; category?: string }>) {
+            seedCosts.push({
+              category: t.category || 'Travel - Other',
+              description: t.label || t.description || 'Travel expense',
+              amount: Number(t.amount) || 0,
+            })
+          }
+        }
+
+        // After-hours differential, if booking falls outside standard hours
+        if (rp.after_hours_diff && booking.time_start) {
+          const startHr = Number(booking.time_start.split(':')[0])
+          if (startHr < 8 || startHr >= 18) {
+            seedCosts.push({
+              category: 'After Hours',
+              description: 'After-hours differential',
+              amount: Number(rp.after_hours_diff),
+            })
+          }
+        }
+
+        if (seedCosts.length > 0) setAdditionalCosts(seedCosts)
       }
 
       // Fetch interpreter payment methods + default terms
@@ -1547,12 +1581,21 @@ function BookingCard({ booking, onViewDetails, onCancel, onForwardToTeam, onToas
       <div className="dash-card-actions" style={{ display: 'flex', gap: 10, marginTop: 12, flexWrap: 'wrap' }}>
         <GhostButton onClick={onViewDetails}>View Details</GhostButton>
         {!isCancelled && !isCompleted && isUpcoming && <CalendarDropdown booking={booking} onToast={onToast} />}
-        {!isCancelled && showInvoiceBtn && !invoiceInfo?.status?.match(/^(sent|paid)$/) && (
-          <GhostButton onClick={onSubmitInvoice}>
-            {invoiceInfo?.status === 'draft' ? 'Edit Invoice' : 'Submit Invoice'}
+        {!isCancelled && isCompleted && showInvoiceBtn && !invoiceInfo?.status?.match(/^(sent|paid)$/) && (
+          <button
+            className="btn-primary"
+            onClick={onSubmitInvoice}
+            style={{ fontSize: '0.82rem', padding: '8px 18px' }}
+          >
+            {invoiceInfo?.status === 'draft' ? 'Edit Invoice' : 'Create Invoice'}
+          </button>
+        )}
+        {!isCancelled && invoiceInfo?.status === 'sent' && (
+          <GhostButton onClick={() => window.open(`/interpreter/dashboard/invoices/${invoiceInfo.id}`, '_blank')}>
+            Invoice Sent
           </GhostButton>
         )}
-        {!isCancelled && invoiceInfo?.status?.match(/^(sent|paid)$/) && (
+        {!isCancelled && invoiceInfo?.status === 'paid' && (
           <GhostButton onClick={() => window.open(`/interpreter/dashboard/invoices/${invoiceInfo.id}`, '_blank')}>
             View Invoice
           </GhostButton>
