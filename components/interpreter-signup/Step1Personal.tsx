@@ -5,7 +5,7 @@ import { useForm } from './FormContext'
 import {
   StepWrapper, FormSection, SectionTitle, FormRow, FormField, FieldLabel,
   TextInput, PasswordInput, SelectInput,
-  ToggleTile, FormNav,
+  ToggleTile, FormNav, FieldError,
 } from './FormFields'
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton'
 import LocationPicker from '@/components/shared/LocationPicker'
@@ -29,6 +29,28 @@ const REGIONS = [
 
 export default function Step1Personal({ onContinue }: { onContinue: () => void }) {
   const { formData, updateField, updateFormData, saveDraft } = useForm()
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  function validateAndContinue() {
+    const next: Record<string, string> = {}
+    if (!formData.firstName.trim()) next.firstName = 'Please enter your first name.'
+    if (!formData.lastName.trim()) next.lastName = 'Please enter your last name.'
+    if (!formData.avatarUrl) next.avatarUrl = "A profile photo is required. Requesters and Deaf community members want to see who they're connecting with."
+    if (!formData.city.trim()) next.city = 'Please enter your city.'
+    if (!formData.state.trim()) next.state = 'Please enter your state or region.'
+    if (!formData.interpreterType) next.interpreterType = 'Please select your interpreter type.'
+    if (!formData.modeOfWork) next.modeOfWork = 'Please select your availability for remote and/or in-person work.'
+    if (!formData.yearsExperience) next.yearsExperience = 'Please select your experience range.'
+    setErrors(next)
+    if (Object.keys(next).length === 0) {
+      onContinue()
+    } else {
+      setTimeout(() => {
+        const el = document.querySelector('[data-step1-error="true"]') as HTMLElement | null
+        el?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 50)
+    }
+  }
   const supabase = createClient()
   const searchParams = useSearchParams()
   const isAddRole = searchParams.get('addRole') === 'true'
@@ -277,6 +299,11 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
             )}
           </div>
         </div>
+        {errors.avatarUrl && (
+          <div data-step1-error="true">
+            <FieldError>{errors.avatarUrl}</FieldError>
+          </div>
+        )}
       </FormSection>
 
       {/* Personal Information */}
@@ -290,6 +317,7 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
               value={formData.firstName}
               onChange={e => updateField('firstName', e.target.value)}
             />
+            <FieldError>{errors.firstName}</FieldError>
           </FormField>
           <FormField>
             <FieldLabel>Last Name *</FieldLabel>
@@ -298,6 +326,7 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
               value={formData.lastName}
               onChange={e => updateField('lastName', e.target.value)}
             />
+            <FieldError>{errors.lastName}</FieldError>
           </FormField>
         </FormRow>
 
@@ -432,6 +461,9 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
             updateField('city', city)
           }}
         />
+        {(errors.city || errors.state) && (
+          <FieldError>{errors.city || errors.state}</FieldError>
+        )}
 
         <FormRow>
           <FormField>
@@ -467,6 +499,7 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
               <option>15–20 years</option>
               <option>20+ years</option>
             </SelectInput>
+            <FieldError>{errors.yearsExperience}</FieldError>
           </FormField>
         </FormRow>
 
@@ -480,7 +513,9 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
               <option value="">Select…</option>
               <option>Hearing Interpreter</option>
               <option>Deaf Interpreter</option>
+              <option>Deaf-Parented Interpreter / CODA</option>
             </SelectInput>
+            <FieldError>{errors.interpreterType}</FieldError>
             {formData.interpreterType === 'Deaf Interpreter' && (
               <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.5 }}>
@@ -538,6 +573,7 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
               <option>On-site only</option>
               <option>Both remote and on-site</option>
             </SelectInput>
+            <FieldError>{errors.modeOfWork}</FieldError>
           </FormField>
         </FormRow>
       </FormSection>
@@ -613,7 +649,7 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
         </div>
       </FormSection>
 
-      <FormNav step={1} totalSteps={6} onBack={() => {}} onContinue={onContinue} onSaveDraft={saveDraft} />
+      <FormNav step={1} totalSteps={6} onBack={() => {}} onContinue={validateAndContinue} onSaveDraft={saveDraft} />
     </StepWrapper>
   )
 }

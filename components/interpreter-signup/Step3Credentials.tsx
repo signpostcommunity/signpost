@@ -60,9 +60,12 @@ export default function Step3Credentials({ onBack, onContinue }: {
       {/* Certifications & Credentials */}
       <FormSection>
         <SectionTitle>Certifications &amp; Credentials</SectionTitle>
+        <p style={{ color: '#96a0b8', fontFamily: "'Inter', sans-serif", fontSize: '13px', lineHeight: 1.55, marginBottom: 16 }}>
+          If you hold any certifications or credentials, add them here. This helps clients understand your qualifications. You can always add credentials later as you earn them.
+        </p>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16 }}>
-          List your certifications and qualifications. To earn a{' '}
-          <span style={{ color: 'var(--accent)', fontWeight: 600 }}>✓ Verified</span>{' '}
+          To earn a{' '}
+          <span style={{ color: 'var(--accent)', fontWeight: 600 }}>Verified</span>{' '}
           badge on your profile, upload a document or paste a link to your certifying body for each credential.
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useForm } from './FormContext'
 import {
   StepWrapper, FormSection, SectionTitle, FormField, FieldLabel,
-  FormNav,
+  FormNav, InfoNote,
 } from './FormFields'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
 import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
@@ -44,8 +44,11 @@ export default function Step4BioVideo({ onBack, onContinue }: {
       {/* About You - three guided prompts */}
       <FormSection>
         <SectionTitle>About You</SectionTitle>
-        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 20, marginTop: -12, lineHeight: 1.6 }}>
+        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 8, marginTop: -12, lineHeight: 1.6 }}>
           These prompts help you write a compelling profile. Your responses appear as a single About section on your public profile.
+        </p>
+        <p style={{ color: '#96a0b8', fontFamily: "'Inter', sans-serif", fontSize: '13px', lineHeight: 1.55, marginBottom: 20 }}>
+          Your bio helps Deaf community members and requesters get to know you beyond your credentials. Even a few sentences make a difference.
         </p>
 
         {/* Bio field 1: Background */}
@@ -109,9 +112,12 @@ export default function Step4BioVideo({ onBack, onContinue }: {
       {/* Introduction Video */}
       <FormSection>
         <SectionTitle>INTRO VIDEO</SectionTitle>
-        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
+        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 12, marginTop: -12 }}>
           Record a short intro video so clients can see your signing style before they request you.
         </p>
+        <InfoNote>
+          Deaf users consistently rate interpreter intro videos as one of their most valued features of signpost. We built the recording feature directly into the browser to make it painless.
+        </InfoNote>
 
         {formData.videoUrl ? (
           <div style={{ marginBottom: 16 }}>

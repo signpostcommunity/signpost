@@ -8,6 +8,43 @@ export function StepWrapper({ children }: { children: ReactNode }) {
   return <div>{children}</div>
 }
 
+// Encouraging informational note (warm amber, not error styling).
+export function InfoNote({ children, style }: { children: ReactNode; style?: CSSProperties }) {
+  return (
+    <div style={{
+      background: 'rgba(240,166,35,0.06)',
+      borderLeft: '3px solid #f0a623',
+      borderRadius: '4px',
+      padding: '12px 16px',
+      color: '#f0a623',
+      fontFamily: "'Inter', sans-serif",
+      fontWeight: 400,
+      fontSize: '13px',
+      lineHeight: 1.55,
+      marginBottom: 16,
+      ...style,
+    }}>
+      {children}
+    </div>
+  )
+}
+
+// Inline field error (red, small).
+export function FieldError({ children }: { children: ReactNode }) {
+  if (!children) return null
+  return (
+    <div style={{
+      color: 'var(--accent3)',
+      fontFamily: "'Inter', sans-serif",
+      fontSize: '12px',
+      marginTop: 6,
+      lineHeight: 1.4,
+    }}>
+      {children}
+    </div>
+  )
+}
+
 export function FormSection({ children, style }: { children: ReactNode; style?: CSSProperties }) {
   return <div style={{ marginBottom: 36, ...style }}>{children}</div>
 }

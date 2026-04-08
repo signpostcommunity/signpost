@@ -195,6 +195,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
   const [loading, setLoading] = useState(true)
   const [profileIncomplete, setProfileIncomplete] = useState(false)
+  const [missingFields, setMissingFields] = useState<string[]>([])
   const [bannerDismissed, setBannerDismissed] = useState(true)
   const [videoRequestCount, setVideoRequestCount] = useState(0)
   const [hasIntroVideo, setHasIntroVideo] = useState(false)
@@ -227,10 +228,10 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
     async function fetchData() {
       const supabase = createClient()
 
-      // Check profile completeness (photo_url, bio, certifications)
+      // Check profile completeness (required fields per signup spec)
       const { data: profileData } = await supabase
         .from('interpreter_profiles')
-        .select('photo_url, bio')
+        .select('photo_url, bio, first_name, last_name, city, state, interpreter_type, work_mode, years_experience, sign_languages, spoken_languages')
         .eq('id', interpreterProfileId!)
         .single()
 
@@ -247,7 +248,22 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       const missingSignLangs = !signLangCount || signLangCount === 0
       const missingSpokenLangs = !spokenLangCount || spokenLangCount === 0
       const missingSpecs = !specCount || specCount === 0
-      setProfileIncomplete(missingPhoto || missingBio || missingCerts || missingSignLangs || missingSpokenLangs || missingSpecs)
+
+      const required: { ok: boolean; label: string }[] = [
+        { ok: !!profileData?.first_name?.trim(), label: 'Add your first name' },
+        { ok: !!profileData?.last_name?.trim(), label: 'Add your last name' },
+        { ok: !missingPhoto, label: 'Add a profile photo' },
+        { ok: !!profileData?.city?.trim(), label: 'Add your city' },
+        { ok: !!profileData?.state?.trim(), label: 'Add your state or region' },
+        { ok: !!profileData?.interpreter_type, label: 'Select your interpreter type' },
+        { ok: !missingSignLangs || (Array.isArray(profileData?.sign_languages) && profileData.sign_languages.length > 0), label: 'Add at least one sign language' },
+        { ok: !missingSpokenLangs || (Array.isArray(profileData?.spoken_languages) && profileData.spoken_languages.length > 0), label: 'Add at least one spoken language' },
+        { ok: !!profileData?.work_mode, label: 'Select your work mode' },
+        { ok: !!profileData?.years_experience, label: 'Add your years of experience' },
+      ]
+      const missingList = required.filter(r => !r.ok).map(r => r.label)
+      setMissingFields(missingList)
+      setProfileIncomplete(missingList.length > 0 || missingBio || missingCerts || missingSpecs)
 
       // Check if interpreter has any intro videos
       const { count: videoCount } = await supabase
@@ -483,32 +499,41 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       {/* ── Unified banners - above two-column grid ── */}
       {!hasDraftProfile && !loading && (
         <div style={{ marginBottom: 28 }}>
-          {/* Profile completeness banner */}
-          {profileIncomplete && !bannerDismissed && (
+          {/* Profile completeness card */}
+          {missingFields.length > 0 && !bannerDismissed && (
             <div style={{
-              background: '#111118', border: '1px solid #1e2433', borderLeft: '4px solid #f59e0b',
-              borderRadius: 10, padding: '16px 20px', marginBottom: 12,
-              display: 'flex', alignItems: 'center', gap: 16,
+              background: '#111118', border: '1px solid #1e2433', borderLeft: '3px solid #f0a623',
+              borderRadius: 10, padding: '20px 24px', marginBottom: 12,
             }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-                <path d="M12 9v4m0 4h.01M12 2L2 22h20L12 2z" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '14px', color: '#f0f2f8' }}>
-                  Your profile is incomplete
-                </div>
-                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: '13px', color: '#96a0b8', marginTop: 2 }}>
-                  Complete your profile so clients can find and contact you.
-                </div>
+              <div style={{
+                fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px',
+                letterSpacing: '0.08em', textTransform: 'uppercase', color: '#f0a623',
+                marginBottom: 10,
+              }}>
+                Complete Your Profile
               </div>
+              <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: '14px', color: '#c8cdd8', lineHeight: 1.55, marginBottom: 14 }}>
+                Your profile is missing a few things that help Deaf community members and requesters find and connect with you:
+              </div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                {missingFields.map(item => (
+                  <li key={item} style={{ display: 'flex', gap: 10, fontFamily: "'Inter', sans-serif", fontSize: '13px', color: '#c8cdd8' }}>
+                    <span style={{ color: '#f0a623' }}>&bull;</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
               <Link
                 href="/interpreter/dashboard/profile"
                 style={{
-                  fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '13px',
-                  color: '#f59e0b', textDecoration: 'none', whiteSpace: 'nowrap', marginLeft: 'auto', flexShrink: 0,
+                  display: 'inline-block',
+                  fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px',
+                  color: '#0a0a0f', background: '#f0a623',
+                  padding: '8px 16px', borderRadius: 8,
+                  textDecoration: 'none',
                 }}
               >
-                Complete Profile &rarr;
+                Go to Profile Editor
               </Link>
             </div>
           )}

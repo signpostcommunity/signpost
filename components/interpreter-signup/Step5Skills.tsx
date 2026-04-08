@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useForm } from './FormContext'
 import {
-  StepWrapper, FormSection, SectionTitle, FormNav,
+  StepWrapper, FormSection, SectionTitle, FormNav, InfoNote,
 } from './FormFields'
 import { SPECIALIZATION_CATEGORIES, SPECIALIZED_SKILLS } from '@/lib/constants/specializations'
 
@@ -48,9 +48,12 @@ export default function Step5Skills({ onBack, onContinue }: {
       {/* Settings & Specializations */}
       <FormSection>
         <SectionTitle>Settings &amp; Specializations</SectionTitle>
-        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12, lineHeight: 1.6 }}>
+        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 12, marginTop: -12, lineHeight: 1.6 }}>
           Select the settings and specialization areas where you work. These help clients find you.
         </p>
+        <InfoNote>
+          Selecting specializations helps Deaf community members and requesters find you in directory searches. Profiles without specializations won&apos;t appear in filtered results.
+        </InfoNote>
 
         <div style={{ fontSize: '0.82rem', color: 'var(--accent)', fontWeight: 600, marginBottom: 16 }}>
           {formData.specializations.length} specialization{formData.specializations.length !== 1 ? 's' : ''} selected

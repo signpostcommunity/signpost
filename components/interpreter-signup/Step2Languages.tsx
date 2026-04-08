@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useForm } from './FormContext'
 import {
-  StepWrapper, FormSection, SectionTitle, FormNav, Chip,
+  StepWrapper, FormSection, SectionTitle, FormNav, Chip, FieldError,
 } from './FormFields'
 import {
   SIGN_LANGUAGES_TOP6, SIGN_LANGUAGES_BY_REGION,
@@ -145,6 +145,16 @@ export default function Step2Languages({ onBack, onContinue }: {
   const { formData, updateField, saveDraft } = useForm()
   const [signRegional, setSignRegional] = useState<string[]>([])
   const [spokenRegional, setSpokenRegional] = useState<string[]>([])
+  const [signError, setSignError] = useState<string | null>(null)
+  const [spokenError, setSpokenError] = useState<string | null>(null)
+
+  function validateAndContinue() {
+    const sErr = formData.signLanguages.length === 0 ? 'Please select at least one sign language.' : null
+    const spErr = formData.spokenLanguages.length === 0 ? 'Please select at least one spoken language.' : null
+    setSignError(sErr)
+    setSpokenError(spErr)
+    if (!sErr && !spErr) onContinue()
+  }
 
   function toggleLang(field: 'signLanguages' | 'spokenLanguages', lang: string) {
     const current = formData[field]
@@ -197,6 +207,7 @@ export default function Step2Languages({ onBack, onContinue }: {
           onRemoveRegional={removeSignRegional}
           regionalSelected={signRegional}
         />
+        <FieldError>{signError}</FieldError>
       </FormSection>
 
       {/* Spoken Languages */}
@@ -215,9 +226,10 @@ export default function Step2Languages({ onBack, onContinue }: {
           onRemoveRegional={removeSpokenRegional}
           regionalSelected={spokenRegional}
         />
+        <FieldError>{spokenError}</FieldError>
       </FormSection>
 
-      <FormNav step={2} totalSteps={6} onBack={onBack} onContinue={onContinue} onSaveDraft={saveDraft} />
+      <FormNav step={2} totalSteps={6} onBack={onBack} onContinue={validateAndContinue} onSaveDraft={saveDraft} />
     </StepWrapper>
   )
 }
