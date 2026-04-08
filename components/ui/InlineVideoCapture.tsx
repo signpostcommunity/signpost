@@ -4,12 +4,17 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
 import Toast from '@/components/ui/Toast'
+import { saveDraftVideo, getDraftVideo, deleteDraftVideo } from '@/lib/videoDraft'
 
 interface InlineVideoCaptureProps {
   onVideoSaved: (url: string, source: 'recorded' | 'uploaded' | 'url') => void
   accentColor?: string
   storageBucket?: string
   storagePath?: string
+  /** If provided, enables IndexedDB draft persistence keyed on this id. */
+  userId?: string
+  /** Default state for the audio capture toggle. Default true. */
+  audioDefault?: boolean
 }
 
 type Tab = 'record' | 'upload' | 'url'
@@ -23,8 +28,17 @@ export default function InlineVideoCapture({
   accentColor = '#7b61ff',
   storageBucket = 'videos',
   storagePath = '',
+  userId,
+  audioDefault = true,
 }: InlineVideoCaptureProps) {
   const [activeTab, setActiveTab] = useState<Tab>('record')
+  const [audioEnabled, setAudioEnabled] = useState(audioDefault)
+
+  // Draft state (IndexedDB-backed, only active when userId is provided)
+  const [draftBlob, setDraftBlob] = useState<Blob | null>(null)
+  const [draftUrl, setDraftUrl] = useState('')
+  const [draftLoading, setDraftLoading] = useState(false)
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false)
 
   // Record state
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -73,9 +87,27 @@ export default function InlineVideoCapture({
       stopCamera()
       if (recordedUrl) URL.revokeObjectURL(recordedUrl)
       if (uploadedPreviewUrl) URL.revokeObjectURL(uploadedPreviewUrl)
+      if (draftUrl) URL.revokeObjectURL(draftUrl)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Load any existing draft from IndexedDB on mount
+  useEffect(() => {
+    if (!userId) return
+    let cancelled = false
+    setDraftLoading(true)
+    getDraftVideo(userId)
+      .then(blob => {
+        if (cancelled || !blob) return
+        const url = URL.createObjectURL(blob)
+        setDraftBlob(blob)
+        setDraftUrl(url)
+      })
+      .catch(() => { /* IndexedDB unavailable, ignore */ })
+      .finally(() => { if (!cancelled) setDraftLoading(false) })
+    return () => { cancelled = true }
+  }, [userId])
 
   // Camera setup
   async function startCamera() {
@@ -84,7 +116,7 @@ export default function InlineVideoCapture({
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: true,
+        audio: audioEnabled,
       })
       streamRef.current = stream
       if (videoRef.current) {
@@ -224,7 +256,8 @@ export default function InlineVideoCapture({
     setUrlValid(isYoutube || isVimeo)
   }
 
-  // Upload to Supabase storage
+  // Upload to Supabase storage. On failure, persist the blob as a draft so
+  // the recording is not lost if the user navigates away.
   async function uploadToStorage(blob: Blob, ext: string): Promise<string | null> {
     setUploading(true)
     setUploadProgress(0)
@@ -250,11 +283,24 @@ export default function InlineVideoCapture({
       setUploading(false)
       setUploadProgress(0)
       setUploadError(error.message)
+      // Persist as draft so the recording is not lost
+      const draftKey = userId || user.id
+      try {
+        await saveDraftVideo(draftKey, blob)
+        setToast('Upload failed. Your video has been saved as a draft. You can try again anytime from your profile editor.')
+      } catch {
+        setToast(`Upload failed: ${error.message}`)
+      }
       return null
     }
 
     setUploadProgress(100)
     const { data: { publicUrl } } = supabase.storage.from(storageBucket).getPublicUrl(filename)
+    // Clear any draft now that the video is live
+    try {
+      const draftKey = userId || user.id
+      await deleteDraftVideo(draftKey)
+    } catch { /* ignore */ }
     setUploading(false)
     return publicUrl
   }
@@ -263,14 +309,70 @@ export default function InlineVideoCapture({
     if (!recordedBlob) return
     const ext = recordedBlob.type.includes('webm') ? 'webm' : 'mp4'
     const url = await uploadToStorage(recordedBlob, ext)
-    if (url) onVideoSaved(url, 'recorded')
+    if (url) {
+      clearLocalDraftState()
+      onVideoSaved(url, 'recorded')
+    }
   }
 
   async function handleUseUploaded() {
     if (!uploadedFile) return
     const ext = uploadedFile.name.split('.').pop()?.toLowerCase() || 'mp4'
     const url = await uploadToStorage(uploadedFile, ext)
-    if (url) onVideoSaved(url, 'uploaded')
+    if (url) {
+      clearLocalDraftState()
+      onVideoSaved(url, 'uploaded')
+    }
+  }
+
+  function clearLocalDraftState() {
+    if (draftUrl) URL.revokeObjectURL(draftUrl)
+    setDraftBlob(null)
+    setDraftUrl('')
+  }
+
+  // Save the current recording (or upload) to IndexedDB without publishing.
+  async function handleSaveAsDraft(blob: Blob) {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    const draftKey = userId || user?.id
+    if (!draftKey) {
+      setToast('Could not save draft (not signed in).')
+      return
+    }
+    try {
+      await saveDraftVideo(draftKey, blob)
+      // Refresh the draft preview
+      if (draftUrl) URL.revokeObjectURL(draftUrl)
+      const url = URL.createObjectURL(blob)
+      setDraftBlob(blob)
+      setDraftUrl(url)
+      setToast('Draft saved. Your video is stored locally and is not yet visible on your public profile.')
+    } catch {
+      setToast('Could not save draft. Your browser may not support local storage.')
+    }
+  }
+
+  async function handleGoLiveDraft() {
+    if (!draftBlob) return
+    const ext = draftBlob.type.includes('webm') ? 'webm' : 'mp4'
+    const url = await uploadToStorage(draftBlob, ext)
+    if (url) {
+      clearLocalDraftState()
+      onVideoSaved(url, 'recorded')
+    }
+  }
+
+  async function handleDiscardDraft() {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    const draftKey = userId || user?.id
+    if (draftKey) {
+      try { await deleteDraftVideo(draftKey) } catch { /* ignore */ }
+    }
+    clearLocalDraftState()
+    setShowDiscardConfirm(false)
+    setToast('Draft discarded.')
   }
 
   function handleUsePastedUrl() {
@@ -329,6 +431,100 @@ export default function InlineVideoCapture({
       borderRadius: 12,
       overflow: 'hidden',
     }}>
+      {/* Draft banner */}
+      {draftBlob && draftUrl && (
+        <div style={{
+          background: 'rgba(255,193,7,0.05)',
+          borderLeft: '3px solid #ffc107',
+          padding: '16px 20px',
+        }}>
+          <div style={{
+            color: '#ffc107', fontSize: '0.82rem', fontWeight: 600,
+            marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em',
+            fontFamily: "'DM Sans', sans-serif",
+          }}>
+            Saved draft video
+          </div>
+          <p style={{
+            color: 'var(--muted)', fontSize: '0.85rem', margin: '0 0 12px',
+            fontFamily: "'DM Sans', sans-serif",
+          }}>
+            You have a saved draft video. Go live to publish it on your public profile.
+          </p>
+          <div style={{
+            width: '100%', aspectRatio: '16/9', borderRadius: 10,
+            overflow: 'hidden', marginBottom: 12, background: '#000',
+          }}>
+            <video src={draftUrl} controls style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          </div>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            <button
+              style={{
+                background: '#00e5ff', color: '#0a0a0f', border: 'none',
+                borderRadius: 10, padding: '10px 22px',
+                fontFamily: "'DM Sans', sans-serif", fontWeight: 600, fontSize: '0.88rem',
+                cursor: uploading ? 'wait' : 'pointer', opacity: uploading ? 0.6 : 1,
+              }}
+              onClick={handleGoLiveDraft}
+              disabled={uploading}
+            >
+              {uploading ? 'Publishing...' : 'Go Live'}
+            </button>
+            <button
+              style={{
+                background: 'none', border: '1px solid var(--border)',
+                borderRadius: 10, padding: '10px 22px', color: 'var(--muted)',
+                fontFamily: "'DM Sans', sans-serif", fontWeight: 500, fontSize: '0.88rem',
+                cursor: 'pointer',
+              }}
+              onClick={() => setShowDiscardConfirm(true)}
+              disabled={uploading}
+            >
+              Discard Draft
+            </button>
+          </div>
+          {showDiscardConfirm && (
+            <div style={{
+              marginTop: 12, padding: 12,
+              background: 'rgba(255,107,133,0.08)',
+              border: '1px solid rgba(255,107,133,0.3)',
+              borderRadius: 8,
+            }}>
+              <div style={{ color: 'var(--text)', fontSize: '0.85rem', marginBottom: 10 }}>
+                Discard this draft permanently? This cannot be undone.
+              </div>
+              <div style={{ display: 'flex', gap: 10 }}>
+                <button
+                  style={{
+                    background: '#ff6b85', color: '#0a0a0f', border: 'none',
+                    borderRadius: 8, padding: '8px 16px', fontWeight: 600,
+                    fontSize: '0.82rem', cursor: 'pointer',
+                  }}
+                  onClick={handleDiscardDraft}
+                >
+                  Yes, discard
+                </button>
+                <button
+                  style={{
+                    background: 'none', border: '1px solid var(--border)',
+                    borderRadius: 8, padding: '8px 16px', color: 'var(--muted)',
+                    fontSize: '0.82rem', cursor: 'pointer',
+                  }}
+                  onClick={() => setShowDiscardConfirm(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+      {draftLoading && !draftBlob && (
+        <div style={{ padding: '12px 20px', color: 'var(--muted)', fontSize: '0.8rem' }}>
+          Checking for saved drafts...
+        </div>
+      )}
+
       {/* Tab bar */}
       <div style={{
         display: 'flex',
@@ -497,9 +693,16 @@ export default function InlineVideoCapture({
                   </div>
                 )}
 
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
                   <button style={btnGhost} onClick={resetRecording} disabled={uploading}>
                     Record again
+                  </button>
+                  <button
+                    style={btnGhost}
+                    onClick={() => recordedBlob && handleSaveAsDraft(recordedBlob)}
+                    disabled={uploading || !recordedBlob}
+                  >
+                    Save as Draft
                   </button>
                   <button style={btnPill} onClick={handleUseRecorded} disabled={uploading}>
                     {uploading ? 'Uploading...' : 'Use this video'}
@@ -595,13 +798,20 @@ export default function InlineVideoCapture({
                   </div>
                 )}
 
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}>
                   <button style={btnGhost} onClick={() => {
                     setUploadedFile(null)
                     if (uploadedPreviewUrl) URL.revokeObjectURL(uploadedPreviewUrl)
                     setUploadedPreviewUrl('')
                   }} disabled={uploading}>
                     Choose another
+                  </button>
+                  <button
+                    style={btnGhost}
+                    onClick={() => uploadedFile && handleSaveAsDraft(uploadedFile)}
+                    disabled={uploading || !uploadedFile}
+                  >
+                    Save as Draft
                   </button>
                   <button style={btnPill} onClick={handleUseUploaded} disabled={uploading}>
                     {uploading ? 'Uploading...' : 'Use this video'}

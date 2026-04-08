@@ -1642,6 +1642,8 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
               accentColor="#00e5ff"
               storageBucket="interpreter-videos"
               storagePath={p.id ? `${p.id}` : undefined}
+              userId={p.id || undefined}
+              audioDefault={false}
             />
           )}
 
