@@ -20,6 +20,7 @@ export default function Footer() {
 
       <div style={{ display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
         <Link href="/about" className="footer-link">About Us</Link>
+        <Link href="/about?tab=faq" className="footer-link">FAQ</Link>
         <a href="mailto:hello@signpost.community" className="footer-link">hello@signpost.community</a>
         <Link href="/privacy" className="footer-link">Privacy Policy</Link>
         <Link href="/policies" className="footer-link">Terms &amp; Policies</Link>

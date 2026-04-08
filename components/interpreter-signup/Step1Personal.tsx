@@ -14,6 +14,8 @@ import { createClient } from '@/lib/supabase/client'
 import { useSearchParams } from 'next/navigation'
 import { generateSlug, validateSlug } from '@/lib/slugUtils'
 import { resizeImage } from '@/lib/imageUtils'
+import PhotoCropModal from '@/components/PhotoCropModal'
+import { readFileAsDataUrl } from '@/lib/cropImage'
 
 const REGIONS = [
   { label: '🌍 Worldwide', color: '#00e5ff' },
@@ -89,6 +91,7 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadMsg, setUploadMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
+  const [cropSrc, setCropSrc] = useState<string | null>(null)
 
   // Slug state
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
@@ -156,14 +159,27 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
     )
   }
 
-  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
+  async function handlePhotoFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0]
+    if (!f) return
+    setUploadMsg(null)
+    try {
+      const dataUrl = await readFileAsDataUrl(f)
+      setCropSrc(dataUrl)
+    } catch {
+      setUploadMsg({ text: 'Could not read image.', type: 'error' })
+    }
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  async function handlePhotoUpload(croppedBlob: Blob) {
+    setCropSrc(null)
+    const file = new File([croppedBlob], 'avatar.jpg', { type: 'image/jpeg' })
 
     setUploading(true)
     setUploadMsg(null)
 
-    let uploadFile = file
+    let uploadFile: File = file
     if (file.size > 2 * 1024 * 1024) {
       try {
         uploadFile = await resizeImage(file, 2)
@@ -272,9 +288,16 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              onChange={handlePhotoUpload}
+              onChange={handlePhotoFileSelect}
               style={{ display: 'none' }}
             />
+            {cropSrc && (
+              <PhotoCropModal
+                imageSrc={cropSrc}
+                onCropped={handlePhotoUpload}
+                onCancel={() => setCropSrc(null)}
+              />
+            )}
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
