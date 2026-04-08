@@ -180,9 +180,30 @@ interface OverviewClientProps {
   vanitySlug: string | null
   calendarToken: string | null
   activeAwayPeriod?: { end_date: string; message: string } | null
+  directoryVisible?: boolean
 }
 
-export default function OverviewClient({ interpreterProfileId, firstName, lastName, profileStatus, vanitySlug, calendarToken, activeAwayPeriod }: OverviewClientProps) {
+export default function OverviewClient({ interpreterProfileId, firstName, lastName, profileStatus, vanitySlug, calendarToken, activeAwayPeriod, directoryVisible = true }: OverviewClientProps) {
+  const [visibilityState, setVisibilityState] = useState<boolean>(directoryVisible)
+  const [visibilityUpdating, setVisibilityUpdating] = useState(false)
+
+  async function makeProfileVisible() {
+    if (!interpreterProfileId) return
+    setVisibilityUpdating(true)
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('interpreter_profiles')
+      .update({ directory_visible: true, updated_at: new Date().toISOString() })
+      .eq('id', interpreterProfileId)
+    setVisibilityUpdating(false)
+    if (!error) {
+      setVisibilityState(true)
+      setToast('Profile visible in directory')
+    } else {
+      setToast(`Failed to update visibility: ${error.message}`)
+    }
+  }
+
   const displayName = firstName || 'there'
   const hasDraftProfile = profileStatus === 'draft'
   const [toast, setToast] = useState<string | null>(null)
@@ -499,6 +520,37 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       {/* ── Unified banners - above two-column grid ── */}
       {!hasDraftProfile && !loading && (
         <div style={{ marginBottom: 28 }}>
+          {/* Profile paused banner */}
+          {!visibilityState && (
+            <div style={{
+              background: '#111118', border: '1px solid #1e2433', borderLeft: '3px solid #f0a623',
+              borderRadius: 10, padding: '20px 24px', marginBottom: 12,
+            }}>
+              <div style={{
+                fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14,
+                color: '#96a0b8', lineHeight: 1.6, marginBottom: 10,
+              }}>
+                Your profile is currently hidden from the directory.
+                Requesters and Deaf community members cannot find you in search.
+              </div>
+              <button
+                type="button"
+                onClick={makeProfileVisible}
+                disabled={visibilityUpdating}
+                style={{
+                  background: 'none', border: 'none', padding: 0,
+                  color: '#00e5ff', fontFamily: "'Inter', sans-serif",
+                  fontWeight: 600, fontSize: 14,
+                  cursor: visibilityUpdating ? 'wait' : 'pointer',
+                  opacity: visibilityUpdating ? 0.6 : 1,
+                  textDecoration: 'underline',
+                }}
+              >
+                {visibilityUpdating ? 'Updating...' : 'Make my profile visible'}
+              </button>
+            </div>
+          )}
+
           {/* Profile completeness card */}
           {missingFields.length > 0 && !bannerDismissed && (
             <div style={{

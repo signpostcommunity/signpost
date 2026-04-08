@@ -7,13 +7,13 @@ export default async function OverviewPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  let profile: { id: string; first_name: string; last_name: string; status: string; vanity_slug: string | null; calendar_token: string | null } | null = null
+  let profile: { id: string; first_name: string; last_name: string; status: string; vanity_slug: string | null; calendar_token: string | null; directory_visible: boolean } | null = null
   let activeAwayPeriod: { end_date: string; message: string } | null = null
 
   if (user) {
     const { data, error } = await supabase
       .from('interpreter_profiles')
-      .select('id, first_name, last_name, status, vanity_slug, calendar_token')
+      .select('id, first_name, last_name, status, vanity_slug, calendar_token, directory_visible')
       .eq('user_id', user.id)
       .maybeSingle()
     if (error) console.error('Failed to load interpreter profile:', error.message)
@@ -44,6 +44,7 @@ export default async function OverviewPage() {
       vanitySlug={profile?.vanity_slug || null}
       calendarToken={profile?.calendar_token || null}
       activeAwayPeriod={activeAwayPeriod}
+      directoryVisible={profile?.directory_visible !== false}
     />
   )
 }
