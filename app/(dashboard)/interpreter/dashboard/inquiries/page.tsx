@@ -26,6 +26,7 @@ interface Booking {
   location: string | null
   format: string | null
   recurrence: string | null
+  interpreter_count: number | null
   notes: string | null
   status: string
   is_seed: boolean | null
@@ -396,6 +397,18 @@ function DetailModal({ booking, onClose }: {
             </div>
           </div>
 
+          <div style={sectionStyle}>
+            <div style={sectionLabelStyle}>Job Details</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', fontSize: '0.85rem' }}>
+              <div><span style={{ color: 'var(--muted)' }}>Format:</span> {booking.format ? booking.format.replace('_', '-') : 'Not specified'}</div>
+              <div><span style={{ color: 'var(--muted)' }}>Specialization:</span> {booking.specialization || 'Not specified'}</div>
+              <div><span style={{ color: 'var(--muted)' }}>Interpreters requested:</span> {booking.interpreter_count ?? 1}</div>
+              {booking.recurrence && booking.recurrence !== 'one-time' && (
+                <div><span style={{ color: 'var(--muted)' }}>Recurrence:</span> {booking.recurrence}</div>
+              )}
+            </div>
+          </div>
+
           {(booking.notes || booking.specialization) && (
             <div style={sectionStyle}>
               <div style={sectionLabelStyle}>Job Context</div>
@@ -637,7 +650,7 @@ export default function InquiriesPage() {
       if (bookingIds.length > 0) {
         const { data: bookingsData, error: bookingsErr } = await supabase
           .from('bookings')
-          .select('id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed, created_at, request_type, context_video_url')
+          .select('id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, interpreter_count, notes, status, is_seed, created_at, request_type, context_video_url')
           .in('id', bookingIds)
 
         if (bookingsErr) {

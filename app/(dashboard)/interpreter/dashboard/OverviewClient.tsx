@@ -673,6 +673,37 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
             </div>
           )}
 
+          {/* No intro video CTA */}
+          {!hasIntroVideo && videoRequestCount === 0 && (
+            <div style={{
+              background: '#111118', border: '1px solid #1e2433', borderLeft: '4px solid #00e5ff',
+              borderRadius: 10, padding: '16px 20px', marginBottom: 12,
+              display: 'flex', alignItems: 'center', gap: 16,
+            }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }} aria-hidden="true">
+                <path d="M23 7l-7 5 7 5V7z" stroke="#00e5ff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                <rect x="1" y="5" width="15" height="14" rx="2" ry="2" stroke="#00e5ff" strokeWidth="1.6" />
+              </svg>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '14px', color: '#f0f2f8' }}>
+                  Add an intro video
+                </div>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: '13px', color: '#96a0b8', marginTop: 2 }}>
+                  Deaf community members love seeing interpreter intro videos. Record one directly in your browser.
+                </div>
+              </div>
+              <Link
+                href="/interpreter/dashboard/profile?tab=Bio+%26+Video"
+                style={{
+                  fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '13px',
+                  color: '#00e5ff', textDecoration: 'none', whiteSpace: 'nowrap', marginLeft: 'auto', flexShrink: 0,
+                }}
+              >
+                Record My Intro Video &rarr;
+              </Link>
+            </div>
+          )}
+
           {/* Video request demand banner */}
           {!hasIntroVideo && videoRequestCount > 0 && (
             <div style={{
