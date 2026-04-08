@@ -102,7 +102,7 @@ function recipientStatusLabel(s: string): string {
   switch (s) {
     case 'sent': return 'Pending'
     case 'viewed': return 'Viewed'
-    case 'responded': return 'Responded'
+    case 'responded': return 'Rate received'
     case 'confirmed': return 'Confirmed'
     case 'declined': return 'Declined'
     case 'withdrawn': return 'Withdrawn'
@@ -113,11 +113,85 @@ function recipientStatusLabel(s: string): string {
 function recipientStatusColor(s: string): string {
   switch (s) {
     case 'sent': case 'viewed': return '#f97316'
-    case 'responded': return 'var(--accent)'
+    case 'responded': return '#f59e0b'
     case 'confirmed': return '#34d399'
     case 'declined': case 'withdrawn': return '#666'
     default: return 'var(--muted)'
   }
+}
+
+function RecipientStatusPill({ status }: { status: string }) {
+  const isRate = status === 'responded'
+  const color = recipientStatusColor(status)
+  if (!isRate) {
+    return (
+      <span style={{
+        fontSize: '0.7rem', fontWeight: 600, color,
+        fontFamily: "'Inter', sans-serif",
+      }}>
+        {recipientStatusLabel(status)}
+      </span>
+    )
+  }
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      fontSize: '0.7rem', fontWeight: 600, color,
+      fontFamily: "'Inter', sans-serif",
+      background: 'rgba(245, 158, 11, 0.15)',
+      border: '1px solid rgba(245, 158, 11, 0.4)',
+      padding: '3px 9px', borderRadius: 100,
+    }}>
+      <span style={{ width: 4, height: 4, borderRadius: '50%', background: color, display: 'inline-block' }} />
+      Rate received
+    </span>
+  )
+}
+
+interface RateProfileTerms {
+  hourly_rate: number | null
+  currency: string | null
+  min_booking: number | null
+  after_hours_diff: number | null
+  after_hours_description: string | null
+  cancellation_policy: string | null
+  late_cancel_fee: number | null
+  travel_expenses: Record<string, unknown> | null
+  additional_terms: string | null
+}
+
+function RateTermsList({ rp, fallbackRate }: { rp: RateProfileTerms | undefined; fallbackRate: number | null }) {
+  if (!rp && fallbackRate == null) return null
+  const rate = rp?.hourly_rate ?? fallbackRate
+  const travel = rp?.travel_expenses
+    ? Object.entries(rp.travel_expenses)
+        .filter(([, v]) => v)
+        .map(([k]) => k.charAt(0).toUpperCase() + k.slice(1))
+        .join(', ')
+    : ''
+  const rows: { label: string; value: string }[] = []
+  if (rate != null) rows.push({ label: 'Rate', value: `$${rate}/hr` })
+  if (rp?.min_booking) rows.push({ label: 'Minimum booking', value: `${rp.min_booking} hours` })
+  if (rp?.cancellation_policy) rows.push({ label: 'Cancellation policy', value: rp.cancellation_policy })
+  if (rp?.late_cancel_fee != null) rows.push({ label: 'Late cancellation fee', value: `${rp.late_cancel_fee}% of booking fee` })
+  if (travel) rows.push({ label: 'Travel expenses', value: travel })
+  if (rp?.after_hours_diff != null) rows.push({
+    label: 'After-hours',
+    value: `+$${rp.after_hours_diff}/hr${rp.after_hours_description ? ` (${rp.after_hours_description})` : ''}`,
+  })
+  if (rp?.additional_terms) rows.push({ label: 'Additional terms', value: rp.additional_terms })
+  return (
+    <div style={{
+      marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4,
+      fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.5,
+    }}>
+      {rows.map((r, i) => (
+        <div key={i}>
+          <span style={{ color: 'var(--text)', fontWeight: 600 }}>{r.label}:</span> {r.value}
+        </div>
+      ))}
+    </div>
+  )
 }
 
 /* ── Status tabs ── */
@@ -139,11 +213,13 @@ export default function RequestsClient({
   bookings,
   recipients,
   interpreterMap,
+  rateProfileMap = {},
   dhhClients,
 }: {
   bookings: Booking[]
   recipients: Recipient[]
   interpreterMap: Record<string, InterpreterInfo>
+  rateProfileMap?: Record<string, RateProfileTerms>
   dhhClients: DhhClient[]
 }) {
   const router = useRouter()
@@ -545,9 +621,7 @@ export default function RequestsClient({
                                 border: '1px solid var(--border)',
                               }}>
                                 <span style={{ color: 'var(--text)', fontWeight: 600 }}>{firstName}</span>
-                                <span style={{ color: recipientStatusColor(rec.status), fontWeight: 600 }}>
-                                  {recipientStatusLabel(rec.status)}
-                                </span>
+                                <RecipientStatusPill status={rec.status} />
                               </span>
                             )
                           })}
@@ -604,14 +678,14 @@ export default function RequestsClient({
                             const interp = interpreterMap[rec.interpreter_id]
                             const interpName = interp?.name || 'Unknown Interpreter'
                             return (
-                              <div key={rec.id} style={{
-                                background: 'var(--surface)', border: '1px solid var(--border)',
+                              <div key={rec.id} className="req-resp-card" style={{
+                                background: 'var(--surface)', border: '1px solid var(--card-border)',
                                 borderRadius: 'var(--radius-sm)', padding: '14px 18px',
-                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
                                 gap: 12, flexWrap: 'wrap',
                               }}>
                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4, flexWrap: 'wrap' }}>
                                     <Link
                                       href={`/directory/${rec.interpreter_id}`}
                                       style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)', textDecoration: 'none' }}
@@ -620,29 +694,31 @@ export default function RequestsClient({
                                     >
                                       {interpName}
                                     </Link>
-                                    <span style={{
-                                      fontSize: '0.7rem', fontWeight: 600, color: recipientStatusColor(rec.status),
-                                      fontFamily: "'Inter', sans-serif",
-                                    }}>
-                                      {recipientStatusLabel(rec.status)}
-                                    </span>
+                                    <RecipientStatusPill status={rec.status} />
                                   </div>
-                                  {rec.response_rate != null && (
+                                  {rec.status === 'responded' || rec.status === 'confirmed' ? (
+                                    <RateTermsList
+                                      rp={rec.rate_profile_id ? rateProfileMap[rec.rate_profile_id] : undefined}
+                                      fallbackRate={rec.response_rate}
+                                    />
+                                  ) : rec.response_rate != null ? (
                                     <span style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600 }}>
                                       Rate: ${rec.response_rate}/hr
                                     </span>
-                                  )}
+                                  ) : null}
                                 </div>
-                                <div style={{ display: 'flex', gap: 8, flexShrink: 0, flexWrap: 'wrap' }}>
+                                <div className="req-resp-actions" style={{ display: 'flex', gap: 10, flexShrink: 0, flexWrap: 'wrap' }}>
                                   {rec.status === 'responded' && (
                                     <Link
                                       href={`/request/dashboard/accept/${booking.id}/${rec.id}`}
                                       style={{
                                         background: 'var(--accent)', color: '#000',
-                                        padding: '7px 16px', borderRadius: 'var(--radius-sm)',
+                                        padding: '10px 20px', borderRadius: 'var(--radius-sm)',
                                         fontSize: '0.78rem', fontWeight: 700,
                                         fontFamily: "'Inter', sans-serif",
                                         textDecoration: 'none', whiteSpace: 'nowrap',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        minHeight: 44,
                                       }}
                                     >
                                       Review & Accept
@@ -651,11 +727,13 @@ export default function RequestsClient({
                                   <Link
                                     href="/request/dashboard/inbox"
                                     style={{
-                                      background: 'none', border: '1px solid var(--border)',
-                                      color: 'var(--muted)', padding: '7px 16px',
+                                      background: 'none', border: '1px solid var(--card-border)',
+                                      color: 'var(--text)', padding: '10px 20px',
                                       borderRadius: 'var(--radius-sm)', fontSize: '0.78rem',
                                       fontFamily: "'Inter', sans-serif",
                                       textDecoration: 'none', whiteSpace: 'nowrap',
+                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                      minHeight: 44,
                                     }}
                                   >
                                     Message

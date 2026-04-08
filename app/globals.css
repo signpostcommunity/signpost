@@ -5,7 +5,8 @@
   --bg: #0a0a0f;
   --surface: #16161f;
   --surface2: #16161f;
-  --border: #1e2433;
+  --border: #2a3245;
+  --card-border: #3a4358;
   --accent: #00e5ff;
   --accent2: #a78bfa;
   --accent3: #ff6b85;
@@ -273,6 +274,19 @@ img {
   /* Card padding reduction */
   .interp-card > div:last-child {
     padding: 20px !important;
+  }
+
+  /* Requester response card: stack actions full-width on mobile */
+  .req-resp-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .req-resp-actions {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+  .req-resp-actions > a {
+    width: 100% !important;
   }
 
   /* Touch targets on mobile — 44px minimum (WCAG 2.5.8) */

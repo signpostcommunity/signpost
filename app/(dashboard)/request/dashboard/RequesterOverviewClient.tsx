@@ -107,7 +107,7 @@ function recipientStatusLabel(s: string): string {
   switch (s) {
     case 'sent': return 'Pending'
     case 'viewed': return 'Viewed'
-    case 'responded': return 'Rate sent'
+    case 'responded': return 'Rate received'
     case 'confirmed': return 'Confirmed'
     case 'declined': return 'Declined'
     case 'withdrawn': return 'Withdrawn'
@@ -118,7 +118,7 @@ function recipientStatusLabel(s: string): string {
 function recipientStatusColor(s: string): string {
   switch (s) {
     case 'sent': case 'viewed': return '#f97316'
-    case 'responded': return '#00e5ff'
+    case 'responded': return '#f59e0b'
     case 'confirmed': return '#34d399'
     case 'declined': case 'withdrawn': return '#666'
     default: return '#96a0b8'
@@ -277,9 +277,19 @@ export default function RequesterOverviewClient({
                           <span style={{ color: 'var(--text)', fontWeight: 600 }}>
                             {recentInterpreterMap[rec.interpreter_id] || 'Unknown'}
                           </span>
-                          <span style={{ color: recipientStatusColor(rec.status), fontWeight: 600 }}>
-                            {recipientStatusLabel(rec.status)}
-                          </span>
+                          {rec.status === 'responded' ? (
+                            <span style={{
+                              display: 'inline-flex', alignItems: 'center', gap: 5,
+                              color: '#f59e0b', fontWeight: 600,
+                            }}>
+                              <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }} />
+                              Rate received
+                            </span>
+                          ) : (
+                            <span style={{ color: recipientStatusColor(rec.status), fontWeight: 600 }}>
+                              {recipientStatusLabel(rec.status)}
+                            </span>
+                          )}
                         </span>
                       ))}
                     </div>

@@ -57,6 +57,33 @@ export default async function AllRequestsPage() {
     allRecipients = recipients || []
   }
 
+  // Fetch rate profiles referenced by recipients (full terms for requester view)
+  const admin0 = getSupabaseAdmin()
+  const rateProfileIds = [...new Set(allRecipients.map(r => r.rate_profile_id).filter((x): x is string => !!x))]
+  const rateProfileMap: Record<string, {
+    hourly_rate: number | null
+    currency: string | null
+    min_booking: number | null
+    after_hours_diff: number | null
+    after_hours_description: string | null
+    cancellation_policy: string | null
+    late_cancel_fee: number | null
+    travel_expenses: Record<string, unknown> | null
+    additional_terms: string | null
+  }> = {}
+  if (rateProfileIds.length > 0) {
+    const { data: rps } = await admin0
+      .from('interpreter_rate_profiles')
+      .select('id, hourly_rate, currency, min_booking, after_hours_diff, after_hours_description, cancellation_policy, late_cancel_fee, travel_expenses, additional_terms')
+      .in('id', rateProfileIds)
+    if (rps) {
+      for (const rp of rps) {
+        const { id, ...rest } = rp as { id: string; [k: string]: unknown }
+        rateProfileMap[id] = rest as (typeof rateProfileMap)[string]
+      }
+    }
+  }
+
   // Fetch interpreter names for all recipients (use admin to bypass RLS)
   const interpreterIds = [...new Set(allRecipients.map(r => r.interpreter_id))]
   let interpreterMap: Record<string, { name: string; first_name: string | null; last_name: string | null }> = {}
@@ -98,6 +125,7 @@ export default async function AllRequestsPage() {
       bookings={allBookings}
       recipients={allRecipients}
       interpreterMap={interpreterMap}
+      rateProfileMap={rateProfileMap}
       dhhClients={dhhClients}
     />
   )
