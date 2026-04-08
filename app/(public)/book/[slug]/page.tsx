@@ -16,7 +16,7 @@ async function getInterpreterBySlug(slug: string) {
   // Look up profile by vanity_slug
   const { data, error } = await supabase
     .from('interpreter_profiles')
-    .select('id, user_id, name, first_name, last_name, vanity_slug, status, city, state, country, interpreter_type, work_mode, years_experience, bio, bio_specializations, bio_extra, available, avatar_color, photo_url, video_url, video_desc, rating, review_count, sign_languages, spoken_languages, specializations, specialized_skills, regions, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, draft_data')
+    .select('id, user_id, name, first_name, last_name, vanity_slug, status, directory_visible, city, state, country, interpreter_type, work_mode, years_experience, bio, bio_specializations, bio_extra, available, avatar_color, photo_url, video_url, video_desc, rating, review_count, sign_languages, spoken_languages, specializations, specialized_skills, regions, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, draft_data')
     .ilike('vanity_slug', slug)
     .maybeSingle()
 
@@ -52,7 +52,14 @@ export default async function BookPage({ params }: Props) {
   const { slug } = await params
   const data = await getInterpreterBySlug(slug)
 
-  if (!data) {
+  const hidden = !!data && data.directory_visible === false
+  if (!data || hidden) {
+    const heading = hidden
+      ? "This profile is not currently available"
+      : "This interpreter profile wasn't found."
+    const body = hidden
+      ? "This interpreter has temporarily hidden their profile from the directory. They may return later."
+      : "The link may be outdated or the profile may no longer be available."
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', paddingTop: '120px' }}>
         <div style={{
@@ -64,10 +71,10 @@ export default async function BookPage({ params }: Props) {
             fontFamily: "'Syne', sans-serif", fontSize: '1.5rem',
             fontWeight: 700, marginBottom: 12,
           }}>
-            This interpreter profile wasn&apos;t found.
+            {heading}
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: 24, lineHeight: 1.6 }}>
-            The link may be outdated or the profile may no longer be available.
+            {body}
           </p>
           <Link
             href="/directory"

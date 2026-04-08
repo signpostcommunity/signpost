@@ -5,6 +5,39 @@ import { createClient } from '@/lib/supabase/server';
 import type { Interpreter } from '@/lib/types';
 import ProfileClient from './ProfileClient';
 
+function ProfileUnavailable() {
+  return (
+    <div style={{
+      maxWidth: 560, margin: '120px auto', padding: '48px 32px',
+      background: '#111118', border: '1px solid var(--border)',
+      borderRadius: 16, textAlign: 'center',
+    }}>
+      <h1 style={{
+        fontFamily: 'Syne, sans-serif', fontWeight: 775, fontSize: 27,
+        color: '#f0f2f8', margin: '0 0 12px', letterSpacing: '-0.02em',
+      }}>
+        This profile is not currently available
+      </h1>
+      <p style={{
+        fontFamily: 'Inter, sans-serif', fontWeight: 400, fontSize: 14,
+        color: '#96a0b8', lineHeight: 1.6, margin: '0 0 24px',
+      }}>
+        This interpreter has temporarily hidden their profile from the directory.
+        They may return later. In the meantime, browse other interpreters to find
+        the right match for your needs.
+      </p>
+      <a href="/directory" style={{
+        display: 'inline-block', padding: '12px 24px',
+        background: '#00e5ff', color: '#0a0a0f',
+        borderRadius: 10, textDecoration: 'none',
+        fontFamily: 'Inter, sans-serif', fontWeight: 600, fontSize: 14,
+      }}>
+        Browse the directory
+      </a>
+    </div>
+  );
+}
+
 interface Props {
   params: Promise<{ id: string }>;
 }
@@ -15,7 +48,7 @@ export default async function ProfilePage({ params }: Props) {
 
   const { data, error } = await supabase
     .from('interpreter_profiles')
-    .select('id, user_id, name, first_name, last_name, city, state, country, interpreter_type, work_mode, years_experience, gender_identity, bio, bio_specializations, bio_extra, available, avatar_color, photo_url, video_url, video_desc, rating, review_count, sign_languages, spoken_languages, specializations, specialized_skills, regions, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, draft_data, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_types_offering, mentorship_types_seeking, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking, interpreter_videos(video_url)')
+    .select('id, user_id, name, first_name, last_name, city, state, country, interpreter_type, work_mode, years_experience, gender_identity, bio, bio_specializations, bio_extra, available, avatar_color, photo_url, video_url, video_desc, rating, review_count, sign_languages, spoken_languages, specializations, specialized_skills, regions, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, draft_data, directory_visible, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_types_offering, mentorship_types_seeking, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking, interpreter_videos(video_url)')
     .eq('id', id)
     .in('status', ['approved', 'active'])
     .maybeSingle();
@@ -26,6 +59,10 @@ export default async function ProfilePage({ params }: Props) {
 
   if (!data) {
     notFound();
+  }
+
+  if (data.directory_visible === false) {
+    return <ProfileUnavailable />;
   }
 
   const fullName = data.name || [data.first_name, data.last_name].filter(Boolean).join(' ') || 'Interpreter';
