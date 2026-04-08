@@ -12,6 +12,8 @@ interface VideoRecorderProps {
   accentColor?: string
   storageBucket?: string
   storagePath?: string
+  /** Default state for the audio capture toggle. Default true. */
+  audioDefault?: boolean
 }
 
 type Tab = 'record' | 'upload' | 'url'
@@ -27,9 +29,11 @@ export default function VideoRecorder({
   accentColor = '#00e5ff',
   storageBucket = 'interpreter-videos',
   storagePath = '',
+  audioDefault = true,
 }: VideoRecorderProps) {
   const focusTrapRef = useFocusTrap(isOpen)
   const [activeTab, setActiveTab] = useState<Tab>('record')
+  const [audioEnabled, setAudioEnabled] = useState(audioDefault)
 
   // Record state
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -99,11 +103,15 @@ export default function VideoRecorder({
 
   // Camera setup
   async function startCamera() {
+    return startCameraWithAudio(audioEnabled)
+  }
+
+  async function startCameraWithAudio(audioOn: boolean) {
     setCameraError('')
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: true,
+        audio: audioOn,
       })
       streamRef.current = stream
       if (videoRef.current) {
@@ -454,6 +462,53 @@ export default function VideoRecorder({
                         </span>
                       </div>
                     )}
+                  </div>
+
+                  {/* Audio toggle */}
+                  <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    gap: 10, marginBottom: 12,
+                  }}>
+                    <span style={{
+                      color: 'var(--muted)', fontSize: '0.82rem',
+                      fontFamily: "'DM Sans', sans-serif",
+                    }}>
+                      Audio {audioEnabled ? 'on' : 'off'}
+                    </span>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={audioEnabled}
+                      aria-label="Toggle microphone audio"
+                      onClick={() => {
+                        const next = !audioEnabled
+                        setAudioEnabled(next)
+                        if (cameraReady && !recording) {
+                          stopCamera()
+                          setCameraReady(false)
+                          setTimeout(() => startCameraWithAudio(next), 0)
+                        }
+                      }}
+                      disabled={recording}
+                      style={{
+                        position: 'relative',
+                        width: 38, height: 22, borderRadius: 11,
+                        background: audioEnabled ? accentColor : '#2a2f3d',
+                        border: 'none',
+                        cursor: recording ? 'not-allowed' : 'pointer',
+                        transition: 'background 0.15s',
+                        padding: 0,
+                        opacity: recording ? 0.5 : 1,
+                      }}
+                    >
+                      <span style={{
+                        position: 'absolute',
+                        top: 2, left: audioEnabled ? 18 : 2,
+                        width: 18, height: 18, borderRadius: '50%',
+                        background: '#fff',
+                        transition: 'left 0.15s',
+                      }} />
+                    </button>
                   </div>
 
                   {/* Record controls */}

@@ -111,12 +111,16 @@ export default function InlineVideoCapture({
 
   // Camera setup
   async function startCamera() {
+    return startCameraWithAudio(audioEnabled)
+  }
+
+  async function startCameraWithAudio(audioOn: boolean) {
     setCameraError('')
     setCameraStarted(true)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
-        audio: audioEnabled,
+        audio: audioOn,
       })
       streamRef.current = stream
       if (videoRef.current) {
@@ -617,6 +621,60 @@ export default function InlineVideoCapture({
                       </span>
                     </div>
                   )}
+                </div>
+
+                {/* Audio toggle */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  gap: 10, marginBottom: 12,
+                }}>
+                  <span style={{
+                    color: 'var(--muted)', fontSize: '0.82rem',
+                    fontFamily: "'DM Sans', sans-serif",
+                  }}>
+                    Audio {audioEnabled ? 'on' : 'off'}
+                  </span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={audioEnabled}
+                    aria-label="Toggle microphone audio"
+                    onClick={() => {
+                      const next = !audioEnabled
+                      setAudioEnabled(next)
+                      // If camera already running, restart so the new audio
+                      // constraint takes effect.
+                      if (cameraStarted && !recording) {
+                        stopCamera()
+                        setCameraReady(false)
+                        setTimeout(() => {
+                          // use updated state via closure on next tick
+                          startCameraWithAudio(next)
+                        }, 0)
+                      }
+                    }}
+                    disabled={recording}
+                    style={{
+                      position: 'relative',
+                      width: 38, height: 22,
+                      borderRadius: 11,
+                      background: audioEnabled ? accentColor : '#2a2f3d',
+                      border: 'none',
+                      cursor: recording ? 'not-allowed' : 'pointer',
+                      transition: 'background 0.15s',
+                      padding: 0,
+                      opacity: recording ? 0.5 : 1,
+                    }}
+                  >
+                    <span style={{
+                      position: 'absolute',
+                      top: 2, left: audioEnabled ? 18 : 2,
+                      width: 18, height: 18,
+                      borderRadius: '50%',
+                      background: '#fff',
+                      transition: 'left 0.15s',
+                    }} />
+                  </button>
                 </div>
 
                 {/* Controls */}

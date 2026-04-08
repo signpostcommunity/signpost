@@ -164,6 +164,7 @@ export default function Step4BioVideo({ onBack, onContinue }: {
             }}
             accentColor="#00e5ff"
             storageBucket="interpreter-videos"
+            audioDefault={false}
           />
         )}
       </FormSection>

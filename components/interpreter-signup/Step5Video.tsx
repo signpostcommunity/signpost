@@ -247,6 +247,7 @@ export default function Step5Video({ onBack, onContinue }: {
             }}
             accentColor="#00e5ff"
             storageBucket="interpreter-videos"
+            audioDefault={false}
           />
         )}
       </FormSection>
