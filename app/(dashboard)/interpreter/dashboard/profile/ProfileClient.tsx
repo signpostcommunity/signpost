@@ -168,6 +168,7 @@ interface ProfileData {
   mentorship_paid?: string | null
   mentorship_bio_offering?: string | null
   mentorship_bio_seeking?: string | null
+  directory_visible?: boolean | null
 }
 
 interface NotificationPreferences {
@@ -482,6 +483,11 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const [notifPhone, setNotifPhone] = useState(p.notification_phone || p.phone || '')
   const [notifSaving, setNotifSaving] = useState(false)
 
+  // ── Directory visibility (pause profile) ─────────────────────────────
+  const [directoryVisible, setDirectoryVisible] = useState<boolean>(
+    p.directory_visible === false ? false : true
+  )
+
   // ── Community & Identity state ────────────────────────────────────
   const [lgbtq, setLgbtq] = useState(fallback(p.lgbtq, 'lgbtq', false))
   const [deafParented, setDeafParented] = useState(fallback(p.deaf_parented, 'deafParented', false))
@@ -529,7 +535,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       // Now try interpreter_profiles
       const { data, error, status, statusText } = await supabase
         .from('interpreter_profiles')
-        .select('id, name, first_name, last_name, email, pronouns, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, bio_specializations, bio_extra, sign_languages, spoken_languages, specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms, notification_preferences, notification_phone, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, vanity_slug, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_types_offering, mentorship_types_seeking, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking')
+        .select('id, name, first_name, last_name, email, pronouns, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, bio_specializations, bio_extra, sign_languages, spoken_languages, specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms, notification_preferences, notification_phone, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, vanity_slug, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_types_offering, mentorship_types_seeking, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking, directory_visible')
         .eq('user_id', user.id)
         .maybeSingle()
       console.log('PROFILE CLIENT-SIDE LOAD:', JSON.stringify({ data, error, status, statusText, userId: user.id }, null, 2))
@@ -576,6 +582,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       if (d.mentorship_paid != null) setMentorshipPaid(d.mentorship_paid || '')
       if (d.mentorship_bio_offering != null) setMentorshipBioOffering(d.mentorship_bio_offering || '')
       if (d.mentorship_bio_seeking != null) setMentorshipBioSeeking(d.mentorship_bio_seeking || '')
+      if (d.directory_visible != null) setDirectoryVisible(d.directory_visible)
     })()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -1881,6 +1888,9 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           setNotifPhone={setNotifPhone}
           notifSaving={notifSaving}
           setNotifSaving={setNotifSaving}
+          directoryVisible={directoryVisible}
+          setDirectoryVisible={setDirectoryVisible}
+          setToast={setToast}
           saving={saving}
           onSave={() => saveFields({
             invoicing_preference: invoicingPref,
@@ -2492,6 +2502,8 @@ function SettingsTab({
   notifPrefs, setNotifPrefs,
   notifPhone, setNotifPhone,
   notifSaving, setNotifSaving,
+  directoryVisible, setDirectoryVisible,
+  setToast,
   saving, onSave,
 }: {
   invoicingPref: string
@@ -2506,10 +2518,38 @@ function SettingsTab({
   setNotifPhone: (v: string) => void
   notifSaving: boolean
   setNotifSaving: (v: boolean) => void
+  directoryVisible: boolean
+  setDirectoryVisible: (v: boolean) => void
+  setToast: (t: { message: string; type: 'success' | 'error' } | null) => void
   saving: boolean
   onSave: () => void
 }) {
   const [notifToast, setNotifToast] = useState<string | null>(null)
+  const [visibilitySaving, setVisibilitySaving] = useState(false)
+
+  async function toggleDirectoryVisible() {
+    const next = !directoryVisible
+    setDirectoryVisible(next)
+    setVisibilitySaving(true)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setVisibilitySaving(false); return }
+    const { error } = await supabase
+      .from('interpreter_profiles')
+      .update({ directory_visible: next, updated_at: new Date().toISOString() })
+      .eq('user_id', user.id)
+    setVisibilitySaving(false)
+    if (error) {
+      // Roll back optimistic update
+      setDirectoryVisible(!next)
+      setToast({ message: `Failed to update visibility: ${error.message}`, type: 'error' })
+      return
+    }
+    setToast({
+      message: next ? 'Profile visible in directory' : 'Profile hidden from directory',
+      type: 'success',
+    })
+  }
 
   // Save notification prefs immediately to DB
   async function saveNotifPrefs(updated: NotificationPreferences, phone?: string) {
@@ -2575,6 +2615,66 @@ function SettingsTab({
 
   return (
     <>
+      {/* ── Profile visibility (pause) ──────────────────────────────── */}
+      <div style={{
+        background: '#111118',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius)',
+        padding: 20,
+        marginBottom: 24,
+      }}>
+        <div style={sectionTitleStyle}>Profile Visibility</div>
+        <div style={{
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+          gap: 16,
+        }}>
+          <div style={{ flex: 1 }}>
+            <div style={{
+              fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14,
+              color: '#f0f2f8', marginBottom: 8,
+            }}>
+              {directoryVisible
+                ? 'Your profile is currently visible in the directory.'
+                : 'Your profile is currently hidden from the directory.'}
+            </div>
+            <div style={{
+              fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14,
+              color: '#96a0b8', lineHeight: 1.6,
+            }}>
+              {directoryVisible
+                ? "Turn this off to hide your profile from the directory and public search. You'll keep full access to your account, messages, and bookings. You can turn it back on anytime."
+                : "Your account is fully active. Turn this on when you're ready to appear in the directory again."}
+            </div>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={directoryVisible}
+            aria-label="Toggle directory visibility"
+            onClick={toggleDirectoryVisible}
+            disabled={visibilitySaving}
+            style={{
+              position: 'relative',
+              width: 44, height: 26, borderRadius: 13,
+              background: directoryVisible ? '#00e5ff' : '#2a2f3d',
+              border: 'none',
+              cursor: visibilitySaving ? 'wait' : 'pointer',
+              transition: 'background 0.15s',
+              padding: 0, flexShrink: 0, marginTop: 2,
+              opacity: visibilitySaving ? 0.6 : 1,
+            }}
+          >
+            <span style={{
+              position: 'absolute',
+              top: 2, left: directoryVisible ? 20 : 2,
+              width: 22, height: 22, borderRadius: '50%',
+              background: '#fff',
+              transition: 'left 0.15s',
+            }} />
+          </button>
+        </div>
+      </div>
+
       {/* ── Section 1: Invoicing ─────────────────────────────────────── */}
       <div style={cardStyle}>
         <div style={sectionTitleStyle}>Invoicing</div>
