@@ -4,7 +4,18 @@
  */
 
 export function titleCase(str: string): string {
-  return str.trim().toLowerCase().replace(/\b\w/g, c => c.toUpperCase());
+  // Unicode-aware: split on whitespace and hyphens, capitalize first letter of each part.
+  // The previous implementation used /\b\w/g which treats non-ASCII letters (e.g. ñ, é)
+  // as non-word characters, corrupting names like "Cañas" into "CañAs".
+  return str
+    .trim()
+    .toLocaleLowerCase()
+    .split(/(\s+|-)/)
+    .map(part => {
+      if (!part || /^(\s+|-)$/.test(part)) return part;
+      return part.charAt(0).toLocaleUpperCase() + part.slice(1);
+    })
+    .join('');
 }
 
 export function normalizeProfileFields(data: Record<string, unknown>): Record<string, unknown> {
