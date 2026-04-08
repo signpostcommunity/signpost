@@ -952,6 +952,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
             {photoUrl ? (
               <img src={photoUrl} alt="Profile" style={{
                 width: 72, height: 72, borderRadius: '50%', objectFit: 'cover',
+                objectPosition: 'center 20%',
                 border: '2px solid var(--accent)', flexShrink: 0,
               }} />
             ) : (

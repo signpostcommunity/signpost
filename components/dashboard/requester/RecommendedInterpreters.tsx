@@ -80,6 +80,7 @@ function InterpreterTierCard({
               height: 48,
               borderRadius: '50%',
               objectFit: 'cover',
+              objectPosition: 'center 20%',
               flexShrink: 0,
             }}
           />
@@ -114,6 +115,7 @@ function InterpreterTierCard({
                 height: 48,
                 borderRadius: '50%',
                 objectFit: 'cover',
+                objectPosition: 'center 20%',
               }}
             />
           ) : (

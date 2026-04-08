@@ -393,7 +393,7 @@ export default function RequesterInterpreterPicker({
                       style={{ width: 18, height: 18, accentColor: '#00e5ff', flexShrink: 0, marginTop: 2 }}
                     />
                     {interp.photo_url ? (
-                      <img src={interp.photo_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                      <img src={interp.photo_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', objectPosition: 'center 20%', flexShrink: 0 }} />
                     ) : (
                       <div style={{
                         width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
@@ -506,7 +506,7 @@ export default function RequesterInterpreterPicker({
         />
 
         {interp.avatar_url ? (
-          <img src={interp.avatar_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+          <img src={interp.avatar_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', objectPosition: 'center 20%', flexShrink: 0 }} />
         ) : (
           <div style={{
             width: 40, height: 40, borderRadius: '50%', flexShrink: 0,

@@ -227,7 +227,7 @@ export default function InterpreterPicker({
                 <img
                   src={interp.photo_url}
                   alt=""
-                  style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                  style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', objectPosition: 'center 20%', flexShrink: 0 }}
                 />
               ) : (
                 <div style={{

@@ -171,6 +171,7 @@ export default function ProfileClient({ interpreter: i, activeAway, availability
                     borderRadius: '50%',
                     border: '3px solid var(--accent)',
                     objectFit: 'cover',
+                    objectPosition: 'center 20%',
                     flexShrink: 0,
                   }}
                 />
