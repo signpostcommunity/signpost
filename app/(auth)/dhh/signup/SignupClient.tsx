@@ -57,7 +57,7 @@ function DeafSignupForm() {
             if (defaults.city) setCity(defaults.city);
           }
         } catch (prefillErr) {
-          // Non-blocking — form still works without pre-fill
+          // Non-blocking - form still works without pre-fill
           console.warn('Failed to fetch profile defaults:', prefillErr);
         }
       } catch (e) {
@@ -111,7 +111,7 @@ function DeafSignupForm() {
       const lastNameVal = (norm.last_name as string) || lastNameRaw;
       const normName = `${firstName} ${lastNameVal}`.trim();
 
-      // TODO: Tech debt — remove deaf_profiles.name column, derive from first_name + last_name
+      // TODO: Tech debt - remove deaf_profiles.name column, derive from first_name + last_name
       await supabase.from('deaf_profiles').insert(syncNameFields({
         id: userId,
         user_id: userId,
@@ -272,7 +272,7 @@ function DeafSignupForm() {
               accentColor="var(--accent2)"
             />
           </div>
-          {/* Multi-role checkboxes — hidden in add-role mode */}
+          {/* Multi-role checkboxes - hidden in add-role mode */}
           {!isAddRole && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 4 }}>
               <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.5 }}>

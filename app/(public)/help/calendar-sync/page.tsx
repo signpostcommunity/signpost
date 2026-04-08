@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Add your bookings to your calendar — signpost',
+  title: 'Add your bookings to your calendar - signpost',
   description: 'Step-by-step instructions for adding your signpost booking calendar to Google Calendar, Apple Calendar, or Outlook.',
 }
 

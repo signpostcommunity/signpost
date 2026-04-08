@@ -157,7 +157,7 @@ export default function DhhRequestPage() {
   const [description, setDescription] = useState('')
   const [contextVideoUrl, setContextVideoUrl] = useState('')
   const [contextVideoVisible, setContextVideoVisible] = useState(true)
-  // videoRecorderOpen state removed — inline capture is always visible
+  // videoRecorderOpen state removed - inline capture is always visible
 
   useEffect(() => {
     async function init() {
@@ -455,7 +455,7 @@ export default function DhhRequestPage() {
             <textarea
               value={description}
               onChange={e => setDescription(e.target.value.slice(0, 1000))}
-              placeholder="Anything the interpreter should know — context, prep materials, parking info, etc."
+              placeholder="Anything the interpreter should know - context, prep materials, parking info, etc."
               rows={4}
               style={{ ...inputStyle, resize: 'vertical', minHeight: 100 }}
             />

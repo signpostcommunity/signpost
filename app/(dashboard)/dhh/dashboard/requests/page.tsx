@@ -1080,7 +1080,7 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
                       Event
                     </div>
                     <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
-                      {booking.event_category}{booking.event_type ? ` — ${booking.event_type}` : ''}
+                      {booking.event_category}{booking.event_type ? ` - ${booking.event_type}` : ''}
                     </div>
                   </div>
                 )}
@@ -1121,7 +1121,7 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
                   </div>
                 )}
 
-                {/* Appointment Video — only for "Requests made on my behalf" */}
+                {/* Appointment Video - only for "Requests made on my behalf" */}
                 {isOnMyBehalf && (
                   <AppointmentVideoSection booking={booking} />
                 )}
@@ -1157,7 +1157,7 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
         </div>
       )}
 
-      {/* Inline rating modal — below the card */}
+      {/* Inline rating modal - below the card */}
       {ratingModalOpen && <InlineRatingModal booking={booking} ratedInterpreters={ratedInterpreters} onRated={onRated} onClose={onToggleRatingModal} />}
     </div>
   )

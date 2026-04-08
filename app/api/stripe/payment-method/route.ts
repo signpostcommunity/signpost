@@ -40,7 +40,7 @@ export async function GET() {
         },
       })
     } catch {
-      // Payment method no longer exists in Stripe — clear the local reference
+      // Payment method no longer exists in Stripe - clear the local reference
       await admin
         .from('requester_profiles')
         .update({ stripe_default_payment_method_id: null })
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
       try {
         await stripe.paymentMethods.detach(profile.stripe_default_payment_method_id)
       } catch {
-        // Old method may already be detached — continue
+        // Old method may already be detached - continue
       }
     }
 
@@ -150,7 +150,7 @@ export async function DELETE() {
     try {
       await stripe.paymentMethods.detach(profile.stripe_default_payment_method_id)
     } catch {
-      // Already detached — continue
+      // Already detached - continue
     }
 
     const { error: updateError } = await admin

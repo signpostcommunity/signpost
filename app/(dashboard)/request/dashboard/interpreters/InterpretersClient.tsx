@@ -232,7 +232,7 @@ export default function InterpretersClient() {
       return
     }
 
-    // Step 2: Fetch interpreter profiles (separate query — avoids RLS join issues)
+    // Step 2: Fetch interpreter profiles (separate query - avoids RLS join issues)
     const interpreterIds = rosterRows.map(r => r.interpreter_id)
 
     const { data: profiles } = await supabase

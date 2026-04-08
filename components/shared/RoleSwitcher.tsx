@@ -55,7 +55,7 @@ export function useUserRoles() {
         .select('id', { count: 'exact' }).limit(1)
         .eq('user_id', user.id)
       if (interpErr && interpErr.code !== 'PGRST116') {
-        // Server error (503, 500, etc.) — don't assume profile doesn't exist
+        // Server error (503, 500, etc.) - don't assume profile doesn't exist
         active.push('interpreter')
       } else if ((interpCount ?? 0) > 0) {
         active.push('interpreter')
@@ -78,7 +78,7 @@ export function useUserRoles() {
         .select('id', { count: 'exact' }).limit(1)
         .eq('user_id', user.id)
       if (reqErr && reqErr.code !== 'PGRST116') {
-        // Server error — optimistic fallback: show role as active
+        // Server error - optimistic fallback: show role as active
         active.push('requester')
       } else if ((reqCount ?? 0) > 0) {
         active.push('requester')

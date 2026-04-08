@@ -56,7 +56,7 @@ export default function DhhInboxPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setLoading(false); return }
 
-    // Only show notifications relevant to the Deaf portal — exclude interpreter-specific types
+    // Only show notifications relevant to the Deaf portal - exclude interpreter-specific types
     const INTERPRETER_ONLY_TYPES = [
       'profile_approved', 'profile_denied', 'new_request', 'rate_response',
       'invoice_paid', 'team_invite', 'sub_search_update',

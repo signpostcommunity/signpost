@@ -359,7 +359,7 @@ export default function AvailabilityClient({
                     {/* Header */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                       <span style={{ fontWeight: 700, fontSize: '0.92rem', fontFamily: "'Inter', sans-serif" }}>
-                        {formatDateShort(period.start_date)} — {formatDateShort(period.end_date)}
+                        {formatDateShort(period.start_date)} - {formatDateShort(period.end_date)}
                       </span>
                       <button
                         onClick={() => setRemoveConfirm(period.id)}
@@ -656,7 +656,7 @@ function AwayModal({
     // Overlap check
     for (const p of existingPeriods) {
       if (startDate <= p.end_date && endDate >= p.start_date) {
-        errs.push(`Overlaps with existing period ${formatDateShort(p.start_date)} — ${formatDateShort(p.end_date)}.`)
+        errs.push(`Overlaps with existing period ${formatDateShort(p.start_date)} - ${formatDateShort(p.end_date)}.`)
         break
       }
     }

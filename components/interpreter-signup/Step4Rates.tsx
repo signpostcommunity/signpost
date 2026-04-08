@@ -9,8 +9,8 @@ import {
 import { TRAVEL_OPTIONS } from '@/lib/data/languages'
 
 const CURRENCIES = [
-  'USD — US Dollar', 'GBP — British Pound', 'EUR — Euro',
-  'CAD — Canadian Dollar', 'AUD — Australian Dollar', 'Other',
+  'USD (US Dollar)', 'GBP (British Pound)', 'EUR (Euro)',
+  'CAD (Canadian Dollar)', 'AUD (Australian Dollar)', 'Other',
 ]
 
 const MIN_BOOKINGS = [
@@ -180,7 +180,7 @@ function RateProfileCard({
               <FieldLabel>
                 After-hours Differential{' '}
                 <span style={{ color: 'var(--muted)', fontWeight: 400, fontSize: '0.8rem' }}>
-                  (optional — for evenings, weekends &amp; holidays)
+                  (optional - for evenings, weekends &amp; holidays)
                 </span>
               </FieldLabel>
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -359,7 +359,7 @@ export default function Step4Rates({ onBack, onContinue }: {
       hint: 'Custom rate profile',
       dotColor: '#b0b8d0',
       profileType: 'custom',
-      hourlyRate: '', dailyRate: '', currency: 'USD — US Dollar',
+      hourlyRate: '', dailyRate: '', currency: 'USD (US Dollar)',
       afterHoursRate: '', afterHoursPer: 'Per hour',
       minimumBooking: '2 hours', cancellationPolicy: '48 hours notice required',
       lateCancellationFee: '100% of booking fee',
@@ -372,7 +372,7 @@ export default function Step4Rates({ onBack, onContinue }: {
 
   return (
     <StepWrapper>
-      {/* How rate profiles work — merged info box at top */}
+      {/* How rate profiles work - merged info box at top */}
       <div style={{
         background: 'var(--surface2)', border: '1px solid var(--border)',
         borderRadius: 'var(--radius-sm)', padding: '18px 20px', marginBottom: 28,

@@ -270,7 +270,7 @@ function ClientCard({ client, onToggle }: { client: ClientData; onToggle: () => 
         </div>
       )}
 
-      {/* Do Not Book section — always visible when there are entries */}
+      {/* Do Not Book section - always visible when there are entries */}
       {client.doNotBook.length > 0 && (
         <div style={{
           borderTop: '1px solid rgba(255,107,133,0.2)',

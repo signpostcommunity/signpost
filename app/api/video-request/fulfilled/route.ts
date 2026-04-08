@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
           .eq('user_id', req.requester_user_id)
           .maybeSingle()
 
-        // We need an email — check auth.users
+        // We need an email - check auth.users
         const { data: authUser } = await admin.auth.admin.getUserById(req.requester_user_id)
         const email = authUser?.user?.email
         const name = reqProfile?.name || deafProfile?.first_name || 'there'
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
               heading: `${interpreterName} just added their intro video!`,
               body: `
                 <p>Hi ${name},</p>
-                <p>Great news — ${interpreterName} just added their intro video on signpost.</p>
+                <p>Great news - ${interpreterName} just added their intro video on signpost.</p>
                 <p>Check out their profile to see it.</p>
               `,
               ctaText: `View ${interpreterName}'s profile`,
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
             heading: `${interpreterName} just added their intro video!`,
             body: `
               <p>Hi ${requesterFirstName || 'there'},</p>
-              <p>Great news — ${interpreterName} just added their intro video on signpost.</p>
+              <p>Great news - ${interpreterName} just added their intro video on signpost.</p>
               <p>Check out their profile to see it.</p>
             `,
             ctaText: `View ${interpreterName}'s profile`,

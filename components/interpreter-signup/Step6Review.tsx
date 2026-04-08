@@ -76,7 +76,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         })
         if (signUpError) throw signUpError
         userId = signUpData.user?.id ?? null
-        if (!userId) throw new Error('Account creation failed — no user ID returned.')
+        if (!userId) throw new Error('Account creation failed - no user ID returned.')
 
         // Insert user_profiles row (must happen before interpreter_profiles due to FK)
         const { error: upError } = await supabase.from('user_profiles').upsert(
@@ -89,7 +89,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         }
       }
 
-      // Upsert interpreter_profiles — BETA: auto-approve, no admin review
+      // Upsert interpreter_profiles - BETA: auto-approve, no admin review
       const { normalizeProfileFields } = await import('@/lib/normalize')
       const normalizedFields = normalizeProfileFields({
         first_name: formData.firstName,
@@ -100,7 +100,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
       })
       const normFirst = (normalizedFields.first_name as string) || formData.firstName
       const normLast = (normalizedFields.last_name as string) || formData.lastName
-      // TODO: Tech debt — remove interpreter_profiles.name column, derive from first_name + last_name
+      // TODO: Tech debt - remove interpreter_profiles.name column, derive from first_name + last_name
       const { data: profileRow, error: profileError } = await supabase.from('interpreter_profiles').upsert(syncNameFields({
         user_id: userId,
         first_name: normFirst,
@@ -285,7 +285,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         console.warn('Beta: seed call failed, continuing', seedErr)
       }
 
-      // Send welcome notification (email + in-app) — fires once on signup only
+      // Send welcome notification (email + in-app) - fires once on signup only
       try {
         await fetch('/api/notifications/send', {
           method: 'POST',
@@ -313,7 +313,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
 
     // BETA: unconditional auto sign-in and redirect
     try {
-      // For OAuth users, they're already signed in — just redirect
+      // For OAuth users, they're already signed in - just redirect
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         router.refresh()

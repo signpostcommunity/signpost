@@ -84,7 +84,7 @@ function generateICS(
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//signpost.community//Interpreter Calendar//EN',
-    `X-WR-CALNAME:signpost — ${interpreter.first_name} ${interpreter.last_name}`,
+    `X-WR-CALNAME:signpost - ${interpreter.first_name} ${interpreter.last_name}`,
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     ...events,

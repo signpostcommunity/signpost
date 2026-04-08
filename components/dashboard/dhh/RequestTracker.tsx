@@ -1,7 +1,7 @@
 'use client'
 
 /*
- * RequestTracker — visual status stepper for interpreter bookings.
+ * RequestTracker - visual status stepper for interpreter bookings.
  * Shows Deaf users where their request stands, like package tracking.
  *
  * Steps: Sent → Still looking → Confirmed → Rate

@@ -34,7 +34,7 @@ export default function Step5Video({ onBack, onContinue }: {
   const videoInputRef = useRef<HTMLInputElement>(null)
   const [videoUploading, setVideoUploading] = useState(false)
   const [videoError, setVideoError] = useState('')
-  // videoRecorderOpen removed — using inline capture
+  // videoRecorderOpen removed - using inline capture
 
   async function getUserId() {
     const { data: { user } } = await supabase.auth.getUser()

@@ -391,7 +391,7 @@ function DetailModal({ booking, onClose }: { booking: RecentBooking; onClose: ()
                   Event
                 </div>
                 <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
-                  {booking.event_category}{booking.event_type ? ` — ${booking.event_type}` : ''}
+                  {booking.event_category}{booking.event_type ? ` - ${booking.event_type}` : ''}
                 </div>
               </div>
             )}
@@ -672,7 +672,7 @@ export default function DeafDashboardOverview() {
         .eq('deaf_user_id', deafProfileId)
         .in('tier', ['preferred', 'approved'])
         .or('do_not_book.is.null,do_not_book.eq.false'),
-      // "Interpreters to Review" — count confirmed interpreters on past bookings not yet rated
+      // "Interpreters to Review" - count confirmed interpreters on past bookings not yet rated
       (async () => {
         try {
           // Get booking IDs where this user is a DHH client

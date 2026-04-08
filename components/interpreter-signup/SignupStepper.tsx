@@ -49,7 +49,7 @@ export default function SignupStepper() {
         </div>
       </div>
 
-      {/* Step pills — desktop */}
+      {/* Step pills - desktop */}
       <div className="signup-step-pills" style={{
         display: 'flex', gap: 0, marginBottom: 48,
         background: 'var(--surface2)', borderRadius: 12,
@@ -84,7 +84,7 @@ export default function SignupStepper() {
         })}
       </div>
 
-      {/* Step circles — mobile only */}
+      {/* Step circles - mobile only */}
       <div className="signup-step-mobile" style={{
         display: 'none', marginBottom: 32,
       }}>

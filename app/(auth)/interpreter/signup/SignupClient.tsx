@@ -14,7 +14,7 @@ import Step6Mentorship from '@/components/interpreter-signup/Step6Mentorship'
 import Step6Review from '@/components/interpreter-signup/Step6Review'
 import HowItWorks from '@/components/onboarding/HowItWorks'
 
-// TODO: Wire draft resume — load draft_data and draft_step from interpreter_profiles,
+// TODO: Wire draft resume - load draft_data and draft_step from interpreter_profiles,
 // pre-fill the signup form, and jump to the saved step when ?resume=true is in the URL
 
 function SignupForm() {
@@ -55,7 +55,7 @@ function SignupForm() {
             setCurrentStep(3)
           }
         } else if (isAddRole) {
-          // Not logged in but trying to add role — redirect to login
+          // Not logged in but trying to add role - redirect to login
           window.location.href = '/interpreter/login'
         }
       } catch (e) {

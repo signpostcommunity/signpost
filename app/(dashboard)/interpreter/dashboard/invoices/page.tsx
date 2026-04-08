@@ -133,7 +133,7 @@ Please let me know if you have any questions.
 Thank you`
 
   const [toEmail, setToEmail] = useState(invoice.requester_billing_email || '')
-  const [subject, setSubject] = useState(`Payment Reminder — Invoice ${invoice.invoice_number} for ${invoice.job_title || 'your booking'}`)
+  const [subject, setSubject] = useState(`Payment Reminder - Invoice ${invoice.invoice_number} for ${invoice.job_title || 'your booking'}`)
   const [message, setMessage] = useState(defaultMessage)
   const [saving, setSaving] = useState(false)
 
@@ -186,7 +186,7 @@ Thank you`
           fontSize: '0.84rem', color: 'var(--muted)', lineHeight: 1.7,
         }}>
           <div><strong style={{ color: 'var(--text)' }}>Invoice:</strong> {invoice.invoice_number}</div>
-          <div><strong style={{ color: 'var(--text)' }}>Job:</strong> {invoice.job_title || '—'}</div>
+          <div><strong style={{ color: 'var(--text)' }}>Job:</strong> {invoice.job_title || '-'}</div>
           <div><strong style={{ color: 'var(--text)' }}>Total:</strong> {formatCurrency(invoice.total)}</div>
           <div><strong style={{ color: 'var(--text)' }}>Due:</strong> {dueDateFormatted}</div>
         </div>
@@ -475,10 +475,10 @@ export default function InvoicesPage() {
       {/* Invoice content (muted when using external invoicing) */}
       <div style={invoicingPref === 'own' ? { opacity: 0.5, pointerEvents: 'none' } : undefined}>
 
-      {/* Section 1: Past Jobs — Not Yet Invoiced */}
+      {/* Section 1: Past Jobs - Not Yet Invoiced */}
       {!loading && (
         <>
-          <SectionLabel>Past Jobs — Not Yet Invoiced</SectionLabel>
+          <SectionLabel>Past Jobs - Not Yet Invoiced</SectionLabel>
           {completedBookings.length === 0 ? (
             <div style={{
               background: 'var(--card-bg)', border: '1px solid var(--border)',
@@ -486,7 +486,7 @@ export default function InvoicesPage() {
               color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center',
               marginBottom: 28,
             }}>
-              All caught up — no uninvoiced jobs.
+              All caught up - no uninvoiced jobs.
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
@@ -601,7 +601,7 @@ export default function InvoicesPage() {
                       {inv.invoice_number}
                     </div>
                     <div style={{ color: 'var(--muted)', fontSize: '0.8rem', marginTop: 3 }}>
-                      {inv.job_title || '—'}
+                      {inv.job_title || '-'}
                       {inv.job_date && ` · ${formatDate(inv.job_date)}`}
                     </div>
                   </div>

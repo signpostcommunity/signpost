@@ -250,7 +250,7 @@ export default function RecommendedInterpreters({ dhhUserId }: { dhhUserId: stri
         const json = await res.json()
         setData(json)
       } catch {
-        // silent fail — show normal form
+        // silent fail - show normal form
       }
       setLoading(false)
     }
@@ -273,7 +273,7 @@ export default function RecommendedInterpreters({ dhhUserId }: { dhhUserId: stri
     )
   }
 
-  // No active connection — silently show nothing
+  // No active connection - silently show nothing
   if (noConnection || !data) {
     return null
   }
@@ -386,7 +386,7 @@ export default function RecommendedInterpreters({ dhhUserId }: { dhhUserId: stri
         </div>
       )}
 
-      {/* DNB — silent exclusion only, no names or details shown */}
+      {/* DNB - silent exclusion only, no names or details shown */}
 
       <style>{`
         .interp-name-link:hover { text-decoration: underline !important; }

@@ -106,7 +106,7 @@ function CancelledBadge({ reason }: { reason: string | null }) {
       border: '1px solid rgba(255,107,133,0.3)',
       fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em',
     }}>
-      Cancelled{reason ? ` — ${reason}` : ''}
+      Cancelled{reason ? ` - ${reason}` : ''}
     </span>
   )
 }
@@ -438,7 +438,7 @@ function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast, on
         <ReplacementAlertBanner />
       )}
 
-      {/* Header — date-first */}
+      {/* Header - date-first */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 8 }}>
         <div>
           <div style={{ fontWeight: 700, fontSize: '1.05rem', color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>

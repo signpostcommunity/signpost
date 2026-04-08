@@ -25,7 +25,7 @@ export default function GoogleSignInButton({ role, label = 'Continue with Google
         console.error('Google OAuth error:', error);
         setLoading(false);
       }
-      // If successful, browser redirects — loading state persists naturally
+      // If successful, browser redirects - loading state persists naturally
     } catch (e) {
       console.error('Google OAuth error:', e);
       setLoading(false);

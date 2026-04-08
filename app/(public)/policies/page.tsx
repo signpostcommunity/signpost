@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Platform Policies & Terms of Use — signpost',
+  title: 'Platform Policies & Terms of Use - signpost',
 }
 
 const sectionLabel: React.CSSProperties = {
@@ -58,7 +58,7 @@ export default function PoliciesPage() {
         Last updated: March 2026. By creating an account or using signpost, you agree to the following terms.
       </p>
 
-      <Section number={1} title="What signpost is — and is not">
+      <Section number={1} title="What signpost is - and is not">
         <p style={body}>
           signpost is a marketplace platform that connects sign language interpreters with Deaf and Hard-of-Hearing individuals, organizations, and requesters. signpost provides the technology infrastructure for discovery, communication, scheduling, and payment processing between parties.
         </p>

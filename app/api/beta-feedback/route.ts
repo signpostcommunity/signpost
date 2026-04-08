@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ── Also save to Monday board ──
-    // Build column values — do NOT set status columns (labels may not match board config)
+    // Build column values - do NOT set status columns (labels may not match board config)
     const columnValues: Record<string, unknown> = {
       short_textnbhnggeq: testerName,
       long_text24vbemv7: { text: allNotes },

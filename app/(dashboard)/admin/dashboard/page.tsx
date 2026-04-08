@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 export default async function AdminDashboardPage() {
   const supabase = await createClient()
 
-  // Fetch stats — use allSettled so one failure doesn't crash the page
+  // Fetch stats - use allSettled so one failure doesn't crash the page
   const [usersRes, interpretersRes, deafRes, flagsRes, chargedRes, failedRes, creditsRes] = await Promise.allSettled([
     supabase.from('user_profiles').select('id', { count: 'exact' }).limit(1),
     supabase.from('interpreter_profiles').select('id', { count: 'exact' }).limit(1).neq('status', 'draft'),

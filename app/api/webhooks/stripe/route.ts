@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
         const disputeAmount = `$${(dispute.amount / 100).toFixed(2)}`
         const disputeReason = dispute.reason || 'Not specified'
 
-        // Notify admin (legacy direct email — kept for backwards compat)
+        // Notify admin (legacy direct email - kept for backwards compat)
         await sendEmail({
           to: 'hello@signpost.community',
           subject: `Stripe dispute created: ${dispute.id}`,
@@ -169,7 +169,7 @@ export async function POST(req: NextRequest) {
       }
 
       default:
-        // Unhandled event type — log and acknowledge
+        // Unhandled event type - log and acknowledge
         console.log(`[stripe-webhook] Unhandled event type: ${event.type}`)
     }
   } catch (err) {

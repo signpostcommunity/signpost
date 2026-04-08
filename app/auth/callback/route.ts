@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     .single();
 
   if (profile) {
-    // Existing user — check if they have a completed role-specific profile
+    // Existing user - check if they have a completed role-specific profile
     if (profile.role === 'interpreter') {
       const { data: interpProfile } = await supabase
         .from('interpreter_profiles')
@@ -49,11 +49,11 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(`${origin}/interpreter/signup`);
       }
     }
-    // Existing user with completed profile — redirect to their dashboard
+    // Existing user with completed profile - redirect to their dashboard
     return redirectToDashboard(origin, profile.role);
   }
 
-  // New OAuth user — create user_profiles row with role, then route to signup wizard
+  // New OAuth user - create user_profiles row with role, then route to signup wizard
   const assignedRole = role ?? 'requester';
   await supabase.from('user_profiles').upsert(
     { id: user.id, role: assignedRole },
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
   }
 
   if (assignedRole === 'deaf') {
-    // Deaf signup is an inline form on the portal page — create a minimal profile
+    // Deaf signup is an inline form on the portal page - create a minimal profile
     // and redirect to dashboard since the deaf signup flow is simpler
     const displayName = user.user_metadata?.full_name ?? user.email ?? 'User';
     const { data: existing } = await supabase
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
       // Auto-populate shared fields from existing profiles (e.g., user already has interpreter profile)
       const existing_data = await getExistingProfileData(user.id);
 
-      // TODO: Tech debt — remove deaf_profiles.name column, derive from first_name + last_name
+      // TODO: Tech debt - remove deaf_profiles.name column, derive from first_name + last_name
       await supabase.from('deaf_profiles').insert(syncNameFields({
         id: user.id,
         user_id: user.id,
@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/dhh/dashboard`);
   }
 
-  // Requester — create minimal profile and redirect to dashboard
+  // Requester - create minimal profile and redirect to dashboard
   const reqDisplayName = user.user_metadata?.full_name ?? user.email ?? 'User';
   const { data: existingReq } = await supabase
     .from('requester_profiles').select('id').eq('id', user.id).maybeSingle();
@@ -146,7 +146,7 @@ export async function GET(request: NextRequest) {
     // Auto-populate shared fields from existing profiles (e.g., user already has interpreter/deaf profile)
     const reqExistingData = await getExistingProfileData(user.id);
 
-    // TODO: Tech debt — remove requester_profiles.name column, derive from first_name + last_name
+    // TODO: Tech debt - remove requester_profiles.name column, derive from first_name + last_name
     await supabase.from('requester_profiles').insert(syncNameFields({
       id: user.id,
       user_id: user.id,

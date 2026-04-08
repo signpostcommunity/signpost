@@ -60,7 +60,7 @@ export default async function RequesterDashboardPage() {
       // Auto-populate shared fields from existing profiles (e.g., user already has interpreter/deaf profile)
       const existingData = await getExistingProfileData(user.id)
 
-      // TODO: Tech debt — remove requester_profiles.name column, derive from first_name + last_name
+      // TODO: Tech debt - remove requester_profiles.name column, derive from first_name + last_name
       await supabase.from('requester_profiles').insert(syncNameFields({
         id: user.id,
         user_id: user.id,
@@ -79,7 +79,7 @@ export default async function RequesterDashboardPage() {
     // making DB deletion ineffective. seedRequesterData remains importable.
     void seedRequesterData
 
-    // Fetch profile, stats, and recent bookings in parallel — allSettled so one failure doesn't crash the page
+    // Fetch profile, stats, and recent bookings in parallel - allSettled so one failure doesn't crash the page
     const [profileRes, activeRes, filledRes, rosterRes, bookingsRes, recentRes] = await Promise.allSettled([
       supabase.from('requester_profiles').select('first_name, last_name, org_name').or(`user_id.eq.${user.id},id.eq.${user.id}`).maybeSingle(),
       supabase.from('bookings').select('id', { count: 'exact' }).limit(1).eq('requester_id', user.id).eq('status', 'open'),

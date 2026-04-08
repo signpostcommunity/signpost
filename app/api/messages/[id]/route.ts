@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-// PATCH /api/messages/[id] — update a single message (mark as read, archive)
+// PATCH /api/messages/[id] - update a single message (mark as read, archive)
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()

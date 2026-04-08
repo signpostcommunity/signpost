@@ -190,7 +190,7 @@ export async function POST(request: NextRequest) {
         }),
       })
     } catch {
-      // Non-critical — don't fail the message send if notification fails
+      // Non-critical - don't fail the message send if notification fails
       console.error('[messages/send] notification error')
     }
 

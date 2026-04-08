@@ -54,7 +54,7 @@ type Invoice = {
 }
 
 function formatDate(dateStr: string | null): string {
-  if (!dateStr) return '—'
+  if (!dateStr) return '-'
   const date = new Date(dateStr + (dateStr.includes('T') ? '' : 'T00:00:00'))
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
@@ -64,7 +64,7 @@ function formatDate(dateStr: string | null): string {
 }
 
 function formatTime(timeStr: string | null): string {
-  if (!timeStr) return '—'
+  if (!timeStr) return '-'
   const [hours, minutes] = timeStr.split(':').map(Number)
   const ampm = hours >= 12 ? 'PM' : 'AM'
   const displayHours = hours % 12 || 12
@@ -175,7 +175,7 @@ export default function InvoiceViewPage() {
         }
       `}</style>
 
-      {/* Action bar — hidden in print */}
+      {/* Action bar - hidden in print */}
       <div
         className="invoice-actions"
         style={{
@@ -308,7 +308,7 @@ export default function InvoiceViewPage() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div>
               <div style={{ fontSize: '12px', color: '#777' }}>Title</div>
-              <div style={{ fontSize: '14px', fontWeight: 500, color: '#1a1a1a' }}>{invoice.job_title || '—'}</div>
+              <div style={{ fontSize: '14px', fontWeight: 500, color: '#1a1a1a' }}>{invoice.job_title || '-'}</div>
             </div>
             <div>
               <div style={{ fontSize: '12px', color: '#777' }}>Date</div>
@@ -322,7 +322,7 @@ export default function InvoiceViewPage() {
             </div>
             <div>
               <div style={{ fontSize: '12px', color: '#777' }}>Location</div>
-              <div style={{ fontSize: '14px', fontWeight: 500, color: '#1a1a1a' }}>{invoice.job_location || '—'}</div>
+              <div style={{ fontSize: '14px', fontWeight: 500, color: '#1a1a1a' }}>{invoice.job_location || '-'}</div>
             </div>
           </div>
         </div>
@@ -356,7 +356,7 @@ export default function InvoiceViewPage() {
             {/* Interpreting services row */}
             <tr style={{ borderBottom: '1px solid #e9ecef' }}>
               <td style={{ padding: '12px 8px', color: '#1a1a1a' }}>
-                Interpreting Services — {invoice.job_title}
+                Interpreting Services - {invoice.job_title}
               </td>
               <td style={{ padding: '12px 8px', textAlign: 'center', color: '#1a1a1a' }}>
                 {invoice.actual_hours}
@@ -373,10 +373,10 @@ export default function InvoiceViewPage() {
             {additionalCosts.map((cost, index) => (
               <tr key={index} style={{ borderBottom: '1px solid #e9ecef' }}>
                 <td style={{ padding: '12px 8px', color: '#1a1a1a' }}>
-                  {cost.category}{cost.description ? ` — ${cost.description}` : ''}
+                  {cost.category}{cost.description ? ` - ${cost.description}` : ''}
                 </td>
-                <td style={{ padding: '12px 8px', textAlign: 'center', color: '#999' }}>—</td>
-                <td style={{ padding: '12px 8px', textAlign: 'center', color: '#999' }}>—</td>
+                <td style={{ padding: '12px 8px', textAlign: 'center', color: '#999' }}>-</td>
+                <td style={{ padding: '12px 8px', textAlign: 'center', color: '#999' }}>-</td>
                 <td style={{ padding: '12px 8px', textAlign: 'right', color: '#1a1a1a' }}>
                   ${Number(cost.amount).toFixed(2)}
                 </td>
@@ -417,8 +417,8 @@ export default function InvoiceViewPage() {
           </div>
           <div style={{ fontSize: '14px', color: '#1a1a1a' }}>
             {invoice.payment_terms === 'due_on_receipt'
-              ? `${paymentTermsLabel} — Due on Receipt`
-              : `${paymentTermsLabel} — Due by ${formatDate(invoice.due_date)}`}
+              ? `${paymentTermsLabel} - Due on Receipt`
+              : `${paymentTermsLabel} - Due by ${formatDate(invoice.due_date)}`}
           </div>
         </div>
 

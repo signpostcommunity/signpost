@@ -57,7 +57,7 @@ export default function DeafPortalClient() {
     const fullName = `${normFirst} ${normLast}`.trim();
 
     await supabase.from('user_profiles').insert({ id: userId, role: 'deaf' });
-    // TODO: Tech debt — remove deaf_profiles.name column, derive from first_name + last_name
+    // TODO: Tech debt - remove deaf_profiles.name column, derive from first_name + last_name
     await supabase.from('deaf_profiles').insert(syncNameFields({
       id: userId,
       user_id: userId,

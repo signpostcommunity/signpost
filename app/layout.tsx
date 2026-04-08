@@ -20,10 +20,10 @@ const dmSans = DM_Sans({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://signpost.community'),
-  title: 'signpost — the interpreter marketplace',
+  title: 'signpost - the interpreter marketplace',
   description: 'Transparency at every step. Interpreter profiles, intro videos, real-time request tracking, direct booking. No agency markup.',
   openGraph: {
-    title: 'signpost — the interpreter marketplace',
+    title: 'signpost - the interpreter marketplace',
     description: 'Transparency at every step. Interpreter profiles, intro videos, real-time request tracking, direct booking. No agency markup.',
     url: 'https://signpost.community',
     siteName: 'signpost',
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary',
-    title: 'signpost — the interpreter marketplace',
+    title: 'signpost - the interpreter marketplace',
     description: 'Transparency at every step. Interpreter profiles, intro videos, real-time request tracking, direct booking. No agency markup.',
   },
 };

@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
     const admin = getSupabaseAdmin()
 
-    // Fetch the invite — must be addressed to this user (by invitee_id or invitee_email)
+    // Fetch the invite - must be addressed to this user (by invitee_id or invitee_email)
     const { data: invite, error: fetchError } = await admin
       .from('trusted_deaf_circle')
       .select('*')

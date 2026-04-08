@@ -110,7 +110,7 @@ const defaultRateProfiles: RateProfile[] = [
     dotColor: '#00e5ff',
     isDefault: true,
     profileType: 'standard',
-    hourlyRate: '', dailyRate: '', currency: 'USD — US Dollar',
+    hourlyRate: '', dailyRate: '', currency: 'USD (US Dollar)',
     afterHoursRate: '', afterHoursPer: 'Per hour',
     minimumBooking: '', cancellationPolicy: '',
     lateCancellationFee: '',

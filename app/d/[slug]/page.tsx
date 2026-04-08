@@ -51,13 +51,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getPublicProfile(slug)
 
   if (!data) {
-    return { title: 'Profile Not Found — signpost' }
+    return { title: 'Profile Not Found - signpost' }
   }
 
   const displayName = data.first_name || [data.first_name, data.last_name].filter(Boolean).join(' ') || 'User'
 
   return {
-    title: `Book an Interpreter for ${displayName} — signpost`,
+    title: `Book an Interpreter for ${displayName} - signpost`,
     description: `Connect with ${displayName} on signpost and book a qualified sign language interpreter based on their preferences.`,
   }
 }

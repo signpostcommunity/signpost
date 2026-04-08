@@ -37,13 +37,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getInterpreterBySlug(slug)
 
   if (!data) {
-    return { title: 'Profile Not Found — signpost' }
+    return { title: 'Profile Not Found - signpost' }
   }
 
   const name = data.name || [data.first_name, data.last_name].filter(Boolean).join(' ') || 'Interpreter'
 
   return {
-    title: `${name} — Book on signpost`,
+    title: `${name} - Book on signpost`,
     description: `View ${name}'s interpreter profile and request a booking on signpost.`,
   }
 }

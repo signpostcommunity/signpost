@@ -356,7 +356,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         }
       }
 
-      // Preferred team count — table may not exist
+      // Preferred team count - table may not exist
       const { count: teamC, error: teamErr } = await supabase
         .from('interpreter_preferred_team')
         .select('id', { count: 'exact' }).limit(1)
@@ -364,7 +364,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
 
       if (!teamErr) setTeamCount(teamC ?? 0)
 
-      // Days available this week — count distinct days from interpreter_availability
+      // Days available this week - count distinct days from interpreter_availability
       const { data: availRows, error: availErr } = await supabase
         .from('interpreter_availability')
         .select('day_of_week')
@@ -480,7 +480,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         <StatCard num={daysAvailable} label="Days Available This Week" href="/interpreter/dashboard/availability" />
       </div>
 
-      {/* ── Unified banners — above two-column grid ── */}
+      {/* ── Unified banners - above two-column grid ── */}
       {!hasDraftProfile && !loading && (
         <div style={{ marginBottom: 28 }}>
           {/* Profile completeness banner */}
@@ -639,7 +639,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
           gap: '32px',
           alignItems: 'flex-start',
         }}>
-          {/* Left column — actionable */}
+          {/* Left column - actionable */}
           <div>
             {/* Pending Inquiries */}
             <SectionLabel>Pending Inquiries</SectionLabel>
@@ -729,7 +729,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
             )}
           </div>
 
-          {/* Right column — context */}
+          {/* Right column - context */}
           <div>
             <SectionLabel>Preferred Team</SectionLabel>
             {teamMembers.length === 0 ? (
@@ -886,7 +886,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                   <div style={sectionSt}>
                     <div style={sectionLabelSt}>Job Context</div>
                     <div style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65 }}>
-                      {bk.notes || `${bk.specialization} appointment — no additional context provided.`}
+                      {bk.notes || `${bk.specialization} appointment - no additional context provided.`}
                     </div>
                   </div>
                 )}

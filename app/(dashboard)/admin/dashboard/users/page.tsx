@@ -36,7 +36,7 @@ export default async function AdminUsersPage() {
     }
     authEmailMap = new Map(allAuthUsers.map(u => [u.id, u.email || '']))
   } catch {
-    // Service role key not available — fall back to user_profiles.email
+    // Service role key not available - fall back to user_profiles.email
   }
 
   // Fetch interpreter profiles for status/name

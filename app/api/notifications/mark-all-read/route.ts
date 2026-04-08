@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-// PATCH /api/notifications/mark-all-read — mark all unread notifications as read for authenticated user
+// PATCH /api/notifications/mark-all-read - mark all unread notifications as read for authenticated user
 export async function PATCH() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

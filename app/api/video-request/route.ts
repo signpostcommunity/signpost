@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
           <p>Hi ${firstName},</p>
           <p>${whoLine}</p>
           <p>Deaf users consistently rate interpreter intro videos as one of their most valued features of signpost. Adding a short video introduction helps people get to know you before booking.</p>
-          <p>You can record your intro video right from your dashboard — it takes less than 2 minutes.</p>
+          <p>You can record your intro video right from your dashboard - it takes less than 2 minutes.</p>
         `
 
         await sendEmail({

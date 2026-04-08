@@ -10,7 +10,7 @@ const GROUP_IN_PROGRESS = 'group_mm1r3amb'
 const MONDAY_API = 'https://api.monday.com/v2'
 
 // ── Monday column IDs ─────────────────────────────────────────────────────
-// Per-page feedback (long_text) — reuse same board structure as DHH
+// Per-page feedback (long_text) - reuse same board structure as DHH
 const PAGE_COLUMN_MAP: Record<string, string> = {
   '/request': 'long_text_mm1r5h3n',
   '/request/signup': 'long_text_mm1r1dgk',

@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error('[connections/create] Insert error:', error.message)
-    // Could be unique constraint — check for existing again
+    // Could be unique constraint - check for existing again
     if (error.code === '23505') {
       const { data: existingRetry } = await supabase
         .from('dhh_requester_connections')

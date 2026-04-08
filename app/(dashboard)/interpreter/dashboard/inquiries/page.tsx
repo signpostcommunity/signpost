@@ -224,16 +224,16 @@ function AcceptModal({ booking, onClose, onAccepted }: {
   )
 
   const rateSummaries: Record<string, string> = {
-    standard: 'Standard Rate — $95/hr · 2hr minimum · 48hr cancellation · 100% late fee',
-    community: 'Community / Nonprofit Rate — $65/hr · 2hr minimum · 48hr cancellation',
-    multiday: 'Multi-Day Rate — $750/day · 2-day minimum · 2-week cancellation',
+    standard: 'Standard Rate - $95/hr · 2hr minimum · 48hr cancellation · 100% late fee',
+    community: 'Community / Nonprofit Rate - $65/hr · 2hr minimum · 48hr cancellation',
+    multiday: 'Multi-Day Rate - $750/day · 2-day minimum · 2-week cancellation',
   }
 
   return (
     <div style={overlayStyle}>
       <div className="modal-dialog" style={{ ...modalStyle, maxHeight: '90vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Send Rate — {booking.title || 'Booking'}</div>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Send Rate - {booking.title || 'Booking'}</div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
         </div>
 
@@ -378,7 +378,7 @@ function DetailModal({ booking, onClose }: {
                 </svg>
               )}
               <div>
-                {isRemote ? 'Remote — Zoom link will be provided upon confirmation' : (booking.location || 'Location TBD')}
+                {isRemote ? 'Remote - Zoom link will be provided upon confirmation' : (booking.location || 'Location TBD')}
               </div>
             </div>
           </div>
@@ -400,7 +400,7 @@ function DetailModal({ booking, onClose }: {
             <div style={sectionStyle}>
               <div style={sectionLabelStyle}>Job Context</div>
               <div style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65 }}>
-                {booking.notes || `${booking.specialization} appointment — no additional context provided.`}
+                {booking.notes || `${booking.specialization} appointment - no additional context provided.`}
               </div>
             </div>
           )}
@@ -726,7 +726,7 @@ export default function InquiriesPage() {
   function handleDeclined(id: string, reason: string) {
     setBookings(prev => prev.filter(b => b.id !== id))
     setDeclining(null)
-    showToast(`Declined — ${reason}`)
+    showToast(`Declined - ${reason}`)
   }
 
   function handleAccepted() {

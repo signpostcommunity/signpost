@@ -197,7 +197,7 @@ export default function DhhPreferencesPage() {
       .upload(path, uploadFile, { upsert: true })
 
     if (uploadError) {
-      showToast('Upload failed — please try again')
+      showToast('Upload failed - please try again')
       setUploading(false)
       return
     }
@@ -224,7 +224,7 @@ export default function DhhPreferencesPage() {
       notes: commNotes,
     }
 
-    // TODO: Tech debt — remove deaf_profiles.name column, derive from first_name + last_name
+    // TODO: Tech debt - remove deaf_profiles.name column, derive from first_name + last_name
     const updates = syncNameFields({
       first_name: firstName.trim(),
       last_name: lastName.trim(),
@@ -458,7 +458,7 @@ export default function DhhPreferencesPage() {
               </div>
             </div>
 
-            {/* Slug editor — only visible when editing */}
+            {/* Slug editor - only visible when editing */}
             {slugEditing && (
               <div style={{ borderTop: '1px solid var(--border)', paddingTop: 18, marginTop: 18 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
@@ -843,7 +843,7 @@ export default function DhhPreferencesPage() {
             This information is shared with interpreters when you make a request, and when you are tagged in a request (interpreter is requested by someone else). It helps them prepare and decide if they&apos;re a good match.
           </p>
 
-          {/* Signing style — multi-select pills */}
+          {/* Signing style - multi-select pills */}
           <div style={fieldGroupStyle}>
             <label style={labelStyle}>Signing style</label>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -872,7 +872,7 @@ export default function DhhPreferencesPage() {
             </div>
           </div>
 
-          {/* Voice interpreting — radio */}
+          {/* Voice interpreting - radio */}
           <div style={fieldGroupStyle}>
             <label style={labelStyle}>Voice interpreting</label>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -915,7 +915,7 @@ export default function DhhPreferencesPage() {
             )}
           </div>
 
-          {/* DI preferred — toggle */}
+          {/* DI preferred - toggle */}
           <div style={fieldGroupStyle}>
             <button
               type="button"

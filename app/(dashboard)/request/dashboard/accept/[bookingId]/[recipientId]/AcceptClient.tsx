@@ -132,7 +132,7 @@ export default function AcceptClient({
         console.error('[accept] confirmed count update error:', countErr.message)
       }
 
-      // 4. Charge $15 platform fee (non-blocking — booking still confirms on failure)
+      // 4. Charge $15 platform fee (non-blocking - booking still confirms on failure)
       try {
         const chargeRes = await fetch('/api/stripe/charge-platform-fee', {
           method: 'POST',
@@ -141,7 +141,7 @@ export default function AcceptClient({
         })
         const chargeData = await chargeRes.json()
         if (chargeData.status === 'failed') {
-          console.warn('[accept] Platform fee charge failed — requester notified')
+          console.warn('[accept] Platform fee charge failed - requester notified')
         }
       } catch (chargeErr) {
         console.error('[accept] Platform fee charge error:', chargeErr)
@@ -224,7 +224,7 @@ export default function AcceptClient({
         Review the interpreter&apos;s rate and terms before confirming this booking.
       </p>
 
-      {/* Section 1 — Booking Summary */}
+      {/* Section 1 - Booking Summary */}
       <Section title="Booking Summary">
         <div className="req-accept-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 28px' }}>
           <DetailRow label="Title" value={booking.title || 'Untitled Request'} />
@@ -240,7 +240,7 @@ export default function AcceptClient({
         </div>
       </Section>
 
-      {/* Section 2 — Interpreter's Rate & Terms */}
+      {/* Section 2 - Interpreter's Rate & Terms */}
       <Section title={`${interpreterName}'s Rate & Terms`}>
         <div className="req-accept-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 28px' }}>
           <DetailRow label="Hourly Rate" value={`$${rate}/${currency === 'USD' ? 'hr' : currency}`} accent />
@@ -316,7 +316,7 @@ export default function AcceptClient({
         )}
       </Section>
 
-      {/* Section 3 — Platform Fee */}
+      {/* Section 3 - Platform Fee */}
       <Section title="signpost Platform Fee">
         <div style={{
           background: '#111118', border: '1px solid rgba(0,229,255,0.15)',
@@ -347,7 +347,7 @@ export default function AcceptClient({
         </div>
       </Section>
 
-      {/* Section 4 — Actions */}
+      {/* Section 4 - Actions */}
       <div className="req-accept-actions" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 32, marginBottom: 40, alignItems: 'center' }}>
         <button
           onClick={() => setShowConfirm(true)}

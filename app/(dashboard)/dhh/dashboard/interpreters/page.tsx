@@ -52,7 +52,7 @@ export default function DeafDashboardPage() {
       console.log('[PREF DEBUG] auth user:', user?.id, 'error:', authError?.message);
       if (!user) { setLoading(false); return; }
 
-      // Resolve deaf_profiles.id — try by id first, then by user_id
+      // Resolve deaf_profiles.id - try by id first, then by user_id
       // Avoids .or() + .maybeSingle() which can fail silently if edge cases arise
       let deafUserId = user.id;
       const { data: byId } = await supabase
@@ -75,7 +75,7 @@ export default function DeafDashboardPage() {
       }
       console.log('[PREF DEBUG] deafUserId:', deafUserId, '(user.id:', user.id + ')');
 
-      // Step 1: Fetch roster rows (no nested embeds — avoids PostgREST issues)
+      // Step 1: Fetch roster rows (no nested embeds - avoids PostgREST issues)
       const { data: rosterRows, error: rosterError } = await supabase
         .from('deaf_roster')
         .select('id, interpreter_id, tier, approve_work, approve_personal, notes')
@@ -273,7 +273,7 @@ export default function DeafDashboardPage() {
     );
   }
 
-  // Empty state — no interpreters at all
+  // Empty state - no interpreters at all
   if (roster.length === 0) {
     return (
       <div className="dhh-interp-list-page" style={{ maxWidth: 960, margin: '0 auto', padding: '60px 32px 64px' }}>
@@ -317,7 +317,7 @@ export default function DeafDashboardPage() {
         onMouseOver={e => (e.currentTarget.style.borderColor = 'rgba(0,229,255,0.3)')}
         onMouseOut={e => (e.currentTarget.style.borderColor = 'var(--border)')}
       >
-        {/* Avatar — clickable to profile */}
+        {/* Avatar - clickable to profile */}
         <Link href={`/directory/${item.interpreter_id}`} onClick={e => e.stopPropagation()} style={{ flexShrink: 0, textDecoration: 'none' }}>
           {item.photo_url ? (
             <img src={item.photo_url} alt={item.name} style={{
@@ -601,7 +601,7 @@ export default function DeafDashboardPage() {
         </div>
       </div>
 
-      {/* Toast — top center */}
+      {/* Toast - top center */}
       {toast && (
         <div style={{
           position: 'fixed', top: 24, left: '50%', transform: 'translateX(-50%)',

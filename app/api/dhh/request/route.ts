@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Verify DHH role — check deaf_profiles existence (reliable for multi-role users)
+    // Verify DHH role - check deaf_profiles existence (reliable for multi-role users)
     const admin = getSupabaseAdmin()
     const { data: deafRow, error: deafCheckError } = await admin
       .from('deaf_profiles')
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
 
       booking = { id: bookingId }
 
-      // For drafts, return early — don't create recipients or send notifications
+      // For drafts, return early - don't create recipients or send notifications
       return NextResponse.json({ success: true, bookingIds: [booking.id] })
     } else {
       const { data: newBooking, error: insertError } = await admin
@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
 
       booking = newBooking
 
-      // For new drafts, return early — don't create recipients or send notifications
+      // For new drafts, return early - don't create recipients or send notifications
       if (saveAsDraft) {
         return NextResponse.json({ success: true, bookingIds: [booking.id] })
       }

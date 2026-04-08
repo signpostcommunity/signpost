@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    // Already charged — idempotent
+    // Already charged - idempotent
     if (booking.platform_fee_status === 'charged' && booking.stripe_payment_intent_id) {
       return NextResponse.json({ status: 'already_charged' })
     }
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (!profile.stripe_customer_id || !profile.stripe_default_payment_method_id) {
-      // No payment method — mark as failed but don't block
+      // No payment method - mark as failed but don't block
       await admin
         .from('bookings')
         .update({ platform_fee_status: 'failed' })
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
         payment_method: profile.stripe_default_payment_method_id,
         off_session: true,
         confirm: true,
-        description: `signpost platform fee — Booking #${bookingId}`,
+        description: `signpost platform fee - Booking #${bookingId}`,
         metadata: {
           booking_id: bookingId,
           requester_id: user.id,
@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
     } catch (chargeError) {
       console.error('[charge-platform-fee] Stripe charge failed:', chargeError)
 
-      // Charge failed — booking still confirms, fee marked as failed
+      // Charge failed - booking still confirms, fee marked as failed
       await admin
         .from('bookings')
         .update({

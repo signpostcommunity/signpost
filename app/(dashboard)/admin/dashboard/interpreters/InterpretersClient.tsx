@@ -94,8 +94,8 @@ export default function InterpretersClient({ interpreters }: { interpreters: Int
                 return (
                   <tr key={i.id} style={{ borderBottom: '1px solid var(--border)' }}>
                     <td style={{ padding: '10px 16px', color: 'var(--text)' }}>{name}</td>
-                    <td style={{ padding: '10px 16px', color: 'var(--muted)' }}>{i.email || '—'}</td>
-                    <td style={{ padding: '10px 16px', color: 'var(--muted)', fontSize: '0.82rem' }}>{loc || '—'}</td>
+                    <td style={{ padding: '10px 16px', color: 'var(--muted)' }}>{i.email || '-'}</td>
+                    <td style={{ padding: '10px 16px', color: 'var(--muted)', fontSize: '0.82rem' }}>{loc || '-'}</td>
                     <td style={{ padding: '10px 16px' }}>
                       <span style={{
                         padding: '2px 10px', borderRadius: 999, fontSize: '0.72rem', fontWeight: 600,

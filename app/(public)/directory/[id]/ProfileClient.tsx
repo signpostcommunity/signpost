@@ -330,7 +330,7 @@ export default function ProfileClient({ interpreter: i, activeAway, availability
                     &ldquo;{activeAway.message}&rdquo;
                   </div>
                   <div style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.5 }}>
-                    You can still send a request — {i.name.split(' ')[0]} may respond after they return.
+                    You can still send a request - {i.name.split(' ')[0]} may respond after they return.
                   </div>
                 </div>
               )}
@@ -401,7 +401,7 @@ export default function ProfileClient({ interpreter: i, activeAway, availability
             </div>
           </div>
 
-          {/* Tabs — inside the header band */}
+          {/* Tabs - inside the header band */}
           <div
             style={{
               display: 'flex',
@@ -758,7 +758,7 @@ function OverviewTab({ interpreter: i, userRole, videoAlreadyRequested, onReques
             </Section>
           );
         }
-        // No video at all — show placeholder with request button
+        // No video at all - show placeholder with request button
         return (
           <div style={{
             background: '#111118', border: '1px dashed #1e2433',
@@ -903,7 +903,7 @@ function OverviewTab({ interpreter: i, userRole, videoAlreadyRequested, onReques
         })()}
       </Section>
 
-      {/* Mentorship — interpreter-only */}
+      {/* Mentorship - interpreter-only */}
       {userRole === 'interpreter' && (i.mentorshipOffering || i.mentorshipSeeking) && (
         <MentorshipSection interpreter={i} />
       )}
@@ -1103,11 +1103,11 @@ function AvailabilityTab({ availability }: { availability?: AvailabilityRow[] })
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
               {isAvail && hasTime ? (
                 <span style={{ fontSize: '0.88rem', color: '#00e5ff' }}>
-                  {formatTime12(row!.start_time)} — {formatTime12(row!.end_time)}
+                  {formatTime12(row!.start_time)} - {formatTime12(row!.end_time)}
                 </span>
               ) : isByReq ? (
                 <span style={{ fontSize: '0.85rem', color: '#f59e0b' }}>
-                  By request{hasTime ? ` · ${formatTime12(row!.start_time)} — ${formatTime12(row!.end_time)}` : ''}
+                  By request{hasTime ? ` · ${formatTime12(row!.start_time)} - ${formatTime12(row!.end_time)}` : ''}
                 </span>
               ) : (
                 <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Not available</span>

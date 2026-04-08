@@ -179,7 +179,7 @@ export default function ProfileClient({ profile, userEmail }: Props) {
           Manage your account information and preferences.
         </p>
 
-        {/* Section 1 — Personal Information */}
+        {/* Section 1 - Personal Information */}
         <div style={cardStyle}>
           <div style={sectionTitleStyle}>Personal Information</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -232,7 +232,7 @@ export default function ProfileClient({ profile, userEmail }: Props) {
           </div>
         </div>
 
-        {/* Section 2 — Organization (conditional) */}
+        {/* Section 2 - Organization (conditional) */}
         {isOrg && (
           <div style={cardStyle}>
             <div style={sectionTitleStyle}>Organization</div>
@@ -265,7 +265,7 @@ export default function ProfileClient({ profile, userEmail }: Props) {
           </div>
         )}
 
-        {/* Section 3 — Location */}
+        {/* Section 3 - Location */}
         <div style={cardStyle}>
           <div style={sectionTitleStyle}>Location</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -307,7 +307,7 @@ export default function ProfileClient({ profile, userEmail }: Props) {
           </div>
         </div>
 
-        {/* Section 4 — Communication Preferences */}
+        {/* Section 4 - Communication Preferences */}
         <div style={cardStyle}>
           <div style={sectionTitleStyle}>Communication Preferences</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -331,7 +331,7 @@ export default function ProfileClient({ profile, userEmail }: Props) {
           </div>
         </div>
 
-        {/* Section 5 — Payment Method */}
+        {/* Section 5 - Payment Method */}
         <BetaTryThis storageKey="beta_try_payment_method">
           Try adding a payment method using test card number 4242 4242 4242 4242 with any future expiry date and any CVC.
         </BetaTryThis>

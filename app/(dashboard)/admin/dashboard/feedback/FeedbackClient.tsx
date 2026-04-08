@@ -221,7 +221,7 @@ function FlatView({ feedback }: { feedback: FeedbackItem[] }) {
 
           {(f.page || f.page_area) && (
             <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 8 }}>
-              Page: {f.page_area || f.page || '—'}
+              Page: {f.page_area || f.page || '-'}
             </div>
           )}
 

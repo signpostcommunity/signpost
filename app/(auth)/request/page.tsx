@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 function BetaWelcomeBanner() {
@@ -15,66 +15,125 @@ function BetaWelcomeBanner() {
 
   if (dismissed) return null
 
+  const items: { n: number; body: React.ReactNode }[] = [
+    { n: 1, body: 'Sample requests and interpreter profiles are included so you can explore without affecting real data.' },
+    { n: 2, body: 'A feedback panel will appear on the right side of every page. Share your honest thoughts as you go.' },
+    { n: 3, body: 'Look for orange "Try This!" prompts on several pages to discover key features.' },
+  ]
+
   return (
-    <div style={{
-      maxWidth: 760,
-      margin: '0 auto 40px',
-      background: '#111118',
-      borderTop: '3px solid #f97316',
-      borderRadius: 'var(--radius)',
-      padding: 32,
-    }}>
-      <h2 style={{
-        fontFamily: "'Syne', sans-serif",
-        fontWeight: 725,
-        fontSize: '20px',
-        color: '#f0f2f8',
-        margin: '0 0 18px',
-      }}>
-        Welcome to the signpost Requester Beta
-      </h2>
-      <div style={{
-        color: '#c8cdd8',
-        fontSize: '14px',
-        lineHeight: 1.65,
-        fontFamily: "'Inter', sans-serif",
-      }}>
-        <p style={{ margin: '0 0 14px' }}>
-          You are among the first organizations and individuals to test signpost&apos;s interpreter booking system. The site you see is fully functional, but still being refined based on your feedback.
-        </p>
-        <p style={{ margin: '0 0 14px' }}>
-          You will see sample requests and sample interpreter profiles throughout your portal. These are here so you can explore every feature without affecting real data. The interpreter profiles in the directory during beta are test profiles for you to practice with.
-        </p>
-        <p style={{ margin: '0 0 14px' }}>
-          To get started, click &quot;Create My First Request&quot; and follow the process.
-        </p>
-        <p style={{ margin: '0 0 14px' }}>
-          Once you have created your account, a feedback panel will appear in orange on the right side of every page. You will also notice orange &apos;Try This!&apos; prompts on several pages. These will help you try out some of our most exciting features.
-        </p>
-        <p style={{ margin: '0 0 14px' }}>
-          Please share your honest thoughts as you go. Your experience shapes everything we build.
-        </p>
-        <p style={{ margin: '0 0 22px' }}>
-          Questions? Reach us at hello@signpost.community
-        </p>
-      </div>
-      <button
-        className="btn-primary"
-        onClick={() => {
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="requester-welcome-title"
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 50,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(0,0,0,0.7)',
+        backdropFilter: 'blur(4px)',
+        padding: 16,
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
           localStorage.setItem('requester_beta_welcome_dismissed', 'true')
           setDismissed(true)
-        }}
-        style={{
-          padding: '12px 32px',
-          fontSize: '14.5px',
+        }
+      }}
+    >
+      <div style={{
+        background: '#111118',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius)',
+        maxWidth: 560,
+        width: '90%',
+        maxHeight: '85vh',
+        overflowY: 'auto',
+        padding: '36px 32px',
+      }}>
+        <h2
+          id="requester-welcome-title"
+          style={{
+            fontFamily: "'Syne', sans-serif",
+            fontWeight: 700,
+            fontSize: '22px',
+            color: '#f0f2f8',
+            margin: '0 0 12px',
+          }}
+        >
+          Welcome to signpost!
+        </h2>
+        <p style={{
+          fontFamily: "'Inter', sans-serif",
+          fontWeight: 400,
+          fontSize: '15px',
+          color: '#96a0b8',
+          lineHeight: 1.6,
+          margin: '0 0 22px',
+        }}>
+          You&apos;re one of the first to test our interpreter booking system. Everything here is fully functional.
+        </p>
+        <div style={{
+          fontFamily: "'Inter', sans-serif",
           fontWeight: 600,
-          borderRadius: '10px',
-          cursor: 'pointer',
-          border: 'none',
-        }}
-      >
-        Let&apos;s Go
-      </button>
+          fontSize: '13px',
+          letterSpacing: '0.08em',
+          textTransform: 'uppercase',
+          color: '#00e5ff',
+          margin: '0 0 14px',
+        }}>
+          What to know
+        </div>
+        <ol style={{ listStyle: 'none', padding: 0, margin: '0 0 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {items.map((it) => (
+            <li key={it.n} style={{ display: 'flex', gap: 12, fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: '14px', color: '#c8ccd4', lineHeight: 1.55 }}>
+              <span style={{ color: '#00e5ff', fontWeight: 700, minWidth: 18 }}>{it.n}.</span>
+              <span>{it.body}</span>
+            </li>
+          ))}
+        </ol>
+        <p style={{
+          fontFamily: "'Inter', sans-serif",
+          fontSize: '14px',
+          color: '#c8ccd4',
+          lineHeight: 1.6,
+          margin: '0 0 20px',
+        }}>
+          To get started, click <strong style={{ color: '#00e5ff', fontWeight: 700 }}>Create My First Request</strong> and follow the process.
+        </p>
+        <p style={{
+          fontFamily: "'Inter', sans-serif",
+          fontSize: '13px',
+          color: '#96a0b8',
+          margin: '0 0 28px',
+        }}>
+          Questions? <a href="mailto:hello@signpost.community" style={{ color: '#00e5ff', textDecoration: 'none' }}>hello@signpost.community</a>
+        </p>
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <button
+            onClick={() => {
+              localStorage.setItem('requester_beta_welcome_dismissed', 'true')
+              setDismissed(true)
+            }}
+            style={{
+              padding: '12px 36px',
+              fontSize: '14.5px',
+              fontWeight: 700,
+              borderRadius: '10px',
+              cursor: 'pointer',
+              border: 'none',
+              background: '#00e5ff',
+              color: '#0a0a0f',
+              fontFamily: "'Inter', sans-serif",
+            }}
+          >
+            Let&apos;s Go
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

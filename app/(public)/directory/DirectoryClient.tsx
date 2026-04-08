@@ -48,7 +48,7 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
   const [filterOpen, setFilterOpen] = useState(false);
   const [autoFilterLabels, setAutoFilterLabels] = useState<string[]>([]);
 
-  // Auth state — starts null (loading), then true/false
+  // Auth state - starts null (loading), then true/false
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
 
   // User role for AddToListModal
@@ -281,7 +281,7 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
         if (!searchable.includes(q)) return false;
       }
 
-      // Distance filter — Haversine calculation
+      // Distance filter - Haversine calculation
       if (filters.distanceRadius !== 'any' && filters.userLat != null && filters.userLng != null) {
         const radiusMiles = parseInt(filters.distanceRadius, 10);
         if (i.latitude != null && i.longitude != null) {
@@ -291,16 +291,16 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
         // Interpreters without coordinates are always shown
       }
 
-      // Sign languages — handles both short codes (seed data) and full names (signup data)
+      // Sign languages - handles both short codes (seed data) and full names (signup data)
       if (filters.signLangs.length > 0 && !filters.signLangs.some((l) => i.signLangs.some(sl => langMatches(sl, l)))) return false;
 
-      // Spoken languages — handles both short names (seed data) and full names (signup data)
+      // Spoken languages - handles both short names (seed data) and full names (signup data)
       if (filters.spokenLangs.length > 0 && !filters.spokenLangs.some((l) => i.spokenLangs.some(sl => langMatches(sl, l)))) return false;
 
       // Specializations
       if (filters.specs.length > 0 && !filters.specs.some((s) => i.specs.includes(s) || (i.specializedSkills || []).includes(s))) return false;
 
-      // Certification toggle — require at least one cert
+      // Certification toggle - require at least one cert
       if (filters.certs.includes('__any_cert__') && i.certs.length === 0) return false;
 
       // Regions
@@ -369,7 +369,7 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
 
   return (
     <div style={{ minHeight: '100vh', position: 'relative' }}>
-      {/* Body — full width */}
+      {/* Body - full width */}
       <div
         className="directory-body"
         style={{
@@ -506,7 +506,7 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
               Don&apos;t see an interpreter here who you love working with?{' '}
               <button
                 onClick={() => {
-                  const defaultMsg = `${userName || 'Someone'} wants you to join signpost — a community-built interpreter directory connecting interpreters directly with the Deaf community. Create your free profile: https://signpost.community/interpreter`;
+                  const defaultMsg = `${userName || 'Someone'} wants you to join signpost - a community-built interpreter directory connecting interpreters directly with the Deaf community. Create your free profile: https://signpost.community/interpreter`;
                   setInviteMessage(defaultMsg);
                   setInviteName('');
                   setInviteContact('');
@@ -530,7 +530,7 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
             </span>
           </div>
 
-          {/* Hidden — unhide when directory is larger */}
+          {/* Hidden - unhide when directory is larger */}
           {false && (
           <div style={{ marginBottom: '20px' }}>
             <p style={{ color: 'var(--muted)', fontSize: '0.95rem' }}>
@@ -576,7 +576,7 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
             </button>
           </div>
 
-          {/* Mobile filter panel — full screen overlay */}
+          {/* Mobile filter panel - full screen overlay */}
           {filterOpen && (
             <div
               className="filter-mobile-panel"
@@ -891,7 +891,7 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
                     setInviteModalOpen(false);
                     showToast('Invite copied! Paste it in an email or text message.');
                   } catch {
-                    showToast('Could not copy — please select and copy the message manually.');
+                    showToast('Could not copy - please select and copy the message manually.');
                   }
                 }}
                 className="btn-primary"

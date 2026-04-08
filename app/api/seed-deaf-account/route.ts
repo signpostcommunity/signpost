@@ -98,7 +98,7 @@ export async function POST() {
         date: toDateStr(nextWeek),
         timeStart: '14:00',
         timeEnd: '15:00',
-        location: 'Telehealth — Zoom link will be provided',
+        location: 'Telehealth - Zoom link will be provided',
         format: 'remote',
         status: 'filled',
         description: 'Follow-up appointment with primary care physician. Discussion of recent lab results.',

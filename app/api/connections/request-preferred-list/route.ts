@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (matchedUser) {
-      // Existing user — check if they have a deaf_profiles row
+      // Existing user - check if they have a deaf_profiles row
       const { data: deafProfile } = await admin
         .from('deaf_profiles')
         .select('id')
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({ success: true, userExists: true })
     } else {
-      // Non-user — send invitation email via Resend
+      // Non-user - send invitation email via Resend
       const html = emailTemplate({
         heading: `${requesterName} wants to book an interpreter for you`,
         body: `<p>${requesterName} is booking an interpreter for you and wants to find someone you trust. signpost lets you build a preferred interpreter list so the right interpreters are always contacted first.</p>

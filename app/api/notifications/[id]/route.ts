@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-// PATCH /api/notifications/[id] — update a single notification (e.g. mark as read)
+// PATCH /api/notifications/[id] - update a single notification (e.g. mark as read)
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
@@ -33,7 +33,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   return NextResponse.json({ ok: true })
 }
 
-// DELETE /api/notifications/[id] — delete a single notification
+// DELETE /api/notifications/[id] - delete a single notification
 export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()

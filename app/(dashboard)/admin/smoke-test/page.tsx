@@ -15,7 +15,7 @@ export default function SmokeTestPage() {
     try {
       const res = await fetch('/api/admin/smoke-test', { method: 'POST' })
       if (res.status === 401 || res.status === 403) {
-        setError('Access denied — admin only')
+        setError('Access denied - admin only')
         return
       }
       if (!res.ok) {

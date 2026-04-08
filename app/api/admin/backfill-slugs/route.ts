@@ -4,7 +4,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { generateSlug } from '@/lib/slugUtils'
 
 export async function POST() {
-  // Auth check — must be admin
+  // Auth check - must be admin
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {

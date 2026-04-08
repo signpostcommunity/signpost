@@ -71,7 +71,7 @@ function brandDisplayName(brand: string): string {
 }
 
 function CardBrandIcon({ brand }: { brand: string }) {
-  // Simple SVG card icon — works for all brands
+  // Simple SVG card icon - works for all brands
   return (
     <svg width="28" height="20" viewBox="0 0 28 20" fill="none" aria-hidden="true">
       <rect x="1" y="1" width="26" height="18" rx="3" stroke="#96a0b8" strokeWidth="1.2" />
@@ -241,7 +241,7 @@ export default function PaymentMethodSection({ onToast }: PaymentMethodSectionPr
           setPaymentMethod(pmData.paymentMethod)
         }
       } catch {
-        // Stripe not configured — section will show fallback
+        // Stripe not configured - section will show fallback
       }
       setLoading(false)
     }
@@ -406,7 +406,7 @@ export default function PaymentMethodSection({ onToast }: PaymentMethodSectionPr
         </div>
       )}
 
-      {/* Update flow — show form inline below existing card */}
+      {/* Update flow - show form inline below existing card */}
       {showForm && paymentMethod && stripePromise && (
         <div style={{ marginTop: 16 }}>
           <p style={{ color: '#96a0b8', fontSize: '13px', margin: '0 0 12px' }}>

@@ -432,7 +432,7 @@ export default function TeamPage() {
         />
       )}
 
-      {/* Edit modal — reuses AddToListModal in edit mode */}
+      {/* Edit modal - reuses AddToListModal in edit mode */}
       <AddToListModal
         isOpen={!!editingMember}
         onClose={() => setEditingMember(null)}

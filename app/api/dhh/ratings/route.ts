@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
           })
         }
       } catch (msgErr) {
-        // Non-critical — don't fail the rating if message fails
+        // Non-critical - don't fail the rating if message fails
         console.error('[dhh/ratings] message send failed:', msgErr instanceof Error ? msgErr.message : msgErr)
       }
     }

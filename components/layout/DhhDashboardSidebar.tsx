@@ -280,7 +280,7 @@ export default function DhhDashboardSidebar({ userName = 'User', userInitials = 
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // Resolve deaf_profiles.id — try by id first, then by user_id
+      // Resolve deaf_profiles.id - try by id first, then by user_id
       let deafUserId = user.id
       const { data: byId } = await supabase
         .from('deaf_profiles')

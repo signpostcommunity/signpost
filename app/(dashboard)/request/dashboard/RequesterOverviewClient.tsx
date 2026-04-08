@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Link from 'next/link'
 import BetaTryThis from '@/components/ui/BetaTryThis'
 
@@ -15,6 +15,7 @@ interface RecentBooking {
   status: string
   interpreter_count: number
   event_category: string | null
+  location?: string | null
 }
 
 interface RecentRecipient {
@@ -129,6 +130,8 @@ export default function RequesterOverviewClient({
   recentRecipients = [], recentInterpreterMap = {},
 }: Props) {
   const greeting = firstName ? `Good to see you, ${firstName}.` : 'Welcome to your dashboard.'
+  const [expandedBookingId, setExpandedBookingId] = useState<string | null>(null)
+  const bookingCardRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
@@ -196,14 +199,35 @@ export default function RequesterOverviewClient({
           </div>
         ) : (
           <>
-            {recentBookings.map(booking => (
-              <Link key={booking.id} href={`/request/dashboard/requests?expand=${booking.id}`} style={{ textDecoration: 'none', display: 'block', marginBottom: 12 }}>
+            {recentBookings.map(booking => {
+              const isExpanded = expandedBookingId === booking.id
+              return (
               <div
+                key={booking.id}
+                ref={el => { bookingCardRefs.current[booking.id] = el }}
                 className="recent-request-card"
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  const next = isExpanded ? null : booking.id
+                  setExpandedBookingId(next)
+                  if (next) {
+                    requestAnimationFrame(() => {
+                      bookingCardRefs.current[booking.id]?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+                    })
+                  }
+                }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    setExpandedBookingId(isExpanded ? null : booking.id)
+                  }
+                }}
                 style={{
                 background: 'var(--card-bg)', border: '1px solid var(--border)',
                 borderRadius: 'var(--radius)', padding: '20px 24px',
                 cursor: 'pointer', transition: 'border-color 0.15s',
+                marginBottom: 12,
               }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
                   <div>
@@ -261,9 +285,43 @@ export default function RequesterOverviewClient({
                     </div>
                   )
                 })()}
+                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <span aria-hidden="true" style={{
+                    color: 'var(--muted)', fontSize: '0.85rem',
+                    transition: 'transform 0.2s', display: 'inline-block',
+                    transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                  }}>▾</span>
+                </div>
+                {isExpanded && (
+                  <div
+                    onClick={e => e.stopPropagation()}
+                    style={{
+                      marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border)',
+                      display: 'flex', flexDirection: 'column', gap: 8,
+                      fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6,
+                    }}
+                  >
+                    {booking.location && (
+                      <div><span style={{ color: 'var(--muted)' }}>Location: </span>{booking.location}</div>
+                    )}
+                    {booking.event_category && (
+                      <div><span style={{ color: 'var(--muted)' }}>Category: </span>{booking.event_category}</div>
+                    )}
+                    <div><span style={{ color: 'var(--muted)' }}>Status: </span>{booking.status}</div>
+                    <Link
+                      href={`/request/dashboard/requests?expand=${booking.id}`}
+                      style={{
+                        marginTop: 4, color: 'var(--accent)', textDecoration: 'none',
+                        fontSize: '0.82rem', fontWeight: 600,
+                      }}
+                    >
+                      Open in full requests view →
+                    </Link>
+                  </div>
+                )}
               </div>
-              </Link>
-            ))}
+              )
+            })}
             <Link
               href="/request/dashboard/requests"
               style={{

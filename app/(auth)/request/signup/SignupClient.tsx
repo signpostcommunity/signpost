@@ -107,7 +107,7 @@ export default function RequestSignupClient() {
     const normFirst = (norm.first_name as string) || form.firstName;
     const normLast = (norm.last_name as string) || form.lastName;
     const normDisplayName = `${normFirst} ${normLast}`.trim() || form.email;
-    // TODO: Tech debt — remove requester_profiles.name column, derive from first_name + last_name
+    // TODO: Tech debt - remove requester_profiles.name column, derive from first_name + last_name
     const { error: rpError } = await supabase.from('requester_profiles').insert(syncNameFields({
       id: userId,
       user_id: userId,
@@ -128,7 +128,7 @@ export default function RequestSignupClient() {
       return;
     }
 
-    // Create Stripe customer (fire-and-forget — not blocking signup)
+    // Create Stripe customer (fire-and-forget - not blocking signup)
     fetch('/api/stripe/customer', { method: 'POST' }).catch(() => {
       // Stripe customer will be created lazily on first payment settings visit
     });
@@ -161,12 +161,12 @@ export default function RequestSignupClient() {
         <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Step {step} of {TOTAL_STEPS}</div>
       </div>
 
-      {/* Step 1 — How signpost Works */}
+      {/* Step 1 - How signpost Works */}
       {step === 1 && (
         <HowItWorks role="requester" onContinue={() => { setStep(2); window.scrollTo({ top: 0, behavior: 'smooth' }) }} />
       )}
 
-      {/* Step 2 — Role Selection */}
+      {/* Step 2 - Role Selection */}
       {step === 2 && (
         <div>
           <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 775, color: '#f0f2f8', marginBottom: '6px' }}>
@@ -208,7 +208,7 @@ export default function RequestSignupClient() {
               </div>
             </button>
 
-            {/* Deaf / Hard of Hearing — redirects */}
+            {/* Deaf / Hard of Hearing - redirects */}
             <button
               type="button"
               onClick={() => router.push('/dhh')}
@@ -276,7 +276,7 @@ export default function RequestSignupClient() {
         </div>
       )}
 
-      {/* Step 3 — Account Details */}
+      {/* Step 3 - Account Details */}
       {step === 3 && (
         <div>
           <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 775, color: '#f0f2f8', marginBottom: '6px' }}>
@@ -353,7 +353,7 @@ export default function RequestSignupClient() {
         </div>
       )}
 
-      {/* Step 4 — Preview & Create */}
+      {/* Step 4 - Preview & Create */}
       {step === 4 && (
         <div>
           <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 775, color: '#f0f2f8', marginBottom: '6px' }}>
@@ -403,7 +403,7 @@ export default function RequestSignupClient() {
         </div>
       )}
 
-      {/* Step 5 — Done */}
+      {/* Step 5 - Done */}
       {step === 5 && <DoneStep />}
 
       {/* Navigation (steps 2-4 only; step 1 has its own CTA, step 5 is done) */}

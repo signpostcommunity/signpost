@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
     if (!interp) continue
 
     if (entry.do_not_book) {
-      // DNB: IDs only for silent exclusion — no names, no details
+      // DNB: IDs only for silent exclusion - no names, no details
       doNotBook.push({
         interpreter_id: entry.interpreter_id,
       })

@@ -90,7 +90,7 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
             </svg>
           )}
 
-          {/* Intro video button — only show when interpreter has a video */}
+          {/* Intro video button - only show when interpreter has a video */}
           {i.videoUrl && (
             <button
               onClick={(e) => {
@@ -134,7 +134,7 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
           >
             {i.name}
           </div>
-          {/* Add to list — own row */}
+          {/* Add to list - own row */}
           <div style={{ marginTop: '6px' }}>
             <button
               onClick={(e) => {
@@ -147,7 +147,7 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
               {userRole === 'interpreter' ? '+ Add to my team' : '+ Add to my list'}
             </button>
           </div>
-          {/* Location — full width below name */}
+          {/* Location - full width below name */}
           <div
             style={{
               color: 'var(--muted)',
@@ -211,9 +211,9 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
             ))}
           </div>
 
-          {/* Specializations removed from card — visible on profile page */}
+          {/* Specializations removed from card - visible on profile page */}
 
-          {/* Certs — pushed to bottom */}
+          {/* Certs - pushed to bottom */}
           {i.certs.length > 0 && (
             <div
               style={{
@@ -248,7 +248,7 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
             </div>
           )}
 
-          {/* Mentorship badge — interpreter-only */}
+          {/* Mentorship badge - interpreter-only */}
           {userRole === 'interpreter' && i.mentorshipOffering && (
             <div style={{
               display: 'flex', alignItems: 'center', gap: 5,

@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Shared BookMe badge preview — renders the server-generated PNG badge image.
+ * Shared BookMe badge preview - renders the server-generated PNG badge image.
  * Used on both the interpreter dashboard home and profile/edit pages.
  */
 export default function BookMeBadge({

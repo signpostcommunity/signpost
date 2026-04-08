@@ -88,7 +88,7 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
     personalLabel: '🏥 Approved for personal and medical settings',
     personalDesc: 'This interpreter will appear on your personal/medical list when you share it, visible to doctors, hospitals, social services, and other non-work requesters.',
     noteLabel: 'Personal note (optional)',
-    notePlaceholder: '"Best for medical — very clear signing, always confirms terminology with me beforehand."',
+    notePlaceholder: '"Best for medical - very clear signing, always confirms terminology with me beforehand."',
     confirmLabel: 'Add to my list →',
     requireApproval: true,
     negativeListLabel: '✕ Do Not Book',
@@ -148,7 +148,7 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
     personalLabel: '',
     personalDesc: '',
     noteLabel: 'Note (optional)',
-    notePlaceholder: '"Great partner for conference work — excellent at relay and pacing."',
+    notePlaceholder: '"Great partner for conference work - excellent at relay and pacing."',
     confirmLabel: 'Add to my team →',
     requireApproval: false,
     negativeListLabel: '✕ Not Recommended',
@@ -178,7 +178,7 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
     personalLabel: '🏥 Approved for personal and medical settings',
     personalDesc: 'This interpreter will appear on your personal/medical list when you share it.',
     noteLabel: 'Personal note (optional)',
-    notePlaceholder: '"Best for medical — very clear signing."',
+    notePlaceholder: '"Best for medical - very clear signing."',
     confirmLabel: 'Add to my list →',
     requireApproval: true,
     negativeListLabel: '✕ Do Not Book',
@@ -270,7 +270,7 @@ export default function AddToListModal({
 
       if (userRole === 'interpreter') {
         if (isEditMode) {
-          // Edit mode — UPDATE existing row
+          // Edit mode - UPDATE existing row
           const { error: updateErr } = await supabase
             .from('interpreter_preferred_team')
             .update({
@@ -287,7 +287,7 @@ export default function AddToListModal({
             return;
           }
         } else {
-          // Add mode — INSERT new row
+          // Add mode - INSERT new row
           const { data: profile, error: profileErr } = await supabase
             .from('interpreter_profiles')
             .select('id')
@@ -327,7 +327,7 @@ export default function AddToListModal({
             return;
           }
 
-          // Don't notify if non-recommended — that's private
+          // Don't notify if non-recommended - that's private
           if (!negativeList) {
             // Notify the interpreter they were added to someone's preferred team
             const { data: memberProfile } = await supabase
@@ -493,7 +493,7 @@ export default function AddToListModal({
             return;
           }
           if (insertErr.code === '23505') {
-            // Duplicate — close modal and show toast instead of inline error
+            // Duplicate - close modal and show toast instead of inline error
             if (onDuplicate) {
               onDuplicate(interpreter.name);
               onClose();
@@ -504,7 +504,7 @@ export default function AddToListModal({
             setError('Permission denied. RLS policy may be missing for deaf_roster.');
           } else if (insertErr.code === '42703') {
             setError(
-              `Column mismatch — deaf_roster schema needs updating. Error: ${insertErr.message}`
+              `Column mismatch - deaf_roster schema needs updating. Error: ${insertErr.message}`
             );
           } else {
             setError(`Save failed: ${insertErr.message}`);
@@ -640,7 +640,7 @@ export default function AddToListModal({
                 marginBottom: '3px',
               }}
             >
-              {isEditMode ? `Edit — ${interpreter.name}` : interpreter.name}
+              {isEditMode ? `Edit - ${interpreter.name}` : interpreter.name}
             </div>
             <div
               style={{
@@ -662,7 +662,7 @@ export default function AddToListModal({
             gap: '20px',
           }}
         >
-          {/* Step 1: Tier selection — hidden when negative list is active */}
+          {/* Step 1: Tier selection - hidden when negative list is active */}
           {!negativeList && (
             <div>
               <div
@@ -765,7 +765,7 @@ export default function AddToListModal({
             </div>
           )}
 
-          {/* Negative list toggle (Do Not Book / Not Recommended) — hidden for requester */}
+          {/* Negative list toggle (Do Not Book / Not Recommended) - hidden for requester */}
           {userRole !== 'requester' && <label
             style={{
               display: 'flex',
@@ -832,7 +832,7 @@ export default function AddToListModal({
             </div>
           </label>}
 
-          {/* Step 2: Approval settings (deaf only) — hidden when negative list */}
+          {/* Step 2: Approval settings (deaf only) - hidden when negative list */}
           {cfg.showApprovals && !negativeList && (
             <div>
               <div
@@ -1002,7 +1002,7 @@ export default function AddToListModal({
             </div>
           )}
 
-          {/* Note — always visible */}
+          {/* Note - always visible */}
           <div>
             <div
               style={{

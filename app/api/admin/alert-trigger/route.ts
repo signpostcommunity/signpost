@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
           ``,
           `Review: https://signpost.community/admin/dashboard/flags`,
         ].join('\n'),
-        smsMessage: `[signpost] New flag: ${name} — ${reason}. Review at signpost.community/admin/dashboard/flags`,
+        smsMessage: `[signpost] New flag: ${name} - ${reason}. Review at signpost.community/admin/dashboard/flags`,
       })
     }
 

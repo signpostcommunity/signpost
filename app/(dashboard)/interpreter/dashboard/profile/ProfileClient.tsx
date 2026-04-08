@@ -88,14 +88,14 @@ function Chip({ label, selected, onToggle }: { label: string; selected: boolean;
 
 const REGIONS = [
   { label: '\u{1F30D} Worldwide', color: '#00e5ff' },
-  { label: 'NA — North America', color: '#f97316' },
-  { label: 'LATAM — Latin America & Caribbean', color: '#a78bfa' },
-  { label: 'EU — Europe', color: '#60a5fa' },
-  { label: 'AF — Africa', color: '#34d399' },
-  { label: 'ME — Middle East', color: '#fb923c' },
-  { label: 'SA — South & Central Asia', color: '#f472b6' },
-  { label: 'EA — East & Southeast Asia', color: '#facc15' },
-  { label: 'OC — Oceania & Pacific', color: '#4dd9ac' },
+  { label: 'NA - North America', color: '#f97316' },
+  { label: 'LATAM - Latin America & Caribbean', color: '#a78bfa' },
+  { label: 'EU - Europe', color: '#60a5fa' },
+  { label: 'AF - Africa', color: '#34d399' },
+  { label: 'ME - Middle East', color: '#fb923c' },
+  { label: 'SA - South & Central Asia', color: '#f472b6' },
+  { label: 'EA - East & Southeast Asia', color: '#facc15' },
+  { label: 'OC - Oceania & Pacific', color: '#4dd9ac' },
 ]
 
 function ToggleTile({ label, selected, onToggle, dotColor }: {
@@ -464,7 +464,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
     sort_order: number
   }
   const [interpreterVideos, setInterpreterVideos] = useState<InterpreterVideo[]>([])
-  // videoRecorderOpen removed — using inline capture
+  // videoRecorderOpen removed - using inline capture
   const [newVideoLanguage, setNewVideoLanguage] = useState('')
   const [newVideoLabel, setNewVideoLabel] = useState('')
   const [pendingVideoUrl, setPendingVideoUrl] = useState('')
@@ -689,7 +689,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       .maybeSingle()
 
     // Task 4: Keep name in sync with first_name + last_name
-    // TODO: Tech debt — remove interpreter_profiles.name column, derive display name from first_name + last_name
+    // TODO: Tech debt - remove interpreter_profiles.name column, derive display name from first_name + last_name
     const normFirst = (fields.first_name as string) || firstName
     const normLast = (fields.last_name as string) || lastName
     const payload = {
@@ -715,7 +715,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       console.error('Save error:', result.error)
       setToast({ message: `Error: ${result.error.message}`, type: 'error' })
     } else if (!result.data || result.data.length === 0) {
-      console.error('Save returned no rows — RLS may be blocking the write')
+      console.error('Save returned no rows - RLS may be blocking the write')
       setToast({ message: 'Error: save returned no data. Check RLS policies.', type: 'error' })
     } else {
       // Update local state from DB response
@@ -829,7 +829,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
 
     // If no row found, create one
     if (!dbError && (!dbData || dbData.length === 0)) {
-      // TODO: Tech debt — remove interpreter_profiles.name column, derive from first_name + last_name
+      // TODO: Tech debt - remove interpreter_profiles.name column, derive from first_name + last_name
       const insertResult = await supabase
         .from('interpreter_profiles')
         .insert(syncNameFields({
@@ -1506,7 +1506,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
             <label style={labelStyle}>Something about my background or approach that doesn&apos;t fit neatly into a checkbox:</label>
             <textarea
               value={bioExtra} onChange={e => { if (e.target.value.length <= 300) setBioExtra(e.target.value) }}
-              placeholder="Optional — share anything that makes your work yours."
+              placeholder="Optional - share anything that makes your work yours."
               rows={3} style={{ ...inputStyle, resize: 'vertical', minHeight: 80 }}
               onFocus={handleFocus} onBlur={handleBlur}
             />
@@ -1630,7 +1630,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
             </div>
           )}
 
-          {/* Add video — inline capture */}
+          {/* Add video - inline capture */}
           {!showVideoForm && (
             <InlineVideoCapture
               onVideoSaved={(url, source) => {
@@ -2086,7 +2086,7 @@ function CredentialsTab({ saving, onSave, profileId, initialCerts, initialEducat
 
       <SaveButton saving={saving} onClick={async () => {
         if (!profileId) {
-          // No profile yet — save to draft_data as fallback
+          // No profile yet - save to draft_data as fallback
           const validCerts = certs.filter(c => c.name.trim())
           const validEdu = education.filter(e => e.degree.trim())
           onSave({

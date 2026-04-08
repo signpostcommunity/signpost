@@ -187,7 +187,7 @@ function CancelModal({ booking, onClose, onCancelled }: {
       })
       .eq('id', booking.id)
 
-    // TODO: cancelled_by_requester — when requester cancellation flow is built
+    // TODO: cancelled_by_requester - when requester cancellation flow is built
     // TODO: If sub_search_initiated, send requester approval prompt
     // TODO: If D/HH consumer is linked to booking, send them a status update
 
@@ -458,7 +458,7 @@ function ForwardToTeamModal({ booking, interpreterId, onClose, onForwarded }: {
 
   function handleForward() {
     setSending(true)
-    // TODO: Wire to real notification/message system — send request details to selected team members
+    // TODO: Wire to real notification/message system - send request details to selected team members
     const names = teamMembers.filter(m => selected.has(m.id)).map(m => `${m.first_name} ${m.last_name}`)
     setTimeout(() => {
       onForwarded(names)
@@ -572,10 +572,10 @@ function ForwardToTeamModal({ booking, interpreterId, onClose, onForwarded }: {
 
 // TODO: Add these columns to bookings table:
 // - dhh_client_name (text)
-// - dhh_client_preferences (text) — communication preferences
+// - dhh_client_preferences (text) - communication preferences
 // - onsite_contact_name (text)
 // - onsite_contact_phone (text)
-// - attachments (jsonb) — array of {name, size, url}
+// - attachments (jsonb) - array of {name, size, url}
 
 interface Attachment {
   name: string
@@ -643,11 +643,11 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
   })()
 
   // TODO: Add these columns to bookings table when ready:
-  // - dhh_client_name (text) — name of the deaf/HoH person
-  // - dhh_client_preferences (text) — communication preferences, signing style, positioning needs
+  // - dhh_client_name (text) - name of the deaf/HoH person
+  // - dhh_client_preferences (text) - communication preferences, signing style, positioning needs
   // - onsite_contact_name (text)
   // - onsite_contact_phone (text)
-  // - attachments (jsonb) — array of {name, size, url}
+  // - attachments (jsonb) - array of {name, size, url}
   // TODO: Wire attachments to Supabase Storage for file uploads
 
   // Parse D/HH client info from notes field (seed data format: "D/HH Client: Name. Communication prefs: ...")
@@ -661,7 +661,7 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
     }
   })()
 
-  const dhhClientName = parsedDhh.name // null if not available — show "Not yet provided"
+  const dhhClientName = parsedDhh.name // null if not available - show "Not yet provided"
   const dhhClientPrefs = parsedDhh.prefs // null if not available
   const onsiteContactName: string | null = null // TODO: booking.onsite_contact_name
   const onsiteContactPhone: string | null = null // TODO: booking.onsite_contact_phone
@@ -697,7 +697,7 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
               border: '1px solid rgba(255,107,133,0.3)',
               fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em',
             }}>
-              Cancelled{booking.cancellation_reason ? ` — ${booking.cancellation_reason}` : ''}
+              Cancelled{booking.cancellation_reason ? ` - ${booking.cancellation_reason}` : ''}
             </span>
           ) : booking.status === 'completed' ? (
             <span style={{
@@ -739,7 +739,7 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
             </div>
           </div>
 
-          {/* 2. Location — clickable */}
+          {/* 2. Location - clickable */}
           <div style={sectionStyle}>
             <div style={sectionLabelStyle}>Location</div>
             <div style={detailRowStyle}>
@@ -781,7 +781,7 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
                   </>
                 ) : (
                   <>
-                    On-site —{' '}
+                    On-site -{' '}
                     {booking.location ? (
                       <a
                         href={`https://maps.google.com/?q=${encodeURIComponent(booking.location)}`}
@@ -802,7 +802,7 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
             </div>
           </div>
 
-          {/* 3. Requester — who booked the interpreter */}
+          {/* 3. Requester - who booked the interpreter */}
           <div style={sectionStyle}>
             <div style={sectionLabelStyle}>Requester</div>
             <div style={detailRowStyle}>
@@ -814,7 +814,7 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
             </div>
           </div>
 
-          {/* 3b. Team — other confirmed interpreters */}
+          {/* 3b. Team - other confirmed interpreters */}
           {teamNames.length > 0 && (
             <div style={sectionStyle}>
               <div style={sectionLabelStyle}>Team</div>
@@ -830,7 +830,7 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
             </div>
           )}
 
-          {/* 4. Deaf/Hard of Hearing Client — NOT the requester */}
+          {/* 4. Deaf/Hard of Hearing Client - NOT the requester */}
           <div style={sectionStyle}>
             <div style={sectionLabelStyle}>Deaf/Hard of Hearing Client</div>
             <div style={detailRowStyle}>
@@ -861,7 +861,7 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
               </svg>
               <div>
                 {onsiteContactName && onsiteContactPhone
-                  ? `${onsiteContactName} — ${onsiteContactPhone}`
+                  ? `${onsiteContactName} - ${onsiteContactPhone}`
                   : onsiteContactName || onsiteContactPhone || <span style={{ color: 'var(--muted)', fontStyle: 'italic' }}>Not provided</span>
                 }
               </div>
@@ -899,7 +899,7 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
             )
           })()}
 
-          {/* Context video — always visible on confirmed bookings */}
+          {/* Context video - always visible on confirmed bookings */}
           {booking.context_video_url && (() => {
             const embedUrl = getVideoEmbedUrl(booking.context_video_url!)
             if (!embedUrl) return null
@@ -1372,7 +1372,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
             </div>
             {additionalCosts.map((c, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: 4 }}>
-                <span style={{ color: 'var(--muted)' }}>{c.category}{c.description ? ` — ${c.description}` : ''}</span>
+                <span style={{ color: 'var(--muted)' }}>{c.category}{c.description ? ` - ${c.description}` : ''}</span>
                 <span>${(c.amount || 0).toFixed(2)}</span>
               </div>
             ))}
@@ -1457,7 +1457,7 @@ function CancelledBadge({ reason }: { reason: string | null }) {
       border: '1px solid rgba(255,107,133,0.3)',
       fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em',
     }}>
-      Cancelled{reason ? ` — ${reason}` : ''}
+      Cancelled{reason ? ` - ${reason}` : ''}
     </span>
   )
 }
@@ -1811,10 +1811,10 @@ export default function ConfirmedPage() {
             ))
           )}
 
-          {/* Section 2: Past — Completed */}
+          {/* Section 2: Past: Completed */}
           {pastCompleted.length > 0 && (
             <>
-              <SectionLabel>Past — Completed</SectionLabel>
+              <SectionLabel>Past: Completed</SectionLabel>
               {pastCompleted.map(b => (
                 <BookingCard
                   key={`past-${b.id}`}

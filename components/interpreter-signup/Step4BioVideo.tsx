@@ -37,11 +37,11 @@ export default function Step4BioVideo({ onBack, onContinue }: {
 }) {
   const { formData, updateField, saveDraft } = useForm()
   const [videoUrlError, setVideoUrlError] = useState<string | null>(null)
-  // videoRecorderOpen removed — using inline capture
+  // videoRecorderOpen removed - using inline capture
 
   return (
     <StepWrapper>
-      {/* About You — three guided prompts */}
+      {/* About You - three guided prompts */}
       <FormSection>
         <SectionTitle>About You</SectionTitle>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 20, marginTop: -12, lineHeight: 1.6 }}>
@@ -94,7 +94,7 @@ export default function Step4BioVideo({ onBack, onContinue }: {
           <textarea
             value={formData.bioExtra}
             onChange={e => { if (e.target.value.length <= 300) updateField('bioExtra', e.target.value) }}
-            placeholder="Optional — share anything that makes your work yours."
+            placeholder="Optional - share anything that makes your work yours."
             rows={3}
             style={{ ...inputStyle, resize: 'vertical', minHeight: 80 }}
             onFocus={handleFocus}

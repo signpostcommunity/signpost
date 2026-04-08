@@ -1,4 +1,4 @@
-// TODO: Trusted Circle rating sharing toggle — add when Trusted Circle settings page is built.
+// TODO: Trusted Circle rating sharing toggle - add when Trusted Circle settings page is built.
 // When enabled, circle connections can see the sharer's interpreter ratings.
 // Default: OFF. Requires conditional join on interpreter_ratings in circle roster API.
 
@@ -130,7 +130,7 @@ export default function TrustedDeafCirclePage() {
 
       // Use the admin-backed API to fetch their roster
       // We need a dedicated endpoint or use the existing pattern
-      // For now, query directly — RLS won't allow it, so we fetch via API
+      // For now, query directly - RLS won't allow it, so we fetch via API
       const res = await fetch(`/api/dhh/circle/roster?userId=${userId}`)
       const data = await res.json()
       if (data.roster) {
@@ -204,7 +204,7 @@ export default function TrustedDeafCirclePage() {
         Deaf-to-Deaf: Privately share interpreter lists with friends. Help each other find the interpreters you&apos;ll love... and avoid the ones you won&apos;t.
       </p>
 
-      {/* Scenario cards — 3-column grid */}
+      {/* Scenario cards - 3-column grid */}
       <div className="circle-scenario-grid" style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr)',

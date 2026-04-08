@@ -111,7 +111,7 @@ export default function LocationPicker({ country = '', state = '', city = '', on
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16 }}>
-      {/* Country — searchable dropdown */}
+      {/* Country - searchable dropdown */}
       <div ref={countryRef} style={{ position: 'relative' }}>
         <label style={labelStyle}>Country *</label>
         <input
@@ -173,7 +173,7 @@ export default function LocationPicker({ country = '', state = '', city = '', on
         )}
       </div>
 
-      {/* State / Province — dynamic dropdown or hidden */}
+      {/* State / Province - dynamic dropdown or hidden */}
       {hasStates ? (
         <div>
           <label style={labelStyle}>{getSubdivisionLabel(countryCode)}</label>
@@ -213,7 +213,7 @@ export default function LocationPicker({ country = '', state = '', city = '', on
         </div>
       ) : null}
 
-      {/* City — free text */}
+      {/* City - free text */}
       <div>
         <label style={labelStyle}>City *</label>
         <input

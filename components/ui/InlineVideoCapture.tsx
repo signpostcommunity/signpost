@@ -202,7 +202,7 @@ export default function InlineVideoCapture({
     }
     tempVideo.onerror = () => {
       URL.revokeObjectURL(objectUrl)
-      // Can't read metadata — allow it through, server can validate
+      // Can't read metadata - allow it through, server can validate
       setUploadedFile(file)
       setUploadedPreviewUrl(URL.createObjectURL(file))
     }

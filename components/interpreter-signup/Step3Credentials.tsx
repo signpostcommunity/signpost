@@ -102,7 +102,7 @@ export default function Step3Credentials({ onBack, onContinue }: {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, alignItems: 'end' }}>
                 <FormField>
-                  {/* TODO: Add file upload for business documents — PDF only, 5MB max,
+                  {/* TODO: Add file upload for business documents - PDF only, 5MB max,
                       upload to Supabase storage "documents" bucket under auth.uid() folder */}
                   <FieldLabel>Verification link</FieldLabel>
                   <input

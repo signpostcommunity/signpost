@@ -68,7 +68,7 @@ const TRAVEL_OPTIONS = ['Mileage', 'Parking', 'Tolls', 'Ferry', 'Public Transit'
 const DEFAULT_PROFILES: RateProfile[] = [
   {
     id: 'rp-1', name: 'Standard Rate', color: '#00e5ff', isDefault: true,
-    hourlyRate: '', currency: 'USD — US Dollar', minBooking: 'No minimum',
+    hourlyRate: '', currency: 'USD (US Dollar)', minBooking: 'No minimum',
     cancellationPolicy: '48 hours notice required', lateFee: '100% of booking fee',
     notes: '', travel: [],
     afterHoursOn: false, afterHoursDiff: '', afterHoursDescription: '', customFees: [],
@@ -113,7 +113,7 @@ export default function RatesPage() {
 
     console.log('RATES FETCH - response:', JSON.stringify({ data: rates, error: ratesError }, null, 2))
 
-    // If the fetch itself errored, show error — do NOT seed
+    // If the fetch itself errored, show error - do NOT seed
     if (ratesError) {
       console.error('RATES FETCH - error, not seeding:', ratesError.message)
       setToast({ message: `Error loading rates: ${ratesError.message}`, type: 'error' })
@@ -130,7 +130,7 @@ export default function RatesPage() {
           color: r.color || (i === 0 ? '#00e5ff' : i === 1 ? '#34d399' : '#a78bfa'),
           isDefault: r.is_default ?? i === 0,
           hourlyRate: r.hourly_rate?.toString() || '',
-          currency: r.currency ? `${r.currency} — ${r.currency === 'USD' ? 'US Dollar' : r.currency === 'GBP' ? 'British Pound' : r.currency === 'EUR' ? 'Euro' : r.currency === 'CAD' ? 'Canadian Dollar' : r.currency === 'AUD' ? 'Australian Dollar' : r.currency}` : 'USD — US Dollar',
+          currency: r.currency ? `${r.currency} - ${r.currency === 'USD' ? 'US Dollar' : r.currency === 'GBP' ? 'British Pound' : r.currency === 'EUR' ? 'Euro' : r.currency === 'CAD' ? 'Canadian Dollar' : r.currency === 'AUD' ? 'Australian Dollar' : r.currency}` : 'USD (US Dollar)',
           minBooking: r.min_booking ? `${r.min_booking / 60} hour${r.min_booking > 60 ? 's' : ''}` : 'No minimum',
           cancellationPolicy: r.cancellation_policy || '48 hours notice required',
           lateFee: r.late_cancel_fee == null ? 'No fee' : r.late_cancel_fee === 100 ? '100% of booking fee' : r.late_cancel_fee === 50 ? '50% of booking fee' : `${r.late_cancel_fee}`,
@@ -146,7 +146,7 @@ export default function RatesPage() {
       return
     }
 
-    // No rows and no error — seed defaults (once only)
+    // No rows and no error - seed defaults (once only)
     if (hasSeeded.current) {
       console.log('RATES SEED - already seeded, skipping')
       return
@@ -176,7 +176,7 @@ export default function RatesPage() {
           color: r.color || (i === 0 ? '#a78bfa' : i === 1 ? '#34d399' : '#00e5ff'),
           isDefault: r.is_default ?? i === 0,
           hourlyRate: r.hourly_rate?.toString() || '',
-          currency: r.currency ? `${r.currency} — ${r.currency === 'USD' ? 'US Dollar' : r.currency}` : 'USD — US Dollar',
+          currency: r.currency ? `${r.currency} - ${r.currency === 'USD' ? 'US Dollar' : r.currency}` : 'USD (US Dollar)',
           minBooking: r.min_booking ? `${r.min_booking / 60} hour${r.min_booking > 60 ? 's' : ''}` : 'No minimum',
           cancellationPolicy: r.cancellation_policy || '48 hours notice required',
           lateFee: r.late_cancel_fee == null ? 'No fee' : r.late_cancel_fee === 100 ? '100% of booking fee' : r.late_cancel_fee === 50 ? '50% of booking fee' : `${r.late_cancel_fee}`,
@@ -249,7 +249,7 @@ export default function RatesPage() {
       is_default: profile.isDefault,
       color: profile.color,
       hourly_rate: parseFloat(profile.hourlyRate) || null,
-      currency: profile.currency.split(' — ')[0] || 'USD',
+      currency: profile.currency.split(' - ')[0] || 'USD',
       min_booking: parseMinBooking(profile.minBooking),
       cancellation_policy: profile.cancellationPolicy,
       late_cancel_fee: profile.lateFee === 'No fee' ? null : parseFloat(profile.lateFee.replace(/[^0-9.]/g, '')) || null,
@@ -446,11 +446,11 @@ export default function RatesPage() {
                       onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
                       onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
                     >
-                      <option>USD — US Dollar</option>
-                      <option>GBP — British Pound</option>
-                      <option>EUR — Euro</option>
-                      <option>CAD — Canadian Dollar</option>
-                      <option>AUD — Australian Dollar</option>
+                      <option>USD (US Dollar)</option>
+                      <option>GBP (British Pound)</option>
+                      <option>EUR (Euro)</option>
+                      <option>CAD (Canadian Dollar)</option>
+                      <option>AUD (Australian Dollar)</option>
                     </select>
                   </div>
                 </div>
@@ -557,7 +557,7 @@ export default function RatesPage() {
                   Travel &amp; Incidental Expenses
                 </div>
                 <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginBottom: 12, lineHeight: 1.5 }}>
-                  Select actual travel costs you pass on to clients for on-site jobs. Billed at cost — not marked up.
+                  Select actual travel costs you pass on to clients for on-site jobs. Billed at cost, not marked up.
                 </p>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 8, marginBottom: 16 }}>
                   {TRAVEL_OPTIONS.map(opt => {

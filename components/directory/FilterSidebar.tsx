@@ -188,7 +188,7 @@ export default function FilterSidebar({ filters, onChange, userRole }: Props) {
         )}
       </div>
 
-      {/* 1. Search — always visible */}
+      {/* 1. Search - always visible */}
       <div style={{ marginBottom: '20px' }}>
         <input
           type="text"
@@ -356,7 +356,7 @@ export default function FilterSidebar({ filters, onChange, userRole }: Props) {
 
       <Divider />
 
-      {/* 5. Specialization — category groups */}
+      {/* 5. Specialization - category groups */}
       <CollapsibleSection label="Specialization">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {Object.entries(SPECIALIZATION_CATEGORIES).map(([category, subs]) => {
@@ -497,7 +497,7 @@ export default function FilterSidebar({ filters, onChange, userRole }: Props) {
         )}
       </CollapsibleSection>
 
-      {/* 6b. Mentorship — interpreter-only */}
+      {/* 6b. Mentorship - interpreter-only */}
       {(userRole === 'interpreter') && (
         <>
           <Divider />
@@ -518,7 +518,7 @@ export default function FilterSidebar({ filters, onChange, userRole }: Props) {
 
       <Divider />
 
-      {/* 7. Sign Languages — cyan pills */}
+      {/* 7. Sign Languages - cyan pills */}
       <CollapsibleSection label="Sign Languages">
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
           {ALL_SIGN_LANGS.map((lang) => (
@@ -535,7 +535,7 @@ export default function FilterSidebar({ filters, onChange, userRole }: Props) {
 
       <Divider />
 
-      {/* 8. Spoken Languages — default pills */}
+      {/* 8. Spoken Languages - default pills */}
       <CollapsibleSection label="Spoken Languages">
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
           {ALL_SPOKEN_LANGS.map((lang) => (
@@ -552,7 +552,7 @@ export default function FilterSidebar({ filters, onChange, userRole }: Props) {
 
       <Divider />
 
-      {/* 9. Region Available — green pills */}
+      {/* 9. Region Available - green pills */}
       <CollapsibleSection label="Region Available">
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
           {ALL_REGIONS.map((region) => (

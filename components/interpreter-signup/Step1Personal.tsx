@@ -17,14 +17,14 @@ import { resizeImage } from '@/lib/imageUtils'
 
 const REGIONS = [
   { label: '🌍 Worldwide', color: '#00e5ff' },
-  { label: 'NA — North America', color: '#f97316' },
-  { label: 'LATAM — Latin America & Caribbean', color: '#a78bfa' },
-  { label: 'EU — Europe', color: '#60a5fa' },
-  { label: 'AF — Africa', color: '#34d399' },
-  { label: 'ME — Middle East', color: '#fb923c' },
-  { label: 'SA — South & Central Asia', color: '#f472b6' },
-  { label: 'EA — East & Southeast Asia', color: '#facc15' },
-  { label: 'OC — Oceania & Pacific', color: '#4dd9ac' },
+  { label: 'NA - North America', color: '#f97316' },
+  { label: 'LATAM - Latin America & Caribbean', color: '#a78bfa' },
+  { label: 'EU - Europe', color: '#60a5fa' },
+  { label: 'AF - Africa', color: '#34d399' },
+  { label: 'ME - Middle East', color: '#fb923c' },
+  { label: 'SA - South & Central Asia', color: '#f472b6' },
+  { label: 'EA - East & Southeast Asia', color: '#facc15' },
+  { label: 'OC - Oceania & Pacific', color: '#4dd9ac' },
 ]
 
 export default function Step1Personal({ onContinue }: { onContinue: () => void }) {
@@ -56,7 +56,7 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
           updateFormData(updates as Partial<import('./FormContext').FormData>)
         }
       } catch (e) {
-        // Non-blocking — form still works without pre-fill
+        // Non-blocking - form still works without pre-fill
         console.warn('Failed to fetch profile defaults:', e)
       }
     })()
@@ -187,7 +187,7 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
 
   return (
     <StepWrapper>
-      {/* Account credentials — top of form, before everything else */}
+      {/* Account credentials - top of form, before everything else */}
       <FormSection>
         <SectionTitle>Create Your Account</SectionTitle>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>

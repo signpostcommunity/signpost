@@ -5,7 +5,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 export async function POST() {
   const supabase = await createClient()
 
-  // Auth check — must be logged in admin
+  // Auth check - must be logged in admin
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
