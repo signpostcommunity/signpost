@@ -605,6 +605,172 @@ function DetailModal({ booking, onClose }: {
   )
 }
 
+/* ── Suggest Alternative Modal ── */
+
+function SuggestModal({ booking, onClose, onSent }: {
+  booking: Booking
+  onClose: () => void
+  onSent: () => void
+}) {
+  const [sent, setSent] = useState(false)
+  const [proposedDate, setProposedDate] = useState(booking.date || '')
+  const [startTime, setStartTime] = useState(booking.time_start || '')
+  const [endTime, setEndTime] = useState(booking.time_end || '')
+  const [note, setNote] = useState('')
+  const [rateProfile, setRateProfile] = useState('standard')
+  const [customHourly, setCustomHourly] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  const rateSummaries: Record<string, string> = {
+    standard: 'Standard Rate - $95/hr',
+    community: 'Community / Nonprofit Rate - $65/hr',
+    multiday: 'Multi-Day Rate - $750/day',
+  }
+  const rateAmounts: Record<string, number> = { standard: 95, community: 65, multiday: 750 }
+
+  async function handleSend() {
+    if (!proposedDate || !startTime || !endTime) return
+    setSaving(true)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    const responseRate = rateProfile === 'custom' ? Number(customHourly) || null : rateAmounts[rateProfile]
+
+    const { error } = await supabase
+      .from('booking_recipients')
+      .update({
+        status: 'proposed',
+        proposed_date: proposedDate,
+        proposed_start_time: startTime,
+        proposed_end_time: endTime,
+        proposal_note: note || null,
+        response_rate: responseRate,
+        responded_at: new Date().toISOString(),
+      })
+      .eq('id', booking.recipient_id)
+
+    if (error) {
+      console.error('[inquiries] suggest failed:', error.message)
+      setSaving(false)
+      return
+    }
+
+    if (user && booking.requester_id) {
+      const { data: interpSelf } = await supabase
+        .from('interpreter_profiles')
+        .select('first_name, last_name, name')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      const selfName = interpSelf?.first_name
+        ? `${interpSelf.first_name} ${interpSelf.last_name || ''}`.trim()
+        : interpSelf?.name || 'An interpreter'
+
+      sendNotification({
+        recipientUserId: booking.requester_id,
+        type: 'rate_response',
+        subject: `${selfName} suggested a different time for your request`,
+        body: `${selfName} is interested in your request but suggests a different time.`,
+        metadata: {
+          booking_id: booking.id,
+          booking_title: booking.title || '',
+          recipient_id: booking.recipient_id,
+          recipient_role: 'requester',
+          interpreter_name: selfName,
+          proposed_date: proposedDate,
+          proposed_start_time: startTime,
+          proposed_end_time: endTime,
+          proposal_note: note || '',
+        },
+        ctaText: 'View Suggestion',
+        ctaUrl: 'https://signpost.community/request/dashboard/requests',
+      }).catch(err => console.error('[inquiries] suggest notification failed:', err))
+    }
+
+    setSent(true)
+    setSaving(false)
+  }
+
+  if (sent) return (
+    <div style={overlayStyle}>
+      <div className="modal-dialog" style={modalStyle}>
+        <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent)', marginBottom: 8 }}>
+            Suggestion sent
+          </div>
+          <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 20px' }}>
+            The requester has been notified of your suggested alternative time.
+          </p>
+          <button className="btn-primary" onClick={() => { onClose(); onSent() }} style={{ padding: '10px 28px' }}>Done</button>
+        </div>
+      </div>
+    </div>
+  )
+
+  return (
+    <div style={overlayStyle}>
+      <div className="modal-dialog" style={{ ...modalStyle, maxHeight: '90vh', overflowY: 'auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+          <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Suggest Alternative Time</div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>Close</button>
+        </div>
+
+        <div style={{ marginBottom: 14 }}>
+          <label style={fieldLabelStyle}>Suggested Date</label>
+          <input type="date" value={proposedDate} onChange={e => setProposedDate(e.target.value)} style={fieldInputStyle} onFocus={focusBorder} onBlur={blurBorder} />
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+          <div>
+            <label style={fieldLabelStyle}>Start Time</label>
+            <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} style={fieldInputStyle} onFocus={focusBorder} onBlur={blurBorder} />
+          </div>
+          <div>
+            <label style={fieldLabelStyle}>End Time</label>
+            <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} style={fieldInputStyle} onFocus={focusBorder} onBlur={blurBorder} />
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 14 }}>
+          <label style={fieldLabelStyle}>Note to Requester</label>
+          <textarea
+            placeholder="e.g. I have a morning conflict but am free after 10am. Would this work?"
+            value={note} onChange={e => setNote(e.target.value)}
+            style={{ ...fieldInputStyle, resize: 'vertical', minHeight: 90 }}
+            onFocus={focusBorder} onBlur={blurBorder}
+          />
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <label style={fieldLabelStyle}>Rate Profile</label>
+          <select value={rateProfile} onChange={e => setRateProfile(e.target.value)} style={fieldInputStyle} onFocus={focusBorder} onBlur={blurBorder}>
+            <option value="standard">Standard Rate</option>
+            <option value="community">Community / Nonprofit Rate</option>
+            <option value="multiday">Multi-Day Rate</option>
+            <option value="custom">Custom rate</option>
+          </select>
+        </div>
+
+        {rateProfile !== 'custom' ? (
+          <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '14px 16px', marginBottom: 18, fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
+            <strong style={{ color: 'var(--text)' }}>Rate:</strong> {rateSummaries[rateProfile]}
+          </div>
+        ) : (
+          <div style={{ marginBottom: 18 }}>
+            <label style={fieldLabelStyle}>Hourly Rate ($)</label>
+            <input type="text" placeholder="0.00" value={customHourly} onChange={e => setCustomHourly(e.target.value)} style={fieldInputStyle} onFocus={focusBorder} onBlur={blurBorder} />
+          </div>
+        )}
+
+        <div className="dash-card-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+          <GhostButton onClick={onClose}>Cancel</GhostButton>
+          <button className="btn-primary" onClick={handleSend} disabled={saving} style={{ padding: '9px 22px', opacity: saving ? 0.5 : 1 }}>
+            {saving ? 'Sending...' : 'Send Suggestion'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ── Decline Modal ── */
 
 const DECLINE_REASONS = ['Not Available', 'Not a Good Fit', 'Scheduling Conflict', 'Prefer Not To Say', 'Other'] as const
@@ -705,6 +871,7 @@ export default function InquiriesPage() {
   const [accepting, setAccepting] = useState<string | null>(null)
   const [viewing, setViewing] = useState<string | null>(null)
   const [declining, setDeclining] = useState<string | null>(null)
+  const [suggesting, setSuggesting] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [dateFrom, setDateFrom] = useState('')
@@ -730,7 +897,7 @@ export default function InquiriesPage() {
       .from('booking_recipients')
       .select('id, status, sent_at, booking_id')
       .eq('interpreter_id', profile.id)
-      .in('status', ['sent', 'viewed', 'responded'])
+      .in('status', ['sent', 'viewed', 'responded', 'proposed'])
       .order('sent_at', { ascending: false })
 
     if (recipientErr) {
@@ -891,7 +1058,17 @@ export default function InquiriesPage() {
               </div>
               <div className="dash-card-badges" style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                 {inq.is_seed && <DemoBadge />}
-                <StatusBadge status="pending" />
+                {inq.recipient_status === 'proposed' ? (
+                  <span style={{
+                    fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px',
+                    borderRadius: 100,
+                    background: 'rgba(139,92,246,0.15)',
+                    color: '#a78bfa',
+                    fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em', whiteSpace: 'nowrap',
+                  }}>Suggestion sent</span>
+                ) : (
+                  <StatusBadge status="pending" />
+                )}
               </div>
             </div>
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--muted)', padding: '10px 0', borderTop: '1px solid var(--border)' }}>
@@ -928,6 +1105,7 @@ export default function InquiriesPage() {
                     })
                 }
               }}>View Details</GhostButton>
+              <GhostButton onClick={() => setSuggesting(inq.id)}>Interested, Suggest Alternative</GhostButton>
               <GhostButton danger onClick={() => setDeclining(inq.id)}>Decline</GhostButton>
             </div>
           </div>
@@ -948,6 +1126,14 @@ export default function InquiriesPage() {
         <DetailModal
           booking={bookings.find(b => b.id === viewing)!}
           onClose={() => setViewing(null)}
+        />
+      )}
+
+      {suggesting && bookings.find(b => b.id === suggesting) && (
+        <SuggestModal
+          booking={bookings.find(b => b.id === suggesting)!}
+          onClose={() => setSuggesting(null)}
+          onSent={() => { setSuggesting(null); fetchBookings() }}
         />
       )}
 
