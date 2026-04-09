@@ -35,6 +35,18 @@ interface Booking {
   rate_profile_id: string | null
   context_video_url: string | null
   profile_video_url: string | null
+  prep_notes: string | null
+  onsite_contact_name: string | null
+  onsite_contact_phone: string | null
+  onsite_contact_email: string | null
+}
+
+interface BookingAttachment {
+  id: string
+  file_name: string
+  file_url: string
+  file_type: string | null
+  file_size: number | null
 }
 
 interface InvoiceInfo {
@@ -568,6 +580,89 @@ function ForwardToTeamModal({ booking, interpreterId, onClose, onForwarded }: {
   )
 }
 
+/* ── Preparation Section (shared) ── */
+
+function PreparationSection({ booking }: { booking: Booking }) {
+  const [attachments, setAttachments] = useState<BookingAttachment[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('booking_attachments')
+        .select('id, file_name, file_url, file_type, file_size')
+        .eq('booking_id', booking.id)
+      if (!cancelled && data) setAttachments(data as BookingAttachment[])
+    })()
+    return () => { cancelled = true }
+  }, [booking.id])
+
+  const hasContact = !!(booking.onsite_contact_name || booking.onsite_contact_phone || booking.onsite_contact_email)
+  const hasPrep = !!booking.prep_notes
+  if (!hasContact && !hasPrep && attachments.length === 0) return null
+
+  async function openAttachment(att: BookingAttachment) {
+    const supabase = createClient()
+    const { data } = await supabase.storage
+      .from('booking-attachments')
+      .createSignedUrl(att.file_url, 60 * 5)
+    if (data?.signedUrl) window.open(data.signedUrl, '_blank')
+  }
+
+  const sectionLabelStyle: React.CSSProperties = {
+    fontSize: '13px', fontWeight: 600, letterSpacing: '0.08em',
+    textTransform: 'uppercase', color: '#00e5ff', marginBottom: 14,
+  }
+
+  return (
+    <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
+      <div style={sectionLabelStyle}>Preparation</div>
+      {hasContact && (
+        <div style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.65, marginBottom: hasPrep || attachments.length > 0 ? 10 : 0 }}>
+          <div style={{ fontSize: '0.78rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, marginBottom: 4 }}>On-site Contact</div>
+          {booking.onsite_contact_name && <div>{booking.onsite_contact_name}</div>}
+          {booking.onsite_contact_phone && <div style={{ color: 'var(--muted)' }}>{booking.onsite_contact_phone}</div>}
+          {booking.onsite_contact_email && <div style={{ color: 'var(--muted)' }}>{booking.onsite_contact_email}</div>}
+        </div>
+      )}
+      {hasPrep && (
+        <div style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.65, marginBottom: attachments.length > 0 ? 10 : 0 }}>
+          <div style={{ fontSize: '0.78rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, marginBottom: 4 }}>Prep Notes</div>
+          <div style={{ whiteSpace: 'pre-wrap', color: 'var(--muted)' }}>{booking.prep_notes}</div>
+        </div>
+      )}
+      {attachments.length > 0 && (
+        <div>
+          <div style={{ fontSize: '0.78rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, marginBottom: 6 }}>Attachments</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {attachments.map(a => (
+              <button
+                key={a.id}
+                type="button"
+                onClick={() => openAttachment(a)}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  background: 'var(--surface2)', border: '1px solid var(--border)',
+                  borderRadius: 8, padding: '7px 12px', fontSize: '0.82rem',
+                  color: 'var(--text)', cursor: 'pointer',
+                  fontFamily: "'Inter', sans-serif",
+                  textAlign: 'left',
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                </svg>
+                {a.file_name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 /* ── Detail Modal ── */
 
 // TODO: Add these columns to bookings table:
@@ -576,12 +671,6 @@ function ForwardToTeamModal({ booking, interpreterId, onClose, onForwarded }: {
 // - onsite_contact_name (text)
 // - onsite_contact_phone (text)
 // - attachments (jsonb) - array of {name, size, url}
-
-interface Attachment {
-  name: string
-  size: string
-  url: string
-}
 
 function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Booking; onClose: () => void; currentInterpreterId: string | null }) {
   const isRemote = booking.format === 'remote'
@@ -663,9 +752,6 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
 
   const dhhClientName = parsedDhh.name // null if not available - show "Not yet provided"
   const dhhClientPrefs = parsedDhh.prefs // null if not available
-  const onsiteContactName: string | null = null // TODO: booking.onsite_contact_name
-  const onsiteContactPhone: string | null = null // TODO: booking.onsite_contact_phone
-  const attachments: Attachment[] = [] // TODO: booking.attachments || []
 
   // Parse location for remote links
   const locationUrl = (() => {
@@ -852,21 +938,8 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
             )}
           </div>
 
-          {/* 4. On-site Contact */}
-          <div style={sectionStyle}>
-            <div style={sectionLabelStyle}>On-site Contact</div>
-            <div style={detailRowStyle}>
-              <svg style={iconStyle} width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M2 2h3l1.5 3.5-2 1.5a9 9 0 0 0 2.5 2.5l1.5-2L12 9v3c-5.5.5-11-5-10-10z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <div>
-                {onsiteContactName && onsiteContactPhone
-                  ? `${onsiteContactName} - ${onsiteContactPhone}`
-                  : onsiteContactName || onsiteContactPhone || <span style={{ color: 'var(--muted)', fontStyle: 'italic' }}>Not provided</span>
-                }
-              </div>
-            </div>
-          </div>
+          {/* Preparation: on-site contact, prep notes, attachments */}
+          <PreparationSection booking={booking} />
 
           {/* 6. Job Context */}
           <div style={sectionStyle}>
@@ -917,37 +990,6 @@ function DetailModal({ booking, onClose, currentInterpreterId }: { booking: Book
             )
           })()}
 
-          {/* 6. Attachments & Materials */}
-          {attachments.length > 0 && (
-            <div style={{ padding: '16px 0' }}>
-              <div style={sectionLabelStyle}>Attachments &amp; Materials</div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {attachments.map(a => (
-                  <a
-                    key={a.name}
-                    href={a.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      display: 'inline-flex', alignItems: 'center', gap: 7,
-                      background: 'var(--surface2)', border: '1px solid var(--border)',
-                      borderRadius: 8, padding: '7px 12px', fontSize: '0.82rem',
-                      color: 'var(--text)', cursor: 'pointer', transition: 'border-color 0.15s',
-                      textDecoration: 'none',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text)' }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                      <rect x="2" y="1" width="8" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
-                      <path d="M5 4h4M5 7h4M5 10h2" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/>
-                    </svg>
-                    {a.name} <span style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>{a.size}</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Footer */}
@@ -1670,7 +1712,7 @@ export default function ConfirmedPage() {
       if (recipientBookingIds.length > 0) {
         const { data: bookingsData, error: bookingsErr } = await supabase
           .from('bookings')
-          .select('id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, description, notes, status, is_seed, cancellation_reason, sub_search_initiated, context_video_url')
+          .select('id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, description, notes, status, is_seed, cancellation_reason, sub_search_initiated, context_video_url, prep_notes, onsite_contact_name, onsite_contact_phone, onsite_contact_email')
           .in('id', recipientBookingIds)
 
         if (bookingsErr) {
