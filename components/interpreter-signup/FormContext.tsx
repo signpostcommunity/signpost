@@ -72,6 +72,7 @@ export type FormData = {
   videoDescription: string
   // Step 5 - Skills
   specializations: string[]
+  aspirationalSpecializations: string[]
   specializedSkills: string[]
   // Step 6 - Community & Identity
   lgbtq: boolean
@@ -130,7 +131,7 @@ const initialFormData: FormData = {
   education: [{ id: 'edu-1', degree: '', institution: '', year: '' }],
   bio: '', bioSpecializations: '', bioExtra: '',
   videoUrl: '', videoDescription: '',
-  specializations: [], specializedSkills: [],
+  specializations: [], aspirationalSpecializations: [], specializedSkills: [],
   lgbtq: false, deafParented: false, bipoc: false, bipocDetails: [],
   religiousAffiliation: false, religiousDetails: [],
   mentorshipOffering: false, mentorshipSeeking: false,
@@ -214,6 +215,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
           sign_languages: formData.signLanguages,
           spoken_languages: formData.spokenLanguages,
           specializations: formData.specializations,
+          aspirational_specializations: formData.aspirationalSpecializations,
           specialized_skills: formData.specializedSkills,
           lgbtq: formData.lgbtq,
           deaf_parented: formData.deafParented,

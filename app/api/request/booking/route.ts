@@ -32,6 +32,10 @@ export async function POST(request: NextRequest) {
     const location = body.location ? sanitizeText(body.location) : null
     const description = body.description ? sanitizeText(body.description) : null
     const notes = body.notes ? sanitizeText(body.notes) : null
+    const prepNotes = body.prep_notes ? sanitizeText(body.prep_notes) : null
+    const onsiteContactName = body.onsite_contact_name ? sanitizeText(body.onsite_contact_name) : null
+    const onsiteContactPhone = body.onsite_contact_phone ? sanitizeText(body.onsite_contact_phone) : null
+    const onsiteContactEmail = body.onsite_contact_email ? sanitizeText(body.onsite_contact_email) : null
 
     if (!saveAsDraft && (!title || !date || !timeStart || !timeEnd || !format)) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -84,6 +88,10 @@ export async function POST(request: NextRequest) {
       platform_fee_status: 'pending',
       is_seed: false,
       tagged_deaf_user_ids: Array.isArray(tagged_deaf_user_ids) ? tagged_deaf_user_ids : [],
+      prep_notes: prepNotes,
+      onsite_contact_name: onsiteContactName,
+      onsite_contact_phone: onsiteContactPhone,
+      onsite_contact_email: onsiteContactEmail,
     }
 
     // Encrypt sensitive fields before writing to DB

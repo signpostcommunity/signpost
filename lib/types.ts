@@ -11,6 +11,7 @@ export interface Interpreter {
   signLangs: string[];
   spokenLangs: string[];
   specs: string[];
+  aspirationalSpecs?: string[];
   specializedSkills?: string[];
   certs: string[];
   certDetails?: { name: string; issuingBody?: string; year?: string; verificationLink?: string }[];

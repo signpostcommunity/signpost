@@ -904,6 +904,22 @@ function OverviewTab({ interpreter: i, userRole, videoAlreadyRequested, onReques
         })()}
       </Section>
 
+      {i.aspirationalSpecs && i.aspirationalSpecs.length > 0 && (
+        <Section title="Working Towards">
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', opacity: 0.7 }}>
+            {i.aspirationalSpecs.map(s => (
+              <span key={s} style={{
+                padding: '6px 14px', background: 'var(--surface2)',
+                border: '1px dashed var(--border)', borderRadius: '8px',
+                fontSize: '0.82rem', color: 'var(--text)',
+              }}>
+                {s}
+              </span>
+            ))}
+          </div>
+        </Section>
+      )}
+
       {/* Mentorship - interpreter-only */}
       {userRole === 'interpreter' && (i.mentorshipOffering || i.mentorshipSeeking) && (
         <MentorshipSection interpreter={i} />

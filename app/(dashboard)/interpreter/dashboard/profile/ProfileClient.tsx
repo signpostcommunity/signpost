@@ -140,6 +140,7 @@ interface ProfileData {
   sign_languages?: string[] | null
   spoken_languages?: string[] | null
   specializations?: string[] | null
+  aspirational_specializations?: string[] | null
   specialized_skills?: string[] | null
   regions?: string[] | null
   video_url?: string | null
@@ -441,6 +442,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
   const [signLangs, setSignLangs] = useState<string[]>(fallback(p.sign_languages, 'signLanguages', [] as string[]))
   const [spokenLangs, setSpokenLangs] = useState<string[]>(fallback(p.spoken_languages, 'spokenLanguages', [] as string[]))
   const [specs, setSpecs] = useState<string[]>(fallback(p.specializations, 'specializations', [] as string[]))
+  const [aspirationalSpecs, setAspirationalSpecs] = useState<string[]>(fallback(p.aspirational_specializations, 'aspirationalSpecializations', [] as string[]))
   const [specializedSkills, setSpecializedSkills] = useState<string[]>(fallback(p.specialized_skills, 'specializedSkills', [] as string[]))
   const [otherSpecs, setOtherSpecs] = useState('')
   const [signRegional, setSignRegional] = useState<string[]>([])
@@ -537,7 +539,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       // Now try interpreter_profiles
       const { data, error, status, statusText } = await supabase
         .from('interpreter_profiles')
-        .select('id, name, first_name, last_name, email, pronouns, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, bio_specializations, bio_extra, sign_languages, spoken_languages, specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms, notification_preferences, notification_phone, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, vanity_slug, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_types_offering, mentorship_types_seeking, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking, directory_visible')
+        .select('id, name, first_name, last_name, email, pronouns, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, bio_specializations, bio_extra, sign_languages, spoken_languages, specializations, aspirational_specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms, notification_preferences, notification_phone, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, vanity_slug, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_types_offering, mentorship_types_seeking, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking, directory_visible')
         .eq('user_id', user.id)
         .maybeSingle()
       console.log('PROFILE CLIENT-SIDE LOAD:', JSON.stringify({ data, error, status, statusText, userId: user.id }, null, 2))
@@ -559,6 +561,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       if (d.sign_languages) setSignLangs(d.sign_languages)
       if (d.spoken_languages) setSpokenLangs(d.spoken_languages)
       if (d.specializations) setSpecs(d.specializations)
+      if (d.aspirational_specializations) setAspirationalSpecs(d.aspirational_specializations)
       if (d.specialized_skills) setSpecializedSkills(d.specialized_skills)
       if (d.regions) setRegions(d.regions)
       if (d.bio != null) setBio(d.bio)
@@ -1714,10 +1717,12 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
         <SkillsTab
           specs={specs}
           setSpecs={setSpecs}
+          aspirationalSpecs={aspirationalSpecs}
+          setAspirationalSpecs={setAspirationalSpecs}
           specializedSkills={specializedSkills}
           setSpecializedSkills={setSpecializedSkills}
           saving={saving}
-          onSave={() => saveFields({ specializations: specs, specialized_skills: specializedSkills })}
+          onSave={() => saveFields({ specializations: specs, aspirational_specializations: aspirationalSpecs, specialized_skills: specializedSkills })}
         />
       )}
 
@@ -2200,14 +2205,28 @@ function CredentialsTab({ saving, onSave, profileId, initialCerts, initialEducat
 
 // ── Skills tab ────────────────────────────────────────────────────────────────
 
-function SkillsTab({ specs, setSpecs, specializedSkills, setSpecializedSkills, saving, onSave }: {
+function SkillsTab({ specs, setSpecs, aspirationalSpecs, setAspirationalSpecs, specializedSkills, setSpecializedSkills, saving, onSave }: {
   specs: string[]
   setSpecs: (v: string[]) => void
+  aspirationalSpecs: string[]
+  setAspirationalSpecs: (v: string[]) => void
   specializedSkills: string[]
   setSpecializedSkills: (v: string[]) => void
   saving: boolean
   onSave: () => void
 }) {
+  const [aspCollapsed, setAspCollapsed] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {}
+    Object.keys(SPECIALIZATION_CATEGORIES).forEach((cat) => { initial[cat] = true })
+    return initial
+  })
+  function toggleAspirational(spec: string) {
+    if (specs.includes(spec)) return
+    setAspirationalSpecs(aspirationalSpecs.includes(spec) ? aspirationalSpecs.filter(s => s !== spec) : [...aspirationalSpecs, spec])
+  }
+  function toggleAspCategory(category: string) {
+    setAspCollapsed(prev => ({ ...prev, [category]: !prev[category] }))
+  }
   // Default all categories collapsed except the first one (Arts & Performance)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {}
@@ -2320,6 +2339,96 @@ function SkillsTab({ specs, setSpecs, specializedSkills, setSpecializedSkills, s
           )
         })}
       </div>
+
+      {/* Section 1b: Working Towards (aspirational specializations) */}
+      <div style={{
+        fontSize: '12px', fontWeight: 500, letterSpacing: '0.06em',
+        textTransform: 'uppercase', color: '#00e5ff', marginBottom: 8,
+      }}>
+        Working Towards
+      </div>
+      <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 8, lineHeight: 1.6 }}>
+        Select areas you&apos;re actively developing skills in. These show on your profile as aspirational, not current expertise.
+      </p>
+      <p style={{ color: 'var(--muted)', fontSize: '0.78rem', marginBottom: 12, lineHeight: 1.6, opacity: 0.85 }}>
+        Items already in your active specializations won&apos;t appear here.
+      </p>
+      <div style={{ fontSize: '0.82rem', color: 'var(--accent)', fontWeight: 600, marginBottom: 12 }}>
+        {aspirationalSpecs.length} working towards selected
+      </div>
+      {aspirationalSpecs.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 16 }}>
+          {aspirationalSpecs.map(spec => (
+            <span key={spec} style={{
+              padding: '4px 12px', fontSize: '0.78rem',
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              borderRadius: 20, border: '1px dashed rgba(0,229,255,0.4)',
+              background: 'rgba(0,229,255,0.06)', color: 'var(--accent)',
+              opacity: 0.85, fontFamily: "'Inter', sans-serif",
+            }}>
+              {spec}
+              <button onClick={() => toggleAspirational(spec)} aria-label={`Remove ${spec}`} style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6, fontSize: '0.85rem', color: 'inherit', padding: 0 }}><span aria-hidden="true">✕</span></button>
+            </span>
+          ))}
+        </div>
+      )}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+        {Object.entries(SPECIALIZATION_CATEGORIES).map(([category, subs]) => {
+          const isCollapsed = aspCollapsed[category]
+          const selectedCount = subs.filter(s => aspirationalSpecs.includes(s)).length
+          return (
+            <div key={category} style={{
+              background: 'var(--surface2)', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)', overflow: 'hidden',
+            }}>
+              <button
+                onClick={() => toggleAspCategory(category)}
+                style={{
+                  width: '100%', padding: '12px 16px',
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  fontSize: '12px', fontWeight: 500,
+                  letterSpacing: '0.06em', textTransform: 'uppercase',
+                  color: selectedCount > 0 ? '#00e5ff' : '#96a0b8',
+                }}
+              >
+                <span>{category}</span>
+                <span style={{ fontSize: '0.7rem', transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▾</span>
+              </button>
+              {!isCollapsed && (
+                <div style={{ padding: '0 12px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {subs.map(sub => {
+                    const disabled = specs.includes(sub)
+                    const checked = aspirationalSpecs.includes(sub)
+                    return (
+                      <label key={sub} style={{
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        padding: '8px 12px', borderRadius: 8,
+                        cursor: disabled ? 'not-allowed' : 'pointer',
+                        background: checked ? 'rgba(0,229,255,0.06)' : 'transparent',
+                        opacity: disabled ? 0.4 : 1,
+                        fontSize: '0.85rem', color: checked ? 'var(--text)' : 'var(--muted)',
+                      }}>
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          disabled={disabled}
+                          onChange={() => toggleAspirational(sub)}
+                          style={{ accentColor: 'var(--accent)', width: 'auto', flexShrink: 0 }}
+                        />
+                        {sub}
+                      </label>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+      <p style={{ color: 'var(--muted)', fontSize: '0.78rem', marginBottom: 32, lineHeight: 1.6, opacity: 0.85 }}>
+        These will be visible on your public profile so Deaf community members and requesters can see your growth areas.
+      </p>
 
       {/* Section 2: Specialized Skills */}
       <div style={sectionTitleStyle}>Specialized Skills</div>

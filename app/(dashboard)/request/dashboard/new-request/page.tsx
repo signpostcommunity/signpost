@@ -6,6 +6,7 @@ import Link from 'next/link'
 import Toast from '@/components/ui/Toast'
 import RequesterInterpreterPicker from '@/components/requester/RequesterInterpreterPicker'
 import BetaTryThis from '@/components/ui/BetaTryThis'
+import { createClient } from '@/lib/supabase/client'
 
 /* -- Constants -- */
 
@@ -142,6 +143,124 @@ export default function NewRequestPage() {
   // Section 4: Notes
   const [notes, setNotes] = useState('')
 
+  // Preparation Details (optional)
+  const [onsiteContactName, setOnsiteContactName] = useState('')
+  const [onsiteContactPhone, setOnsiteContactPhone] = useState('')
+  const [onsiteContactEmail, setOnsiteContactEmail] = useState('')
+  const [prepNotes, setPrepNotes] = useState('')
+  interface UploadedAttachment {
+    id: string
+    file_name: string
+    file_url: string
+    file_type: string | null
+    file_size: number | null
+  }
+  const [attachments, setAttachments] = useState<UploadedAttachment[]>([])
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const ATTACH_ACCEPT = '.pdf,.doc,.docx,image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  const MAX_FILE_BYTES = 10 * 1024 * 1024
+  const MAX_FILES = 5
+
+  async function ensureDraftBookingId(): Promise<string | null> {
+    if (draftId) return draftId
+    try {
+      const res = await fetch('/api/request/booking', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...buildPayload(), saveAsDraft: true, bookingId: null }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.bookingId) return null
+      setDraftId(data.bookingId)
+      return data.bookingId as string
+    } catch {
+      return null
+    }
+  }
+
+  async function handleAttachmentUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    setUploadError(null)
+    const files = Array.from(e.target.files || [])
+    if (e.target) e.target.value = ''
+    if (files.length === 0) return
+    if (attachments.length + files.length > MAX_FILES) {
+      setUploadError(`Maximum ${MAX_FILES} files allowed.`)
+      return
+    }
+    for (const f of files) {
+      if (f.size > MAX_FILE_BYTES) {
+        setUploadError(`${f.name} exceeds 10MB limit.`)
+        return
+      }
+    }
+    setUploading(true)
+    const bookingIdForUpload = await ensureDraftBookingId()
+    if (!bookingIdForUpload) {
+      setUploadError('Could not save draft to attach files. Please try again.')
+      setUploading(false)
+      return
+    }
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      setUploadError('You must be signed in to upload files.')
+      setUploading(false)
+      return
+    }
+    const newAttachments: UploadedAttachment[] = []
+    for (const file of files) {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_')
+      const path = `${bookingIdForUpload}/${Date.now()}-${safeName}`
+      const { error: upErr } = await supabase.storage
+        .from('booking-attachments')
+        .upload(path, file, { contentType: file.type || undefined, upsert: false })
+      if (upErr) {
+        setUploadError(`Failed to upload ${file.name}: ${upErr.message}`)
+        continue
+      }
+      const { data: row, error: insErr } = await supabase
+        .from('booking_attachments')
+        .insert({
+          booking_id: bookingIdForUpload,
+          uploaded_by: user.id,
+          file_name: file.name,
+          file_url: path,
+          file_type: file.type || null,
+          file_size: file.size,
+        })
+        .select('id, file_name, file_url, file_type, file_size')
+        .single()
+      if (insErr || !row) {
+        setUploadError(`Failed to record ${file.name}: ${insErr?.message || 'unknown error'}`)
+        continue
+      }
+      newAttachments.push(row as UploadedAttachment)
+    }
+    setAttachments(prev => [...prev, ...newAttachments])
+    setUploading(false)
+  }
+
+  async function handleDeleteAttachment(att: UploadedAttachment) {
+    const supabase = createClient()
+    await supabase.storage.from('booking-attachments').remove([att.file_url])
+    await supabase.from('booking_attachments').delete().eq('id', att.id)
+    setAttachments(prev => prev.filter(a => a.id !== att.id))
+  }
+
+  async function handleDownloadAttachment(att: UploadedAttachment) {
+    const supabase = createClient()
+    const { data, error } = await supabase.storage
+      .from('booking-attachments')
+      .createSignedUrl(att.file_url, 60 * 5)
+    if (error || !data?.signedUrl) {
+      setToast({ message: 'Could not generate download link.', type: 'error' })
+      return
+    }
+    window.open(data.signedUrl, '_blank')
+  }
+
   function validate(): boolean {
     const errs: Record<string, string> = {}
     if (!title.trim()) errs.title = 'Title is required'
@@ -182,6 +301,10 @@ export default function NewRequestPage() {
       description: `Sign language: ${signLanguage}. Spoken language: ${spokenLanguage}.`,
       notes: notes || null,
       tagged_deaf_user_ids: taggedIds.length > 0 ? taggedIds : undefined,
+      prep_notes: prepNotes || null,
+      onsite_contact_name: onsiteContactName || null,
+      onsite_contact_phone: onsiteContactPhone || null,
+      onsite_contact_email: onsiteContactEmail || null,
     }
   }
 
@@ -602,6 +725,141 @@ export default function NewRequestPage() {
             <option value="">None specified</option>
             {SPECIALIZATIONS.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
+        </div>
+
+        {/* ================================================================ */}
+        {/* PREPARATION DETAILS (optional)                                   */}
+        {/* ================================================================ */}
+        <h3 style={sectionLabelStyle}>Preparation Details (optional)</h3>
+
+        <div style={{ marginBottom: 20 }}>
+          <label style={labelStyle}>On-site Contact</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }} className="req-date-time-grid">
+            <input
+              type="text"
+              value={onsiteContactName}
+              onChange={e => setOnsiteContactName(e.target.value)}
+              placeholder="Name"
+              style={inputStyle}
+            />
+            <input
+              type="tel"
+              value={onsiteContactPhone}
+              onChange={e => setOnsiteContactPhone(e.target.value)}
+              placeholder="Phone"
+              style={inputStyle}
+            />
+            <input
+              type="email"
+              value={onsiteContactEmail}
+              onChange={e => setOnsiteContactEmail(e.target.value)}
+              placeholder="Email"
+              style={inputStyle}
+            />
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 20 }}>
+          <label style={labelStyle}>Prep Notes</label>
+          <textarea
+            value={prepNotes}
+            onChange={e => setPrepNotes(e.target.value)}
+            placeholder="Any details interpreters should know before the assignment. e.g. arrive 15 minutes early for badge pickup."
+            rows={4}
+            style={{ ...inputStyle, resize: 'vertical' as const }}
+          />
+        </div>
+
+        <div style={{ marginBottom: 20 }}>
+          <label style={labelStyle}>Attachments</label>
+          <p style={{ fontSize: '0.78rem', color: 'var(--muted)', margin: '0 0 8px', lineHeight: 1.5 }}>
+            Up to 5 files, 10MB max each. PDF, Word, or images.
+          </p>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept={ATTACH_ACCEPT}
+            onChange={handleAttachmentUpload}
+            style={{ display: 'none' }}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading || attachments.length >= MAX_FILES}
+            style={{
+              padding: '9px 18px',
+              background: 'rgba(0,229,255,0.06)',
+              border: '1px solid rgba(0,229,255,0.3)',
+              borderRadius: 'var(--radius-sm)',
+              color: 'var(--accent)',
+              fontSize: '0.82rem',
+              fontWeight: 600,
+              cursor: (uploading || attachments.length >= MAX_FILES) ? 'not-allowed' : 'pointer',
+              fontFamily: "'Inter', sans-serif",
+              opacity: (uploading || attachments.length >= MAX_FILES) ? 0.6 : 1,
+            }}
+          >
+            {uploading ? 'Uploading...' : 'Add files'}
+          </button>
+          {uploadError && <div style={errorStyle}>{uploadError}</div>}
+          {attachments.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
+              {attachments.map(a => (
+                <div
+                  key={a.id}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 10,
+                    padding: '8px 12px',
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 'var(--radius-sm)',
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadAttachment(a)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      color: 'var(--text)',
+                      fontSize: '0.85rem',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      fontFamily: "'Inter', sans-serif",
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 8,
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                    </svg>
+                    {a.file_name}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteAttachment(a)}
+                    aria-label={`Remove ${a.file_name}`}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--muted)',
+                      cursor: 'pointer',
+                      fontSize: '1rem',
+                      padding: '2px 6px',
+                    }}
+                  >
+                    &times;
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* ================================================================ */}
