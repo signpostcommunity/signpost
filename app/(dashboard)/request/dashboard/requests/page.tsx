@@ -43,12 +43,16 @@ export default async function AllRequestsPage() {
     rate_profile_id: string | null
     confirmed_at: string | null
     declined_at: string | null
+    proposed_date: string | null
+    proposed_start_time: string | null
+    proposed_end_time: string | null
+    proposal_note: string | null
   }[] = []
 
   if (bookingIds.length > 0) {
     const { data: recipients, error: recipErr } = await supabase
       .from('booking_recipients')
-      .select('id, booking_id, interpreter_id, status, wave_number, response_rate, response_notes, rate_profile_id, confirmed_at, declined_at')
+      .select('id, booking_id, interpreter_id, status, wave_number, response_rate, response_notes, rate_profile_id, confirmed_at, declined_at, proposed_date, proposed_start_time, proposed_end_time, proposal_note')
       .in('booking_id', bookingIds)
 
     if (recipErr) {

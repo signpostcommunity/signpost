@@ -45,6 +45,10 @@ interface Recipient {
   rate_profile_id: string | null
   confirmed_at: string | null
   declined_at: string | null
+  proposed_date: string | null
+  proposed_start_time: string | null
+  proposed_end_time: string | null
+  proposal_note: string | null
 }
 
 interface InterpreterInfo {
@@ -103,6 +107,7 @@ function recipientStatusLabel(s: string): string {
     case 'sent': return 'Pending'
     case 'viewed': return 'Viewed'
     case 'responded': return 'Rate received'
+    case 'proposed': return 'Alternative suggested'
     case 'confirmed': return 'Confirmed'
     case 'declined': return 'Declined'
     case 'withdrawn': return 'Withdrawn'
@@ -114,6 +119,7 @@ function recipientStatusColor(s: string): string {
   switch (s) {
     case 'sent': case 'viewed': return '#f97316'
     case 'responded': return '#f59e0b'
+    case 'proposed': return '#a78bfa'
     case 'confirmed': return '#34d399'
     case 'declined': case 'withdrawn': return '#666'
     default: return 'var(--muted)'
@@ -122,7 +128,23 @@ function recipientStatusColor(s: string): string {
 
 function RecipientStatusPill({ status }: { status: string }) {
   const isRate = status === 'responded'
+  const isProposed = status === 'proposed'
   const color = recipientStatusColor(status)
+  if (isProposed) {
+    return (
+      <span style={{
+        display: 'inline-flex', alignItems: 'center', gap: 6,
+        fontSize: '0.7rem', fontWeight: 600, color,
+        fontFamily: "'Inter', sans-serif",
+        background: 'rgba(139, 92, 246, 0.15)',
+        border: '1px solid rgba(139, 92, 246, 0.4)',
+        padding: '3px 9px', borderRadius: 100,
+      }}>
+        <span style={{ width: 4, height: 4, borderRadius: '50%', background: color, display: 'inline-block' }} />
+        Alternative suggested
+      </span>
+    )
+  }
   if (!isRate) {
     return (
       <span style={{
@@ -146,6 +168,22 @@ function RecipientStatusPill({ status }: { status: string }) {
       Rate received
     </span>
   )
+}
+
+function formatTimeRange(start: string | null, end: string | null): string {
+  if (!start || !end) return 'TBD'
+  const fmt = (t: string) => {
+    const [h, m] = t.split(':').map(Number)
+    const ampm = h >= 12 ? 'PM' : 'AM'
+    const h12 = h % 12 || 12
+    return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
+  }
+  return `${fmt(start)} - ${fmt(end)}`
+}
+
+function formatProposedDate(d: string): string {
+  const dt = new Date(d + 'T00:00:00')
+  return dt.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 interface RateProfileTerms {
@@ -331,6 +369,32 @@ export default function RequestsClient({
   }
 
   // Wave: send to more handler
+  async function acceptAtSuggested(
+    recipientId: string,
+    interpName: string,
+    proposedStart: string | null,
+    proposedEnd: string | null,
+    proposedDate: string | null,
+  ) {
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('booking_recipients')
+      .update({ status: 'confirmed', confirmed_at: new Date().toISOString() })
+      .eq('id', recipientId)
+    if (error) {
+      console.error('[accept-suggested] error:', error.message)
+      setToast({ message: 'Failed to confirm. Please try again.', type: 'error' })
+      return
+    }
+    const dateLabel = proposedDate ? formatProposedDate(proposedDate) : ''
+    const timeLabel = formatTimeRange(proposedStart, proposedEnd)
+    setToast({
+      message: `${interpName} is confirmed for ${dateLabel} ${timeLabel}. Other interpreters remain at the originally scheduled time.`,
+      type: 'success',
+    })
+    setTimeout(() => { router.refresh() }, 1500)
+  }
+
   function openSendMore(bookingId: string, skipFriction = false) {
     const recs = recipientsByBooking.get(bookingId) || []
     const pending = recs.filter(r => r.status === 'sent' || r.status === 'viewed').length
@@ -701,6 +765,28 @@ export default function RequestsClient({
                                       rp={rec.rate_profile_id ? rateProfileMap[rec.rate_profile_id] : undefined}
                                       fallbackRate={rec.response_rate}
                                     />
+                                  ) : rec.status === 'proposed' ? (
+                                    <div style={{ marginTop: 8, fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
+                                      {rec.response_rate != null && (
+                                        <div style={{ color: 'var(--accent)', fontWeight: 600, marginBottom: 4 }}>
+                                          Rate: ${rec.response_rate}/hr
+                                        </div>
+                                      )}
+                                      {rec.proposed_date && (
+                                        <div>
+                                          <span style={{ color: 'var(--text)', fontWeight: 600 }}>Suggested time:</span>{' '}
+                                          {formatProposedDate(rec.proposed_date)} . {formatTimeRange(rec.proposed_start_time, rec.proposed_end_time)}
+                                        </div>
+                                      )}
+                                      <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
+                                        (Your scheduled time: {formatTimeRange(booking.time_start, booking.time_end)})
+                                      </div>
+                                      {rec.proposal_note && (
+                                        <div style={{ marginTop: 6, fontStyle: 'italic', color: 'var(--text)' }}>
+                                          &ldquo;{rec.proposal_note}&rdquo;
+                                        </div>
+                                      )}
+                                    </div>
                                   ) : rec.response_rate != null ? (
                                     <span style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600 }}>
                                       Rate: ${rec.response_rate}/hr
@@ -708,6 +794,36 @@ export default function RequestsClient({
                                   ) : null}
                                 </div>
                                 <div className="req-resp-actions" style={{ display: 'flex', gap: 10, flexShrink: 0, flexWrap: 'wrap' }}>
+                                  {rec.status === 'proposed' && (
+                                    <>
+                                      <button
+                                        onClick={(e) => { e.stopPropagation(); acceptAtSuggested(rec.id, interpName, rec.proposed_start_time, rec.proposed_end_time, rec.proposed_date) }}
+                                        style={{
+                                          background: '#a78bfa', color: '#000', border: 'none',
+                                          padding: '10px 18px', borderRadius: 'var(--radius-sm)',
+                                          fontSize: '0.78rem', fontWeight: 700,
+                                          fontFamily: "'Inter', sans-serif", cursor: 'pointer',
+                                          whiteSpace: 'nowrap', minHeight: 44,
+                                        }}
+                                      >
+                                        Accept at Suggested Time
+                                      </button>
+                                      <Link
+                                        href={`/request/dashboard/accept/${booking.id}/${rec.id}`}
+                                        style={{
+                                          background: 'var(--accent)', color: '#000',
+                                          padding: '10px 18px', borderRadius: 'var(--radius-sm)',
+                                          fontSize: '0.78rem', fontWeight: 700,
+                                          fontFamily: "'Inter', sans-serif",
+                                          textDecoration: 'none', whiteSpace: 'nowrap',
+                                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                          minHeight: 44,
+                                        }}
+                                      >
+                                        Accept at Original Time
+                                      </Link>
+                                    </>
+                                  )}
                                   {rec.status === 'responded' && (
                                     <Link
                                       href={`/request/dashboard/accept/${booking.id}/${rec.id}`}
