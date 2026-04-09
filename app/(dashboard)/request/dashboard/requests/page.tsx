@@ -20,7 +20,7 @@ export default async function AllRequestsPage() {
   // Fetch all bookings for this requester
   const { data: bookings, error: bookingsErr } = await supabase
     .from('bookings')
-    .select('id, title, description, notes, date, time_start, time_end, location, format, specialization, event_type, event_category, recurrence, interpreter_count, interpreters_confirmed, status, platform_fee_amount, platform_fee_status, wave_alerts_sent, current_wave, created_at')
+    .select('id, title, description, notes, date, time_start, time_end, location, format, specialization, event_type, event_category, recurrence, interpreter_count, interpreters_confirmed, status, platform_fee_amount, platform_fee_status, wave_alerts_sent, current_wave, created_at, prep_notes, onsite_contact_name, onsite_contact_phone, onsite_contact_email')
     .eq('requester_id', user.id)
     .order('date', { ascending: false })
 

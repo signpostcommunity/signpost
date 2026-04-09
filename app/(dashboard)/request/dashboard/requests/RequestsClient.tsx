@@ -31,6 +31,10 @@ interface Booking {
   platform_fee_status: string | null
   wave_alerts_sent: Record<string, boolean> | null
   current_wave: number | null
+  prep_notes: string | null
+  onsite_contact_name: string | null
+  onsite_contact_phone: string | null
+  onsite_contact_email: string | null
   created_at: string
 }
 
@@ -728,6 +732,9 @@ export default function RequestsClient({
                       )}
                     </div>
 
+                    {/* Preparation: on-site contact, prep notes, attachments */}
+                    <PreparationSection booking={booking} />
+
                     {/* Interpreter responses */}
                     <div style={{ marginBottom: 20 }}>
                       <h3 style={{
@@ -1217,6 +1224,99 @@ export default function RequestsClient({
           .dash-page-content { padding: 20px 16px !important; }
         }
       `}</style>
+    </div>
+  )
+}
+
+/* ── Booking Attachment type ── */
+
+interface BookingAttachment {
+  id: string
+  file_name: string
+  file_url: string
+  file_type: string | null
+  file_size: number | null
+}
+
+/* ── Preparation Section ── */
+
+function PreparationSection({ booking }: { booking: Booking }) {
+  const [attachments, setAttachments] = useState<BookingAttachment[]>([])
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('booking_attachments')
+        .select('id, file_name, file_url, file_type, file_size')
+        .eq('booking_id', booking.id)
+      if (!cancelled && data) setAttachments(data as BookingAttachment[])
+    })()
+    return () => { cancelled = true }
+  }, [booking.id])
+
+  const hasContact = !!(booking.onsite_contact_name || booking.onsite_contact_phone || booking.onsite_contact_email)
+  const hasPrep = !!booking.prep_notes
+  if (!hasContact && !hasPrep && attachments.length === 0) return null
+
+  async function openAttachment(att: BookingAttachment) {
+    const supabase = createClient()
+    const { data } = await supabase.storage
+      .from('booking-attachments')
+      .createSignedUrl(att.file_url, 60 * 5)
+    if (data?.signedUrl) window.open(data.signedUrl, '_blank')
+  }
+
+  const sectionLabelStyle: React.CSSProperties = {
+    fontSize: '13px', fontWeight: 600, letterSpacing: '0.08em',
+    textTransform: 'uppercase', color: '#00e5ff', marginBottom: 14,
+  }
+
+  return (
+    <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
+      <div style={sectionLabelStyle}>Preparation</div>
+      {hasContact && (
+        <div style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.65, marginBottom: hasPrep || attachments.length > 0 ? 10 : 0 }}>
+          <div style={{ fontSize: '0.78rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, marginBottom: 4 }}>On-site Contact</div>
+          {booking.onsite_contact_name && <div>{booking.onsite_contact_name}</div>}
+          {booking.onsite_contact_phone && <div style={{ color: 'var(--muted)' }}>{booking.onsite_contact_phone}</div>}
+          {booking.onsite_contact_email && <div style={{ color: 'var(--muted)' }}>{booking.onsite_contact_email}</div>}
+        </div>
+      )}
+      {hasPrep && (
+        <div style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.65, marginBottom: attachments.length > 0 ? 10 : 0 }}>
+          <div style={{ fontSize: '0.78rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, marginBottom: 4 }}>Prep Notes</div>
+          <div style={{ whiteSpace: 'pre-wrap', color: 'var(--muted)' }}>{booking.prep_notes}</div>
+        </div>
+      )}
+      {attachments.length > 0 && (
+        <div>
+          <div style={{ fontSize: '0.78rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, marginBottom: 6 }}>Attachments</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {attachments.map(a => (
+              <button
+                key={a.id}
+                type="button"
+                onClick={() => openAttachment(a)}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  background: 'var(--surface2)', border: '1px solid var(--border)',
+                  borderRadius: 8, padding: '7px 12px', fontSize: '0.82rem',
+                  color: 'var(--text)', cursor: 'pointer',
+                  fontFamily: "'Inter', sans-serif",
+                  textAlign: 'left',
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                </svg>
+                {a.file_name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
