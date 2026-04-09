@@ -322,7 +322,7 @@ export default function RequesterInboxPage() {
                       </div>
                       <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 10, fontSize: '0.82rem', color: 'var(--text)' }}>
                         <span>Rate: <strong style={{ color: 'var(--accent)' }}>${resp.responseRate}/hr</strong></span>
-                        {resp.minBooking && <span>Min {resp.minBooking} hours</span>}
+                        {resp.minBooking && <span>Min {resp.minBooking / 60} hour{resp.minBooking / 60 !== 1 ? 's' : ''}</span>}
                         {resp.cancellationPolicy && <span>Cancellation: {resp.cancellationPolicy}</span>}
                       </div>
                       {resp.responseNotes && (

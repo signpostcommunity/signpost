@@ -209,7 +209,10 @@ function RateTermsList({ rp, fallbackRate }: { rp: RateProfileTerms | undefined;
     : ''
   const rows: { label: string; value: string }[] = []
   if (rate != null) rows.push({ label: 'Rate', value: `$${rate}/hr` })
-  if (rp?.min_booking) rows.push({ label: 'Minimum booking', value: `${rp.min_booking} hours` })
+  if (rp?.min_booking) {
+    const minHours = rp.min_booking / 60
+    rows.push({ label: 'Minimum booking', value: `${minHours} hour${minHours !== 1 ? 's' : ''}` })
+  }
   if (rp?.cancellation_policy) rows.push({ label: 'Cancellation policy', value: rp.cancellation_policy })
   if (rp?.late_cancel_fee != null) rows.push({ label: 'Late cancellation fee', value: `${rp.late_cancel_fee}% of booking fee` })
   if (travel) rows.push({ label: 'Travel expenses', value: travel })

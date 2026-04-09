@@ -248,7 +248,7 @@ export default function AcceptClient({
         <div className="req-accept-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 28px' }}>
           <DetailRow label="Hourly Rate" value={`$${rate}/${currency === 'USD' ? 'hr' : currency}`} accent />
           {rateProfile?.min_booking && (
-            <DetailRow label="Minimum Booking" value={`${rateProfile.min_booking} hour${rateProfile.min_booking > 1 ? 's' : ''}`} />
+            <DetailRow label="Minimum Booking" value={`${rateProfile.min_booking / 60} hour${rateProfile.min_booking / 60 !== 1 ? 's' : ''}`} />
           )}
           {rateProfile?.after_hours_diff != null && rateProfile.after_hours_diff > 0 && (
             <div style={{ gridColumn: '1 / -1' }}>
