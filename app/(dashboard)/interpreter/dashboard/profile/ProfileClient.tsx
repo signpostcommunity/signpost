@@ -1236,11 +1236,12 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                   <div style={{ marginTop: 14, fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.7 }}>
                     <div style={{ marginBottom: 14 }}>
                       <div style={{ fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>Email signature (Gmail)</div>
-                      Settings &rarr; See all settings &rarr; General &rarr; Signature &rarr; Click the image icon &rarr; Paste your badge image URL &rarr; Link the image to your Book Me URL.
+                      Open <a href="https://mail.google.com/mail/u/0/#settings/general" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }} onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')} onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}>Gmail Signature Settings</a> &rarr; Click the image icon &rarr; Paste your badge image URL &rarr; Link the image to your Book Me URL.
                     </div>
                     <div style={{ marginBottom: 14 }}>
                       <div style={{ fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>Email signature (Outlook)</div>
-                      Settings &rarr; View all Outlook settings &rarr; Mail &rarr; Compose and reply &rarr; Email signature &rarr; Insert an image or paste the badge HTML.
+                      Open <a href="https://outlook.live.com/mail/0/options/mail/messageContent" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }} onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')} onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}>Outlook Signature Settings</a> &rarr; Mail &rarr; Compose and reply &rarr; Email signature &rarr; Insert an image or paste the badge HTML.
+                      <div style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 6, opacity: 0.8 }}>This link works for personal Outlook accounts. For work/school accounts, check with your IT administrator.</div>
                     </div>
                     <div style={{ marginBottom: 14 }}>
                       <div style={{ fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>Website</div>
@@ -1248,7 +1249,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
                     </div>
                     <div>
                       <div style={{ fontWeight: 600, color: 'var(--text)', marginBottom: 4 }}>LinkedIn</div>
-                      Edit your profile &rarr; Contact info &rarr; Add your Book Me link as a website. You can also add it to your About section or featured links.
+                      Open <a href="https://www.linkedin.com/in/me/edit/contact-info/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }} onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')} onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}>LinkedIn Contact Info</a> &rarr; Add your Book Me link as a website. You can also add it to your About section or featured links.
                     </div>
                   </div>
                 </details>
