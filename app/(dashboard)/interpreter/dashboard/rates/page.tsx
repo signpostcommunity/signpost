@@ -25,6 +25,9 @@ type RateProfile = {
   afterHoursDiff: string
   afterHoursDescription: string
   customFees: CustomFee[]
+  travelTimeBilling: 'none' | 'portal_to_portal' | 'custom'
+  travelTimeRate: string
+  travelTimeDescription: string
   dbId?: string // Supabase row id
 }
 
@@ -72,6 +75,7 @@ const DEFAULT_PROFILES: RateProfile[] = [
     cancellationPolicy: '48 hours notice required', lateFee: '100% of booking fee',
     notes: '', travel: [],
     afterHoursOn: false, afterHoursDiff: '', afterHoursDescription: '', customFees: [],
+    travelTimeBilling: 'none', travelTimeRate: '', travelTimeDescription: '',
   },
 ]
 
@@ -107,7 +111,7 @@ export default function RatesPage() {
 
     const { data: rates, error: ratesError } = await supabase
       .from('interpreter_rate_profiles')
-      .select('id, interpreter_id, label, is_default, color, hourly_rate, currency, after_hours_diff, after_hours_description, min_booking, cancellation_policy, late_cancel_fee, travel_expenses, eligibility_criteria, additional_terms')
+      .select('id, interpreter_id, label, is_default, color, hourly_rate, currency, after_hours_diff, after_hours_description, min_booking, cancellation_policy, late_cancel_fee, travel_expenses, eligibility_criteria, additional_terms, travel_time_billing, travel_time_rate, travel_time_description')
       .eq('interpreter_id', profile.id)
       .order('id', { ascending: true })
 
@@ -140,6 +144,9 @@ export default function RatesPage() {
           afterHoursDiff: r.after_hours_diff != null ? String(r.after_hours_diff) : '',
           afterHoursDescription: r.after_hours_description || '',
           customFees: te.custom,
+          travelTimeBilling: ((r as { travel_time_billing?: string | null }).travel_time_billing as RateProfile['travelTimeBilling']) || 'none',
+          travelTimeRate: (r as { travel_time_rate?: number | null }).travel_time_rate != null ? String((r as { travel_time_rate?: number | null }).travel_time_rate) : '',
+          travelTimeDescription: (r as { travel_time_description?: string | null }).travel_time_description || '',
         }
       }))
       setOpen([rates[0]?.id])
@@ -186,6 +193,9 @@ export default function RatesPage() {
           afterHoursDiff: r.after_hours_diff != null ? String(r.after_hours_diff) : '',
           afterHoursDescription: (r as { after_hours_description?: string | null }).after_hours_description || '',
           customFees: te.custom,
+          travelTimeBilling: ((r as { travel_time_billing?: string | null }).travel_time_billing as RateProfile['travelTimeBilling']) || 'none',
+          travelTimeRate: (r as { travel_time_rate?: number | null }).travel_time_rate != null ? String((r as { travel_time_rate?: number | null }).travel_time_rate) : '',
+          travelTimeDescription: (r as { travel_time_description?: string | null }).travel_time_description || '',
         }
       }))
       setOpen([seeded[0].id])
@@ -266,6 +276,19 @@ export default function RatesPage() {
         ? profile.afterHoursDescription.trim()
         : null,
       additional_terms: profile.notes || null,
+      travel_time_billing: profile.travelTimeBilling,
+      travel_time_rate: profile.travelTimeBilling !== 'none' && profile.travelTimeRate
+        ? parseFloat(profile.travelTimeRate) || null
+        : null,
+      travel_time_description: profile.travelTimeBilling !== 'none' && profile.travelTimeDescription.trim()
+        ? profile.travelTimeDescription.trim()
+        : null,
+    }
+
+    if (profile.travelTimeBilling !== 'none' && (!profile.travelTimeRate || !(parseFloat(profile.travelTimeRate) > 0))) {
+      setSaving(null)
+      setToast({ message: 'Enter a travel time rate or set travel time billing to "I don\'t bill for travel time".', type: 'error' })
+      return
     }
 
     if (profile.afterHoursOn && (!profile.afterHoursDiff || !(parseFloat(profile.afterHoursDiff) > 0))) {

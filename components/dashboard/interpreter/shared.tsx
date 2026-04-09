@@ -46,13 +46,14 @@ export function SectionLabel({ children }: { children: React.ReactNode }) {
 
 // ── Status Badge ──────────────────────────────────────────────────────────────
 
-export function StatusBadge({ status }: { status: 'new' | 'responded' | 'confirmed' | 'pending' | 'declined' }) {
+export function StatusBadge({ status }: { status: 'new' | 'responded' | 'confirmed' | 'pending' | 'declined' | 'proposed' }) {
   const styles: Record<string, { bg: string; color: string; label: string }> = {
     new: { bg: 'rgba(255,165,0,0.12)', color: '#f97316', label: 'New' },
     responded: { bg: 'rgba(0,229,255,0.1)', color: 'var(--accent)', label: 'Responded' },
     confirmed: { bg: 'rgba(0,229,255,0.1)', color: 'var(--accent)', label: '✓ Confirmed' },
     pending: { bg: 'rgba(255,165,0,0.12)', color: '#f97316', label: 'Awaiting Response' },
     declined: { bg: 'rgba(255,77,109,0.1)', color: 'var(--accent3)', label: 'Declined' },
+    proposed: { bg: 'rgba(139,92,246,0.15)', color: '#a78bfa', label: 'Suggestion sent' },
   }
   const s = styles[status]
   return (

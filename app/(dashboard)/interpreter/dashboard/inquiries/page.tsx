@@ -1058,17 +1058,7 @@ export default function InquiriesPage() {
               </div>
               <div className="dash-card-badges" style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
                 {inq.is_seed && <DemoBadge />}
-                {inq.recipient_status === 'proposed' ? (
-                  <span style={{
-                    fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px',
-                    borderRadius: 100,
-                    background: 'rgba(139,92,246,0.15)',
-                    color: '#a78bfa',
-                    fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em', whiteSpace: 'nowrap',
-                  }}>Suggestion sent</span>
-                ) : (
-                  <StatusBadge status="pending" />
-                )}
+                <StatusBadge status={inq.recipient_status === 'proposed' ? 'proposed' : 'pending'} />
               </div>
             </div>
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', fontSize: '0.8rem', color: 'var(--muted)', padding: '10px 0', borderTop: '1px solid var(--border)' }}>
