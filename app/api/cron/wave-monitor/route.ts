@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
     .from('bookings')
     .select('id, requester_id, title, date, time_start, time_end, location, interpreter_count, current_wave, wave_alerts_sent, status')
     .in('status', ['open', 'filled'])
+    .eq('is_seed', false)
 
   if (bookingsErr || !bookings) {
     console.error('[wave-monitor] bookings fetch error:', bookingsErr?.message)
