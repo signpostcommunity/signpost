@@ -9,7 +9,6 @@ import VideoPreviewModal from '@/components/directory/VideoPreviewModal';
 import AddToListModal from '@/components/directory/AddToListModal';
 import BatchAddToListModal from '@/components/directory/BatchAddToListModal';
 import { createClient } from '@/lib/supabase/client';
-import { useFocusTrap } from '@/lib/hooks/useFocusTrap';
 
 function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 3959 // Earth radius in miles
@@ -116,13 +115,6 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
     setSelectedIds(new Set())
   }
 
-  // Invite modal state
-  const [inviteModalOpen, setInviteModalOpen] = useState(false);
-  const [inviteName, setInviteName] = useState('');
-  const [inviteContact, setInviteContact] = useState('');
-  const [inviteMessage, setInviteMessage] = useState('');
-  const [userName, setUserName] = useState('');
-  const inviteFocusRef = useFocusTrap(inviteModalOpen);
 
   // Toast state
   const [toast, setToast] = useState<{ message: string; visible: boolean }>({
@@ -167,9 +159,6 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
                 setUserRole(data.role as 'deaf' | 'requester' | 'interpreter');
               }
             }
-          }
-          if (user.user_metadata?.full_name) {
-            setUserName(user.user_metadata.full_name);
           }
         });
     });
@@ -504,29 +493,19 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
               lineHeight: 1.5,
             }}>
               Don&apos;t see an interpreter here who you love working with?{' '}
-              <button
-                onClick={() => {
-                  const defaultMsg = `${userName || 'Someone'} wants you to join signpost - a community-built interpreter directory connecting interpreters directly with the Deaf community. Create your free profile: https://signpost.community/interpreter`;
-                  setInviteMessage(defaultMsg);
-                  setInviteName('');
-                  setInviteContact('');
-                  setInviteModalOpen(true);
-                }}
+              <Link
+                href="/invite"
                 style={{
-                  background: 'none',
-                  border: 'none',
                   color: 'var(--accent)',
                   fontSize: '0.88rem',
                   fontWeight: 600,
-                  cursor: 'pointer',
                   fontFamily: "'DM Sans', sans-serif",
-                  padding: 0,
                   textDecoration: 'underline',
                   textUnderlineOffset: '2px',
                 }}
               >
                 Invite them to signpost.
-              </button>
+              </Link>
             </span>
           </div>
 
@@ -774,148 +753,6 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
         onSuccess={(name) => showToast(`${name} added to your list`)}
         onDuplicate={(name) => showToast(`${name} is already on your list`)}
       />
-
-      {/* Invite modal */}
-      {inviteModalOpen && (
-        <div
-          onClick={() => setInviteModalOpen(false)}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 300,
-            background: 'rgba(7,9,16,0.88)',
-            backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 20,
-          }}
-        >
-          <div
-            ref={inviteFocusRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Send an invite"
-            onClick={e => e.stopPropagation()}
-            style={{
-              background: 'var(--surface)',
-              border: '1px solid var(--border)',
-              borderRadius: 16,
-              maxWidth: 480,
-              width: '100%',
-              boxShadow: '0 40px 100px rgba(0,0,0,0.7)',
-              overflow: 'hidden',
-            }}
-          >
-            {/* Header */}
-            <div style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '16px 24px', borderBottom: '1px solid var(--border)',
-            }}>
-              <div style={{
-                fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
-                fontSize: '1rem', color: 'var(--text)',
-              }}>
-                Send an invite
-              </div>
-              <button
-                onClick={() => setInviteModalOpen(false)}
-                aria-label="Close"
-                style={{
-                  background: 'none', border: 'none',
-                  color: 'var(--muted)', fontSize: '1.2rem',
-                  cursor: 'pointer', padding: '4px 8px',
-                  borderRadius: 6, lineHeight: 1,
-                }}
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Body */}
-            <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 500, color: 'var(--muted)', marginBottom: 6 }}>
-                  Their name
-                </label>
-                <input
-                  type="text"
-                  value={inviteName}
-                  onChange={e => setInviteName(e.target.value)}
-                  placeholder="e.g. Sarah Johnson"
-                  style={{
-                    width: '100%', background: 'var(--surface2)',
-                    border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
-                    padding: '11px 14px', color: 'var(--text)',
-                    fontSize: '0.9rem', fontFamily: "'DM Sans', sans-serif",
-                    outline: 'none', boxSizing: 'border-box',
-                  }}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 500, color: 'var(--muted)', marginBottom: 6 }}>
-                  Their email or phone number
-                </label>
-                <input
-                  type="text"
-                  value={inviteContact}
-                  onChange={e => setInviteContact(e.target.value)}
-                  placeholder="email@example.com or (555) 123-4567"
-                  style={{
-                    width: '100%', background: 'var(--surface2)',
-                    border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
-                    padding: '11px 14px', color: 'var(--text)',
-                    fontSize: '0.9rem', fontFamily: "'DM Sans', sans-serif",
-                    outline: 'none', boxSizing: 'border-box',
-                  }}
-                />
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 500, color: 'var(--muted)', marginBottom: 6 }}>
-                  Message
-                </label>
-                <textarea
-                  value={inviteMessage}
-                  onChange={e => setInviteMessage(e.target.value)}
-                  rows={4}
-                  style={{
-                    width: '100%', background: 'var(--surface2)',
-                    border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
-                    padding: '11px 14px', color: 'var(--text)',
-                    fontSize: '0.88rem', fontFamily: "'DM Sans', sans-serif",
-                    outline: 'none', boxSizing: 'border-box',
-                    resize: 'vertical', lineHeight: 1.5,
-                  }}
-                />
-              </div>
-              <button
-                onClick={async () => {
-                  try {
-                    await navigator.clipboard.writeText(inviteMessage);
-                    setInviteModalOpen(false);
-                    showToast('Invite copied! Paste it in an email or text message.');
-                  } catch {
-                    showToast('Could not copy - please select and copy the message manually.');
-                  }
-                }}
-                className="btn-primary"
-                style={{
-                  padding: '13px 24px',
-                  fontSize: '0.92rem',
-                  fontWeight: 700,
-                  width: '100%',
-                  border: 'none',
-                  cursor: 'pointer',
-                }}
-              >
-                Send invite
-              </button>
-              <p style={{
-                fontSize: '0.78rem', color: 'var(--muted)',
-                lineHeight: 1.5, margin: 0, textAlign: 'center',
-              }}>
-                They&apos;ll receive an email with your name and an invitation to create their signpost profile.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Floating action bar for selection mode */}
       {selectionMode && selectedIds.size > 0 && (
