@@ -39,6 +39,18 @@ interface Booking {
   dhh_bio: string | null
   share_intro_text_before_confirm: boolean | null
   share_intro_video_before_confirm: boolean | null
+  prep_notes: string | null
+  onsite_contact_name: string | null
+  onsite_contact_phone: string | null
+  onsite_contact_email: string | null
+}
+
+interface BookingAttachment {
+  id: string
+  file_name: string
+  file_url: string
+  file_type: string | null
+  file_size: number | null
 }
 
 /* ── Helpers ── */
@@ -650,7 +662,7 @@ export default function InquiriesPage() {
       if (bookingIds.length > 0) {
         const { data: bookingsData, error: bookingsErr } = await supabase
           .from('bookings')
-          .select('id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, interpreter_count, notes, status, is_seed, created_at, request_type, context_video_url')
+          .select('id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, interpreter_count, notes, status, is_seed, created_at, request_type, context_video_url, prep_notes, onsite_contact_name, onsite_contact_phone, onsite_contact_email')
           .in('id', bookingIds)
 
         if (bookingsErr) {

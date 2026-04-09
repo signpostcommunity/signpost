@@ -31,6 +31,23 @@ export default function Step5Skills({ onBack, onContinue }: {
     )
   }
 
+  const [aspCollapsed, setAspCollapsed] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {}
+    Object.keys(SPECIALIZATION_CATEGORIES).forEach((cat) => { initial[cat] = true })
+    return initial
+  })
+  function toggleAspirational(spec: string) {
+    if (formData.specializations.includes(spec)) return
+    const current = formData.aspirationalSpecializations
+    updateField('aspirationalSpecializations', current.includes(spec)
+      ? current.filter(s => s !== spec)
+      : [...current, spec]
+    )
+  }
+  function toggleAspCategory(category: string) {
+    setAspCollapsed(prev => ({ ...prev, [category]: !prev[category] }))
+  }
+
   function toggleSkill(skill: string) {
     const current = formData.specializedSkills
     updateField('specializedSkills', current.includes(skill)
@@ -151,6 +168,99 @@ export default function Step5Skills({ onBack, onContinue }: {
             )
           })}
         </div>
+      </FormSection>
+
+      {/* Working Towards (aspirational) */}
+      <FormSection>
+        <div style={{
+          fontSize: '12px', fontWeight: 500, letterSpacing: '0.06em',
+          textTransform: 'uppercase', color: '#00e5ff', marginBottom: 8,
+        }}>
+          Working Towards
+        </div>
+        <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 8, lineHeight: 1.6 }}>
+          Select areas you&apos;re actively developing skills in. These show on your profile as aspirational, not current expertise.
+        </p>
+        <p style={{ color: 'var(--muted)', fontSize: '0.78rem', marginBottom: 12, lineHeight: 1.6, opacity: 0.85 }}>
+          Items already in your active specializations won&apos;t appear here.
+        </p>
+        <div style={{ fontSize: '0.82rem', color: 'var(--accent)', fontWeight: 600, marginBottom: 12 }}>
+          {formData.aspirationalSpecializations.length} working towards selected
+        </div>
+        {formData.aspirationalSpecializations.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 16 }}>
+            {formData.aspirationalSpecializations.map(spec => (
+              <span key={spec} style={{
+                padding: '4px 12px', fontSize: '0.78rem',
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                borderRadius: 20, border: '1px dashed rgba(0,229,255,0.4)',
+                background: 'rgba(0,229,255,0.06)', color: 'var(--accent)',
+                opacity: 0.85, fontFamily: "'DM Sans', sans-serif",
+              }}>
+                {spec}
+                <button onClick={() => toggleAspirational(spec)} aria-label={`Remove ${spec}`} style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6, fontSize: '0.85rem', color: 'inherit', padding: 0 }}><span aria-hidden="true">✕</span></button>
+              </span>
+            ))}
+          </div>
+        )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 }}>
+          {Object.entries(SPECIALIZATION_CATEGORIES).map(([category, subs]) => {
+            const isCollapsed = aspCollapsed[category]
+            const selectedCount = subs.filter(s => formData.aspirationalSpecializations.includes(s)).length
+            return (
+              <div key={category} style={{
+                background: 'var(--surface2)', border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-sm)', overflow: 'hidden',
+              }}>
+                <button
+                  type="button"
+                  onClick={() => toggleAspCategory(category)}
+                  style={{
+                    width: '100%', padding: '12px 16px',
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    fontSize: '12px', fontWeight: 500,
+                    letterSpacing: '0.06em', textTransform: 'uppercase',
+                    color: selectedCount > 0 ? '#00e5ff' : '#96a0b8',
+                  }}
+                >
+                  <span>{category}</span>
+                  <span style={{ fontSize: '0.7rem', transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▾</span>
+                </button>
+                {!isCollapsed && (
+                  <div style={{ padding: '0 12px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {subs.map(sub => {
+                      const disabled = formData.specializations.includes(sub)
+                      const checked = formData.aspirationalSpecializations.includes(sub)
+                      return (
+                        <label key={sub} style={{
+                          display: 'flex', alignItems: 'center', gap: 10,
+                          padding: '8px 12px', borderRadius: 8,
+                          cursor: disabled ? 'not-allowed' : 'pointer',
+                          background: checked ? 'rgba(0,229,255,0.06)' : 'transparent',
+                          opacity: disabled ? 0.4 : 1,
+                          fontSize: '0.85rem', color: checked ? 'var(--text)' : 'var(--muted)',
+                        }}>
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            disabled={disabled}
+                            onChange={() => toggleAspirational(sub)}
+                            style={{ accentColor: 'var(--accent)', width: 'auto', flexShrink: 0 }}
+                          />
+                          {sub}
+                        </label>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+        <p style={{ color: 'var(--muted)', fontSize: '0.78rem', lineHeight: 1.6, opacity: 0.85 }}>
+          These will be visible on your public profile so Deaf community members and requesters can see your growth areas.
+        </p>
       </FormSection>
 
       {/* Specialized Skills */}
