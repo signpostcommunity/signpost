@@ -66,8 +66,39 @@ export default async function AdminDashboardPage() {
     }))
   }
 
+  // Invite stats
+  const { data: allInvites } = await supabase
+    .from('invite_tracking')
+    .select('id, sender_name, recipient_name, channel, status, sent_at, created_at')
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  const invites = allInvites || []
+  const inviteStats = {
+    total: invites.length,
+    byChannel: {
+      email: invites.filter(i => i.channel === 'email').length,
+      sms: invites.filter(i => i.channel === 'sms').length,
+      clipboard: invites.filter(i => i.channel === 'clipboard').length,
+    },
+    funnel: {
+      sent: invites.filter(i => i.status === 'sent' || i.status === 'clicked' || i.status === 'signed_up').length,
+      clicked: invites.filter(i => i.status === 'clicked' || i.status === 'signed_up').length,
+      signedUp: invites.filter(i => i.status === 'signed_up').length,
+    },
+    recent: invites.slice(0, 10).map(i => ({
+      id: i.id,
+      senderName: i.sender_name || 'Unknown',
+      recipientName: i.recipient_name || 'Unknown',
+      channel: i.channel,
+      status: i.status,
+      date: i.sent_at || i.created_at,
+    })),
+  }
+
   return (
     <AdminOverviewClient
+      inviteStats={inviteStats}
       stats={{
         totalUsers: val(usersRes)?.count ?? 0,
         interpreters: val(interpretersRes)?.count ?? 0,

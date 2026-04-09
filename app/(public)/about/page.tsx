@@ -88,7 +88,7 @@ const faqSections: FaqSection[] = [
         rich: (
           <>
             <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.75, margin: '0 0 12px' }}>
-              <strong style={{ color: 'var(--text)' }}>Interpreters</strong> who want to set their own rates, manage their own clients, and keep 100% of what they charge.
+              <strong style={{ color: 'var(--text)' }}>Interpreters</strong> who want to set their own rates, manage their own clients, and connect directly with the people they work with, with no agency fees added on top.
             </p>
             <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.75, margin: '0 0 12px' }}>
               <strong style={{ color: 'var(--text)' }}>Deaf, DeafBlind, and Hard of Hearing individuals</strong> who want to choose their own interpreters, build a preferred team, and have their preferences respected when someone books on their behalf.

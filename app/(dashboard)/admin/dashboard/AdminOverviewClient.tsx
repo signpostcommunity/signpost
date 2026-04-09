@@ -69,6 +69,20 @@ interface RecentFlag {
   interpreter_name: string
 }
 
+interface InviteStats {
+  total: number
+  byChannel: { email: number; sms: number; clipboard: number }
+  funnel: { sent: number; clicked: number; signedUp: number }
+  recent: Array<{
+    id: string
+    senderName: string
+    recipientName: string
+    channel: string
+    status: string
+    date: string
+  }>
+}
+
 interface QualityAlert {
   id: string
   interpreter_id: string
@@ -110,12 +124,14 @@ export default function AdminOverviewClient({
   recentUsers,
   recentFlags,
   qualityAlerts: initialAlerts,
+  inviteStats,
 }: {
   stats: Stats
   paymentStats: PaymentStats
   recentUsers: RecentUser[]
   recentFlags: RecentFlag[]
   qualityAlerts: QualityAlert[]
+  inviteStats: InviteStats
 }) {
   const [qualityAlerts, setQualityAlerts] = useState<QualityAlert[]>(initialAlerts)
   const [showDismissed, setShowDismissed] = useState(false)
@@ -497,6 +513,105 @@ export default function AdminOverviewClient({
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Invites */}
+      <div style={{ marginTop: 40 }}>
+        <h2 style={{ fontFamily: "'Inter', sans-serif", fontSize: '1rem', fontWeight: 700, marginBottom: 16 }}>
+          Invites
+        </h2>
+
+        {/* Invite stat cards */}
+        <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 16, marginBottom: 24 }}>
+          <div style={{
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)', padding: '16px 20px',
+          }}>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
+              Total Sent
+            </div>
+            <div style={{ fontSize: '1.6rem', fontWeight: 700, color: ORANGE }}>
+              {inviteStats.funnel.sent}
+            </div>
+          </div>
+          <div style={{
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)', padding: '16px 20px',
+          }}>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
+              Clicked
+            </div>
+            <div style={{ fontSize: '1.6rem', fontWeight: 700, color: ORANGE }}>
+              {inviteStats.funnel.clicked}
+            </div>
+          </div>
+          <div style={{
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)', padding: '16px 20px',
+          }}>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
+              Signed Up
+            </div>
+            <div style={{ fontSize: '1.6rem', fontWeight: 700, color: '#22c55e' }}>
+              {inviteStats.funnel.signedUp}
+            </div>
+          </div>
+          <div style={{
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)', padding: '16px 20px',
+          }}>
+            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>
+              By Channel
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.8 }}>
+              Email: {inviteStats.byChannel.email}<br />
+              SMS: {inviteStats.byChannel.sms}<br />
+              Clipboard: {inviteStats.byChannel.clipboard}
+            </div>
+          </div>
+        </div>
+
+        {/* Recent invites */}
+        {inviteStats.recent.length > 0 && (
+          <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: 24 }}>
+            <h3 style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', fontWeight: 700, marginBottom: 12 }}>
+              Recent Invites
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {inviteStats.recent.map(inv => (
+                <div key={inv.id} style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '8px 0', borderBottom: '1px solid var(--border)', fontSize: '0.82rem',
+                }}>
+                  <div>
+                    <span style={{ color: 'var(--text)' }}>{inv.senderName}</span>
+                    <span style={{ color: 'var(--muted)' }}> invited </span>
+                    <span style={{ color: 'var(--text)' }}>{inv.recipientName}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                    <span style={{
+                      padding: '1px 8px', borderRadius: 999, fontSize: '0.68rem', fontWeight: 700,
+                      textTransform: 'uppercase', letterSpacing: '0.08em',
+                      background: inv.status === 'signed_up' ? 'rgba(34,197,94,0.15)' : inv.status === 'clicked' ? 'rgba(0,229,255,0.1)' : 'rgba(150,160,184,0.1)',
+                      color: inv.status === 'signed_up' ? '#22c55e' : inv.status === 'clicked' ? 'var(--accent)' : 'var(--muted)',
+                    }}>
+                      {inv.status === 'signed_up' ? 'signed up' : inv.status}
+                    </span>
+                    <span style={{
+                      padding: '1px 8px', borderRadius: 999, fontSize: '0.68rem', fontWeight: 600,
+                      background: 'rgba(150,160,184,0.1)', color: 'var(--muted)',
+                    }}>
+                      {inv.channel}
+                    </span>
+                    <span style={{ color: 'var(--muted)', fontSize: '0.72rem' }}>
+                      {new Date(inv.date).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <style>{`

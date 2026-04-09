@@ -23,6 +23,20 @@ function SignupForm() {
   const [isCreatingAccount, setIsCreatingAccount] = useState(false)
   const searchParams = useSearchParams()
   const isAddRole = searchParams.get('addRole') === 'true'
+  const inviteToken = searchParams.get('invite') || null
+
+  // Store invite token in sessionStorage for persistence through signup wizard
+  useEffect(() => {
+    if (inviteToken) {
+      sessionStorage.setItem('signpost_invite_token', inviteToken)
+      // Track click
+      fetch('/api/invites/click', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: inviteToken }),
+      }).catch(() => { /* non-blocking */ })
+    }
+  }, [inviteToken])
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

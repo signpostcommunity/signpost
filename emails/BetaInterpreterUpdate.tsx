@@ -76,7 +76,7 @@ export function BetaInterpreterUpdate({ recipientName = 'there' }: BetaInterpret
 
       <EmailCallout>
         <EmailParagraph>
-          I love working with you and would like to add you to my Preferred Team list on signpost! It's a new directory and booking platform built by interpreters, for interpreters. You set your own rates, keep 100% of your pay, and connect directly with clients. Click here to join so we can team together:{' '}
+          I love working with you and would like to add you to my Preferred Team list on signpost! It's a new directory and booking platform built by interpreters, for interpreters. You set your own rates and terms, and connect directly with clients, with no agency fees added on top. Click here to join so we can team together:{' '}
           <Link href="https://signpost.community/interpreter/signup" style={linkStyle}>
             https://signpost.community/interpreter/signup
           </Link>

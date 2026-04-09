@@ -306,6 +306,25 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
       } catch (welcomeErr) {
         console.warn('Welcome notification failed, continuing', welcomeErr)
       }
+
+      // Auto-add to sender's preferred team/list if signed up via invite link
+      try {
+        const storedToken = typeof window !== 'undefined' ? sessionStorage.getItem('signpost_invite_token') : null
+        if (storedToken && profileId) {
+          await fetch('/api/invites/complete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              token: storedToken,
+              newUserId: userId,
+              newInterpreterProfileId: profileId,
+            }),
+          })
+          sessionStorage.removeItem('signpost_invite_token')
+        }
+      } catch (inviteErr) {
+        console.warn('Invite auto-add failed, continuing', inviteErr)
+      }
     } catch (insertError) {
       console.error('[signup] Profile save failed:', insertError)
       setError(`Profile save failed: ${(insertError as Error).message || 'Unknown error'}. Please try again.`)

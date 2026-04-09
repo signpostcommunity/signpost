@@ -31,11 +31,11 @@ export function InterpreterInvitation({ recipientName = 'there' }: InterpreterIn
       </EmailParagraph>
 
       <EmailParagraph>
-        It's called signpost. It's a directory and booking platform for freelance interpreters. Regina McGinnis and I co-founded it because we were frustrated with the same things you and I have talked about: agencies taking a huge cut, owning the client relationship, and deciding who shows up.
+        It's called signpost. It's a directory and booking platform for freelance interpreters. Regina McGinnis and I co-founded it because we were frustrated with the same things you and I have talked about: agencies adding their commission on top, owning the client relationship, and deciding who shows up.
       </EmailParagraph>
 
       <EmailParagraph>
-        signpost puts interpreters in control. You set your own rates and terms. 100% of your rate goes to you. signpost charges the requester a flat $15 booking fee, and that's it. No commissions, no markups, nothing on top of your rate.
+        signpost puts interpreters in control. You set your own rates and terms. Clients pay your rate directly, with no agency markup added on top. signpost charges the requester a flat $15 booking fee, and that's it.
       </EmailParagraph>
 
       <EmailParagraph>
@@ -76,7 +76,7 @@ export function InterpreterInvitation({ recipientName = 'there' }: InterpreterIn
 
       <EmailCallout>
         <EmailParagraph>
-          I love working with you and would like to add you to my Preferred Team list on signpost! It's a new directory and booking platform built by interpreters, for interpreters. You set your own rates, keep 100% of your pay, and connect directly with clients. Click here to join so we can team together:{' '}
+          I love working with you and would like to add you to my Preferred Team list on signpost! It's a new directory and booking platform built by interpreters, for interpreters. You set your own rates and terms, and connect directly with clients, with no agency fees added on top. Click here to join so we can team together:{' '}
           <Link href="https://signpost.community/interpreter/signup" style={linkStyle}>
             https://signpost.community/interpreter/signup
           </Link>
