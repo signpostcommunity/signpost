@@ -101,6 +101,8 @@ export type FormData = {
   rateProfiles: RateProfile[]
   otherSpecializations: string
   genderIdentity: string
+  // Auto-detected on Step 1, saved silently with the interpreter profile
+  timezone: string
 }
 
 const defaultRateProfiles: RateProfile[] = [
@@ -141,6 +143,7 @@ const initialFormData: FormData = {
   agreeTerms: false, agreeBooking: false, agreeCredentials: false,
   vanitySlug: '',
   rateProfiles: defaultRateProfiles, otherSpecializations: '', genderIdentity: '',
+  timezone: '',
 }
 
 type FormContextType = {
@@ -237,6 +240,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
           mentorship_paid: formData.mentorshipPaid || null,
           mentorship_bio_offering: formData.mentorshipBioOffering || null,
           mentorship_bio_seeking: formData.mentorshipBioSeeking || null,
+          timezone: formData.timezone || null,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' })
     } catch (e) {

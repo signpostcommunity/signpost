@@ -13,6 +13,7 @@ import {
 import { SPECIALIZATION_CATEGORIES, SPECIALIZED_SKILLS } from '@/lib/constants/specializations'
 import { MENTORSHIP_CATEGORIES, type MentorshipCategory } from '@/lib/mentorship-categories'
 import { getVideoEmbedUrl, isValidVideoUrl } from '@/lib/videoUtils'
+import { TIMEZONE_LABELS, getTimezoneLabel } from '@/lib/timezones'
 import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
 import LocationPicker from '@/components/shared/LocationPicker'
 import { useDialCode } from '@/components/shared/PhoneWithDialCode'
@@ -172,6 +173,7 @@ interface ProfileData {
   mentorship_bio_offering?: string | null
   mentorship_bio_seeking?: string | null
   directory_visible?: boolean | null
+  timezone?: string | null
 }
 
 interface NotificationPreferences {
@@ -492,6 +494,31 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
     p.directory_visible === false ? false : true
   )
 
+  // ── Timezone (auto-detected from browser, editable in Account Settings) ──
+  const [timezone, setTimezone] = useState<string>(p.timezone || '')
+
+  // Auto-detect from browser if missing, then save silently
+  useEffect(() => {
+    if (timezone) return
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+      if (!tz) return
+      setTimezone(tz)
+      const supabase = createClient()
+      ;(async () => {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+        await supabase
+          .from('interpreter_profiles')
+          .update({ timezone: tz, updated_at: new Date().toISOString() })
+          .eq('user_id', user.id)
+      })()
+    } catch {
+      // ignore
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // ── Community & Identity state ────────────────────────────────────
   const [lgbtq, setLgbtq] = useState(fallback(p.lgbtq, 'lgbtq', false))
   const [deafParented, setDeafParented] = useState(fallback(p.deaf_parented, 'deafParented', false))
@@ -539,7 +566,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       // Now try interpreter_profiles
       const { data, error, status, statusText } = await supabase
         .from('interpreter_profiles')
-        .select('id, name, first_name, last_name, email, pronouns, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, bio_specializations, bio_extra, sign_languages, spoken_languages, specializations, aspirational_specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms, notification_preferences, notification_phone, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, vanity_slug, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_types_offering, mentorship_types_seeking, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking, directory_visible')
+        .select('id, name, first_name, last_name, email, pronouns, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, bio_specializations, bio_extra, sign_languages, spoken_languages, specializations, aspirational_specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms, notification_preferences, notification_phone, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, vanity_slug, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_types_offering, mentorship_types_seeking, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking, directory_visible, timezone')
         .eq('user_id', user.id)
         .maybeSingle()
       console.log('PROFILE CLIENT-SIDE LOAD:', JSON.stringify({ data, error, status, statusText, userId: user.id }, null, 2))
@@ -588,6 +615,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       if (d.mentorship_bio_offering != null) setMentorshipBioOffering(d.mentorship_bio_offering || '')
       if (d.mentorship_bio_seeking != null) setMentorshipBioSeeking(d.mentorship_bio_seeking || '')
       if (d.directory_visible != null) setDirectoryVisible(d.directory_visible)
+      if (d.timezone != null) setTimezone(d.timezone)
     })()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -1944,6 +1972,8 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           setNotifSaving={setNotifSaving}
           directoryVisible={directoryVisible}
           setDirectoryVisible={setDirectoryVisible}
+          timezone={timezone}
+          setTimezone={setTimezone}
           setToast={setToast}
           saving={saving}
           onSave={() => saveFields({
@@ -2661,6 +2691,7 @@ function SettingsTab({
   notifPhone, setNotifPhone,
   notifSaving, setNotifSaving,
   directoryVisible, setDirectoryVisible,
+  timezone, setTimezone,
   setToast,
   saving, onSave,
 }: {
@@ -2678,6 +2709,8 @@ function SettingsTab({
   setNotifSaving: (v: boolean) => void
   directoryVisible: boolean
   setDirectoryVisible: (v: boolean) => void
+  timezone: string
+  setTimezone: (v: string) => void
   setToast: (t: { message: string; type: 'success' | 'error' } | null) => void
   saving: boolean
   onSave: () => void
@@ -2832,6 +2865,13 @@ function SettingsTab({
           </button>
         </div>
       </div>
+
+      {/* ── Timezone ───────────────────────────────────────────────── */}
+      <TimezoneSection
+        timezone={timezone}
+        setTimezone={setTimezone}
+        setToast={setToast}
+      />
 
       {/* ── Section 1: Invoicing ─────────────────────────────────────── */}
       <div style={cardStyle}>
@@ -3221,6 +3261,134 @@ function CalendarSyncSettings() {
           fontSize: '0.82rem', color: 'var(--accent)', marginTop: 12,
         }}>
           {toast}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Timezone section in Account Settings ─────────────────────────────────────
+function TimezoneSection({
+  timezone,
+  setTimezone,
+  setToast,
+}: {
+  timezone: string
+  setTimezone: (v: string) => void
+  setToast: (t: { message: string; type: 'success' | 'error' } | null) => void
+}) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(timezone)
+  const [savingTz, setSavingTz] = useState(false)
+
+  useEffect(() => { setDraft(timezone) }, [timezone])
+
+  async function save() {
+    setSavingTz(true)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { setSavingTz(false); return }
+    const { error } = await supabase
+      .from('interpreter_profiles')
+      .update({ timezone: draft || null, updated_at: new Date().toISOString() })
+      .eq('user_id', user.id)
+    setSavingTz(false)
+    if (error) {
+      setToast({ message: `Failed to save timezone: ${error.message}`, type: 'error' })
+      return
+    }
+    setTimezone(draft)
+    setEditing(false)
+    setToast({ message: 'Timezone saved.', type: 'success' })
+  }
+
+  const knownTzs = Object.keys(TIMEZONE_LABELS)
+  const showRaw = timezone && !TIMEZONE_LABELS[timezone]
+
+  return (
+    <div style={{
+      background: '#111118',
+      border: '1px solid var(--border)',
+      borderRadius: 'var(--radius)',
+      padding: 20,
+      marginBottom: 24,
+    }}>
+      <div style={sectionTitleStyle}>Timezone</div>
+      {!editing ? (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{
+              fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 14,
+              color: '#f0f2f8', marginBottom: 6,
+            }}>
+              {timezone ? (showRaw ? timezone : getTimezoneLabel(timezone)) : 'Not set'}
+            </div>
+            <div style={{
+              fontFamily: "'Inter', sans-serif", fontSize: 13,
+              color: '#96a0b8', lineHeight: 1.6,
+            }}>
+              Auto-detected from your browser.
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            style={{
+              background: 'none', border: '1px solid rgba(0,229,255,0.4)',
+              color: 'var(--accent)', borderRadius: 8, padding: '8px 16px',
+              fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer',
+              fontFamily: "'Inter', sans-serif",
+            }}
+          >
+            Change
+          </button>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <select
+            value={knownTzs.includes(draft) ? draft : (draft ? '__custom__' : '')}
+            onChange={e => {
+              if (e.target.value === '__custom__') return
+              setDraft(e.target.value)
+            }}
+            style={{
+              background: 'var(--surface2)', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)', padding: '10px 12px',
+              color: 'var(--text)', fontFamily: "'Inter', sans-serif",
+              fontSize: '0.9rem', outline: 'none', width: '100%',
+            }}
+          >
+            <option value="">Select a timezone...</option>
+            {knownTzs.map(tz => (
+              <option key={tz} value={tz}>{TIMEZONE_LABELS[tz]}</option>
+            ))}
+            {draft && !knownTzs.includes(draft) && (
+              <option value="__custom__">{draft}</option>
+            )}
+          </select>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button
+              type="button"
+              onClick={save}
+              disabled={savingTz}
+              className="btn-primary"
+              style={{ padding: '8px 18px', opacity: savingTz ? 0.6 : 1 }}
+            >
+              {savingTz ? 'Saving...' : 'Save'}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setDraft(timezone); setEditing(false) }}
+              style={{
+                background: 'none', border: '1px solid var(--border)',
+                color: 'var(--muted)', borderRadius: 8, padding: '8px 16px',
+                fontSize: '0.85rem', cursor: 'pointer',
+                fontFamily: "'Inter', sans-serif",
+              }}
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
     </div>

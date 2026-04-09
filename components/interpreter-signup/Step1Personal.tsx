@@ -33,6 +33,17 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
   const { formData, updateField, updateFormData, saveDraft } = useForm()
   const [errors, setErrors] = useState<Record<string, string>>({})
 
+  // Auto-detect interpreter timezone from browser (silent, no UI)
+  useEffect(() => {
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+      if (tz && !formData.timezone) updateField('timezone', tz)
+    } catch {
+      // ignore
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   function validateAndContinue() {
     const next: Record<string, string> = {}
     if (!formData.firstName.trim()) next.firstName = 'Please enter your first name.'

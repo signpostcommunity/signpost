@@ -148,6 +148,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         mentorship_paid: formData.mentorshipPaid || null,
         mentorship_bio_offering: formData.mentorshipBioOffering || null,
         mentorship_bio_seeking: formData.mentorshipBioSeeking || null,
+        timezone: formData.timezone || null,
         notification_preferences: {
           email_enabled: true,
           sms_enabled: true,

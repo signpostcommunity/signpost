@@ -13,6 +13,7 @@ import RequestVideoModal from '@/components/directory/RequestVideoModal';
 import { createClient } from '@/lib/supabase/client';
 import { groupSpecsByCategory } from '@/lib/constants/specializations';
 import { getMentorshipLabel } from '@/lib/mentorship-categories';
+import { getTimezoneLabel } from '@/lib/timezones';
 
 const TABS = ['Overview', 'Credentials', 'Availability'] as const;
 type Tab = (typeof TABS)[number];
@@ -51,7 +52,7 @@ const CERT_FULL_NAMES: Record<string, string> = {
   AICA: 'Association of International Conference Interpreters',
 };
 
-export default function ProfileClient({ interpreter: i, activeAway, availability }: { interpreter: Interpreter; activeAway?: ActiveAway | null; availability?: AvailabilityRow[] }) {
+export default function ProfileClient({ interpreter: i, activeAway, availability, timezone }: { interpreter: Interpreter; activeAway?: ActiveAway | null; availability?: AvailabilityRow[]; timezone?: string | null }) {
   const [activeTab, setActiveTab] = useState<Tab>('Overview');
   const router = useRouter();
   const [toast, setToast] = useState<string | null>(null);
@@ -460,7 +461,7 @@ export default function ProfileClient({ interpreter: i, activeAway, availability
               />
             )}
             {activeTab === 'Credentials' && <CredentialsTab interpreter={i} />}
-            {activeTab === 'Availability' && <AvailabilityTab availability={availability} />}
+            {activeTab === 'Availability' && <AvailabilityTab availability={availability} timezone={timezone} />}
           </div>
 
           {/* Right: sticky sidebar */}
@@ -1075,7 +1076,7 @@ function CredentialsTab({ interpreter: i }: { interpreter: Interpreter }) {
   );
 }
 
-function AvailabilityTab({ availability }: { availability?: AvailabilityRow[] }) {
+function AvailabilityTab({ availability, timezone }: { availability?: AvailabilityRow[]; timezone?: string | null }) {
   // Reorder: Mon(1) through Sun(0)
   const orderedDays = [1, 2, 3, 4, 5, 6, 0]
   const statusColors: Record<string, string> = {
@@ -1086,9 +1087,21 @@ function AvailabilityTab({ availability }: { availability?: AvailabilityRow[] })
 
   return (
     <Section title="Weekly Availability">
-      <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginBottom: 16, fontStyle: 'italic' }}>
-        Times shown in interpreter&apos;s local time zone.
-      </p>
+      {timezone && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: '0.88rem', color: 'var(--text)', fontWeight: 600 }}>
+            Timezone: {getTimezoneLabel(timezone)}
+          </div>
+          <div style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 4, fontStyle: 'italic' }}>
+            All times shown in the interpreter&apos;s local timezone.
+          </div>
+        </div>
+      )}
+      {!timezone && (
+        <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginBottom: 16, fontStyle: 'italic' }}>
+          Times shown in interpreter&apos;s local time zone.
+        </p>
+      )}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {orderedDays.map((dow) => {
           const row = availability?.find(a => a.day_of_week === dow)

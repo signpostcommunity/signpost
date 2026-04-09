@@ -48,7 +48,7 @@ export default async function ProfilePage({ params }: Props) {
 
   const { data, error } = await supabase
     .from('interpreter_profiles')
-    .select('id, user_id, name, first_name, last_name, city, state, country, interpreter_type, work_mode, years_experience, gender_identity, bio, bio_specializations, bio_extra, available, avatar_color, photo_url, video_url, video_desc, rating, review_count, sign_languages, spoken_languages, specializations, aspirational_specializations, specialized_skills, regions, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, draft_data, directory_visible, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_types_offering, mentorship_types_seeking, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking, interpreter_videos(video_url)')
+    .select('id, user_id, name, first_name, last_name, city, state, country, interpreter_type, work_mode, years_experience, gender_identity, bio, bio_specializations, bio_extra, available, avatar_color, photo_url, video_url, video_desc, rating, review_count, sign_languages, spoken_languages, specializations, aspirational_specializations, specialized_skills, regions, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, draft_data, directory_visible, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_types_offering, mentorship_types_seeking, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking, timezone, interpreter_videos(video_url)')
     .eq('id', id)
     .in('status', ['approved', 'active'])
     .maybeSingle();
@@ -151,6 +151,7 @@ export default async function ProfilePage({ params }: Props) {
       interpreter={interpreter}
       activeAway={activeAway}
       availability={availRows || []}
+      timezone={(data as Record<string, unknown>).timezone as string | null}
     />
   );
 }
