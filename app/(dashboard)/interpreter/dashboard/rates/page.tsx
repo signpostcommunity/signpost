@@ -693,6 +693,76 @@ export default function RatesPage() {
                   )}
                 </div>
 
+                {/* Travel Time Billing */}
+                <div style={{ fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 14, marginTop: 34 }}>
+                  Travel Time Billing
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
+                  {([
+                    { value: 'none', label: "I don't bill for travel time" },
+                    { value: 'portal_to_portal', label: 'Portal-to-portal (from departure to arrival and return)' },
+                    { value: 'custom', label: 'Custom arrangement' },
+                  ] as const).map(opt => {
+                    const active = profile.travelTimeBilling === opt.value
+                    return (
+                      <label
+                        key={opt.value}
+                        onClick={() => updateProfile(profile.id, { travelTimeBilling: opt.value })}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px',
+                          background: active ? 'rgba(0,229,255,0.06)' : 'var(--surface2)',
+                          border: `1px solid ${active ? 'rgba(0,229,255,0.4)' : 'var(--border)'}`,
+                          borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+                          fontSize: '0.85rem', color: active ? 'var(--text)' : 'var(--muted)',
+                          userSelect: 'none', transition: 'all 0.15s',
+                        }}
+                      >
+                        <input
+                          type="radio"
+                          checked={active}
+                          onChange={() => updateProfile(profile.id, { travelTimeBilling: opt.value })}
+                          style={{ accentColor: '#00e5ff', width: 16, height: 16, margin: 0 }}
+                        />
+                        <span>{opt.label}</span>
+                      </label>
+                    )
+                  })}
+                </div>
+                {profile.travelTimeBilling !== 'none' && (
+                  <div style={{ marginBottom: 16, padding: '14px 16px', background: '#111118', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)' }}>
+                    <div style={{ marginBottom: 14 }}>
+                      <label style={{ display: 'block', color: '#96a0b8', fontSize: '12px', fontWeight: 500, marginBottom: 6 }}>Travel time rate</label>
+                      <div style={{ position: 'relative', maxWidth: 220 }}>
+                        <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }}>$</span>
+                        <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', fontSize: '0.78rem' }}>/hr</span>
+                        <input
+                          type="text"
+                          value={profile.travelTimeRate}
+                          placeholder="0.00"
+                          onChange={e => updateProfile(profile.id, { travelTimeRate: e.target.value })}
+                          style={{ ...inputStyle, paddingLeft: 24, paddingRight: 32 }}
+                          onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+                          onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
+                        />
+                      </div>
+                      <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 6, lineHeight: 1.4 }}>
+                        Required. Can be different from your interpreting rate. Common practice: 50% of interpreting rate.
+                      </div>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', color: '#96a0b8', fontSize: '12px', fontWeight: 500, marginBottom: 6 }}>Description (optional)</label>
+                      <textarea
+                        value={profile.travelTimeDescription}
+                        placeholder="e.g. Travel time billed at 50% of interpreting rate. Portal-to-portal from my home office in Seattle."
+                        onChange={e => updateProfile(profile.id, { travelTimeDescription: e.target.value })}
+                        style={{ ...inputStyle, resize: 'vertical', minHeight: 64 }}
+                        onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+                        onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
+                      />
+                    </div>
+                  </div>
+                )}
+
                 {/* Notes */}
                 <div style={{ marginBottom: 16 }}>
                   <label style={{ display: 'block', color: '#c8cdd8', fontSize: '13px', fontWeight: 500, marginBottom: 6 }}>Additional terms or notes (optional)</label>

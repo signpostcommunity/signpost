@@ -1174,8 +1174,8 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
       if (numData) setInvoiceNumber(numData as string)
 
       // Fetch rate profile if linked (pre-populate rate, minimum hours, travel + after-hours fees)
-      const rateCols = 'hourly_rate, min_booking, after_hours_diff, travel_expenses, late_cancel_fee'
-      let rp: { hourly_rate?: number | null; min_booking?: number | null; after_hours_diff?: number | null; travel_expenses?: unknown; late_cancel_fee?: number | null } | null = null
+      const rateCols = 'hourly_rate, min_booking, after_hours_diff, travel_expenses, late_cancel_fee, travel_time_billing, travel_time_rate'
+      let rp: { hourly_rate?: number | null; min_booking?: number | null; after_hours_diff?: number | null; travel_expenses?: unknown; late_cancel_fee?: number | null; travel_time_billing?: string | null; travel_time_rate?: number | null } | null = null
       if (booking.rate_profile_id) {
         const { data } = await supabase
           .from('interpreter_rate_profiles')
@@ -1223,6 +1223,19 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
               amount: Number(rp.after_hours_diff),
             })
           }
+        }
+
+        // Travel time line item for in-person bookings if interpreter bills travel time
+        if (
+          booking.format === 'in_person' &&
+          rp.travel_time_billing &&
+          rp.travel_time_billing !== 'none'
+        ) {
+          seedCosts.push({
+            category: 'Travel - Other',
+            description: 'Travel time',
+            amount: rp.travel_time_rate != null ? Number(rp.travel_time_rate) : 0,
+          })
         }
 
         if (seedCosts.length > 0) setAdditionalCosts(seedCosts)

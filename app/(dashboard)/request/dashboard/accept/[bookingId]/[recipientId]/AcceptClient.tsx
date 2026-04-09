@@ -41,6 +41,9 @@ interface RateProfileData {
   late_cancel_fee: number | null
   travel_expenses: Record<string, unknown> | unknown[] | null
   additional_terms: string | null
+  travel_time_billing: string | null
+  travel_time_rate: number | null
+  travel_time_description: string | null
 }
 
 /* ── Helpers ── */
@@ -298,6 +301,19 @@ export default function AcceptClient({
               </>
             )
           })()}
+          {rateProfile?.travel_time_billing && rateProfile.travel_time_billing !== 'none' && (
+            <div style={{ gridColumn: '1 / -1' }}>
+              <DetailRow
+                label="Travel Time"
+                value={`${rateProfile.travel_time_billing === 'portal_to_portal' ? 'Portal-to-portal' : 'Custom arrangement'}${rateProfile.travel_time_rate != null ? ` @ $${rateProfile.travel_time_rate}/hr` : ''}`}
+              />
+              {rateProfile.travel_time_description && (
+                <p style={{ margin: '4px 0 0', fontSize: '0.82rem', color: 'var(--muted)', fontStyle: 'italic', lineHeight: 1.6 }}>
+                  &ldquo;{rateProfile.travel_time_description}&rdquo;
+                </p>
+              )}
+            </div>
+          )}
           {rateProfile?.additional_terms && (
             <div style={{ gridColumn: '1 / -1' }}>
               <DetailRow label="Additional Terms" value={rateProfile.additional_terms} />
