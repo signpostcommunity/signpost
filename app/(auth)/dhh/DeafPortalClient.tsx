@@ -299,20 +299,6 @@ export default function DeafPortalClient() {
           </Link>
         </div>
 
-        {/* 7. Bottom note */}
-        <p
-          style={{
-            fontFamily: "'Inter', sans-serif",
-            fontWeight: 400,
-            fontSize: 12,
-            color: '#5a6070',
-            textAlign: 'center',
-            marginTop: 16,
-          }}
-        >
-          Always free for Deaf, DeafBlind, and Hard of Hearing individuals.
-        </p>
-
         {/* Responsive styles */}
         <style>{`
           @media (max-width: 640px) {
