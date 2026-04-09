@@ -6,6 +6,38 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import VideoPreviewModal from '@/components/directory/VideoPreviewModal';
+
+const FOUNDER_VIDEOS: { regina: string | null; molly: string | null } = {
+  regina: null,
+  molly: null,
+};
+
+function FounderVideoSlot({ name, videoUrl, onOpen }: { name: string; videoUrl: string | null; onOpen: () => void }) {
+  if (videoUrl) {
+    return (
+      <button
+        type="button"
+        onClick={onOpen}
+        style={{
+          marginTop: 14, background: 'none', border: 'none', padding: 0,
+          color: '#00e5ff', fontFamily: 'var(--font-dm-sans), Inter, sans-serif',
+          fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer', textAlign: 'left',
+        }}
+      >
+        {'\u25B6'} Watch {name}&apos;s intro
+      </button>
+    );
+  }
+  return (
+    <div style={{
+      marginTop: 14, fontFamily: 'Inter, var(--font-dm-sans), sans-serif',
+      fontWeight: 400, fontSize: 13, color: '#96a0b8',
+    }}>
+      Video coming soon
+    </div>
+  );
+}
 
 const TABS = [
   { id: 'about', label: 'About Us' },
@@ -302,6 +334,7 @@ export default function AboutPage() {
   const [openFaq, setOpenFaq] = useState<string | null>(null);
   const [contactForm, setContactForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [contactSubmitted, setContactSubmitted] = useState(false);
+  const [founderVideoOpen, setFounderVideoOpen] = useState<null | 'regina' | 'molly'>(null);
 
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -440,6 +473,11 @@ export default function AboutPage() {
                     the impact of poor fit, limited transparency, and lack of choice. Her experience is at the center
                     of how signpost is designed.
                   </p>
+                  <FounderVideoSlot
+                    name="Regina"
+                    videoUrl={FOUNDER_VIDEOS.regina}
+                    onOpen={() => setFounderVideoOpen('regina')}
+                  />
                 </div>
 
                 {/* Molly */}
@@ -462,8 +500,20 @@ export default function AboutPage() {
                     Deaf person and the mother of a DeafBlind kiddo. She has seen that the current system
                     doesn&apos;t serve anyone well enough. With signpost she hopes to help change that.
                   </p>
+                  <FounderVideoSlot
+                    name="Molly"
+                    videoUrl={FOUNDER_VIDEOS.molly}
+                    onOpen={() => setFounderVideoOpen('molly')}
+                  />
                 </div>
               </div>
+              <VideoPreviewModal
+                isOpen={founderVideoOpen !== null}
+                onClose={() => setFounderVideoOpen(null)}
+                interpreterName={founderVideoOpen === 'regina' ? 'Regina McGinnis' : 'Molly Sano-Mahgoub'}
+                videoUrl={founderVideoOpen ? FOUNDER_VIDEOS[founderVideoOpen] : null}
+                interpreterId=""
+              />
             </div>
 
             {/* Value cards */}
