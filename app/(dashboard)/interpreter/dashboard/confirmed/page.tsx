@@ -1103,6 +1103,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
   const [additionalCosts, setAdditionalCosts] = useState<AdditionalCost[]>([])
   const [paymentTerms, setPaymentTerms] = useState('net_30')
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethodEntry[]>([])
+  const [privateNotes, setPrivateNotes] = useState('')
 
   // Calculate hours from time
   useEffect(() => {
@@ -1156,6 +1157,14 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
         if (inv.additional_costs) setAdditionalCosts(inv.additional_costs as AdditionalCost[])
         if (inv.payment_terms) setPaymentTerms(inv.payment_terms)
         if (inv.payment_methods_snapshot) setPaymentMethods(inv.payment_methods_snapshot as PaymentMethodEntry[])
+        // Load private notes from separate table
+        const { data: noteRow } = await supabase
+          .from('interpreter_invoice_notes')
+          .select('notes')
+          .eq('invoice_id', inv.id)
+          .eq('interpreter_id', interpreterId)
+          .maybeSingle()
+        if (noteRow?.notes) setPrivateNotes(noteRow.notes as string)
         setLoading(false)
         return
       }
@@ -1283,6 +1292,20 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
     }
 
     const savedId = result.data?.[0]?.id || existingInvoiceId
+    if (savedId) {
+      const { error: noteErr } = await supabase
+        .from('interpreter_invoice_notes')
+        .upsert(
+          {
+            invoice_id: savedId,
+            interpreter_id: interpreterId,
+            notes: privateNotes || '',
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'invoice_id,interpreter_id' }
+        )
+      if (noteErr) console.error('[invoice] private notes save failed:', noteErr.message)
+    }
     if (sendNow && savedId) {
       window.open(`/interpreter/dashboard/invoices/${savedId}`, '_blank')
     }
@@ -1477,6 +1500,20 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
               </select>
               <span style={{ fontSize: '0.85rem', color: 'var(--text)', fontWeight: 600 }}>{dueDateFormatted}</span>
             </div>
+          </div>
+
+          {/* Private Notes */}
+          <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 14 }}>Private Notes (only visible to you)</div>
+            <textarea
+              value={privateNotes}
+              onChange={e => setPrivateNotes(e.target.value)}
+              placeholder="Notes for your own records. e.g. mileage details, parking receipt info, client feedback to remember."
+              rows={3}
+              style={{ ...inputSt, resize: 'vertical' as const, minHeight: 70 }}
+              onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
+              onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
+            />
           </div>
 
           {/* Payment Methods */}

@@ -100,6 +100,7 @@ export default function InvoiceViewPage() {
   const [invoice, setInvoice] = useState<Invoice | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [privateNotes, setPrivateNotes] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchInvoice() {
@@ -108,7 +109,7 @@ export default function InvoiceViewPage() {
       const { data, error: fetchError } = await supabase
         .from('invoices')
         .select(
-          'id, invoice_number, status, job_title, job_date, job_location, job_format, requester_name, requester_billing_email, actual_start_time, actual_end_time, actual_hours, base_rate, base_rate_type, additional_costs, subtotal, total, payment_terms, due_date, payment_methods_snapshot, created_at, sent_at, paid_at, interpreter_profiles:interpreter_id(name, first_name, last_name, city, state, country)'
+          'id, interpreter_id, invoice_number, status, job_title, job_date, job_location, job_format, requester_name, requester_billing_email, actual_start_time, actual_end_time, actual_hours, base_rate, base_rate_type, additional_costs, subtotal, total, payment_terms, due_date, payment_methods_snapshot, created_at, sent_at, paid_at, interpreter_profiles:interpreter_id(name, first_name, last_name, city, state, country)'
         )
         .eq('id', invoiceId)
         .single()
@@ -120,6 +121,20 @@ export default function InvoiceViewPage() {
       }
 
       setInvoice(data as unknown as Invoice)
+
+      // Load private notes from separate table (only readable by the owning interpreter)
+      const { data: { user } } = await supabase.auth.getUser()
+      const interpreterId = (data as unknown as { interpreter_id?: string } | null)?.interpreter_id
+      if (user && interpreterId) {
+        const { data: noteRow } = await supabase
+          .from('interpreter_invoice_notes')
+          .select('notes')
+          .eq('invoice_id', invoiceId)
+          .eq('interpreter_id', interpreterId)
+          .maybeSingle()
+        if (noteRow?.notes) setPrivateNotes(noteRow.notes as string)
+      }
+
       setLoading(false)
     }
 
@@ -217,6 +232,28 @@ export default function InvoiceViewPage() {
           Print / Save as PDF
         </button>
       </div>
+
+      {/* Private notes (only visible to interpreter, hidden in print) */}
+      {privateNotes && (
+        <div
+          className="invoice-actions"
+          style={{
+            maxWidth: '800px',
+            margin: '0 auto 16px',
+            padding: '16px 20px',
+            background: '#111118',
+            border: '1px solid #1e2433',
+            borderRadius: '12px',
+          }}
+        >
+          <div style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 8 }}>
+            Private Notes (only visible to you)
+          </div>
+          <div style={{ fontSize: '14px', color: '#96a0b8', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+            {privateNotes}
+          </div>
+        </div>
+      )}
 
       {/* Invoice content */}
       <div
