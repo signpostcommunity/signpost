@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>signpost update for Sevana</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;color:#c8cdd8;font-family:'Inter',sans-serif;font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+.container{max-width:680px;margin:0 auto;padding:60px 28px 80px}
+.wordmark{margin-bottom:48px}
+.wordmark span:first-child{color:#fff;font-family:'Syne',sans-serif;font-weight:700;font-size:22px;letter-spacing:-0.02em}
+.wordmark span:last-child{color:#00e5ff;font-family:'Syne',sans-serif;font-weight:700;font-size:22px}
+h1{font-family:'Syne',sans-serif;font-weight:700;font-size:28px;color:#f0f2f8;line-height:1.25;margin-bottom:12px;letter-spacing:-0.02em}
+.subtitle{font-size:15px;color:#96a0b8;margin-bottom:48px;line-height:1.7}
+.subtitle strong{color:#a78bfa;font-weight:600}
+h2{font-family:'Syne',sans-serif;font-weight:700;font-size:20px;color:#f0f2f8;margin-bottom:8px;letter-spacing:-0.01em}
+.section-sub{font-size:13px;color:#96a0b8;margin-bottom:24px}
+.section{margin-bottom:56px}
+.section-divider{height:1px;background:linear-gradient(90deg,rgba(123,97,255,0.3),rgba(0,229,255,0.2),rgba(123,97,255,0));margin:56px 0}
+.card{background:#111118;border:1px solid rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;margin-bottom:10px;cursor:pointer;transition:border-color 0.2s}
+.card:hover{border-color:rgba(123,97,255,0.3)}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;padding:18px 22px;gap:12px}
+.card-left{flex:1;min-width:0}
+.card-title{color:#f0f2f8;font-size:14.5px;font-weight:600;margin-bottom:4px;line-height:1.4}
+.card-peek{color:#5a6070;font-size:12.5px;line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}
+.card-chevron{color:#a78bfa;font-size:16px;flex-shrink:0;margin-top:2px;transition:transform 0.25s}
+.card-chevron.open{transform:rotate(180deg)}
+.card-body{padding:0 22px 20px;display:none}
+.card-body.open{display:block}
+.card-body p{color:#96a0b8;font-size:13.5px;line-height:1.7;margin-bottom:12px}
+.card-body p:last-child{margin-bottom:0}
+.feedback-item{background:#111118;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:20px 24px;margin-bottom:12px}
+.feedback-q{font-size:13px;color:#a78bfa;font-weight:600;margin-bottom:8px;letter-spacing:0.02em}
+.feedback-a{font-size:14px;color:#c8cdd8;line-height:1.7}
+.callout{background:rgba(0,229,255,0.04);border-left:3px solid #00e5ff;border-radius:0 10px 10px 0;padding:18px 22px;margin:32px 0}
+.callout p{color:#96a0b8;font-size:13.5px;line-height:1.7}
+.callout strong{color:#f0f2f8;font-weight:600}
+.change-list{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.change-item{display:flex;gap:14px;align-items:flex-start}
+.change-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.change-icon.purple{background:rgba(123,97,255,0.1);border:1px solid rgba(123,97,255,0.2)}
+.change-icon.cyan{background:rgba(0,229,255,0.08);border:1px solid rgba(0,229,255,0.15)}
+.change-text h4{font-size:14px;font-weight:600;color:#f0f2f8;margin-bottom:3px}
+.change-text p{font-size:12.5px;color:#7a7f90;line-height:1.55}
+.closing{text-align:center;margin-top:64px;padding-top:48px;border-top:1px solid rgba(255,255,255,0.04)}
+.closing p{font-size:14px;color:#96a0b8;line-height:1.7;margin-bottom:8px}
+.closing .names{font-family:'Syne',sans-serif;font-weight:600;font-size:16px;color:#f0f2f8;margin-top:16px}
+.closing .names span:first-child{color:#a78bfa}
+.closing .names span:last-child{color:#00e5ff}
+.visit-btn{display:inline-block;margin-top:28px;padding:14px 36px;background:#7b61ff;color:#fff;border-radius:10px;font-size:15px;font-weight:600;text-decoration:none;font-family:'Inter',sans-serif;transition:opacity 0.2s}
+.visit-btn:hover{opacity:0.9}
+@media(max-width:600px){.container{padding:40px 18px 60px}h1{font-size:24px}h2{font-size:18px}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="wordmark"><span>sign</span><span>post</span></div>
+
+<h1>Sevana, thank you.</h1>
+<p class="subtitle">Your feedback during the Deaf beta was exactly what we needed to hear. You told us that <strong>the purpose of the site wasn't clear without context</strong>, that you wanted to understand our mission, how we handle rates and ratings, and why we're structured the way we are. You were right. We went back and rebuilt the experience from the ground up based on what you told us.</p>
+
+<div class="section-divider"></div>
+
+<div class="section">
+<h2>What changed</h2>
+<p class="section-sub">Here's what we built based on your feedback.</p>
+
+<div class="change-list">
+<div class="change-item">
+<div class="change-icon purple"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" stroke="#a78bfa" stroke-width="1.5"/><path d="M9 12l2 2 4-4" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<div class="change-text">
+<h4>New landing page with our story</h4>
+<p>The D/HH portal now opens with who we are, why we built signpost, and how it's different from an agency. No more guessing.</p>
+</div>
+</div>
+
+<div class="change-item">
+<div class="change-icon cyan"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z" stroke="#00e5ff" stroke-width="1.5"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z" stroke="#00e5ff" stroke-width="1.5"/></svg></div>
+<div class="change-text">
+<h4>Education woven into signup</h4>
+<p>Instead of a wall of text, the signup flow now has expandable cards that explain our philosophy at each step. Read what interests you, skip what doesn't.</p>
+</div>
+</div>
+
+<div class="change-item">
+<div class="change-icon purple"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="#a78bfa" stroke-width="1.5"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+<div class="change-text">
+<h4>Confidential ratings explained</h4>
+<p>We now explain upfront why ratings aren't public, backed by research on how public rating systems fail in close-knit communities.</p>
+</div>
+</div>
+
+<div class="change-item">
+<div class="change-icon cyan"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z" stroke="#00e5ff" stroke-width="1.5"/><circle cx="12" cy="12" r="3" stroke="#00e5ff" stroke-width="1.5"/></svg></div>
+<div class="change-text">
+<h4>Why we don't screen interpreters</h4>
+<p>We explain why signpost puts the screening power in your hands instead of relying on one person (usually hearing) at an agency.</p>
+</div>
+</div>
+
+<div class="change-item">
+<div class="change-icon purple"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 100 7h5a3.5 3.5 0 110 7H6" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+<div class="change-text">
+<h4>Pricing transparency</h4>
+<p>Clear explanation of how signpost's flat $15 fee compares to agency markups, and that signpost never charges a booking fee for personal events (weddings, family reunions, etc).</p>
+</div>
+</div>
+</div>
+</div>
+
+<div class="section-divider"></div>
+
+<div class="section">
+<h2>The answers you asked for</h2>
+<p class="section-sub">These are now part of the signup flow. New users see them as expandable cards before they set up their profile. Click any card to read the full text.</p>
+
+<div class="card" onclick="toggle(this)">
+<div class="card-header">
+<div class="card-left">
+<div class="card-title">Why doesn't signpost show interpreter rates publicly?</div>
+<div class="card-peek">When rates are shown upfront, hearing requesters often just pick the cheapest interpreter...</div>
+</div>
+<div class="card-chevron">&#x25BE;</div>
+</div>
+<div class="card-body">
+<p>When rates are shown upfront, hearing requesters often just pick the cheapest interpreter, without knowing if they have the skills you need. signpost is built to put your communication needs first, not price first.</p>
+<p>When someone requests an interpreter for you, your preferred interpreters are contacted first, and respond with their rates. The requester can then see and compare rates before choosing who to book. So signpost begins with interpreters you already trust, before showing rates.</p>
+<p>If you are booking an interpreter for yourself for a personal event, you can also see and compare your preferred interpreters' rates before you choose. signpost does not charge any booking fees for personal events. Every penny goes directly to your interpreter.</p>
+</div>
+</div>
+
+<div class="card" onclick="toggle(this)">
+<div class="card-header">
+<div class="card-left">
+<div class="card-title">Why doesn't signpost screen interpreters' skills?</div>
+<div class="card-peek">Most agencies rely on one person to screen interpreters, and usually that person is hearing...</div>
+</div>
+<div class="card-chevron">&#x25BE;</div>
+</div>
+<div class="card-body">
+<p>Most agencies rely on one person to screen interpreters, and usually that person is hearing. Many agencies don't screen at all.</p>
+<p>signpost does it differently. We put the screening in the hands of the Deaf community. Interpreter intro videos let you see interpreters with your own eyes and decide for yourself who is the best fit for you. You can also check their credentials, specializations, and verified certifications before adding anyone to your Preferred Interpreter List.</p>
+<p>Interpreters are not one-size-fits-all. Your top interpreter may not be a good fit for someone else. An open directory allows signpost to offer interpreters for the full spectrum of communication needs.</p>
+<p>After every request, you can rate your interpreter to help signpost track who should, and shouldn't, be in the Directory.</p>
+</div>
+</div>
+
+<div class="card" onclick="toggle(this)">
+<div class="card-header">
+<div class="card-left">
+<div class="card-title">Why aren't interpreter ratings public?</div>
+<div class="card-peek">In the Deaf and interpreting world, everyone knows each other...</div>
+</div>
+<div class="card-chevron">&#x25BE;</div>
+</div>
+<div class="card-body">
+<p>In the Deaf and interpreting world, everyone knows each other.</p>
+<p>Research on rating systems in small, close-knit communities shows a consistent pattern: when you know the person you are rating and you will see them again, most people give 5 stars even when the experience was not great.</p>
+<p>People who had a bad experience often stay silent rather than risk hurting the relationship. Public ratings can actually oppress the reviewers from sharing their honest opinions and makes the ratings unreliable.</p>
+<p>signpost wants honest feedback, not polite feedback. That is why ratings on signpost are confidential. Your ratings are never shared with interpreters and never shown on their profiles.</p>
+<p>signpost administrators receive your feedback anonymously and can use it to highlight great interpreters and remove interpreters who consistently get complaints or low ratings.</p>
+<p>If you want to share your ratings and pref lists with other Deaf community members you trust, you can do that privately through your Trusted Deaf Circle.</p>
+</div>
+</div>
+
+<div class="card" onclick="toggle(this)">
+<div class="card-header">
+<div class="card-left">
+<div class="card-title">How is signpost cheaper than agencies?</div>
+<div class="card-peek">Agencies typically charge a percentage on top of the interpreter's rate...</div>
+</div>
+<div class="card-chevron">&#x25BE;</div>
+</div>
+<div class="card-body">
+<p>Agencies typically charge a percentage on top of the interpreter's rate. That percentage can become very expensive for requesters.</p>
+<p>Instead, signpost charges one flat $15 fee per booking. That is the only fee signpost collects, ever.</p>
+<p>Interpreters set their own rates and are paid directly by the requester. signpost does not add any fees on top of interpreter rates.</p>
+<p>signpost never charges any booking fees for Deaf, DeafBlind, and Hard of Hearing individuals (or their family/friends) when booking interpreters for personal events.</p>
+</div>
+</div>
+
+<div class="card" onclick="toggle(this)">
+<div class="card-header">
+<div class="card-left">
+<div class="card-title">What is the Trusted Deaf Circle?</div>
+<div class="card-peek">Share your Preferred Interpreter List and ratings with Deaf friends and colleagues...</div>
+</div>
+<div class="card-chevron">&#x25BE;</div>
+</div>
+<div class="card-body">
+<p>Your Trusted Deaf Circle lets you share your Preferred Interpreter List and ratings with Deaf friends and colleagues, and see their lists. Get recommendations from people who know you and whose experiences you trust. Honest, private sharing between people you choose.</p>
+</div>
+</div>
+</div>
+
+<div class="section-divider"></div>
+
+<div class="section">
+<h2>Your specific feedback, addressed</h2>
+<p class="section-sub">Here's what you told us and what we did about it.</p>
+
+<div class="feedback-item">
+<div class="feedback-q">"The purpose of the site is not clear without Molly's context"</div>
+<div class="feedback-a">The new landing page now leads with who we are, why we built signpost, and how it differs from agencies. The signup flow includes education cards at every step. No one needs Molly to explain it anymore.</div>
+</div>
+
+<div class="feedback-item">
+<div class="feedback-q">"I want to see interpreter rates upfront"</div>
+<div class="feedback-a">We now explain why rates aren't shown publicly in the directory, and how the system ensures you always see and compare rates before any booking is confirmed. Your preferred interpreters are contacted first, rates second.</div>
+</div>
+
+<div class="feedback-item">
+<div class="feedback-q">"I want signpost to screen and vet interpreters"</div>
+<div class="feedback-a">We explain why one-person screening (usually hearing) doesn't work, and how signpost puts the screening power in your hands: intro videos, credentials, verified certifications, your Preferred List, your Do Not Book list, and confidential ratings that help signpost track quality and take action when interpreters show a pattern of low ratings.</div>
+</div>
+
+<div class="feedback-item">
+<div class="feedback-q">"I want ratings and reviews from other users"</div>
+<div class="feedback-a">We explain why public ratings fail in close-knit communities (backed by research), and we now make sure people are aware of the Trusted Deaf Circle and how to use it from the very beginning of signup. Your Trusted Deaf Circle is where you share recommendations privately with people you choose.</div>
+</div>
+
+<div class="feedback-item">
+<div class="feedback-q">"I want to know the mission, vision, values, and who's behind it"</div>
+<div class="feedback-a">The landing page now opens with Regina and Molly's story. The signup flow is anchored in why signpost exists. A full Mission, Vision, and Values section for the About page is on its way.</div>
+</div>
+</div>
+
+<div class="callout">
+<p><strong>Your feedback shaped this.</strong> Every one of these changes exists because you took the time to tell us what was confusing. We took it seriously. signpost is better because of you.</p>
+</div>
+
+<div class="closing">
+<p style="font-size:15px;color:#c8cdd8;margin-bottom:4px">Thank you,</p>
+<div class="names"><span>Regina</span> & <span>Molly</span></div>
+<a href="https://signpost.community/dhh" class="visit-btn">Visit signpost</a>
+</div>
+
+</div>
+
+<script>
+function toggle(card){var b=card.querySelector('.card-body'),c=card.querySelector('.card-chevron'),p=card.querySelector('.card-peek'),o=b.classList.contains('open');b.classList.toggle('open');c.classList.toggle('open');if(p)p.style.display=o?'':'none'}
+</script>
+</body>
+</html>
