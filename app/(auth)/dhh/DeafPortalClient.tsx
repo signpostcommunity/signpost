@@ -13,7 +13,7 @@ export default function DeafPortalClient() {
         background: 'var(--bg)',
       }}
     >
-      <div style={{ maxWidth: 540, width: '100%' }}>
+      <div style={{ maxWidth: 680, width: '100%' }}>
 
         {/* 1. Wordmark */}
         <div className="wordmark" style={{ fontSize: 22, marginBottom: 32 }}>
@@ -29,14 +29,14 @@ export default function DeafPortalClient() {
             color: '#f0f2f8',
             letterSpacing: '-0.02em',
             lineHeight: 1.2,
-            margin: '0 0 24px',
+            margin: '0 0 18px',
           }}
         >
           How is signpost different from an agency?
         </h1>
 
         {/* 3. Founders intro */}
-        <div style={{ marginBottom: 28 }}>
+        <div style={{ marginBottom: 20 }}>
           <p
             style={{
               fontFamily: "'Inter', sans-serif",
@@ -68,7 +68,7 @@ export default function DeafPortalClient() {
         </div>
 
         {/* 4. Three feature points */}
-        <div style={{ marginBottom: 28 }}>
+        <div style={{ marginBottom: 16 }}>
 
           {/* Feature 1 */}
           <div
@@ -76,7 +76,7 @@ export default function DeafPortalClient() {
               display: 'flex',
               alignItems: 'flex-start',
               gap: 16,
-              padding: '18px 0',
+              padding: '14px 0',
             }}
           >
             <div
@@ -132,7 +132,7 @@ export default function DeafPortalClient() {
               display: 'flex',
               alignItems: 'flex-start',
               gap: 16,
-              padding: '18px 0',
+              padding: '14px 0',
             }}
           >
             <div
@@ -188,7 +188,7 @@ export default function DeafPortalClient() {
               display: 'flex',
               alignItems: 'flex-start',
               gap: 16,
-              padding: '18px 0',
+              padding: '14px 0',
             }}
           >
             <div
@@ -243,7 +243,7 @@ export default function DeafPortalClient() {
             borderRadius: '0 8px 8px 0',
             background: 'rgba(0,229,255,0.04)',
             padding: '14px 18px',
-            marginBottom: 28,
+            marginBottom: 16,
           }}
         >
           <p
