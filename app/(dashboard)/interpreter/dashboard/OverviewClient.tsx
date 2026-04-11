@@ -9,6 +9,7 @@ import BookMeBadge from '@/components/interpreter/BookMeBadge'
 import { decryptBatchClient } from '@/lib/decrypt-client'
 import SendMessageModal from '@/components/messaging/SendMessageModal'
 import { getMentorshipLabel } from '@/lib/mentorship-categories'
+import { getInterpreterCompletionItems, isProfileComplete } from '@/lib/profile-completion'
 
 /* ── Types ── */
 
@@ -181,9 +182,19 @@ interface OverviewClientProps {
   calendarToken: string | null
   activeAwayPeriod?: { end_date: string; message: string } | null
   directoryVisible?: boolean
+  completionProfile?: {
+    photo_url: string | null
+    bio: string | null
+    bio_specializations: string | null
+    video_url: string | null
+    sign_languages: string[] | null
+    spoken_languages: string[] | null
+    specializations: string[] | null
+  } | null
+  rateProfileCount?: number
 }
 
-export default function OverviewClient({ interpreterProfileId, firstName, lastName, profileStatus, vanitySlug, calendarToken, activeAwayPeriod, directoryVisible = true }: OverviewClientProps) {
+export default function OverviewClient({ interpreterProfileId, firstName, lastName, profileStatus, vanitySlug, calendarToken, activeAwayPeriod, directoryVisible = true, completionProfile, rateProfileCount = 0 }: OverviewClientProps) {
   const [visibilityState, setVisibilityState] = useState<boolean>(directoryVisible)
   const [visibilityUpdating, setVisibilityUpdating] = useState(false)
 
@@ -224,21 +235,9 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
   const [badgeNudgeDismissed, setBadgeNudgeDismissed] = useState(true)
   const [viewing, setViewing] = useState<string | null>(null)
 
-  // Check localStorage for banner dismissals
+  // Check sessionStorage for profile banner, localStorage for other banners
   useEffect(() => {
-    const dismissedAt = localStorage.getItem('signpost_profile_banner_dismissed')
-    if (dismissedAt) {
-      const dismissedTime = parseInt(dismissedAt, 10)
-      const sevenDays = 7 * 24 * 60 * 60 * 1000
-      if (Date.now() - dismissedTime < sevenDays) {
-        setBannerDismissed(true)
-      } else {
-        localStorage.removeItem('signpost_profile_banner_dismissed')
-        setBannerDismissed(false)
-      }
-    } else {
-      setBannerDismissed(false)
-    }
+    setBannerDismissed(!!sessionStorage.getItem('signpost_profile_banner_dismissed'))
     setCalSyncDismissed(!!localStorage.getItem('signpost_calendar_sync_dismissed'))
     setBadgeNudgeDismissed(!!localStorage.getItem('signpost_bookme_badge_dismissed'))
   }, [])
@@ -554,42 +553,50 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
             </div>
           )}
 
-          {/* Profile completeness card */}
-          {missingFields.length > 0 && !bannerDismissed && (
+          {/* Profile completion banner */}
+          {completionProfile && !isProfileComplete(getInterpreterCompletionItems(completionProfile, rateProfileCount)) && !bannerDismissed && (
             <div style={{
-              background: '#111118', border: '1px solid #1e2433', borderLeft: '3px solid #f0a623',
-              borderRadius: 10, padding: '20px 24px', marginBottom: 12,
+              background: '#111118', border: '1px solid #1e2433', borderLeft: '4px solid #f59e0b',
+              borderRadius: 10, padding: '16px 20px', marginBottom: 12,
+              position: 'relative',
             }}>
-              <div style={{
-                fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px',
-                letterSpacing: '0.08em', textTransform: 'uppercase', color: '#f0a623',
-                marginBottom: 10,
-              }}>
-                Complete Your Profile
-              </div>
-              <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: '14px', color: '#c8cdd8', lineHeight: 1.55, marginBottom: 14 }}>
-                Your profile is missing a few things that help Deaf community members and requesters find and connect with you:
-              </div>
-              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                {missingFields.map(item => (
-                  <li key={item} style={{ display: 'flex', gap: 10, fontFamily: "'Inter', sans-serif", fontSize: '13px', color: '#c8cdd8' }}>
-                    <span style={{ color: '#f0a623' }}>&bull;</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/interpreter/dashboard/profile"
+              <button
+                type="button"
+                onClick={() => {
+                  sessionStorage.setItem('signpost_profile_banner_dismissed', 'true')
+                  setBannerDismissed(true)
+                }}
+                aria-label="Dismiss"
                 style={{
-                  display: 'inline-block',
-                  fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '13px',
-                  color: '#0a0a0f', background: '#f0a623',
-                  padding: '8px 16px', borderRadius: 8,
-                  textDecoration: 'none',
+                  position: 'absolute', top: 12, right: 12,
+                  background: 'none', border: 'none', padding: 4,
+                  color: '#5a6070', cursor: 'pointer', fontSize: 16, lineHeight: 1,
                 }}
               >
-                Go to Profile Editor
-              </Link>
+                &#x2715;
+              </button>
+              <div style={{
+                fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 14,
+                color: '#f0f2f8', marginBottom: 4,
+              }}>
+                Your profile is incomplete
+              </div>
+              <div style={{
+                fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 13,
+                color: '#96a0b8', marginBottom: 0,
+                display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8,
+              }}>
+                <span>Complete your profile so clients can find and contact you.</span>
+                <Link
+                  href="/interpreter/dashboard/profile"
+                  style={{
+                    fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 13,
+                    color: '#f59e0b', textDecoration: 'none', marginLeft: 'auto',
+                  }}
+                >
+                  Complete Profile &rarr;
+                </Link>
+              </div>
             </div>
           )}
 

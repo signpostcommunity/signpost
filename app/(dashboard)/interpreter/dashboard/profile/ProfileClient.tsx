@@ -18,6 +18,7 @@ import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
 import LocationPicker from '@/components/shared/LocationPicker'
 import { useDialCode } from '@/components/shared/PhoneWithDialCode'
 import { generateSlug, validateSlug } from '@/lib/slugUtils'
+import { getInterpreterCompletionItems, isProfileComplete, completionCount } from '@/lib/profile-completion'
 import { resizeImage } from '@/lib/imageUtils'
 import PhotoCropModal from '@/components/PhotoCropModal'
 import { readFileAsDataUrl } from '@/lib/cropImage'
@@ -209,6 +210,7 @@ interface PaymentMethod {
 interface ProfileClientProps {
   profile: Record<string, unknown> | null
   userEmail: string
+  rateProfileCount?: number
 }
 
 // ── Tabs ─────────────────────────────────────────────────────────────────────
@@ -309,6 +311,124 @@ function ProfileSidebarNav({ active, onChange }: { active: Tab; onChange: (t: Ta
   )
 }
 
+// ── Profile Completion Checklist ─────────────────────────────────────────────
+
+const TAB_MAP: Record<string, string> = {
+  'personal': 'Personal',
+  'languages': 'Languages',
+  'credentials': 'Credentials',
+  'bio-&-video': 'Bio & Video',
+  'skills': 'Skills',
+  'community-&-identity': 'Community & Identity',
+  'mentorship': 'Mentorship',
+  'account-settings': 'Account Settings',
+}
+
+function ProfileCompletionChecklist({ profile, rateProfileCount, onTabClick }: {
+  profile: {
+    photo_url: string | null
+    bio: string | null
+    bio_specializations: string | null
+    video_url: string | null
+    sign_languages: string[] | null
+    spoken_languages: string[] | null
+    specializations: string[] | null
+  }
+  rateProfileCount: number
+  onTabClick: (tab: Tab) => void
+}) {
+  const items = getInterpreterCompletionItems(profile, rateProfileCount)
+  const allComplete = isProfileComplete(items)
+  const { done, total } = completionCount(items)
+  const [successDismissed, setSuccessDismissed] = useState(false)
+
+  useEffect(() => {
+    if (!allComplete) return
+    const timer = setTimeout(() => setSuccessDismissed(true), 5000)
+    return () => clearTimeout(timer)
+  }, [allComplete])
+
+  if (allComplete && successDismissed) return null
+
+  if (allComplete) {
+    return (
+      <div style={{
+        background: '#111118', border: '1px solid #1e2433', borderLeft: '4px solid #22c55e',
+        borderRadius: 10, padding: '16px 20px', marginBottom: 24,
+      }}>
+        <div style={{
+          fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 14,
+          color: '#f0f2f8',
+        }}>
+          Your profile is complete. You&apos;re visible in the interpreter directory.
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{
+      background: '#111118', border: '1px solid #1e2433',
+      borderRadius: 10, padding: '20px 24px', marginBottom: 24,
+    }}>
+      <div style={{
+        fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 15,
+        color: '#f0f2f8', marginBottom: 16,
+      }}>
+        Complete your profile ({done} of {total})
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {items.map(item => (
+          <div key={item.key} style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            fontFamily: "'Inter', sans-serif", fontSize: 13,
+          }}>
+            <span style={{
+              width: 16, height: 16, flexShrink: 0, borderRadius: 3,
+              border: `1.5px solid ${item.complete ? '#22c55e' : '#5a6070'}`,
+              background: item.complete ? '#22c55e' : 'transparent',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 10, color: '#0a0a0f', fontWeight: 700,
+            }}>
+              {item.complete ? '\u2713' : ''}
+            </span>
+            <span style={{ color: item.complete ? '#96a0b8' : '#f0f2f8', flex: 1 }}>
+              {item.label}
+            </span>
+            {!item.complete && item.editorTab && (
+              <button
+                type="button"
+                onClick={() => {
+                  const tabName = TAB_MAP[item.editorTab]
+                  if (tabName) onTabClick(tabName as Tab)
+                }}
+                style={{
+                  background: 'none', border: 'none', padding: 0,
+                  fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 13,
+                  color: '#f59e0b', cursor: 'pointer', whiteSpace: 'nowrap',
+                }}
+              >
+                &rarr; {item.tabLabel}
+              </button>
+            )}
+            {!item.complete && !item.editorTab && (
+              <a
+                href="/interpreter/dashboard/rates"
+                style={{
+                  fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 13,
+                  color: '#f59e0b', textDecoration: 'none', whiteSpace: 'nowrap',
+                }}
+              >
+                &rarr; {item.tabLabel}
+              </a>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ── Save button ──────────────────────────────────────────────────────────────
 
 function SaveButton({ saving, onClick }: { saving: boolean; onClick: () => void }) {
@@ -333,7 +453,7 @@ function SaveButton({ saving, onClick }: { saving: boolean; onClick: () => void 
 
 // ── Main component ───────────────────────────────────────────────────────────
 
-export default function ProfileClient({ profile: rawProfile, userEmail }: ProfileClientProps) {
+export default function ProfileClient({ profile: rawProfile, userEmail, rateProfileCount = 0 }: ProfileClientProps) {
   console.log('PROFILE LOAD - rawProfile from server:', JSON.stringify(rawProfile, null, 2))
   const p = (rawProfile || {}) as ProfileData
   const hasProfile = !!rawProfile
@@ -981,6 +1101,21 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
           </a>
         )}
       </div>
+
+      {/* Profile completion checklist */}
+      <ProfileCompletionChecklist
+        profile={{
+          photo_url: photoUrl || null,
+          bio: bio || null,
+          bio_specializations: bioSpecializations || null,
+          video_url: videoUrl || null,
+          sign_languages: signLangs.length > 0 ? signLangs : null,
+          spoken_languages: spokenLangs.length > 0 ? spokenLangs : null,
+          specializations: specs.length > 0 ? specs : null,
+        }}
+        rateProfileCount={rateProfileCount}
+        onTabClick={setActiveTab}
+      />
 
       {/* Sidebar + Content layout */}
       <div className="profile-editor-layout" style={{ display: 'flex', gap: 0, minHeight: '60vh' }}>

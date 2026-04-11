@@ -8,6 +8,7 @@ export default async function ProfilePage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   let profile: Record<string, unknown> | null = null
+  let rateProfileCount = 0
 
   if (user) {
     const { data, error, status } = await supabase
@@ -17,6 +18,14 @@ export default async function ProfilePage() {
       .maybeSingle()
     console.log('SERVER PROFILE QUERY:', JSON.stringify({ userId: user.id, data, error, status }, null, 2))
     profile = data
+
+    if (profile?.id) {
+      const { count } = await supabase
+        .from('interpreter_rate_profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('interpreter_id', profile.id as string)
+      rateProfileCount = count ?? 0
+    }
   } else {
     console.log('SERVER PROFILE QUERY: no user from auth.getUser()')
   }
@@ -25,6 +34,7 @@ export default async function ProfilePage() {
     <ProfileClient
       profile={profile}
       userEmail={user?.email || ''}
+      rateProfileCount={rateProfileCount}
     />
   )
 }
