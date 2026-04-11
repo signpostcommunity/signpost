@@ -47,7 +47,8 @@ export default function DeafPortalClient() {
               margin: '0 0 16px',
             }}
           >
-            signpost started with two best friends.{' '}
+            signpost started with two best friends.
+            <br />
             <span style={{ color: '#a78bfa', fontWeight: 600 }}>Regina</span> is a Deaf mental health professional.{' '}
             <span style={{ color: '#00e5ff', fontWeight: 600 }}>Molly</span> is a certified ASL interpreter. We have both lived the challenges of booking interpreters firsthand, and we believe a new model is possible that works better for everyone.
           </p>
@@ -56,14 +57,12 @@ export default function DeafPortalClient() {
               fontFamily: "'Inter', sans-serif",
               fontWeight: 400,
               fontSize: 15,
-              color: '#c8cdd8',
+              color: '#a78bfa',
               lineHeight: 1.75,
               margin: 0,
             }}
           >
-            Instead of an agency controlling who you get, signpost is an interpreter directory that{' '}
-            <span style={{ color: '#f0f2f8', fontWeight: 500 }}>centers your preferences and needs</span>{' '}
-            at every step.
+            Instead of an agency controlling who you get, signpost is an interpreter directory that centers your preferences and needs at every step.
           </p>
         </div>
 
@@ -246,18 +245,26 @@ export default function DeafPortalClient() {
             marginBottom: 16,
           }}
         >
-          <p
+          <div
             style={{
               fontFamily: "'Inter', sans-serif",
-              fontWeight: 400,
               fontSize: 13,
-              color: '#96a0b8',
               lineHeight: 1.7,
-              margin: 0,
             }}
           >
-            signpost also gives interpreters full visibility and control over their own rates, terms, and professional identity. And it makes booking interpreters cheaper for requesters by eliminating agency commissions. We hope signpost will help improve interpreter booking for everyone.
-          </p>
+            <div style={{ fontWeight: 600, color: '#f0f2f8', marginBottom: 8 }}>
+              signpost also:
+            </div>
+            <div style={{ color: '#96a0b8', fontWeight: 400, paddingLeft: 12, marginBottom: 4 }}>
+              Gives interpreters full visibility and control over their own rates, terms, and professional identity.
+            </div>
+            <div style={{ color: '#96a0b8', fontWeight: 400, paddingLeft: 12, marginBottom: 12 }}>
+              Makes booking interpreters cheaper for requesters by eliminating agency commissions.
+            </div>
+            <div style={{ fontWeight: 600, color: '#f0f2f8' }}>
+              We hope signpost will help improve interpreter booking for everyone.
+            </div>
+          </div>
         </div>
 
         {/* 6. Signup buttons */}
