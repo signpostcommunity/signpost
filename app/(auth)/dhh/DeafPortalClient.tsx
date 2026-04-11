@@ -80,7 +80,7 @@ export default function DeafPortalClient() {
         >
           signpost started with two best friends.{' '}
           <span style={{ color: '#a78bfa', fontWeight: 500 }}>Regina</span> is a Deaf mental health professional.{' '}
-          <span style={{ color: '#a78bfa', fontWeight: 500 }}>Molly</span> is a certified ASL interpreter. We have both lived the challenges of booking interpreters firsthand, and we believe a new model is possible that works better for everyone.
+          <span style={{ color: '#00e5ff', fontWeight: 500 }}>Molly</span> is a certified ASL interpreter. We have both lived the challenges of booking interpreters firsthand, and we believe a new model is possible that works better for everyone.
         </p>
 
         {/* Thesis */}

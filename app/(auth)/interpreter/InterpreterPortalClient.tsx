@@ -77,7 +77,7 @@ export default function InterpreterPortalClient() {
           }}
         >
           Built by{' '}
-          <span style={{ color: '#00e5ff', fontWeight: 500 }}>Regina</span>, a Deaf mental health professional, and{' '}
+          <span style={{ color: '#a78bfa', fontWeight: 500 }}>Regina</span>, a Deaf mental health professional, and{' '}
           <span style={{ color: '#00e5ff', fontWeight: 500 }}>Molly</span>, a certified ASL interpreter (RID NIC-Master). We have both lived the challenges of booking interpreters firsthand, and we believe a new model is possible that works better for everyone.
         </p>
 
