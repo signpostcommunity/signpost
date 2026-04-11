@@ -79,6 +79,20 @@ export default function Step5Video({ onBack, onContinue }: {
     setPhotoUploading(false)
   }
 
+  // Delete video file from Supabase storage when removing
+  async function deleteVideoFromStorage(url: string | null) {
+    if (!url || !url.includes('supabase.co/storage')) return
+    try {
+      const match = url.match(/\/object\/public\/([^/]+)\/(.+)$/)
+      if (match) {
+        const [, bucket, path] = match
+        await supabase.storage.from(bucket).remove([path])
+      }
+    } catch (e) {
+      console.error('Failed to delete video from storage:', e)
+    }
+  }
+
   async function handleVideoSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -218,7 +232,7 @@ export default function Step5Video({ onBack, onContinue }: {
             <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
               <button
                 type="button"
-                onClick={() => updateField('videoUrl', '')}
+                onClick={() => { deleteVideoFromStorage(formData.videoUrl); updateField('videoUrl', null) }}
                 style={{
                   background: 'none', border: '1px solid rgba(0,229,255,0.4)',
                   borderRadius: 8, padding: '8px 16px', color: 'var(--accent)',
@@ -229,7 +243,7 @@ export default function Step5Video({ onBack, onContinue }: {
               </button>
               <button
                 type="button"
-                onClick={() => updateField('videoUrl', '')}
+                onClick={() => { deleteVideoFromStorage(formData.videoUrl); updateField('videoUrl', null) }}
                 style={{
                   background: 'none', border: '1px solid var(--border)',
                   borderRadius: 8, padding: '8px 16px', color: 'var(--muted)',

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { syncNameFields } from '@/lib/nameSync';
 import HowItWorks from '@/components/onboarding/HowItWorks';
@@ -41,10 +42,40 @@ const defaultForm: FormData = {
 
 export default function RequestSignupClient() {
   const router = useRouter();
-  const [step, setStep] = useState(1);
+  const searchParams = useSearchParams();
+  const isAddRole = searchParams.get('addRole') === 'true';
+  const [step, setStep] = useState(isAddRole ? 2 : 1);
   const [form, setForm] = useState<FormData>(defaultForm);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [existingUserId, setExistingUserId] = useState<string | null>(null);
+
+  // Pre-fill from existing profile when adding a role
+  useEffect(() => {
+    if (!isAddRole) return;
+    (async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        window.location.href = '/request/login';
+        return;
+      }
+      setExistingUserId(user.id);
+      // Pre-fill from user_profiles or existing profile data
+      const { data: up } = await supabase.from('user_profiles').select('email').eq('id', user.id).single();
+      if (up?.email) setForm(prev => ({ ...prev, email: up.email }));
+      if (user.user_metadata?.full_name) {
+        const parts = (user.user_metadata.full_name as string).split(' ');
+        setForm(prev => ({
+          ...prev,
+          firstName: prev.firstName || parts[0] || '',
+          lastName: prev.lastName || parts.slice(1).join(' ') || '',
+          email: prev.email || user.email || '',
+        }));
+      }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   function update<K extends keyof FormData>(field: K, value: FormData[K]) {
     setForm(prev => ({ ...prev, [field]: value }));
   }
@@ -62,7 +93,8 @@ export default function RequestSignupClient() {
     if (step === 1) return true; // How It Works (informational)
     if (step === 2) return form.requesterType !== null;
     if (step === 3) {
-      const baseValid = form.firstName && form.email && form.password && form.password === form.confirmPassword && form.country && form.city;
+      const passwordValid = isAddRole || (form.password && form.password === form.confirmPassword);
+      const baseValid = form.firstName && form.email && passwordValid && form.country && form.city;
       if (form.requesterType === 'organization') return baseValid && form.orgName;
       return baseValid;
     }
@@ -75,30 +107,36 @@ export default function RequestSignupClient() {
 
     const supabase = createClient();
 
-    // 1. Create auth user
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email: form.email,
-      password: form.password,
-    });
-    if (authError || !authData.user) {
-      setError(authError?.message || 'Failed to create account');
-      setLoading(false);
-      return;
-    }
+    let userId: string;
 
-    const userId = authData.user.id;
-    const displayName = `${form.firstName} ${form.lastName}`.trim();
+    if (isAddRole && existingUserId) {
+      // Skip account creation for existing users adding a role
+      userId = existingUserId;
+    } else {
+      // 1. Create auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: form.email,
+        password: form.password,
+      });
+      if (authError || !authData.user) {
+        setError(authError?.message || 'Failed to create account');
+        setLoading(false);
+        return;
+      }
 
-    // 2. Create user_profiles row
-    const { error: upError } = await supabase.from('user_profiles').insert({
-      id: userId,
-      role: 'requester',
-      email: form.email,
-    });
-    if (upError) {
-      setError('Failed to create user profile: ' + upError.message);
-      setLoading(false);
-      return;
+      userId = authData.user.id;
+
+      // 2. Create user_profiles row
+      const { error: upError } = await supabase.from('user_profiles').insert({
+        id: userId,
+        role: 'requester',
+        email: form.email,
+      });
+      if (upError) {
+        setError('Failed to create user profile: ' + upError.message);
+        setLoading(false);
+        return;
+      }
     }
 
     // 3. Create requester_profiles row
@@ -126,6 +164,26 @@ export default function RequestSignupClient() {
       setError('Failed to create requester profile: ' + rpError.message);
       setLoading(false);
       return;
+    }
+
+    // Clean up pending_roles if adding a role
+    if (isAddRole) {
+      try {
+        const { data: upProfile } = await supabase
+          .from('user_profiles')
+          .select('pending_roles')
+          .eq('id', userId)
+          .single();
+        if (upProfile?.pending_roles?.includes('requester')) {
+          const updated = (upProfile.pending_roles as string[]).filter((r: string) => r !== 'requester');
+          await supabase
+            .from('user_profiles')
+            .update({ pending_roles: updated })
+            .eq('id', userId);
+        }
+      } catch (e) {
+        console.error('Failed to clean pending_roles:', e);
+      }
     }
 
     // Create Stripe customer (fire-and-forget - not blocking signup)

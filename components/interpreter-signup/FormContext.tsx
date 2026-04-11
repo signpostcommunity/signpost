@@ -68,7 +68,7 @@ export type FormData = {
   bio: string
   bioSpecializations: string
   bioExtra: string
-  videoUrl: string
+  videoUrl: string | null
   videoDescription: string
   // Step 5 - Skills
   specializations: string[]
@@ -226,9 +226,9 @@ export function FormProvider({ children }: { children: ReactNode }) {
           bipoc_details: formData.bipocDetails,
           religious_affiliation: formData.religiousAffiliation,
           religious_details: formData.religiousDetails,
-          video_url: formData.videoUrl,
-          video_desc: formData.videoDescription,
-          photo_url: formData.avatarUrl,
+          video_url: formData.videoUrl || null,
+          video_desc: formData.videoDescription || null,
+          photo_url: formData.avatarUrl || null,
           gender_identity: formData.genderIdentity,
           other_specializations: formData.otherSpecializations || null,
           vanity_slug: formData.vanitySlug || null,

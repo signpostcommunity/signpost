@@ -69,6 +69,21 @@ export default function DhhPreferencesPage() {
   const [uploading, setUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [profileVideoUrl, setProfileVideoUrl] = useState('')
+
+  // Delete video file from Supabase storage when removing
+  async function deleteVideoFromStorage(url: string) {
+    if (!url || !url.includes('supabase.co/storage')) return
+    try {
+      const supabase = createClient()
+      const match = url.match(/\/object\/public\/([^/]+)\/(.+)$/)
+      if (match) {
+        const [, bucket, path] = match
+        await supabase.storage.from(bucket).remove([path])
+      }
+    } catch (e) {
+      console.error('Failed to delete video from storage:', e)
+    }
+  }
   const [shareTextBefore, setShareTextBefore] = useState(true)
   const [shareVideoBefore, setShareVideoBefore] = useState(true)
 
@@ -774,7 +789,8 @@ export default function DhhPreferencesPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setProfileVideoUrl('')}
+                    onClick={() => { deleteVideoFromStorage(profileVideoUrl); setProfileVideoUrl('') }}
+                    /* Save handler converts '' to null via profileVideoUrl || null */
                     style={{
                       background: 'none', border: '1px solid var(--border)',
                       borderRadius: 'var(--radius-sm)', padding: '7px 16px',

@@ -252,7 +252,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       // Check profile completeness (required fields per signup spec)
       const { data: profileData } = await supabase
         .from('interpreter_profiles')
-        .select('photo_url, bio, first_name, last_name, city, state, interpreter_type, work_mode, years_experience, sign_languages, spoken_languages')
+        .select('photo_url, bio, bio_specializations, first_name, last_name, city, state, interpreter_type, work_mode, years_experience, sign_languages, spoken_languages')
         .eq('id', interpreterProfileId!)
         .single()
 
@@ -263,8 +263,11 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         supabase.from('interpreter_specializations').select('id', { count: 'exact' }).limit(1).eq('interpreter_id', interpreterProfileId!),
       ])
 
-      const missingPhoto = !profileData?.photo_url
-      const missingBio = !profileData?.bio || profileData.bio.trim() === ''
+      const missingPhoto = !profileData?.photo_url || profileData.photo_url.trim() === ''
+      // Bio stored as separate columns: bio (background), bio_specializations, bio_extra (optional).
+      // Required fields must be non-empty and at least 20 chars to catch junk input like "test" or "asdf".
+      const missingBio = !profileData?.bio || profileData.bio.trim().length < 20
+        || !profileData?.bio_specializations || profileData.bio_specializations.trim().length < 20
       const missingCerts = !certCount || certCount === 0
       const missingSignLangs = !signLangCount || signLangCount === 0
       const missingSpokenLangs = !spokenLangCount || spokenLangCount === 0

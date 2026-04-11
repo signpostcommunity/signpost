@@ -120,6 +120,28 @@ function AcceptModal({ booking, onClose, onAccepted }: {
   const [customTerms, setCustomTerms] = useState('')
   const [note, setNote] = useState('')
   const [saving, setSaving] = useState(false)
+  const [hasRateProfile, setHasRateProfile] = useState<boolean | null>(null)
+
+  // Check if interpreter has at least one rate profile
+  useEffect(() => {
+    (async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data: interpProfile } = await supabase
+        .from('interpreter_profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      if (!interpProfile) return
+      const { data: rateProfiles } = await supabase
+        .from('interpreter_rate_profiles')
+        .select('id')
+        .eq('interpreter_id', interpProfile.id)
+        .limit(1)
+      setHasRateProfile(!!rateProfiles && rateProfiles.length > 0)
+    })()
+  }, [])
 
   async function handleSend() {
     setSaving(true)
@@ -307,10 +329,33 @@ function AcceptModal({ booking, onClose, onAccepted }: {
           />
         </div>
 
+        {hasRateProfile === false && (
+          <div style={{
+            background: 'rgba(255,126,69,0.08)',
+            border: '1px solid rgba(255,126,69,0.3)',
+            borderRadius: 10,
+            padding: '14px 18px',
+            marginBottom: 12,
+          }}>
+            <p style={{ color: '#ff7e45', fontSize: '0.85rem', fontWeight: 600, margin: '0 0 6px' }}>
+              Rate profile required
+            </p>
+            <p style={{ color: 'var(--muted)', fontSize: '0.82rem', margin: '0 0 8px', lineHeight: 1.5 }}>
+              You need to set up at least one rate profile before you can respond to requests.
+            </p>
+            <a
+              href="/interpreter/dashboard/rates"
+              style={{ color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none' }}
+            >
+              Set up rate profile &#8594;
+            </a>
+          </div>
+        )}
+
         <div className="dash-card-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
           <GhostButton onClick={onClose}>Cancel</GhostButton>
-          <button className="btn-primary" onClick={handleSend} disabled={saving} style={{ padding: '9px 22px', opacity: saving ? 0.5 : 1 }}>
-            {saving ? 'Sending…' : 'Send Rate & Accept'}
+          <button className="btn-primary" onClick={handleSend} disabled={saving || hasRateProfile === false} style={{ padding: '9px 22px', opacity: (saving || hasRateProfile === false) ? 0.5 : 1 }}>
+            {saving ? 'Sending...' : 'Send Rate & Accept'}
           </button>
         </div>
       </div>

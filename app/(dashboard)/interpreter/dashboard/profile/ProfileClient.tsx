@@ -650,6 +650,15 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
 
   async function deleteVideo(videoId: string) {
     const supabase = createClient()
+    // Delete video file from storage if it's a Supabase URL
+    const video = interpreterVideos.find(v => v.id === videoId)
+    if (video?.video_url?.includes('supabase.co/storage')) {
+      const match = video.video_url.match(/\/object\/public\/([^/]+)\/(.+)$/)
+      if (match) {
+        const [, bucket, path] = match
+        await supabase.storage.from(bucket).remove([path]).catch(e => console.error('Storage cleanup failed:', e))
+      }
+    }
     await supabase.from('interpreter_videos').delete().eq('id', videoId)
     setInterpreterVideos(prev => prev.filter(v => v.id !== videoId))
   }
@@ -768,7 +777,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail }: Profil
       if (saved.phone !== undefined) setPhone(saved.phone || '')
       if (saved.photo_url !== undefined) setPhotoUrl(saved.photo_url || '')
       if (saved.bio !== undefined) setBio(saved.bio || '')
-      if (saved.video_url !== undefined) setVideoUrl(saved.video_url || '')
+      if (saved.video_url !== undefined) setVideoUrl(saved.video_url ?? '')
       if (saved.video_desc !== undefined) setVideoDescription(saved.video_desc || '')
       // Verify the row is readable immediately after save
       const { data: verifyData, error: verifyError } = await supabase

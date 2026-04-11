@@ -7,6 +7,7 @@ import {
   FormNav, InfoNote,
 } from './FormFields'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
+import { createClient } from '@/lib/supabase/client'
 import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
 
 const inputStyle: React.CSSProperties = {
@@ -36,7 +37,22 @@ export default function Step4BioVideo({ onBack, onContinue }: {
   onContinue: () => void
 }) {
   const { formData, updateField, saveDraft } = useForm()
+  const supabase = createClient()
   const [videoUrlError, setVideoUrlError] = useState<string | null>(null)
+
+  // Delete video file from Supabase storage when removing
+  async function deleteVideoFromStorage(url: string | null) {
+    if (!url || !url.includes('supabase.co/storage')) return
+    try {
+      const match = url.match(/\/object\/public\/([^/]+)\/(.+)$/)
+      if (match) {
+        const [, bucket, path] = match
+        await supabase.storage.from(bucket).remove([path])
+      }
+    } catch (e) {
+      console.error('Failed to delete video from storage:', e)
+    }
+  }
   // videoRecorderOpen removed - using inline capture
 
   return (
@@ -135,7 +151,7 @@ export default function Step4BioVideo({ onBack, onContinue }: {
             <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
               <button
                 type="button"
-                onClick={() => updateField('videoUrl', '')}
+                onClick={() => { deleteVideoFromStorage(formData.videoUrl); updateField('videoUrl', null) }}
                 style={{
                   background: 'none', border: '1px solid rgba(0,229,255,0.4)',
                   borderRadius: 8, padding: '8px 16px', color: 'var(--accent)',
@@ -146,7 +162,7 @@ export default function Step4BioVideo({ onBack, onContinue }: {
               </button>
               <button
                 type="button"
-                onClick={() => updateField('videoUrl', '')}
+                onClick={() => { deleteVideoFromStorage(formData.videoUrl); updateField('videoUrl', null) }}
                 style={{
                   background: 'none', border: '1px solid var(--border)',
                   borderRadius: 8, padding: '8px 16px', color: 'var(--muted)',
