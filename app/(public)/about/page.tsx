@@ -124,13 +124,13 @@ const faqSections: FaqSection[] = [
         rich: (
           <>
             <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.75, margin: '0 0 8px' }}>
-              For interpreters: Free. Always. No listing fee, no subscription, no commission.
+              For requesters and organizations: Agencies charge an hourly fee on top of the interpreter&apos;s rate. That fee can range from about $20 to $80+ per hour. signpost charges one flat $15 booking fee per confirmed booking. This covers the cost of building and running the platform: the booking system, encrypted messaging, notifications, and the interpreter directory. That is the only fee signpost collects, ever. The interpreter&apos;s rate is separate. Each interpreter communicates their rate directly to you during the request process and invoices you independently. signpost does not add any fees on top of interpreter rates.
             </p>
             <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.75, margin: '0 0 8px' }}>
-              For Deaf/DB/HH individuals: Free. Always. No fees for personal use, no credit card required.
+              For interpreters: signpost is completely free. No listing fees, no subscription, no commission. You set your own rates and are paid directly by the requester.
             </p>
             <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.75, margin: 0 }}>
-              For requesters/organizations: signpost charges a $15 platform fee per interpreter, per confirmed booking. This fee is charged when you confirm an interpreter, not when you submit a request. This is the only fee that signpost collects. Interpreter rates are separate. Each interpreter communicates their rate directly to you during the request process and invoices you for their services independently. Interpreter rates go directly to the interpreter. signpost does not take a cut, add markups, or charge any additional fees.
+              For Deaf, DeafBlind, and Hard of Hearing individuals: signpost is always free for personal use. Browse the directory, build your preferred interpreter list, rate interpreters, and request interpreters for personal events. signpost never charges a booking fee for personal events.
             </p>
           </>
         ),
