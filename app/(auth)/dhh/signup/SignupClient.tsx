@@ -23,13 +23,13 @@ function ProgressBar({ step }: { step: number }) {
               width: 10,
               height: 10,
               borderRadius: '50%',
-              background: step >= d ? '#7b61ff' : 'rgba(255,255,255,0.1)',
-              border: step >= d ? 'none' : '1px solid rgba(255,255,255,0.15)',
+              background: step >= d ? '#7b61ff' : 'rgba(255,255,255,0.08)',
+              border: step >= d ? 'none' : '1px solid rgba(255,255,255,0.3)',
               transition: 'background 0.2s',
             }}
           />
           {i < dots.length - 1 && (
-            <div style={{ width: 24, height: 1, background: step > d ? '#7b61ff' : 'rgba(255,255,255,0.08)' }} />
+            <div style={{ width: 24, height: 1, background: step > d ? '#7b61ff' : 'rgba(255,255,255,0.15)' }} />
           )}
         </div>
       ))}
@@ -79,10 +79,10 @@ const EDUCATION_CARDS: EducationCard[] = [
   },
   {
     title: 'How is signpost cheaper than agencies?',
-    teaser: "Agencies typically charge a percentage on top of the interpreter's rate...",
+    teaser: "Agencies charge an hourly fee on top of the interpreter's rate. That fee can range from...",
     body: [
-      "Agencies typically charge a percentage on top of the interpreter's rate. That percentage can become very expensive for requesters.",
-      'Instead, signpost charges one flat $15 fee per booking. That is the only fee signpost collects, ever.',
+      "Agencies charge an hourly fee on top of the interpreter's rate. That fee can range from about $20 to $80+ per hour. This can become very expensive for requesters.",
+      'Instead, signpost charges one flat $15 booking fee per confirmed booking. This covers the cost of building and running the platform: the booking system, encrypted messaging, notifications, and the interpreter directory. That is the only fee signpost collects, ever.',
       'Interpreters set their own rates and are paid directly by the requester. signpost does not add any fees on top of interpreter rates.',
       'signpost never charges any booking fees for Deaf, DeafBlind, and Hard of Hearing individuals (or their family/friends) when booking interpreters for personal events.',
     ],
