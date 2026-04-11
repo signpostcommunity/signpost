@@ -244,14 +244,6 @@ function ExpandableCard({ card }: { card: EducationCard }) {
 
 /* ─── Shared UI ─── */
 
-function Wordmark() {
-  return (
-    <div className="wordmark" style={{ fontSize: 22, marginBottom: 24 }}>
-      sign<span>post</span>
-    </div>
-  );
-}
-
 function StepHeading({ children }: { children: React.ReactNode }) {
   return (
     <h1 style={{
@@ -353,7 +345,8 @@ function InterpreterSignupForm() {
   const [completedSections, setCompletedSections] = useState<number[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
   const [profileId, setProfileId] = useState<string | null>(null);
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [country, setCountry] = useState('');
@@ -377,17 +370,19 @@ function InterpreterSignupForm() {
         setExistingUserId(user.id);
         setUserId(user.id);
         const fullName = user.user_metadata?.full_name;
-        if (fullName) setName(fullName);
+        if (fullName) {
+          const parts = fullName.trim().split(' ');
+          setFirstName(parts.slice(0, -1).join(' ') || parts[0] || '');
+          setLastName(parts.length > 1 ? parts[parts.length - 1] : '');
+        }
         if (user.email) setEmail(user.email);
 
         try {
           const res = await fetch('/api/profile-defaults');
           if (res.ok) {
             const defaults = await res.json();
-            if (defaults.first_name) {
-              const prefillName = [defaults.first_name, defaults.last_name].filter(Boolean).join(' ');
-              if (prefillName && !fullName) setName(prefillName);
-            }
+            if (defaults.first_name) setFirstName(defaults.first_name);
+            if (defaults.last_name) setLastName(defaults.last_name);
             if (defaults.country) setCountry(defaults.country);
             if (defaults.state) setState(defaults.state);
             if (defaults.city) setCity(defaults.city);
@@ -413,7 +408,11 @@ function InterpreterSignupForm() {
           setUserId(user.id);
           setExistingUserId(user.id);
           const fullName = user.user_metadata?.full_name;
-          if (fullName && !name) setName(fullName);
+          if (fullName && !firstName) {
+            const parts = fullName.trim().split(' ');
+            setFirstName(parts.slice(0, -1).join(' ') || parts[0] || '');
+            setLastName(parts.length > 1 ? parts[parts.length - 1] : '');
+          }
           if (user.email && !email) setEmail(user.email);
         }
       } catch (e) {
@@ -437,7 +436,7 @@ function InterpreterSignupForm() {
 
   async function handleCreateAccount(e: React.FormEvent) {
     e.preventDefault();
-    if (!name || !email || (!isAddRole && !password)) {
+    if (!firstName || !lastName || !email || (!isAddRole && !password)) {
       setError('Please fill in all required fields.');
       return;
     }
@@ -471,18 +470,20 @@ function InterpreterSignupForm() {
         });
       }
 
-      const firstNameRaw = name.split(' ')[0] || '';
-      const lastNameRaw = name.split(' ').slice(1).join(' ') || '';
+      const firstNameVal = firstName.trim();
+      const lastNameVal = lastName.trim();
+      const fullName = `${firstNameVal} ${lastNameVal}`.trim();
       const { normalizeProfileFields } = await import('@/lib/normalize');
-      const norm = normalizeProfileFields({ first_name: firstNameRaw, last_name: lastNameRaw, city, state, country });
-      const firstName = (norm.first_name as string) || firstNameRaw;
-      const lastNameVal = (norm.last_name as string) || lastNameRaw;
+      const norm = normalizeProfileFields({ first_name: firstNameVal, last_name: lastNameVal, city, state, country });
+      const firstNorm = (norm.first_name as string) || firstNameVal;
+      const lastNorm = (norm.last_name as string) || lastNameVal;
 
       // Insert interpreter_profiles — DO NOT set id, let DB auto-generate
       const profileData = syncNameFields({
         user_id: uid,
-        first_name: firstName,
-        last_name: lastNameVal,
+        first_name: firstNorm,
+        last_name: lastNorm,
+        name: fullName,
         email,
         country: (norm.country as string) || country,
         state: (norm.state as string) || state,
@@ -504,7 +505,7 @@ function InterpreterSignupForm() {
       setProfileId(insertedProfile.id);
 
       // Auto-generate vanity slug
-      const baseSlug = generateSlug(firstName, lastNameVal).slice(0, 50);
+      const baseSlug = generateSlug(firstNorm, lastNorm).slice(0, 50);
       if (baseSlug && baseSlug.length >= 3) {
         let slug = baseSlug;
         let attempt = 1;
@@ -561,7 +562,6 @@ function InterpreterSignupForm() {
         <div className="interpreter-signup-layout" style={{ maxWidth: 900, margin: '0 auto' }}>
           <SidebarNav currentSection={section} completedSections={completedSections} />
           <div style={{ flex: 1, maxWidth: 600 }}>
-            <Wordmark />
             {children}
           </div>
         </div>
@@ -598,7 +598,10 @@ function InterpreterSignupForm() {
         </div>
 
         <form onSubmit={handleCreateAccount} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <AuthInput label="Full Name" value={name} onChange={setName} placeholder="Your full name" required />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <AuthInput label="First Name" value={firstName} onChange={setFirstName} placeholder="First name" required />
+            <AuthInput label="Last Name" value={lastName} onChange={setLastName} placeholder="Last name" required />
+          </div>
           <AuthInput label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" required />
           {!isAddRole && (
             <AuthInput label="Password" type="password" value={password} onChange={setPassword} placeholder="Minimum 8 characters" required />
@@ -661,7 +664,7 @@ function InterpreterSignupForm() {
           {"Got it, let's set up my profile"}
         </PrimaryButton>
         <div style={{ marginTop: 10 }}>
-          <OutlineButton onClick={() => { setSection(1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+          <OutlineButton onClick={() => goToSection(1)}>
             Back
           </OutlineButton>
         </div>
@@ -694,7 +697,7 @@ function InterpreterSignupForm() {
         </PrimaryButton>
       )}
       <div style={{ marginTop: 10 }}>
-        <OutlineButton onClick={() => { setSection(section - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+        <OutlineButton onClick={() => goToSection(section - 1)}>
           Back
         </OutlineButton>
       </div>

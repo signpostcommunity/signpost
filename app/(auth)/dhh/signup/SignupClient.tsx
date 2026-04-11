@@ -159,14 +159,6 @@ function ExpandableCard({ card }: { card: EducationCard }) {
 
 /* ─── Shared Components ─── */
 
-function Wordmark() {
-  return (
-    <div className="wordmark" style={{ fontSize: 22, marginBottom: 24 }}>
-      sign<span>post</span>
-    </div>
-  );
-}
-
 function StepHeading({ children }: { children: React.ReactNode }) {
   return (
     <h1 style={{
@@ -361,7 +353,8 @@ function DeafSignupForm() {
   const [step, setStep] = useState(isAddRole ? 2 : 1);
 
   // Step 1: Account creation
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [country, setCountry] = useState('');
@@ -406,17 +399,19 @@ function DeafSignupForm() {
         setExistingUserId(user.id);
         setUserId(user.id);
         const fullName = user.user_metadata?.full_name;
-        if (fullName) setName(fullName);
+        if (fullName) {
+          const parts = fullName.trim().split(' ');
+          setFirstName(parts.slice(0, -1).join(' ') || parts[0] || '');
+          setLastName(parts.length > 1 ? parts[parts.length - 1] : '');
+        }
         if (user.email) setEmail(user.email);
 
         try {
           const res = await fetch('/api/profile-defaults');
           if (res.ok) {
             const defaults = await res.json();
-            if (defaults.first_name) {
-              const prefillName = [defaults.first_name, defaults.last_name].filter(Boolean).join(' ');
-              if (prefillName && !fullName) setName(prefillName);
-            }
+            if (defaults.first_name) setFirstName(defaults.first_name);
+            if (defaults.last_name) setLastName(defaults.last_name);
             if (defaults.country) setCountry(defaults.country);
             if (defaults.state) setState(defaults.state);
             if (defaults.city) setCity(defaults.city);
@@ -447,7 +442,7 @@ function DeafSignupForm() {
 
   async function handleCreateAccount(e: React.FormEvent) {
     e.preventDefault();
-    if (!name || !email || (!isAddRole && !password)) {
+    if (!firstName || !lastName || !email || (!isAddRole && !password)) {
       setError('Please fill in all required fields.');
       return;
     }
@@ -474,18 +469,20 @@ function DeafSignupForm() {
         });
       }
 
-      const firstNameRaw = name.split(' ')[0] || '';
-      const lastNameRaw = name.split(' ').slice(1).join(' ') || '';
+      const firstNameVal = firstName.trim();
+      const lastNameVal = lastName.trim();
+      const fullName = `${firstNameVal} ${lastNameVal}`.trim();
       const { normalizeProfileFields } = await import('@/lib/normalize');
-      const norm = normalizeProfileFields({ first_name: firstNameRaw, last_name: lastNameRaw, city, state, country_name: country });
-      const firstName = (norm.first_name as string) || firstNameRaw;
-      const lastNameVal = (norm.last_name as string) || lastNameRaw;
+      const norm = normalizeProfileFields({ first_name: firstNameVal, last_name: lastNameVal, city, state, country_name: country });
+      const firstNorm = (norm.first_name as string) || firstNameVal;
+      const lastNorm = (norm.last_name as string) || lastNameVal;
 
       await supabase.from('deaf_profiles').insert(syncNameFields({
         id: uid,
         user_id: uid,
-        first_name: firstName,
-        last_name: lastNameVal,
+        first_name: firstNorm,
+        last_name: lastNorm,
+        name: fullName,
         email,
         country_name: (norm.country_name as string) || country,
         state: (norm.state as string) || state,
@@ -493,7 +490,7 @@ function DeafSignupForm() {
       }));
 
       // Auto-generate vanity slug
-      const baseSlug = generateSlug(firstName, lastNameVal).slice(0, 50);
+      const baseSlug = generateSlug(firstNorm, lastNorm).slice(0, 50);
       if (baseSlug && baseSlug.length >= 3) {
         let slug = baseSlug;
         let attempt = 1;
@@ -663,7 +660,7 @@ function DeafSignupForm() {
         {step === 1 && (
           <>
             <ProgressBar step={1} />
-            <Wordmark />
+
             <StepHeading>Create your account</StepHeading>
             <div style={{ marginBottom: 20 }}>
               <GoogleSignInButton role="deaf" label="Continue with Google" />
@@ -682,7 +679,10 @@ function DeafSignupForm() {
                   {error}
                 </div>
               )}
-              <AuthInput label="Full Name" value={name} onChange={setName} placeholder="Your full name" required />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <AuthInput label="First Name" value={firstName} onChange={setFirstName} placeholder="First name" required />
+                <AuthInput label="Last Name" value={lastName} onChange={setLastName} placeholder="Last name" required />
+              </div>
               <AuthInput label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" required />
               {!isAddRole && (
                 <AuthInput label="Password" type="password" value={password} onChange={setPassword} placeholder="Minimum 8 characters" required />
@@ -709,7 +709,7 @@ function DeafSignupForm() {
         {step === 2 && (
           <>
             <ProgressBar step={2} />
-            <Wordmark />
+
             <StepHeading>How signpost works for you</StepHeading>
             <StepSubtext>These explain how signpost is different. Read what interests you.</StepSubtext>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -732,7 +732,7 @@ function DeafSignupForm() {
         {step === 3 && (
           <>
             <ProgressBar step={3} />
-            <Wordmark />
+
             <StepHeading>Communication preferences</StepHeading>
             <StepSubtext>
               This information is shared with interpreters any time you are tagged in a request. It helps them ensure they are a good match, and show up ready to work.
@@ -839,7 +839,7 @@ function DeafSignupForm() {
         {step === 4 && (
           <>
             <ProgressBar step={4} />
-            <Wordmark />
+
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
               <h1 style={{
                 fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 20,
@@ -983,7 +983,7 @@ function DeafSignupForm() {
         {/* ════════ STEP 5: Additional Roles ════════ */}
         {step === 5 && (
           <>
-            <Wordmark />
+
 
             {/* Section 1: Deaf Interpreter */}
             <div style={{ marginBottom: 32 }}>
@@ -1058,7 +1058,7 @@ function DeafSignupForm() {
         {/* ════════ STEP 6: Done ════════ */}
         {step === 6 && (
           <>
-            <Wordmark />
+
 
             {/* Checkmark */}
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
