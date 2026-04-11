@@ -432,6 +432,7 @@ function DeafSignupForm() {
   }, [isAddRole]);
 
   function goToStep(s: number) {
+    setError('');
     setStep(s);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -563,13 +564,13 @@ function DeafSignupForm() {
       await supabase
         .from('deaf_profiles')
         .update({ comm_prefs: commPrefs })
-        .or(`user_id.eq.${uid},id.eq.${uid}`);
+        .eq('user_id', uid);
 
       setLoading(false);
       goToStep(4);
     } catch {
       setLoading(false);
-      goToStep(4);
+      setError('Failed to save preferences. Please try again.');
     }
   }
 
@@ -594,13 +595,13 @@ function DeafSignupForm() {
       await supabase
         .from('deaf_profiles')
         .update(updates)
-        .or(`user_id.eq.${uid},id.eq.${uid}`);
+        .eq('user_id', uid);
 
       setLoading(false);
       goToStep(5);
     } catch {
       setLoading(false);
-      goToStep(5);
+      setError('Failed to save. Please try again.');
     }
   }
 
@@ -681,9 +682,11 @@ function DeafSignupForm() {
                   {error}
                 </div>
               )}
-              <AuthInput label="Full Name" value={name} onChange={setName} placeholder="Betty White" required />
+              <AuthInput label="Full Name" value={name} onChange={setName} placeholder="Your full name" required />
               <AuthInput label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" required />
-              <AuthInput label="Password" type="password" value={password} onChange={setPassword} placeholder="Minimum 8 characters" required />
+              {!isAddRole && (
+                <AuthInput label="Password" type="password" value={password} onChange={setPassword} placeholder="Minimum 8 characters" required />
+              )}
               <div style={{ marginTop: 4 }}>
                 <LocationPicker
                   country={country} state={state} city={city}
@@ -718,6 +721,9 @@ function DeafSignupForm() {
               <PrimaryButton onClick={() => goToStep(3)}>
                 {"Got it, let's set up my profile"}
               </PrimaryButton>
+              <div style={{ marginTop: 10 }}>
+                <OutlineButton onClick={() => goToStep(1)}>Back</OutlineButton>
+              </div>
             </div>
           </>
         )}
@@ -815,6 +821,17 @@ function DeafSignupForm() {
             <PrimaryButton onClick={handleSaveCommPrefs} disabled={loading}>
               {loading ? 'Saving...' : 'Continue'}
             </PrimaryButton>
+            <div style={{ marginTop: 10 }}>
+              <OutlineButton onClick={() => goToStep(2)}>Back</OutlineButton>
+            </div>
+            {error && (
+              <div style={{
+                background: 'rgba(255,107,133,0.1)', border: '1px solid rgba(255,107,133,0.3)',
+                borderRadius: 10, padding: '12px 16px', color: 'var(--accent3)', fontSize: 13, marginTop: 10,
+              }}>
+                {error}
+              </div>
+            )}
           </>
         )}
 
@@ -950,7 +967,16 @@ function DeafSignupForm() {
               <OutlineButton onClick={() => goToStep(5)}>
                 Skip for now
               </OutlineButton>
+              <OutlineButton onClick={() => goToStep(3)} style={{ marginTop: 0 }}>Back</OutlineButton>
             </div>
+            {error && (
+              <div style={{
+                background: 'rgba(255,107,133,0.1)', border: '1px solid rgba(255,107,133,0.3)',
+                borderRadius: 10, padding: '12px 16px', color: 'var(--accent3)', fontSize: 13, marginTop: 10,
+              }}>
+                {error}
+              </div>
+            )}
           </>
         )}
 
@@ -1023,13 +1049,15 @@ function DeafSignupForm() {
             <PrimaryButton onClick={() => goToStep(6)}>
               Continue to finish
             </PrimaryButton>
+            <div style={{ marginTop: 10 }}>
+              <OutlineButton onClick={() => goToStep(4)}>Back</OutlineButton>
+            </div>
           </>
         )}
 
         {/* ════════ STEP 6: Done ════════ */}
         {step === 6 && (
           <>
-            <ProgressBar step={5} />
             <Wordmark />
 
             {/* Checkmark */}
