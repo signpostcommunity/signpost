@@ -1880,7 +1880,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail, rateProf
           )}
 
           <SaveButton saving={saving} onClick={() => {
-            saveFields({ bio, bio_specializations: bioSpecializations, bio_extra: bioExtra })
+            saveFields({ bio, bio_specializations: bioSpecializations, bio_extra: bioExtra, video_url: videoUrl || null })
           }} />
         </>
       )}
