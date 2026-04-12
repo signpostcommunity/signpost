@@ -815,7 +815,8 @@ function DeafSignupForm() {
       <div style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         justifyContent: 'center', minHeight: 'calc(100vh - 73px)',
-        padding: '100px 24px 40px',
+        padding: '100px 24px 80px',
+        position: 'relative' as const, zIndex: 1,
       }}>
         <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#96a0b8' }}>
           Checking for saved progress...
@@ -833,7 +834,8 @@ function DeafSignupForm() {
       style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         justifyContent: 'center', minHeight: 'calc(100vh - 73px)',
-        padding: '100px 24px 40px',
+        padding: '100px 24px 80px',
+        position: 'relative' as const, zIndex: 1,
       }}
     >
       <div style={{ maxWidth: 480, width: '100%' }}>

@@ -445,7 +445,7 @@ function SectionWrapper({ section, completedSections, children }: {
   section: number; completedSections: number[]; children: React.ReactNode;
 }) {
   return (
-    <div style={{ padding: '100px 28px 36px', minHeight: '100vh', background: 'var(--bg)' }}>
+    <div style={{ padding: '100px 28px 80px', minHeight: '100vh', background: 'var(--bg)', position: 'relative', zIndex: 1 }}>
       <div className="interpreter-signup-layout" style={{ maxWidth: 900, margin: '0 auto' }}>
         <SidebarNav currentSection={section} completedSections={completedSections} />
         <div style={{ flex: 1, maxWidth: 600 }}>
@@ -473,6 +473,15 @@ function SectionWrapper({ section, completedSections, children }: {
           .signup-form-card {
             padding: 20px;
           }
+        }
+        .signup-select {
+          appearance: none;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%2300e5ff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+          background-repeat: no-repeat !important;
+          background-position: right 14px center !important;
+          padding-right: 36px !important;
         }
       `}</style>
     </div>
@@ -1186,6 +1195,7 @@ function InterpreterSignupForm() {
             Years of experience
           </label>
           <select
+            className="signup-select"
             value={yearsExperience}
             onChange={(e) => setYearsExperience(e.target.value)}
             style={{
@@ -1225,6 +1235,7 @@ function InterpreterSignupForm() {
             Gender identity
           </label>
           <select
+            className="signup-select"
             value={genderIdentity}
             onChange={(e) => setGenderIdentity(e.target.value)}
             style={{
@@ -1503,8 +1514,9 @@ function InterpreterSignupForm() {
 
     const dropdownStyle: React.CSSProperties = {
       width: '100%', background: '#16161f', border: '1px solid rgba(0,229,255,0.15)',
-      borderRadius: 10, padding: '11px 14px', color: '#f0f2f8',
+      borderRadius: 10, padding: '11px 14px', paddingRight: 36, color: '#f0f2f8',
       fontFamily: "'Inter', sans-serif", fontSize: 14, marginTop: 12, outline: 'none',
+      appearance: 'none', WebkitAppearance: 'none',
     };
 
     const tagStyle: React.CSSProperties = {
@@ -1551,6 +1563,7 @@ function InterpreterSignupForm() {
             ))}
           </div>
           <select
+            className="signup-select"
             value=""
             onChange={(e) => { addLanguage(e.target.value, signLanguages, setSignLanguages); e.target.value = ''; }}
             style={dropdownStyle}
@@ -1618,6 +1631,7 @@ function InterpreterSignupForm() {
             ))}
           </div>
           <select
+            className="signup-select"
             value=""
             onChange={(e) => { addLanguage(e.target.value, spokenLanguages, setSpokenLanguages); e.target.value = ''; }}
             style={dropdownStyle}

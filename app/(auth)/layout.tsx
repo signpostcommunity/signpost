@@ -9,7 +9,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
   return (
     <div id="site-content" className="site-content" style={{ minHeight: '100vh', background: 'var(--bg)' }}>
       <Nav initialSession={session} />
-      <main id="main-content">{children}</main>
+      <main id="main-content" style={{ position: 'relative', zIndex: 1 }}>{children}</main>
       <Footer />
     </div>
   );
