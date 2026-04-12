@@ -459,8 +459,10 @@ function InterpreterSignupForm() {
   const [yearsExperience, setYearsExperience] = useState('');
   const [workMode, setWorkMode] = useState('');
   const [genderIdentity, setGenderIdentity] = useState('');
-  const [pronouns, setPronouns] = useState('');
+  const [selectedPronouns, setSelectedPronouns] = useState<string[]>([]);
+  const [otherPronouns, setOtherPronouns] = useState('');
   const [phone, setPhone] = useState('');
+  const [phoneType, setPhoneType] = useState('');
   const [eventCoordination, setEventCoordination] = useState(false);
 
   // Section 4: Languages
@@ -567,8 +569,10 @@ function InterpreterSignupForm() {
             if (d.yearsExperience) setYearsExperience(d.yearsExperience as string);
             if (d.workMode) setWorkMode(d.workMode as string);
             if (d.genderIdentity) setGenderIdentity(d.genderIdentity as string);
-            if (d.pronouns) setPronouns(d.pronouns as string);
+            if (Array.isArray(d.selectedPronouns)) setSelectedPronouns(d.selectedPronouns as string[]);
+            if (d.otherPronouns) setOtherPronouns(d.otherPronouns as string);
             if (d.phone) setPhone(d.phone as string);
+            if (d.phoneType) setPhoneType(d.phoneType as string);
             if (typeof d.eventCoordination === 'boolean') setEventCoordination(d.eventCoordination);
             if (Array.isArray(d.signLanguages)) setSignLanguages(d.signLanguages as string[]);
             if (d.otherSignLanguage) setOtherSignLanguage(d.otherSignLanguage as string);
@@ -615,7 +619,7 @@ function InterpreterSignupForm() {
       const supabase = createClient();
       const draftData = {
         firstName, lastName, email, country, state, city,
-        interpreterType, yearsExperience, workMode, genderIdentity, pronouns, phone, eventCoordination,
+        interpreterType, yearsExperience, workMode, genderIdentity, selectedPronouns, otherPronouns, phone, phoneType, eventCoordination,
         signLanguages, otherSignLanguage, spokenLanguages, otherSpokenLanguage,
         certifications, education,
         bio, bioSpecializations, bioExtra, videoUrl, photoUrl,
@@ -910,8 +914,10 @@ function InterpreterSignupForm() {
                       if (d.yearsExperience) setYearsExperience(d.yearsExperience as string);
                       if (d.workMode) setWorkMode(d.workMode as string);
                       if (d.genderIdentity) setGenderIdentity(d.genderIdentity as string);
-                      if (d.pronouns) setPronouns(d.pronouns as string);
+                      if (Array.isArray(d.selectedPronouns)) setSelectedPronouns(d.selectedPronouns as string[]);
+                      if (d.otherPronouns) setOtherPronouns(d.otherPronouns as string);
                       if (d.phone) setPhone(d.phone as string);
+                      if (d.phoneType) setPhoneType(d.phoneType as string);
                       if (typeof d.eventCoordination === 'boolean') setEventCoordination(d.eventCoordination);
                       if (Array.isArray(d.signLanguages)) setSignLanguages(d.signLanguages as string[]);
                       if (d.otherSignLanguage) setOtherSignLanguage(d.otherSignLanguage as string);
@@ -994,8 +1000,9 @@ function InterpreterSignupForm() {
           years_experience: yearsExperience || null,
           work_mode: workMode || null,
           gender_identity: genderIdentity || null,
-          pronouns: pronouns || null,
+          pronouns: [...selectedPronouns, ...(otherPronouns.trim() ? [otherPronouns.trim()] : [])].join(', ') || null,
           phone: phone || null,
+          phone_type: phoneType || null,
           event_coordination: eventCoordination,
         })
         .eq('user_id', userId);
@@ -1112,16 +1119,93 @@ function InterpreterSignupForm() {
             {genderOptions.map((o) => <option key={o} value={o}>{o}</option>)}
           </select>
           <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#96a0b8', marginTop: 6, lineHeight: 1.5 }}>
-            Used by requesters to find interpreters for settings where gender match matters, such as medical appointments.
+            Requesters can use the directory filters to locate interpreters who meet the Deaf person&apos;s preference for their appointment.
           </p>
         </div>
 
         {/* Pronouns */}
-        <AuthInput label="Pronouns" value={pronouns} onChange={setPronouns} placeholder="e.g. she/her, he/him, they/them" />
+        <div style={{ marginBottom: 24 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#00e5ff', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>
+            Pronouns
+          </label>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+            {['she/her', 'he/him', 'they/them'].map((p) => (
+              <button
+                key={p}
+                type="button"
+                onClick={() => setSelectedPronouns(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: 999,
+                  border: selectedPronouns.includes(p) ? '1px solid #00e5ff' : '1px solid rgba(0,229,255,0.2)',
+                  background: selectedPronouns.includes(p) ? 'rgba(0,229,255,0.12)' : 'transparent',
+                  color: selectedPronouns.includes(p) ? '#00e5ff' : '#c8cdd8',
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 14,
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+          <input
+            type="text"
+            value={otherPronouns}
+            onChange={(e) => setOtherPronouns(e.target.value)}
+            placeholder="Other pronouns..."
+            style={{
+              width: '100%', background: 'var(--surface)', border: '1px solid var(--border)',
+              borderRadius: 10, padding: '11px 14px', color: 'var(--text)', fontSize: 15,
+              fontFamily: "'Inter', sans-serif", outline: 'none',
+            }}
+            onFocus={(e) => (e.target.style.borderColor = 'rgba(0,229,255,0.5)')}
+            onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
+          />
+        </div>
 
         {/* Phone */}
-        <div style={{ marginTop: 16 }}>
-          <AuthInput label="Phone" value={phone} onChange={setPhone} placeholder="Phone number" />
+        <div style={{ marginBottom: 24 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#00e5ff', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>
+            Phone
+          </label>
+          <input
+            type="text"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="Phone number"
+            style={{
+              width: '100%', background: 'var(--surface)', border: '1px solid var(--border)',
+              borderRadius: 10, padding: '11px 14px', color: 'var(--text)', fontSize: 15,
+              fontFamily: "'Inter', sans-serif", outline: 'none',
+            }}
+            onFocus={(e) => (e.target.style.borderColor = 'rgba(0,229,255,0.5)')}
+            onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
+          />
+          <div style={{ display: 'flex', gap: 20, marginTop: 10 }}>
+            {[
+              { value: 'voice', label: 'Voice' },
+              { value: 'text', label: 'Text' },
+              { value: 'vp', label: 'VP', subtitle: '(Video Phone)' },
+            ].map((opt) => (
+              <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+                <input
+                  type="radio"
+                  name="phoneType"
+                  value={opt.value}
+                  checked={phoneType === opt.value}
+                  onChange={() => setPhoneType(opt.value)}
+                  style={{ accentColor: '#00e5ff', width: 16, height: 16 }}
+                />
+                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#f0f2f8' }}>
+                  {opt.label}
+                  {opt.subtitle && <span style={{ color: '#96a0b8', fontSize: 13, marginLeft: 4 }}>{opt.subtitle}</span>}
+                </span>
+              </label>
+            ))}
+          </div>
         </div>
 
         {/* Event coordination */}
@@ -1237,9 +1321,9 @@ function InterpreterSignupForm() {
     const pillStyle = (selected: boolean): React.CSSProperties => ({
       display: 'inline-block',
       padding: '8px 16px',
-      borderRadius: 10,
-      border: selected ? '1px solid #00e5ff' : '1px solid var(--border)',
-      background: selected ? 'rgba(0,229,255,0.08)' : 'transparent',
+      borderRadius: 999,
+      border: selected ? '1px solid #00e5ff' : '1px solid rgba(0,229,255,0.2)',
+      background: selected ? 'rgba(0,229,255,0.12)' : 'transparent',
       color: selected ? '#00e5ff' : '#c8cdd8',
       fontFamily: "'Inter', sans-serif",
       fontSize: 14,
@@ -1250,10 +1334,85 @@ function InterpreterSignupForm() {
       marginBottom: 8,
     });
 
+    const SIGN_LANGUAGES_BY_REGION = {
+      'Africa & Middle East': [
+        'Arabic Sign Language (ArSL)', 'Ethiopian Sign Language', 'Ghana Sign Language', 'Kenyan Sign Language',
+        'Nigerian Sign Language', 'Saudi Arabian Sign Language', 'South African Sign Language (SASL)',
+        'Tanzanian Sign Language', 'Ugandan Sign Language', 'Zimbabwean Sign Language',
+      ],
+      'Americas': [
+        'Argentinian Sign Language (LSA)', 'Brazilian Sign Language (Libras)', 'Chilean Sign Language (LSCh)',
+        'Colombian Sign Language (LSC)', 'Cuban Sign Language', 'Haitian Sign Language',
+        'Peruvian Sign Language (LSP)', 'Venezuelan Sign Language (LSV)',
+      ],
+      'Asia & Pacific': [
+        'Auslan (Australian Sign Language)', 'Chinese Sign Language (CSL)', 'Filipino Sign Language (FSL)',
+        'Hong Kong Sign Language', 'Indian Sign Language (ISL)', 'Indonesian Sign Language (BISINDO)',
+        'Japanese Sign Language (JSL/Nihon Shuwa)', 'Korean Sign Language (KSL)',
+        'Malaysian Sign Language (BIM)', 'New Zealand Sign Language (NZSL)',
+        'Sri Lankan Sign Language', 'Thai Sign Language', 'Vietnamese Sign Language',
+      ],
+      'Europe': [
+        'Austrian Sign Language (\u00d6GS)', 'Belgian Sign Language (BVGT/LSFB)', 'Bulgarian Sign Language',
+        'Croatian Sign Language (HZJ)', 'Czech Sign Language (\u010cZJ)', 'Danish Sign Language (DST)',
+        'Finnish Sign Language (ViSL)', 'Flemish Sign Language (VGT)', 'Greek Sign Language (GSL)',
+        'Hungarian Sign Language (MJNY)', 'Irish Sign Language (ISL)', 'Italian Sign Language (LIS)',
+        'Nederlandse Gebarentaal (NGT)', 'Norwegian Sign Language (NTS)', 'Polish Sign Language (PJM)',
+        'Portuguese Sign Language (LGP)', 'Russian Sign Language (RSL)', 'Romanian Sign Language (LSR)',
+        'Slovak Sign Language', 'Swedish Sign Language (SSL)', 'Swiss German Sign Language (DSGS)',
+        'Turkish Sign Language (T\u0130D)', 'Ukrainian Sign Language',
+      ],
+    };
+
+    const SPOKEN_LANGUAGES_BY_REGION = {
+      'Africa & Middle East': [
+        'Afrikaans', 'Amharic', 'Dari', 'Hebrew', 'Igbo', 'Kurdish', 'Sesotho', 'Shona',
+        'Somali', 'Swahili', 'Tigrinya', 'Twi/Akan', 'Wolof', 'Xhosa', 'Yoruba', 'Zulu',
+      ],
+      'Americas': ['Creole (Haitian)', 'Guaran\u00ed', 'Nahuatl', 'Quechua'],
+      'Asia & Pacific': [
+        'Bengali', 'Burmese', 'Filipino/Tagalog', 'Hindi', 'Gujarati', 'Indonesian', 'Khmer',
+        'Malay', 'Marathi', 'Nepali', 'Pashto', 'Persian/Farsi', 'Punjabi', 'Sinhala',
+        'Tamil', 'Telugu', 'Thai', 'Urdu',
+      ],
+      'Europe': [
+        'Albanian', 'Basque', 'Catalan', 'Croatian', 'Czech', 'Danish', 'Dutch', 'Estonian',
+        'Finnish', 'Flemish', 'Georgian', 'German', 'Greek', 'Hungarian', 'Icelandic', 'Italian',
+        'Latvian', 'Lithuanian', 'Maltese', 'Norwegian', 'Polish', 'Romanian', 'Serbian',
+        'Slovak', 'Slovenian', 'Swedish', 'Turkish', 'Ukrainian', 'Welsh',
+      ],
+    };
+
+    const dropdownStyle: React.CSSProperties = {
+      width: '100%', background: '#16161f', border: '1px solid rgba(0,229,255,0.15)',
+      borderRadius: 10, padding: '11px 14px', color: '#f0f2f8',
+      fontFamily: "'Inter', sans-serif", fontSize: 14, marginTop: 12, outline: 'none',
+    };
+
+    const tagStyle: React.CSSProperties = {
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.25)',
+      borderRadius: 999, padding: '4px 12px', fontSize: 13, color: '#00e5ff', margin: 4,
+    };
+
+    function addLanguage(lang: string, list: string[], setter: (v: string[]) => void) {
+      if (lang && !list.includes(lang)) {
+        setter([...list, lang]);
+      }
+    }
+
+    function removeLanguage(lang: string, list: string[], setter: (v: string[]) => void) {
+      setter(list.filter(x => x !== lang));
+    }
+
+    // Languages selected from dropdowns (not in pill options)
+    const signDropdownSelections = signLanguages.filter(l => !SIGN_LANGUAGE_OPTIONS.includes(l) && l !== otherSignLanguage);
+    const spokenDropdownSelections = spokenLanguages.filter(l => !SPOKEN_LANGUAGE_OPTIONS.includes(l) && l !== otherSpokenLanguage);
+
     return (
       <SectionWrapper section={section} completedSections={completedSections}>
-        <StepHeading>Languages</StepHeading>
-        <StepSubtext>Select all languages you work with.</StepSubtext>
+        <StepHeading>Working Languages</StepHeading>
+        <StepSubtext>Select all languages in which you hold professional-level fluency.</StepSubtext>
 
         <FormCard>
         {/* Sign languages */}
@@ -1273,6 +1432,39 @@ function InterpreterSignupForm() {
               </button>
             ))}
           </div>
+          <select
+            value=""
+            onChange={(e) => { addLanguage(e.target.value, signLanguages, setSignLanguages); e.target.value = ''; }}
+            style={dropdownStyle}
+            onFocus={(e) => (e.target.style.borderColor = '#00e5ff')}
+            onBlur={(e) => (e.target.style.borderColor = 'rgba(0,229,255,0.15)')}
+          >
+            <option value="">More sign languages by region...</option>
+            {Object.entries(SIGN_LANGUAGES_BY_REGION).map(([region, langs]) => (
+              <optgroup key={region} label={region}>
+                {langs.map((lang) => (
+                  <option key={lang} value={lang} disabled={signLanguages.includes(lang)}>{lang}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+          {signDropdownSelections.length > 0 && (
+            <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap' }}>
+              {signDropdownSelections.map((lang) => (
+                <span key={lang} style={tagStyle}>
+                  {lang}
+                  <button
+                    type="button"
+                    onClick={() => removeLanguage(lang, signLanguages, setSignLanguages)}
+                    style={{ background: 'none', border: 'none', color: '#00e5ff', cursor: 'pointer', fontSize: 14, padding: 0, lineHeight: 1 }}
+                    aria-label={`Remove ${lang}`}
+                  >
+                    &times;
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
           {signLanguages.includes('Other') && (
             <div style={{ marginTop: 8 }}>
               <input
@@ -1307,6 +1499,39 @@ function InterpreterSignupForm() {
               </button>
             ))}
           </div>
+          <select
+            value=""
+            onChange={(e) => { addLanguage(e.target.value, spokenLanguages, setSpokenLanguages); e.target.value = ''; }}
+            style={dropdownStyle}
+            onFocus={(e) => (e.target.style.borderColor = '#00e5ff')}
+            onBlur={(e) => (e.target.style.borderColor = 'rgba(0,229,255,0.15)')}
+          >
+            <option value="">More spoken languages...</option>
+            {Object.entries(SPOKEN_LANGUAGES_BY_REGION).map(([region, langs]) => (
+              <optgroup key={region} label={region}>
+                {langs.map((lang) => (
+                  <option key={lang} value={lang} disabled={spokenLanguages.includes(lang)}>{lang}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+          {spokenDropdownSelections.length > 0 && (
+            <div style={{ marginTop: 8, display: 'flex', flexWrap: 'wrap' }}>
+              {spokenDropdownSelections.map((lang) => (
+                <span key={lang} style={tagStyle}>
+                  {lang}
+                  <button
+                    type="button"
+                    onClick={() => removeLanguage(lang, spokenLanguages, setSpokenLanguages)}
+                    style={{ background: 'none', border: 'none', color: '#00e5ff', cursor: 'pointer', fontSize: 14, padding: 0, lineHeight: 1 }}
+                    aria-label={`Remove ${lang}`}
+                  >
+                    &times;
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
           {spokenLanguages.includes('Other') && (
             <div style={{ marginTop: 8 }}>
               <input
