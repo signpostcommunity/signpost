@@ -117,6 +117,50 @@ function SidebarNav({ currentSection, completedSections }: SidebarNavProps) {
   );
 }
 
+/* ─── Card icon map for Section 2 ─── */
+
+const CARD_ICONS: Record<string, React.ReactNode> = {
+  'How do clients find me?': (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  ),
+  'How do rates and billing work?': (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <line x1="12" y1="1" x2="12" y2="23" />
+      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+    </svg>
+  ),
+  'Why are intro videos important?': (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <polygon points="23 7 16 12 23 17 23 7" />
+      <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+    </svg>
+  ),
+  'How do ratings work?': (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  ),
+  'What is the mentorship directory?': (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  ),
+  'How is this different from an agency?': (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M20 21v-2a4 4 0 0 0-2-3.46" />
+      <path d="M4 21v-2a4 4 0 0 1 2-3.46" />
+      <circle cx="12" cy="7" r="4" />
+      <line x1="8" y1="11" x2="16" y2="11" />
+    </svg>
+  ),
+};
+
 /* ─── Education Cards (Section 2) ─── */
 
 interface EducationCard {
@@ -205,18 +249,21 @@ function ExpandableCard({ card }: { card: EducationCard }) {
         aria-expanded={open}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(!open); } }}
       >
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 14, color: '#f0f2f8', marginBottom: open ? 0 : 4 }}>
-            {card.title}
-          </div>
-          {!open && (
-            <div style={{
-              fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 12.5, color: '#6b7082',
-              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-            }}>
-              {card.teaser}
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+          {CARD_ICONS[card.title]}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: 15, color: '#f0f2f8', marginBottom: open ? 0 : 4 }}>
+              {card.title}
             </div>
-          )}
+            {!open && (
+              <div style={{
+                fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14, color: '#96a0b8',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>
+                {card.teaser}
+              </div>
+            )}
+          </div>
         </div>
         <svg
           width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
@@ -231,7 +278,7 @@ function ExpandableCard({ card }: { card: EducationCard }) {
             <p
               key={i}
               style={{
-                fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 13, color: '#96a0b8',
+                fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 15, color: '#96a0b8',
                 lineHeight: 1.7, margin: 0, marginBottom: i < card.body.length - 1 ? 12 : 0,
               }}
             >
@@ -249,8 +296,8 @@ function ExpandableCard({ card }: { card: EducationCard }) {
 function StepHeading({ children }: { children: React.ReactNode }) {
   return (
     <h1 style={{
-      fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 20,
-      color: '#f0f2f8', letterSpacing: '-0.01em', margin: '0 0 8px',
+      fontFamily: "'Syne', sans-serif", fontWeight: 775, fontSize: 27,
+      color: '#f0f2f8', letterSpacing: '-0.02em', margin: '0 0 8px',
     }}>
       {children}
     </h1>
@@ -260,7 +307,7 @@ function StepHeading({ children }: { children: React.ReactNode }) {
 function StepSubtext({ children }: { children: React.ReactNode }) {
   return (
     <p style={{
-      fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 13,
+      fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 15,
       color: '#96a0b8', lineHeight: 1.65, margin: '0 0 24px',
     }}>
       {children}
@@ -316,7 +363,7 @@ function AuthInput({ label, type = 'text', value, onChange, placeholder, require
   const id = label.toLowerCase().replace(/\s+/g, '-');
   return (
     <div>
-      <label htmlFor={id} style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#c8cdd8', marginBottom: '6px' }}>{label}</label>
+      <label htmlFor={id} style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#00e5ff', marginBottom: '6px', textTransform: 'uppercase' as const, letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>{label}</label>
       <input
         id={id}
         type={type}
@@ -338,6 +385,14 @@ function AuthInput({ label, type = 'text', value, onChange, placeholder, require
 
 /* ─── Layout Wrapper ─── */
 
+function FormCard({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="signup-form-card">
+      {children}
+    </div>
+  );
+}
+
 function SectionWrapper({ section, completedSections, children }: {
   section: number; completedSections: number[]; children: React.ReactNode;
 }) {
@@ -358,6 +413,17 @@ function SectionWrapper({ section, completedSections, children }: {
           .interpreter-signup-layout {
             flex-direction: row;
             gap: 40px;
+          }
+        }
+        .signup-form-card {
+          background: #111118;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 16px;
+          padding: 32px;
+        }
+        @media (max-width: 640px) {
+          .signup-form-card {
+            padding: 20px;
           }
         }
       `}</style>
@@ -404,8 +470,8 @@ function InterpreterSignupForm() {
   const [otherSpokenLanguage, setOtherSpokenLanguage] = useState('');
 
   // Section 5: Credentials
-  const [certifications, setCertifications] = useState<Array<{name: string; issuing_body: string; year: string}>>([]);
-  const [education, setEducation] = useState<Array<{institution: string; degree: string; year: string}>>([]);
+  const [certifications, setCertifications] = useState<Array<{name: string; issuing_body: string; year: string}>>([{ name: '', issuing_body: '', year: '' }]);
+  const [education, setEducation] = useState<Array<{institution: string; degree: string; year: string}>>([{ institution: '', degree: '', year: '' }]);
 
   // Section 6: About You
   const [bio, setBio] = useState('');
@@ -765,6 +831,7 @@ function InterpreterSignupForm() {
     return (
       <SectionWrapper section={section} completedSections={completedSections}>
         <StepHeading>Create your account</StepHeading>
+        <FormCard>
         <div style={{ marginBottom: 20 }}>
           <GoogleSignInButton role="interpreter" label="Continue with Google" />
         </div>
@@ -786,7 +853,7 @@ function InterpreterSignupForm() {
           )}
 
           <div>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#c8cdd8', marginBottom: '6px' }}>Location</label>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#00e5ff', marginBottom: '6px', textTransform: 'uppercase' as const, letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>Location</label>
             <LocationPicker
               country={country}
               state={state}
@@ -810,6 +877,7 @@ function InterpreterSignupForm() {
             {loading ? (isAuthenticated ? 'Continuing...' : 'Creating account...') : (isAuthenticated ? 'Continue' : 'Create Account')}
           </PrimaryButton>
         </form>
+        </FormCard>
 
         {!isAuthenticated && (
           <p style={{
@@ -894,6 +962,7 @@ function InterpreterSignupForm() {
           ))}
         </div>
 
+        <FormCard>
         <PrimaryButton onClick={() => goToSection(3)}>
           {"Got it, let's set up my profile"}
         </PrimaryButton>
@@ -902,6 +971,7 @@ function InterpreterSignupForm() {
             Back
           </OutlineButton>
         </div>
+        </FormCard>
       </SectionWrapper>
     );
   }
@@ -964,9 +1034,10 @@ function InterpreterSignupForm() {
         <StepHeading>Professional background</StepHeading>
         <StepSubtext>Tell us about your interpreting practice.</StepSubtext>
 
+        <FormCard>
         {/* Interpreter type */}
         <div style={{ marginBottom: 24 }}>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 8 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#00e5ff', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>
             Interpreter type <span style={{ color: '#ff6b85' }}>*</span>
           </label>
           {interpreterTypes.map((t) => (
@@ -979,14 +1050,14 @@ function InterpreterSignupForm() {
                 onChange={() => setInterpreterType(t)}
                 style={{ accentColor: '#00e5ff', width: 16, height: 16 }}
               />
-              <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: '#c8cdd8' }}>{t}</span>
+              <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#f0f2f8' }}>{t}</span>
             </label>
           ))}
         </div>
 
         {/* Years of experience */}
         <div style={{ marginBottom: 24 }}>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 6 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#00e5ff', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>
             Years of experience
           </label>
           <select
@@ -1005,7 +1076,7 @@ function InterpreterSignupForm() {
 
         {/* Mode of work */}
         <div style={{ marginBottom: 24 }}>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 8 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#00e5ff', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>
             Mode of work
           </label>
           {workModes.map((m) => (
@@ -1018,14 +1089,14 @@ function InterpreterSignupForm() {
                 onChange={() => setWorkMode(m)}
                 style={{ accentColor: '#00e5ff', width: 16, height: 16 }}
               />
-              <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: '#c8cdd8' }}>{m}</span>
+              <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#f0f2f8' }}>{m}</span>
             </label>
           ))}
         </div>
 
         {/* Gender identity */}
         <div style={{ marginBottom: 24 }}>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 6 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#00e5ff', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>
             Gender identity
           </label>
           <select
@@ -1040,7 +1111,7 @@ function InterpreterSignupForm() {
             <option value="">Select...</option>
             {genderOptions.map((o) => <option key={o} value={o}>{o}</option>)}
           </select>
-          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#96a0b8', marginTop: 6, lineHeight: 1.5 }}>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#96a0b8', marginTop: 6, lineHeight: 1.5 }}>
             Used by requesters to find interpreters for settings where gender match matters, such as medical appointments.
           </p>
         </div>
@@ -1062,11 +1133,11 @@ function InterpreterSignupForm() {
               onChange={(e) => setEventCoordination(e.target.checked)}
               style={{ accentColor: '#00e5ff', width: 16, height: 16, marginTop: 2 }}
             />
-            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: '#c8cdd8' }}>
+            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#f0f2f8' }}>
               I also coordinate interpreters for events or organizations
             </span>
           </label>
-          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#96a0b8', marginTop: 6, marginLeft: 26, lineHeight: 1.5 }}>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#96a0b8', marginTop: 6, marginLeft: 26, lineHeight: 1.5 }}>
             You can set this up later from your profile if you prefer.
           </p>
         </div>
@@ -1089,6 +1160,7 @@ function InterpreterSignupForm() {
             <OutlineButton onClick={() => goToSection(2)}>Back</OutlineButton>
           </div>
         </div>
+        </FormCard>
       </SectionWrapper>
     );
   }
@@ -1170,7 +1242,7 @@ function InterpreterSignupForm() {
       background: selected ? 'rgba(0,229,255,0.08)' : 'transparent',
       color: selected ? '#00e5ff' : '#c8cdd8',
       fontFamily: "'Inter', sans-serif",
-      fontSize: 13.5,
+      fontSize: 14,
       fontWeight: 500,
       cursor: 'pointer',
       transition: 'all 0.15s',
@@ -1183,9 +1255,10 @@ function InterpreterSignupForm() {
         <StepHeading>Languages</StepHeading>
         <StepSubtext>Select all languages you work with.</StepSubtext>
 
+        <FormCard>
         {/* Sign languages */}
         <div style={{ marginBottom: 28 }}>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 10 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#00e5ff', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>
             Sign languages
           </label>
           <div style={{ display: 'flex', flexWrap: 'wrap' }}>
@@ -1219,7 +1292,7 @@ function InterpreterSignupForm() {
 
         {/* Spoken languages */}
         <div style={{ marginBottom: 28 }}>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 10 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#00e5ff', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>
             Spoken languages
           </label>
           <div style={{ display: 'flex', flexWrap: 'wrap' }}>
@@ -1269,6 +1342,7 @@ function InterpreterSignupForm() {
             <OutlineButton onClick={() => goToSection(3)}>Back</OutlineButton>
           </div>
         </div>
+        </FormCard>
       </SectionWrapper>
     );
   }
@@ -1345,6 +1419,7 @@ function InterpreterSignupForm() {
         <StepHeading>Credentials</StepHeading>
         <StepSubtext>Add your certifications and education. All fields are optional.</StepSubtext>
 
+        <FormCard>
         {/* Certifications */}
         <div style={l4Style}>Certifications</div>
         {certifications.map((cert, i) => (
@@ -1483,6 +1558,7 @@ function InterpreterSignupForm() {
             <OutlineButton onClick={() => goToSection(4)}>Back</OutlineButton>
           </div>
         </div>
+        </FormCard>
       </SectionWrapper>
     );
   }
@@ -1619,6 +1695,7 @@ function InterpreterSignupForm() {
         <StepHeading>About you</StepHeading>
         <StepSubtext>Help people get to know you.</StepSubtext>
 
+        <FormCard>
         {/* Profile photo */}
         <div style={l4Style}>Profile Photo</div>
         <div style={{ marginBottom: 28 }}>
@@ -1670,7 +1747,7 @@ function InterpreterSignupForm() {
                 <circle cx="8.5" cy="8.5" r="1.5" />
                 <polyline points="21 15 16 10 5 21" />
               </svg>
-              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#96a0b8', margin: 0 }}>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#96a0b8', margin: 0 }}>
                 {photoUploading ? 'Uploading...' : 'Click to upload a photo'}
               </p>
             </div>
@@ -1688,7 +1765,7 @@ function InterpreterSignupForm() {
         <div style={{ ...l4Style, marginTop: 28 }}>Bio</div>
 
         <div style={{ marginBottom: 20 }}>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 6 }}>
+          <label style={{ display: 'block', fontSize: 15, fontWeight: 400, color: '#96a0b8', marginBottom: 6, fontFamily: "'Inter', sans-serif" }}>
             Describe your interpreting and community background
           </label>
           <textarea
@@ -1707,7 +1784,7 @@ function InterpreterSignupForm() {
         </div>
 
         <div style={{ marginBottom: 20 }}>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 6 }}>
+          <label style={{ display: 'block', fontSize: 15, fontWeight: 400, color: '#96a0b8', marginBottom: 6, fontFamily: "'Inter', sans-serif" }}>
             What settings or populations do you specialize in serving, and what draws you to that work?
           </label>
           <textarea
@@ -1726,7 +1803,7 @@ function InterpreterSignupForm() {
         </div>
 
         <div style={{ marginBottom: 20 }}>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 6 }}>
+          <label style={{ display: 'block', fontSize: 15, fontWeight: 400, color: '#96a0b8', marginBottom: 6, fontFamily: "'Inter', sans-serif" }}>
             Something about my background or approach that doesn't fit neatly into a checkbox:
           </label>
           <textarea
@@ -1747,14 +1824,14 @@ function InterpreterSignupForm() {
         {/* Intro video */}
         <div style={{ ...l4Style, marginTop: 28 }}>Intro Video</div>
         <p style={{
-          fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 13.5,
-          color: '#c8cdd8', lineHeight: 1.65, marginBottom: 16,
+          fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 15,
+          color: '#96a0b8', lineHeight: 1.65, marginBottom: 16,
         }}>
           Watching an intro video in ASL lets Deaf people get to know you naturally. No written description can replace that. When we started developing signpost, intro videos were one of the most requested features.
         </p>
         <p style={{
-          fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 13.5,
-          color: '#c8cdd8', lineHeight: 1.65, marginBottom: 16,
+          fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 15,
+          color: '#96a0b8', lineHeight: 1.65, marginBottom: 16,
         }}>
           Your video does not need to be polished or scripted. Just introduce yourself: share a little about your background, what kind of work you do, whatever feels right.
         </p>
@@ -1785,6 +1862,7 @@ function InterpreterSignupForm() {
             <OutlineButton onClick={() => goToSection(5)}>Back</OutlineButton>
           </div>
         </div>
+        </FormCard>
       </SectionWrapper>
     );
   }
@@ -1796,8 +1874,9 @@ function InterpreterSignupForm() {
   return (
     <SectionWrapper section={section} completedSections={completedSections}>
       <StepHeading>{stubLabel}</StepHeading>
+      <FormCard>
       <p style={{
-        fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14,
+        fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 15,
         color: '#96a0b8', lineHeight: 1.6, marginBottom: 28,
       }}>
         This section is coming soon.
@@ -1818,6 +1897,7 @@ function InterpreterSignupForm() {
           Back
         </OutlineButton>
       </div>
+      </FormCard>
     </SectionWrapper>
   );
 }
