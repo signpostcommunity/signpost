@@ -20,11 +20,21 @@ export default function DeafPortalClient() {
           maxWidth: 480,
           width: '100%',
           background: '#111118',
-          border: '1px solid rgba(255,255,255,0.06)',
+          border: '1px solid rgba(167, 139, 250, 0.15)',
           borderRadius: 16,
-          padding: '40px 36px 36px',
+          padding: '0 36px 36px',
+          overflow: 'hidden',
         }}
       >
+        {/* Gradient accent bar */}
+        <div
+          style={{
+            height: 3,
+            background: 'linear-gradient(90deg, #a78bfa, #00e5ff)',
+            margin: '0 -36px 40px',
+            width: 'calc(100% + 72px)',
+          }}
+        />
         {/* Icon */}
         <div
           style={{
@@ -54,14 +64,14 @@ export default function DeafPortalClient() {
           style={{
             fontFamily: "'Syne', sans-serif",
             fontWeight: 700,
-            fontSize: 22,
+            fontSize: 24,
             color: '#f0f2f8',
             textAlign: 'center',
             lineHeight: 1.4,
             margin: '0 0 20px',
           }}
         >
-          How is signpost different from an agency?
+          How is signpost <span style={{ fontStyle: 'italic', color: '#a78bfa' }}>different</span> from an agency?
         </h1>
 
         {/* Divider */}
@@ -78,44 +88,50 @@ export default function DeafPortalClient() {
             margin: '0 0 20px',
           }}
         >
-          signpost started as a &ldquo;what if?&rdquo; chat between two best friends.{' '}
-          <span style={{ color: '#a78bfa', fontWeight: 500 }}>Regina McGinnis</span> is a Deaf mental health professional.{' '}
-          <span style={{ color: '#00e5ff', fontWeight: 500 }}>Molly Sano-Mahgoub</span> is a certified ASL interpreter, with a DeafBlind son.{' '}
-          We have both experienced the challenges of booking interpreters firsthand, and we believe a new model is possible that works better for everyone.
+          signpost started as a &ldquo;what if?&rdquo; chat between two best friends.
+          <br /><span style={{ color: '#a78bfa', fontWeight: 500 }}>Regina McGinnis</span> is a Deaf mental health professional.
+          <br /><span style={{ color: '#00e5ff', fontWeight: 500 }}>Molly Sano-Mahgoub</span> is a certified ASL interpreter, with a DeafBlind son.
+          <br />We have both experienced the challenges of booking interpreters firsthand, and we believe a new model is possible that works better for everyone.
           So we decided to build the platform we have always dreamt of.
         </p>
 
-        {/* Mission */}
-        <p
+        {/* Pull-quote: Mission + Tagline */}
+        <div
           style={{
-            fontFamily: "'Inter', sans-serif",
-            fontWeight: 400,
-            fontSize: 17,
-            color: '#96a0b8',
-            lineHeight: 1.7,
-            margin: '0 0 0',
+            borderLeft: '2px solid #a78bfa',
+            paddingLeft: 16,
+            margin: '20px 0 24px',
           }}
         >
-          Our core mission is to put the control into{' '}
-          <span style={{ fontWeight: 600, color: '#f0f2f8' }}>YOUR</span>{' '}
-          hands. Pick your preferred interpreters, track the status of all your requests, and give honest feedback.
-        </p>
-
-        {/* Tagline */}
-        <p
-          style={{
-            fontFamily: "'Inter', sans-serif",
-            fontWeight: 500,
-            fontSize: 15,
-            fontStyle: 'italic',
-            color: '#a78bfa',
-            lineHeight: 1.7,
-            marginTop: 16,
-            marginBottom: 28,
-          }}
-        >
-          signpost is <em>your</em> interpreter platform.
-        </p>
+          <p
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 400,
+              fontSize: 15,
+              color: '#c8cdd8',
+              lineHeight: 1.7,
+              margin: 0,
+            }}
+          >
+            Our core mission is to put the control into{' '}
+            <span style={{ fontWeight: 600, color: '#f0f2f8' }}>YOUR</span>{' '}
+            hands. Pick your preferred interpreters, track the status of all your requests, and give honest feedback.
+          </p>
+          <p
+            style={{
+              fontFamily: "'Inter', sans-serif",
+              fontWeight: 500,
+              fontSize: 16,
+              fontStyle: 'italic',
+              color: '#a78bfa',
+              lineHeight: 1.7,
+              marginTop: 12,
+              marginBottom: 0,
+            }}
+          >
+            signpost is <em>your</em> interpreter platform.
+          </p>
+        </div>
 
         {/* Buttons */}
         <div className="dhh-landing-buttons" style={{ display: 'flex', gap: 10 }}>
