@@ -52,7 +52,7 @@ export default function InterpreterPortalClient() {
           style={{
             fontFamily: "'Syne', sans-serif",
             fontWeight: 700,
-            fontSize: 19,
+            fontSize: 22,
             color: '#f0f2f8',
             textAlign: 'center',
             lineHeight: 1.4,
@@ -70,31 +70,47 @@ export default function InterpreterPortalClient() {
           style={{
             fontFamily: "'Inter', sans-serif",
             fontWeight: 400,
-            fontSize: 13.5,
+            fontSize: 15,
             color: '#96a0b8',
             lineHeight: 1.7,
             margin: '0 0 20px',
           }}
         >
-          Built by{' '}
-          <span style={{ color: '#a78bfa', fontWeight: 500 }}>Regina</span>, a Deaf mental health professional, and{' '}
-          <span style={{ color: '#00e5ff', fontWeight: 500 }}>Molly</span>, a certified ASL interpreter (RID NIC-Master). We have both lived the challenges of booking interpreters firsthand, and we believe a new model is possible that works better for everyone.
+          signpost started as a &ldquo;what if?&rdquo; chat between two best friends.{' '}
+          <span style={{ color: '#a78bfa', fontWeight: 500 }}>Regina McGinnis</span> is a Deaf mental health professional.{' '}
+          <span style={{ color: '#00e5ff', fontWeight: 500 }}>Molly Sano-Mahgoub</span> is a certified ASL interpreter, with a DeafBlind son.{' '}
+          We have both experienced the challenges of booking interpreters firsthand, and we believe a new model is possible that works better for everyone.
+          So we decided to build the platform we have always dreamt of.
         </p>
 
-        {/* Thesis */}
+        {/* Mission */}
         <p
           style={{
             fontFamily: "'Inter', sans-serif",
             fontWeight: 400,
-            fontSize: 13.5,
+            fontSize: 17,
             color: '#96a0b8',
             lineHeight: 1.7,
-            margin: '0 0 28px',
+            margin: '0 0 0',
           }}
         >
-          Instead of an agency controlling who you get, signpost is an interpreter directory that{' '}
-          <span style={{ color: '#00e5ff', fontWeight: 500 }}>centers your preferences and needs</span>{' '}
-          at every step.
+          Our goal is to give freelance interpreters full control over their own work. Set your own rates, connect directly with clients, and manage your bookings in one place.
+        </p>
+
+        {/* Tagline */}
+        <p
+          style={{
+            fontFamily: "'Inter', sans-serif",
+            fontWeight: 500,
+            fontSize: 15,
+            fontStyle: 'italic',
+            color: '#00e5ff',
+            lineHeight: 1.7,
+            marginTop: 16,
+            marginBottom: 28,
+          }}
+        >
+          signpost is <em>your</em> interpreter platform.
         </p>
 
         {/* Buttons */}
