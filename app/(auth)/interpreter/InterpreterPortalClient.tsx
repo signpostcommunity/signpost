@@ -79,19 +79,31 @@ export default function InterpreterPortalClient() {
         <p
           style={{
             fontFamily: "'Inter', sans-serif",
-            fontWeight: 400,
-            fontSize: 15,
-            color: '#96a0b8',
+            fontWeight: 500,
+            fontSize: 16,
+            color: '#c8cdd8',
             lineHeight: 1.7,
-            margin: '0 0 20px',
+            textAlign: 'center',
+            marginBottom: 16,
+            marginTop: 0,
           }}
         >
           signpost started as a &ldquo;what if?&rdquo; chat between two best friends.
-          <br /><span style={{ color: '#a78bfa', fontWeight: 500 }}>Regina McGinnis</span> is a Deaf mental health professional.
-          <br /><span style={{ color: '#00e5ff', fontWeight: 500 }}>Molly Sano-Mahgoub</span> is a certified ASL interpreter, with a DeafBlind son.
-          <br />We have both experienced the challenges of booking interpreters firsthand, and we believe a new model is possible that works better for everyone.
-          So we decided to build the platform we have always dreamt of.
         </p>
+        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 12, marginBottom: 20, fontFamily: "'Inter', sans-serif" }}>
+          <p style={{ fontSize: 15, color: '#96a0b8', lineHeight: 1.65, margin: 0 }}>
+            <span style={{ color: '#a78bfa', fontWeight: 500 }}>Regina McGinnis</span> is a Deaf mental health professional.
+          </p>
+          <p style={{ fontSize: 15, color: '#96a0b8', lineHeight: 1.65, margin: 0 }}>
+            <span style={{ color: '#00e5ff', fontWeight: 500 }}>Molly Sano-Mahgoub</span> is a certified ASL interpreter, with a DeafBlind son.
+          </p>
+          <p style={{ fontSize: 15, color: '#96a0b8', lineHeight: 1.65, margin: 0 }}>
+            We have both experienced the challenges of booking interpreters firsthand, and we believe a new model is possible that works better for everyone.
+          </p>
+          <p style={{ fontSize: 15, color: '#c8cdd8', lineHeight: 1.65, margin: 0, fontWeight: 500 }}>
+            So we decided to build the platform we have always dreamt of.
+          </p>
+        </div>
 
         {/* Pull-quote: Mission + Tagline */}
         <div
