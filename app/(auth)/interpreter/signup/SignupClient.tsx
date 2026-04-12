@@ -10,6 +10,54 @@ import InlineVideoCapture from '@/components/ui/InlineVideoCapture';
 import { generateSlug } from '@/lib/slugUtils';
 import { syncNameFields } from '@/lib/nameSync';
 import { resizeImage } from '@/lib/imageUtils';
+import { SPECIALIZATION_CATEGORIES, SPECIALIZED_SKILLS } from '@/lib/constants/specializations';
+
+/* ─── Community & identity constants ─── */
+
+const BIPOC_OPTIONS = [
+  'Black/African American', 'Asian/Pacific Islander',
+  'Hispanic/Latino(a)', 'Indigenous/Native American',
+  'Middle Eastern/North African', 'Multiracial',
+];
+
+const RELIGIOUS_OPTIONS = [
+  'Buddhist', 'Christian', 'Hindu', 'Jewish', 'Muslim', 'Sikh', 'Other',
+];
+
+/* ─── Community Toggle (reused by Section 7) ─── */
+
+function CommunityToggle({ label, helper, checked, onChange }: { label: string; helper?: string; checked: boolean; onChange: () => void }) {
+  return (
+    <button type="button" onClick={onChange} style={{
+      display: 'flex', alignItems: 'center', gap: 12, width: '100%',
+      padding: '10px 0', marginBottom: 8, background: 'none', border: 'none',
+      cursor: 'pointer', fontFamily: "'Inter', sans-serif", textAlign: 'left',
+    }}>
+      <div style={{
+        width: 40, height: 20, borderRadius: 100, flexShrink: 0,
+        background: checked ? '#00e5ff' : '#16161f',
+        border: checked ? 'none' : '1px solid #1e2433',
+        position: 'relative', transition: 'background 0.2s',
+      }}>
+        <div style={{
+          width: 16, height: 16, borderRadius: '50%',
+          background: checked ? '#000' : '#96a0b8',
+          position: 'absolute', top: 2,
+          left: checked ? 22 : 2, transition: 'left 0.2s',
+        }} />
+      </div>
+      <div>
+        <span style={{
+          fontSize: 15,
+          color: checked ? '#00e5ff' : '#96a0b8',
+          fontWeight: checked ? 600 : 400,
+          display: 'block',
+        }}>{label}</span>
+        {helper && <span style={{ fontSize: 13, color: '#96a0b8', opacity: 0.7, lineHeight: 1.4 }}>{helper}</span>}
+      </div>
+    </button>
+  );
+}
 
 /* ─── Section labels ─── */
 
@@ -484,6 +532,24 @@ function InterpreterSignupForm() {
   const [photoUploading, setPhotoUploading] = useState(false);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
+  // Section 7: How People Find You
+  const [specializations, setSpecializations] = useState<string[]>([]);
+  const [specializedSkills, setSpecializedSkills] = useState<string[]>([]);
+  const [lgbtq, setLgbtq] = useState(false);
+  const [deafParented, setDeafParented] = useState(false);
+  const [bipoc, setBipoc] = useState(false);
+  const [bipocDetails, setBipocDetails] = useState<string[]>([]);
+  const [religiousAffiliation, setReligiousAffiliation] = useState(false);
+  const [religiousDetails, setReligiousDetails] = useState<string[]>([]);
+  const [mentorshipOffering, setMentorshipOffering] = useState(false);
+  const [mentorshipSeeking, setMentorshipSeeking] = useState(false);
+
+  // Section 8: Finish
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [addedDeafRole, setAddedDeafRole] = useState(false);
+  const [addedRequesterRole, setAddedRequesterRole] = useState(false);
+  const [termsError, setTermsError] = useState(false);
+
   // Add-role initialization
   useEffect(() => {
     if (!isAddRole) return;
@@ -585,6 +651,16 @@ function InterpreterSignupForm() {
             if (d.bioExtra) setBioExtra(d.bioExtra as string);
             if (d.videoUrl) setVideoUrl(d.videoUrl as string);
             if (d.photoUrl) setPhotoUrl(d.photoUrl as string);
+            if (Array.isArray(d.specializations)) setSpecializations(d.specializations as string[]);
+            if (Array.isArray(d.specializedSkills)) setSpecializedSkills(d.specializedSkills as string[]);
+            if (typeof d.lgbtq === 'boolean') setLgbtq(d.lgbtq);
+            if (typeof d.deafParented === 'boolean') setDeafParented(d.deafParented);
+            if (typeof d.bipoc === 'boolean') setBipoc(d.bipoc);
+            if (Array.isArray(d.bipocDetails)) setBipocDetails(d.bipocDetails as string[]);
+            if (typeof d.religiousAffiliation === 'boolean') setReligiousAffiliation(d.religiousAffiliation);
+            if (Array.isArray(d.religiousDetails)) setReligiousDetails(d.religiousDetails as string[]);
+            if (typeof d.mentorshipOffering === 'boolean') setMentorshipOffering(d.mentorshipOffering);
+            if (typeof d.mentorshipSeeking === 'boolean') setMentorshipSeeking(d.mentorshipSeeking);
           }
 
           // Jump to saved section
@@ -623,6 +699,9 @@ function InterpreterSignupForm() {
         signLanguages, otherSignLanguage, spokenLanguages, otherSpokenLanguage,
         certifications, education,
         bio, bioSpecializations, bioExtra, videoUrl, photoUrl,
+        specializations, specializedSkills,
+        lgbtq, deafParented, bipoc, bipocDetails, religiousAffiliation, religiousDetails,
+        mentorshipOffering, mentorshipSeeking,
       };
       supabase
         .from('interpreter_profiles')
@@ -930,6 +1009,16 @@ function InterpreterSignupForm() {
                       if (d.bioExtra) setBioExtra(d.bioExtra as string);
                       if (d.videoUrl) setVideoUrl(d.videoUrl as string);
                       if (d.photoUrl) setPhotoUrl(d.photoUrl as string);
+                      if (Array.isArray(d.specializations)) setSpecializations(d.specializations as string[]);
+                      if (Array.isArray(d.specializedSkills)) setSpecializedSkills(d.specializedSkills as string[]);
+                      if (typeof d.lgbtq === 'boolean') setLgbtq(d.lgbtq);
+                      if (typeof d.deafParented === 'boolean') setDeafParented(d.deafParented);
+                      if (typeof d.bipoc === 'boolean') setBipoc(d.bipoc);
+                      if (Array.isArray(d.bipocDetails)) setBipocDetails(d.bipocDetails as string[]);
+                      if (typeof d.religiousAffiliation === 'boolean') setReligiousAffiliation(d.religiousAffiliation);
+                      if (Array.isArray(d.religiousDetails)) setReligiousDetails(d.religiousDetails as string[]);
+                      if (typeof d.mentorshipOffering === 'boolean') setMentorshipOffering(d.mentorshipOffering);
+                      if (typeof d.mentorshipSeeking === 'boolean') setMentorshipSeeking(d.mentorshipSeeking);
                     }
                     const targetSection = profile.draft_step ?? 2;
                     const completed = Array.from({ length: targetSection - 1 }, (_, i) => i + 1);
@@ -2092,39 +2181,398 @@ function InterpreterSignupForm() {
     );
   }
 
-  /* ─── Stub Sections 7-8 ─── */
+  /* ─── Section 7: How People Find You ─── */
 
-  const stubLabel = SECTION_LABELS[section - 1] || 'Section';
+  if (section === 7) {
+    const l4Style: React.CSSProperties = {
+      fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 13,
+      textTransform: 'uppercase', letterSpacing: '0.08em', color: '#00e5ff',
+      marginBottom: 12,
+    };
 
-  return (
-    <SectionWrapper section={section} completedSections={completedSections}>
-      <StepHeading>{stubLabel}</StepHeading>
-      <FormCard>
-      <p style={{
-        fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 15,
-        color: '#96a0b8', lineHeight: 1.6, marginBottom: 28,
-      }}>
-        This section is coming soon.
-      </p>
+    const pillStyle = (selected: boolean): React.CSSProperties => ({
+      background: selected ? 'rgba(0,229,255,0.08)' : 'transparent',
+      border: `1px solid ${selected ? '#00e5ff' : 'rgba(0,229,255,0.15)'}`,
+      color: selected ? '#00e5ff' : '#c8cdd8',
+      borderRadius: 999, padding: '8px 16px', margin: '0 8px 8px 0',
+      fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 500,
+      cursor: 'pointer', transition: 'all 0.15s',
+    });
 
-      {section < 8 && (
-        <PrimaryButton onClick={() => goToSection(section + 1)}>
-          Continue
-        </PrimaryButton>
-      )}
-      {section === 8 && (
-        <PrimaryButton onClick={() => router.push('/interpreter/dashboard')}>
-          Go to Dashboard
-        </PrimaryButton>
-      )}
-      <div style={{ marginTop: 10 }}>
-        <OutlineButton onClick={() => goToSection(section - 1)}>
-          Back
-        </OutlineButton>
+    const handleSection7Save = async () => {
+      const uid = userId || existingUserId;
+      if (!uid) return;
+      setLoading(true);
+      const supabase = createClient();
+      const { error: saveErr } = await supabase
+        .from('interpreter_profiles')
+        .update({
+          specializations,
+          specialized_skills: specializedSkills,
+          lgbtq,
+          deaf_parented: deafParented,
+          bipoc,
+          bipoc_details: bipocDetails,
+          religious_affiliation: religiousAffiliation,
+          religious_details: religiousDetails,
+          mentorship_offering: mentorshipOffering,
+          mentorship_seeking: mentorshipSeeking,
+        })
+        .eq('user_id', uid);
+      if (saveErr) console.error('Section 7 save error:', saveErr);
+      setLoading(false);
+      goToSection(8);
+    };
+
+    return (
+      <SectionWrapper section={section} completedSections={completedSections}>
+        <StepHeading>How people find you</StepHeading>
+        <StepSubtext>These help requesters find interpreters who are the right fit for their needs.</StepSubtext>
+
+        <FormCard>
+          {/* Specializations */}
+          <div style={l4Style}>Specializations</div>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#96a0b8', lineHeight: 1.6, margin: '0 0 14px' }}>
+            Select the settings where you have experience or are available to work.
+          </p>
+          {Object.entries(SPECIALIZATION_CATEGORIES).map(([category, items]) => (
+            <div key={category} style={{ marginBottom: 16 }}>
+              <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#96a0b8', marginBottom: 8 }}>
+                {category}
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                {items.map((s) => (
+                  <button key={s} type="button" onClick={() => {
+                    setSpecializations(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
+                  }} style={pillStyle(specializations.includes(s))}>{s}</button>
+                ))}
+              </div>
+            </div>
+          ))}
+
+          {/* Specialized Skills */}
+          <div style={{ ...l4Style, marginTop: 28 }}>Specialized Skills</div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', marginBottom: 28 }}>
+            {SPECIALIZED_SKILLS.map((s) => (
+              <button key={s} type="button" onClick={() => {
+                setSpecializedSkills(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
+              }} style={pillStyle(specializedSkills.includes(s))}>{s}</button>
+            ))}
+          </div>
+
+          {/* Community & Identity */}
+          <div style={l4Style}>Community & Identity</div>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#96a0b8', lineHeight: 1.6, margin: '0 0 16px' }}>
+            Requesters can use the directory to find interpreters who are the right fit for culturally specific settings.
+          </p>
+
+          <CommunityToggle label="LGBTQ+" helper="Select if you are available for and affirming of LGBTQ+ clients and settings" checked={lgbtq} onChange={() => setLgbtq(!lgbtq)} />
+          <CommunityToggle label="Deaf-Parented Interpreter / CODA" helper="Select if you grew up with Deaf parents or are a Child of Deaf Adults" checked={deafParented} onChange={() => setDeafParented(!deafParented)} />
+          <CommunityToggle label="BIPOC" checked={bipoc} onChange={() => { if (bipoc) { setBipoc(false); setBipocDetails([]); } else { setBipoc(true); } }} />
+          {bipoc && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', marginBottom: 8, paddingLeft: 52 }}>
+              {BIPOC_OPTIONS.map(opt => (
+                <button key={opt} type="button" onClick={() => setBipocDetails(prev => prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt])} style={pillStyle(bipocDetails.includes(opt))}>{opt}</button>
+              ))}
+            </div>
+          )}
+          <CommunityToggle label="Religious affiliation" checked={religiousAffiliation} onChange={() => { if (religiousAffiliation) { setReligiousAffiliation(false); setReligiousDetails([]); } else { setReligiousAffiliation(true); } }} />
+          {religiousAffiliation && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', marginBottom: 8, paddingLeft: 52 }}>
+              {RELIGIOUS_OPTIONS.map(opt => (
+                <button key={opt} type="button" onClick={() => setReligiousDetails(prev => prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt])} style={pillStyle(religiousDetails.includes(opt))}>{opt}</button>
+              ))}
+            </div>
+          )}
+
+          {/* Mentorship */}
+          <div style={{ ...l4Style, marginTop: 28 }}>Mentorship</div>
+          <CommunityToggle label="I am seeking mentorship" checked={mentorshipSeeking} onChange={() => setMentorshipSeeking(!mentorshipSeeking)} />
+          <CommunityToggle label="I am offering mentorship" checked={mentorshipOffering} onChange={() => setMentorshipOffering(!mentorshipOffering)} />
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#96a0b8', marginTop: 8, lineHeight: 1.5 }}>
+            You can set up mentorship preferences from your profile after signup.
+          </p>
+
+          <div style={{ marginTop: 28 }}>
+            <PrimaryButton onClick={handleSection7Save} disabled={loading}>
+              {loading ? 'Saving...' : 'Continue'}
+            </PrimaryButton>
+            <div style={{ marginTop: 8 }}>
+              <OutlineButton onClick={() => goToSection(6)}>Back</OutlineButton>
+            </div>
+          </div>
+        </FormCard>
+      </SectionWrapper>
+    );
+  }
+
+  /* ─── Section 8: Finish ─── */
+
+  if (section === 8) {
+    const handleAddDeafRole = async () => {
+      const uid = userId || existingUserId;
+      if (!uid || addedDeafRole) return;
+      const supabase = createClient();
+      const { data: current } = await supabase.from('user_profiles').select('pending_roles').eq('id', uid).maybeSingle();
+      const roles = (current?.pending_roles as string[]) || [];
+      if (!roles.includes('deaf')) {
+        await supabase.from('user_profiles').update({ pending_roles: [...roles, 'deaf'] }).eq('id', uid);
+      }
+      setAddedDeafRole(true);
+    };
+
+    const handleAddRequesterRole = async () => {
+      const uid = userId || existingUserId;
+      if (!uid || addedRequesterRole) return;
+      const supabase = createClient();
+      const { data: current } = await supabase.from('user_profiles').select('pending_roles').eq('id', uid).maybeSingle();
+      const roles = (current?.pending_roles as string[]) || [];
+      if (!roles.includes('requester')) {
+        await supabase.from('user_profiles').update({ pending_roles: [...roles, 'requester'] }).eq('id', uid);
+      }
+      setAddedRequesterRole(true);
+    };
+
+    const handleSubmit = async () => {
+      if (!agreeTerms) {
+        setTermsError(true);
+        return;
+      }
+      setTermsError(false);
+      const uid = userId || existingUserId;
+      if (!uid) return;
+      setLoading(true);
+      const supabase = createClient();
+      const { error: submitErr } = await supabase
+        .from('interpreter_profiles')
+        .update({ submitted_at: new Date().toISOString() })
+        .eq('user_id', uid);
+      if (submitErr) {
+        console.error('Submit error:', submitErr);
+        setError('Failed to submit profile. Please try again.');
+        setLoading(false);
+        return;
+      }
+      setLoading(false);
+      goToSection(9);
+    };
+
+    return (
+      <SectionWrapper section={section} completedSections={completedSections}>
+        <StepHeading>Almost done</StepHeading>
+
+        <FormCard>
+          {/* Terms */}
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', marginBottom: 12 }}>
+            <input type="checkbox" checked={agreeTerms} onChange={(e) => { setAgreeTerms(e.target.checked); setTermsError(false); }}
+              style={{ accentColor: '#00e5ff', width: 18, height: 18, marginTop: 2, flexShrink: 0 }} />
+            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#f0f2f8', lineHeight: 1.5 }}>
+              I have read and agree to signpost&apos;s{' '}
+              <a href="/policies" target="_blank" rel="noopener noreferrer" style={{ color: '#00e5ff', textDecoration: 'none' }}>Terms of Service</a>
+              {' '}and{' '}
+              <a href="/policies" target="_blank" rel="noopener noreferrer" style={{ color: '#00e5ff', textDecoration: 'none' }}>Platform Booking Policy</a>
+            </span>
+          </label>
+
+          {termsError && (
+            <div style={{
+              background: 'rgba(255,107,133,0.08)', border: '1px solid rgba(255,107,133,0.2)',
+              borderRadius: 10, padding: '10px 14px', color: '#ff6b85',
+              fontFamily: "'Inter', sans-serif", fontSize: 13, marginBottom: 20,
+            }}>
+              Please agree to the terms before continuing.
+            </div>
+          )}
+
+          {/* Additional role: Deaf/DB/HH */}
+          <div style={{ background: '#16161f', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, padding: 20, marginBottom: 16, marginTop: 16 }}>
+            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 18, color: '#f0f2f8', margin: '0 0 8px' }}>
+              Are you also Deaf, DeafBlind, or Hard of Hearing?
+            </h3>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#96a0b8', lineHeight: 1.6, margin: '0 0 12px' }}>
+              Create a personal profile to build your preferred interpreter list, rate interpreters, and request interpreters for personal events. Your name, location, and email will be filled in automatically.
+            </p>
+            {addedDeafRole ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#00e5ff', fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 500 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
+                Deaf/DB/HH profile added
+              </div>
+            ) : (
+              <button type="button" onClick={handleAddDeafRole} style={{
+                background: 'transparent', border: '1px solid rgba(0,229,255,0.3)',
+                borderRadius: 10, padding: '10px 18px', color: '#00e5ff',
+                fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 500, cursor: 'pointer',
+              }}>
+                Yes, add Deaf/DB/HH profile
+              </button>
+            )}
+          </div>
+
+          {/* Additional role: Requester */}
+          <div style={{ background: '#16161f', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, padding: 20, marginBottom: 16 }}>
+            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 18, color: '#f0f2f8', margin: '0 0 8px' }}>
+              Do you also coordinate interpreters for an organization?
+            </h3>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#96a0b8', lineHeight: 1.6, margin: '0 0 12px' }}>
+              If you book interpreters for a workplace, school, medical office, or other organization, add a requester profile to manage bookings from your dashboard.
+            </p>
+            {addedRequesterRole ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#00e5ff', fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 500 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
+                Requester profile added
+              </div>
+            ) : (
+              <button type="button" onClick={handleAddRequesterRole} style={{
+                background: 'transparent', border: '1px solid rgba(0,229,255,0.3)',
+                borderRadius: 10, padding: '10px 18px', color: '#00e5ff',
+                fontFamily: "'Inter', sans-serif", fontSize: 14, fontWeight: 500, cursor: 'pointer',
+              }}>
+                Yes, add requester profile
+              </button>
+            )}
+          </div>
+
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#96a0b8', marginBottom: 28, lineHeight: 1.5 }}>
+            You can always switch between your roles or add new ones from the role switcher in your portal.
+          </p>
+
+          {error && (
+            <div style={{
+              background: 'rgba(255,107,133,0.08)', border: '1px solid rgba(255,107,133,0.2)',
+              borderRadius: 10, padding: '12px 16px', color: '#ff6b85',
+              fontFamily: "'Inter', sans-serif", fontSize: 13, marginBottom: 16,
+            }}>
+              {error}
+            </div>
+          )}
+
+          <PrimaryButton onClick={handleSubmit} disabled={loading}>
+            {loading ? 'Submitting...' : 'Create my profile'}
+          </PrimaryButton>
+          <div style={{ marginTop: 8 }}>
+            <OutlineButton onClick={() => goToSection(7)}>Back</OutlineButton>
+          </div>
+        </FormCard>
+      </SectionWrapper>
+    );
+  }
+
+  /* ─── Section 9: Done ─── */
+
+  if (section === 9) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+        <div style={{ maxWidth: 540, width: '100%', textAlign: 'center' }}>
+          {/* Cyan checkmark circle */}
+          <div style={{
+            width: 56, height: 56, borderRadius: '50%',
+            background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.3)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 20px',
+          }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 775, fontSize: 27, color: '#f0f2f8', margin: '0 0 8px' }}>
+            You&apos;re all set!
+          </h1>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#96a0b8', margin: '0 0 32px' }}>
+            Your profile is live. Here is what to do next:
+          </p>
+
+          {/* Action cards */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, textAlign: 'left', marginBottom: 32 }}>
+            <div style={{
+              background: '#111118', border: '1px solid rgba(255,255,255,0.06)',
+              borderRadius: 10, padding: '16px 18px', display: 'flex', alignItems: 'flex-start', gap: 14,
+            }}>
+              <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(0,229,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 14, color: '#f0f2f8' }}>
+                  Build your preferred interpreter team
+                </div>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 13, color: '#96a0b8', marginTop: 4 }}>
+                  Add interpreters you trust for teaming and referrals.
+                </div>
+              </div>
+            </div>
+
+            <div style={{
+              background: '#111118', border: '1px solid rgba(255,255,255,0.06)',
+              borderRadius: 10, padding: '16px 18px', display: 'flex', alignItems: 'flex-start', gap: 14,
+            }}>
+              <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(0,229,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 14, color: '#f0f2f8' }}>
+                  Share your Book Me link
+                </div>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 13, color: '#96a0b8', marginTop: 4 }}>
+                  Give clients a direct way to request you.
+                </div>
+              </div>
+            </div>
+
+            <div style={{
+              background: '#111118', border: '1px solid rgba(255,255,255,0.06)',
+              borderRadius: 10, padding: '16px 18px', display: 'flex', alignItems: 'flex-start', gap: 14,
+            }}>
+              <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(0,229,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+              </div>
+              <div>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 14, color: '#f0f2f8' }}>
+                  Browse the directory
+                </div>
+                <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 13, color: '#96a0b8', marginTop: 4 }}>
+                  See how your profile appears and explore other interpreters.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* CTA buttons */}
+          <a href="/interpreter/dashboard" style={{
+            display: 'block', width: '100%', padding: '14px 0', borderRadius: 10,
+            background: '#00e5ff', color: '#0a0a0f', textAlign: 'center',
+            fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 14.5,
+            textDecoration: 'none', marginBottom: 8,
+          }}>
+            Go to my dashboard
+          </a>
+          <a href="/directory" style={{
+            display: 'block', width: '100%', padding: '14px 0', borderRadius: 10,
+            background: 'transparent', border: '1px solid rgba(0,229,255,0.3)',
+            color: '#00e5ff', textAlign: 'center',
+            fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 13.5,
+            textDecoration: 'none',
+          }}>
+            Browse the directory
+          </a>
+        </div>
       </div>
-      </FormCard>
-    </SectionWrapper>
-  );
+    );
+  }
+
+  /* ─── Fallback ─── */
+
+  return null;
 }
 
 /* ─── Export ─── */
