@@ -374,6 +374,7 @@ function InterpreterSignupForm() {
 
   const [section, setSection] = useState(isAddRole ? 2 : 1);
   const [completedSections, setCompletedSections] = useState<number[]>([]);
+  const [resuming, setResuming] = useState(!isAddRole);
   const [userId, setUserId] = useState<string | null>(null);
   const [profileId, setProfileId] = useState<string | null>(null);
   const [firstName, setFirstName] = useState('');
@@ -456,28 +457,80 @@ function InterpreterSignupForm() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAddRole]);
 
-  // Check if user is already authenticated (e.g. via Google OAuth redirect)
+  // Check if user is already authenticated — resume draft if possible
   useEffect(() => {
-    if (isAddRole || userId) return;
+    if (isAddRole || userId) { setResuming(false); return; }
+    const timeout = setTimeout(() => setResuming(false), 500);
     (async () => {
       try {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          setUserId(user.id);
-          setExistingUserId(user.id);
-          const fullName = user.user_metadata?.full_name;
-          if (fullName && !firstName) {
-            const parts = fullName.trim().split(' ');
-            setFirstName(parts.slice(0, -1).join(' ') || parts[0] || '');
-            setLastName(parts.length > 1 ? parts[parts.length - 1] : '');
+        if (!user) { setResuming(false); clearTimeout(timeout); return; }
+
+        setUserId(user.id);
+        setExistingUserId(user.id);
+        const fullName = user.user_metadata?.full_name;
+        if (fullName && !firstName) {
+          const parts = fullName.trim().split(' ');
+          setFirstName(parts.slice(0, -1).join(' ') || parts[0] || '');
+          setLastName(parts.length > 1 ? parts[parts.length - 1] : '');
+        }
+        if (user.email && !email) setEmail(user.email);
+
+        // Check for existing profile to resume
+        const { data: profile } = await supabase
+          .from('interpreter_profiles')
+          .select('id, draft_step, draft_data, first_name, last_name, email, country, state, city')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (profile) {
+          setProfileId(profile.id);
+          // Restore basic fields from profile
+          if (profile.first_name && !firstName) setFirstName(profile.first_name);
+          if (profile.last_name && !lastName) setLastName(profile.last_name);
+          if (profile.email && !email) setEmail(profile.email);
+          if (profile.country) setCountry(profile.country);
+          if (profile.state) setState(profile.state);
+          if (profile.city) setCity(profile.city);
+
+          // Restore draft_data fields
+          const d = profile.draft_data as Record<string, unknown> | null;
+          if (d) {
+            if (d.interpreterType) setInterpreterType(d.interpreterType as string);
+            if (d.yearsExperience) setYearsExperience(d.yearsExperience as string);
+            if (d.workMode) setWorkMode(d.workMode as string);
+            if (d.genderIdentity) setGenderIdentity(d.genderIdentity as string);
+            if (d.pronouns) setPronouns(d.pronouns as string);
+            if (d.phone) setPhone(d.phone as string);
+            if (typeof d.eventCoordination === 'boolean') setEventCoordination(d.eventCoordination);
+            if (Array.isArray(d.signLanguages)) setSignLanguages(d.signLanguages as string[]);
+            if (d.otherSignLanguage) setOtherSignLanguage(d.otherSignLanguage as string);
+            if (Array.isArray(d.spokenLanguages)) setSpokenLanguages(d.spokenLanguages as string[]);
+            if (d.otherSpokenLanguage) setOtherSpokenLanguage(d.otherSpokenLanguage as string);
+            if (Array.isArray(d.certifications)) setCertifications(d.certifications as Array<{name: string; issuing_body: string; year: string}>);
+            if (Array.isArray(d.education)) setEducation(d.education as Array<{institution: string; degree: string; year: string}>);
+            if (d.bio) setBio(d.bio as string);
+            if (d.bioSpecializations) setBioSpecializations(d.bioSpecializations as string);
+            if (d.bioExtra) setBioExtra(d.bioExtra as string);
+            if (d.videoUrl) setVideoUrl(d.videoUrl as string);
+            if (d.photoUrl) setPhotoUrl(d.photoUrl as string);
           }
-          if (user.email && !email) setEmail(user.email);
+
+          // Jump to saved section
+          const targetSection = profile.draft_step ?? 2;
+          const completed = Array.from({ length: targetSection - 1 }, (_, i) => i + 1);
+          setCompletedSections(completed);
+          setSection(targetSection);
         }
       } catch (e) {
-        console.error('Auth check failed:', e);
+        console.error('Auth/resume check failed:', e);
+      } finally {
+        setResuming(false);
+        clearTimeout(timeout);
       }
     })();
+    return () => clearTimeout(timeout);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -489,6 +542,26 @@ function InterpreterSignupForm() {
     });
     setSection(s);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Persist draft progress to Supabase
+    const uid = userId || existingUserId;
+    if (uid) {
+      const supabase = createClient();
+      const draftData = {
+        firstName, lastName, email, country, state, city,
+        interpreterType, yearsExperience, workMode, genderIdentity, pronouns, phone, eventCoordination,
+        signLanguages, otherSignLanguage, spokenLanguages, otherSpokenLanguage,
+        certifications, education,
+        bio, bioSpecializations, bioExtra, videoUrl, photoUrl,
+      };
+      supabase
+        .from('interpreter_profiles')
+        .update({ draft_step: s, draft_data: draftData })
+        .eq('user_id', uid)
+        .then(({ error: draftErr }) => {
+          if (draftErr) console.warn('Failed to save draft:', draftErr.message);
+        });
+    }
   }
 
   /* ─── Section 1: Create Account ─── */
@@ -672,6 +745,20 @@ function InterpreterSignupForm() {
     }
   }
 
+  /* ─── Resuming check ─── */
+
+  if (resuming) {
+    return (
+      <SectionWrapper section={1} completedSections={[]}>
+        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: '#96a0b8' }}>
+          Checking for saved progress...
+        </p>
+      </SectionWrapper>
+    );
+  }
+
+  const isAuthenticated = !!(userId || existingUserId);
+
   /* ─── Section 1: Account ─── */
 
   if (section === 1) {
@@ -720,19 +807,75 @@ function InterpreterSignupForm() {
           )}
 
           <PrimaryButton type="submit" disabled={loading}>
-            {loading ? 'Creating account...' : 'Create Account'}
+            {loading ? (isAuthenticated ? 'Continuing...' : 'Creating account...') : (isAuthenticated ? 'Continue' : 'Create Account')}
           </PrimaryButton>
         </form>
 
-        <p style={{
-          fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#96a0b8',
-          textAlign: 'center', marginTop: 20,
-        }}>
-          Already have an account?{' '}
-          <Link href="/interpreter/login" style={{ color: '#00e5ff', textDecoration: 'none', fontWeight: 500 }}>
-            Sign in
-          </Link>
-        </p>
+        {!isAuthenticated && (
+          <p style={{
+            fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#96a0b8',
+            textAlign: 'center', marginTop: 20,
+          }}>
+            Already have an account?{' '}
+            <button
+              type="button"
+              onClick={async () => {
+                if (!email || !password) { setError('Enter your email and password to sign in.'); return; }
+                setError(''); setLoading(true);
+                try {
+                  const supabase = createClient();
+                  const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+                  if (signInError) { setError(signInError.message); setLoading(false); return; }
+                  if (!signInData.user) { setError('Sign in failed.'); setLoading(false); return; }
+                  const uid = signInData.user.id;
+                  setUserId(uid); setExistingUserId(uid);
+                  const { data: profile } = await supabase
+                    .from('interpreter_profiles')
+                    .select('id, draft_step, draft_data')
+                    .eq('user_id', uid)
+                    .maybeSingle();
+                  if (profile) {
+                    setProfileId(profile.id);
+                    const d = profile.draft_data as Record<string, unknown> | null;
+                    if (d) {
+                      if (d.interpreterType) setInterpreterType(d.interpreterType as string);
+                      if (d.yearsExperience) setYearsExperience(d.yearsExperience as string);
+                      if (d.workMode) setWorkMode(d.workMode as string);
+                      if (d.genderIdentity) setGenderIdentity(d.genderIdentity as string);
+                      if (d.pronouns) setPronouns(d.pronouns as string);
+                      if (d.phone) setPhone(d.phone as string);
+                      if (typeof d.eventCoordination === 'boolean') setEventCoordination(d.eventCoordination);
+                      if (Array.isArray(d.signLanguages)) setSignLanguages(d.signLanguages as string[]);
+                      if (d.otherSignLanguage) setOtherSignLanguage(d.otherSignLanguage as string);
+                      if (Array.isArray(d.spokenLanguages)) setSpokenLanguages(d.spokenLanguages as string[]);
+                      if (d.otherSpokenLanguage) setOtherSpokenLanguage(d.otherSpokenLanguage as string);
+                      if (Array.isArray(d.certifications)) setCertifications(d.certifications as Array<{name: string; issuing_body: string; year: string}>);
+                      if (Array.isArray(d.education)) setEducation(d.education as Array<{institution: string; degree: string; year: string}>);
+                      if (d.bio) setBio(d.bio as string);
+                      if (d.bioSpecializations) setBioSpecializations(d.bioSpecializations as string);
+                      if (d.bioExtra) setBioExtra(d.bioExtra as string);
+                      if (d.videoUrl) setVideoUrl(d.videoUrl as string);
+                      if (d.photoUrl) setPhotoUrl(d.photoUrl as string);
+                    }
+                    const targetSection = profile.draft_step ?? 2;
+                    const completed = Array.from({ length: targetSection - 1 }, (_, i) => i + 1);
+                    setCompletedSections(completed);
+                    setSection(targetSection);
+                  } else {
+                    goToSection(2);
+                  }
+                  setLoading(false);
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : 'Sign in failed');
+                  setLoading(false);
+                }
+              }}
+              style={{ color: '#00e5ff', textDecoration: 'none', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: 13 }}
+            >
+              Sign in
+            </button>
+          </p>
+        )}
       </SectionWrapper>
     );
   }
