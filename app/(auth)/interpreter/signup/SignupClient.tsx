@@ -342,7 +342,7 @@ function SectionWrapper({ section, completedSections, children }: {
   section: number; completedSections: number[]; children: React.ReactNode;
 }) {
   return (
-    <div style={{ padding: '80px 28px 36px', minHeight: '100vh', background: 'var(--bg)' }}>
+    <div style={{ padding: '100px 28px 36px', minHeight: '100vh', background: 'var(--bg)' }}>
       <div className="interpreter-signup-layout" style={{ maxWidth: 900, margin: '0 auto' }}>
         <SidebarNav currentSection={section} completedSections={completedSections} />
         <div style={{ flex: 1, maxWidth: 600 }}>
