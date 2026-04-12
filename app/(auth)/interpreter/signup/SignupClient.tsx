@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton';
 import LocationPicker from '@/components/shared/LocationPicker';
+import InlineVideoCapture from '@/components/ui/InlineVideoCapture';
 import { generateSlug } from '@/lib/slugUtils';
 import { syncNameFields } from '@/lib/nameSync';
+import { resizeImage } from '@/lib/imageUtils';
 
 /* ─── Section labels ─── */
 
@@ -356,6 +358,34 @@ function InterpreterSignupForm() {
   const [loading, setLoading] = useState(false);
   const [existingUserId, setExistingUserId] = useState<string | null>(null);
 
+  // Section 3: Professional
+  const [interpreterType, setInterpreterType] = useState('');
+  const [yearsExperience, setYearsExperience] = useState('');
+  const [workMode, setWorkMode] = useState('');
+  const [genderIdentity, setGenderIdentity] = useState('');
+  const [pronouns, setPronouns] = useState('');
+  const [phone, setPhone] = useState('');
+  const [eventCoordination, setEventCoordination] = useState(false);
+
+  // Section 4: Languages
+  const [signLanguages, setSignLanguages] = useState<string[]>([]);
+  const [otherSignLanguage, setOtherSignLanguage] = useState('');
+  const [spokenLanguages, setSpokenLanguages] = useState<string[]>([]);
+  const [otherSpokenLanguage, setOtherSpokenLanguage] = useState('');
+
+  // Section 5: Credentials
+  const [certifications, setCertifications] = useState<Array<{name: string; issuing_body: string; year: string}>>([]);
+  const [education, setEducation] = useState<Array<{institution: string; degree: string; year: string}>>([]);
+
+  // Section 6: About You
+  const [bio, setBio] = useState('');
+  const [bioSpecializations, setBioSpecializations] = useState('');
+  const [bioExtra, setBioExtra] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
+  const [photoUrl, setPhotoUrl] = useState('');
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+
   // Add-role initialization
   useEffect(() => {
     if (!isAddRole) return;
@@ -672,7 +702,890 @@ function InterpreterSignupForm() {
     );
   }
 
-  /* ─── Stub Sections 3-8 ─── */
+  /* ─── Section 3: Professional ─── */
+
+  async function handleSaveProfessional() {
+    if (!interpreterType) {
+      setError('Please select your interpreter type.');
+      return;
+    }
+    setError('');
+    setLoading(true);
+    try {
+      const supabase = createClient();
+      const { error: updateError } = await supabase
+        .from('interpreter_profiles')
+        .update({
+          interpreter_type: interpreterType,
+          years_experience: yearsExperience || null,
+          work_mode: workMode || null,
+          gender_identity: genderIdentity || null,
+          pronouns: pronouns || null,
+          phone: phone || null,
+          event_coordination: eventCoordination,
+        })
+        .eq('user_id', userId);
+      if (updateError) {
+        setError(updateError.message);
+        setLoading(false);
+        return;
+      }
+      setLoading(false);
+      goToSection(4);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Save failed');
+      setLoading(false);
+    }
+  }
+
+  if (section === 3) {
+    const interpreterTypes = [
+      'Hearing Interpreter',
+      'Deaf Interpreter',
+      'Deaf-Parented Interpreter / CODA',
+    ];
+    const yearsOptions = [
+      'Less than 1 year', '1-3 years', '3-5 years', '5-10 years',
+      '10-15 years', '15-20 years', '20+ years',
+    ];
+    const workModes = [
+      'In-person only', 'Remote only', 'Both in-person and remote',
+    ];
+    const genderOptions = [
+      'Woman', 'Man', 'Non-binary', 'Prefer to self-describe', 'Prefer not to say',
+    ];
+
+    return (
+      <SectionWrapper>
+        <StepHeading>Professional background</StepHeading>
+        <StepSubtext>Tell us about your interpreting practice.</StepSubtext>
+
+        {/* Interpreter type */}
+        <div style={{ marginBottom: 24 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 8 }}>
+            Interpreter type <span style={{ color: '#ff6b85' }}>*</span>
+          </label>
+          {interpreterTypes.map((t) => (
+            <label key={t} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, cursor: 'pointer' }}>
+              <input
+                type="radio"
+                name="interpreterType"
+                value={t}
+                checked={interpreterType === t}
+                onChange={() => setInterpreterType(t)}
+                style={{ accentColor: '#00e5ff', width: 16, height: 16 }}
+              />
+              <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: '#c8cdd8' }}>{t}</span>
+            </label>
+          ))}
+        </div>
+
+        {/* Years of experience */}
+        <div style={{ marginBottom: 24 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 6 }}>
+            Years of experience
+          </label>
+          <select
+            value={yearsExperience}
+            onChange={(e) => setYearsExperience(e.target.value)}
+            style={{
+              width: '100%', background: 'var(--surface)', border: '1px solid var(--border)',
+              borderRadius: 10, padding: '11px 14px', color: 'var(--text)', fontSize: 15,
+              fontFamily: "'Inter', sans-serif", outline: 'none', appearance: 'none',
+            }}
+          >
+            <option value="">Select...</option>
+            {yearsOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+          </select>
+        </div>
+
+        {/* Mode of work */}
+        <div style={{ marginBottom: 24 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 8 }}>
+            Mode of work
+          </label>
+          {workModes.map((m) => (
+            <label key={m} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, cursor: 'pointer' }}>
+              <input
+                type="radio"
+                name="workMode"
+                value={m}
+                checked={workMode === m}
+                onChange={() => setWorkMode(m)}
+                style={{ accentColor: '#00e5ff', width: 16, height: 16 }}
+              />
+              <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: '#c8cdd8' }}>{m}</span>
+            </label>
+          ))}
+        </div>
+
+        {/* Gender identity */}
+        <div style={{ marginBottom: 24 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 6 }}>
+            Gender identity
+          </label>
+          <select
+            value={genderIdentity}
+            onChange={(e) => setGenderIdentity(e.target.value)}
+            style={{
+              width: '100%', background: 'var(--surface)', border: '1px solid var(--border)',
+              borderRadius: 10, padding: '11px 14px', color: 'var(--text)', fontSize: 15,
+              fontFamily: "'Inter', sans-serif", outline: 'none', appearance: 'none',
+            }}
+          >
+            <option value="">Select...</option>
+            {genderOptions.map((o) => <option key={o} value={o}>{o}</option>)}
+          </select>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#96a0b8', marginTop: 6, lineHeight: 1.5 }}>
+            Used by requesters to find interpreters for settings where gender match matters, such as medical appointments.
+          </p>
+        </div>
+
+        {/* Pronouns */}
+        <AuthInput label="Pronouns" value={pronouns} onChange={setPronouns} placeholder="e.g. she/her, he/him, they/them" />
+
+        {/* Phone */}
+        <div style={{ marginTop: 16 }}>
+          <AuthInput label="Phone" value={phone} onChange={setPhone} placeholder="Phone number" />
+        </div>
+
+        {/* Event coordination */}
+        <div style={{ marginTop: 20 }}>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={eventCoordination}
+              onChange={(e) => setEventCoordination(e.target.checked)}
+              style={{ accentColor: '#00e5ff', width: 16, height: 16, marginTop: 2 }}
+            />
+            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: '#c8cdd8' }}>
+              I also coordinate interpreters for events or organizations
+            </span>
+          </label>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#96a0b8', marginTop: 6, marginLeft: 26, lineHeight: 1.5 }}>
+            You can set this up later from your profile if you prefer.
+          </p>
+        </div>
+
+        {error && (
+          <div style={{
+            background: 'rgba(255,107,133,0.08)', border: '1px solid rgba(255,107,133,0.2)',
+            borderRadius: 10, padding: '12px 16px', color: '#ff6b85',
+            fontFamily: "'Inter', sans-serif", fontSize: 13, marginTop: 20,
+          }}>
+            {error}
+          </div>
+        )}
+
+        <div style={{ marginTop: 28 }}>
+          <PrimaryButton onClick={handleSaveProfessional} disabled={loading}>
+            {loading ? 'Saving...' : 'Continue'}
+          </PrimaryButton>
+          <div style={{ marginTop: 10 }}>
+            <OutlineButton onClick={() => goToSection(2)}>Back</OutlineButton>
+          </div>
+        </div>
+      </SectionWrapper>
+    );
+  }
+
+  /* ─── Section 4: Languages ─── */
+
+  const SIGN_LANGUAGE_OPTIONS = [
+    'American Sign Language (ASL)',
+    'Signed English / SEE',
+    'International Sign (IS)',
+    'Tactile ASL',
+    'ProTactile ASL (PTASL / DeafBlind)',
+    'Langue des Signes Fran\u00e7aise (LSF)',
+    'Langue des Signes Qu\u00e9b\u00e9coise (LSQ)',
+    'British Sign Language (BSL)',
+    'Mexican Sign Language (LSM)',
+    'Other',
+  ];
+
+  const SPOKEN_LANGUAGE_OPTIONS = [
+    'English',
+    'Spanish (Espa\u00f1ol)',
+    'French (Fran\u00e7ais)',
+    'Portuguese (Portugu\u00eas)',
+    'Mandarin',
+    'Cantonese',
+    'Korean',
+    'Japanese',
+    'Vietnamese',
+    'Arabic',
+    'Russian',
+    'Other',
+  ];
+
+  function toggleInList(list: string[], item: string, setter: (v: string[]) => void) {
+    setter(list.includes(item) ? list.filter((x) => x !== item) : [...list, item]);
+  }
+
+  async function handleSaveLanguages() {
+    setError('');
+    setLoading(true);
+    try {
+      const finalSign = [...signLanguages.filter((l) => l !== 'Other')];
+      if (signLanguages.includes('Other') && otherSignLanguage.trim()) {
+        finalSign.push(otherSignLanguage.trim());
+      }
+      const finalSpoken = [...spokenLanguages.filter((l) => l !== 'Other')];
+      if (spokenLanguages.includes('Other') && otherSpokenLanguage.trim()) {
+        finalSpoken.push(otherSpokenLanguage.trim());
+      }
+
+      const supabase = createClient();
+      const { error: updateError } = await supabase
+        .from('interpreter_profiles')
+        .update({
+          sign_languages: finalSign,
+          spoken_languages: finalSpoken,
+        })
+        .eq('user_id', userId);
+      if (updateError) {
+        setError(updateError.message);
+        setLoading(false);
+        return;
+      }
+      setLoading(false);
+      goToSection(5);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Save failed');
+      setLoading(false);
+    }
+  }
+
+  if (section === 4) {
+    const pillStyle = (selected: boolean): React.CSSProperties => ({
+      display: 'inline-block',
+      padding: '8px 16px',
+      borderRadius: 10,
+      border: selected ? '1px solid #00e5ff' : '1px solid var(--border)',
+      background: selected ? 'rgba(0,229,255,0.08)' : 'transparent',
+      color: selected ? '#00e5ff' : '#c8cdd8',
+      fontFamily: "'Inter', sans-serif",
+      fontSize: 13.5,
+      fontWeight: 500,
+      cursor: 'pointer',
+      transition: 'all 0.15s',
+      marginRight: 8,
+      marginBottom: 8,
+    });
+
+    return (
+      <SectionWrapper>
+        <StepHeading>Languages</StepHeading>
+        <StepSubtext>Select all languages you work with.</StepSubtext>
+
+        {/* Sign languages */}
+        <div style={{ marginBottom: 28 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 10 }}>
+            Sign languages
+          </label>
+          <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+            {SIGN_LANGUAGE_OPTIONS.map((lang) => (
+              <button
+                key={lang}
+                type="button"
+                onClick={() => toggleInList(signLanguages, lang, setSignLanguages)}
+                style={pillStyle(signLanguages.includes(lang))}
+              >
+                {lang}
+              </button>
+            ))}
+          </div>
+          {signLanguages.includes('Other') && (
+            <div style={{ marginTop: 8 }}>
+              <input
+                type="text"
+                value={otherSignLanguage}
+                onChange={(e) => setOtherSignLanguage(e.target.value)}
+                placeholder="Specify other sign language(s)"
+                style={{
+                  width: '100%', background: 'var(--surface)', border: '1px solid var(--border)',
+                  borderRadius: 10, padding: '11px 14px', color: 'var(--text)', fontSize: 15,
+                  fontFamily: "'Inter', sans-serif", outline: 'none',
+                }}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Spoken languages */}
+        <div style={{ marginBottom: 28 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 10 }}>
+            Spoken languages
+          </label>
+          <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+            {SPOKEN_LANGUAGE_OPTIONS.map((lang) => (
+              <button
+                key={lang}
+                type="button"
+                onClick={() => toggleInList(spokenLanguages, lang, setSpokenLanguages)}
+                style={pillStyle(spokenLanguages.includes(lang))}
+              >
+                {lang}
+              </button>
+            ))}
+          </div>
+          {spokenLanguages.includes('Other') && (
+            <div style={{ marginTop: 8 }}>
+              <input
+                type="text"
+                value={otherSpokenLanguage}
+                onChange={(e) => setOtherSpokenLanguage(e.target.value)}
+                placeholder="Specify other spoken language(s)"
+                style={{
+                  width: '100%', background: 'var(--surface)', border: '1px solid var(--border)',
+                  borderRadius: 10, padding: '11px 14px', color: 'var(--text)', fontSize: 15,
+                  fontFamily: "'Inter', sans-serif", outline: 'none',
+                }}
+              />
+            </div>
+          )}
+        </div>
+
+        {error && (
+          <div style={{
+            background: 'rgba(255,107,133,0.08)', border: '1px solid rgba(255,107,133,0.2)',
+            borderRadius: 10, padding: '12px 16px', color: '#ff6b85',
+            fontFamily: "'Inter', sans-serif", fontSize: 13,
+          }}>
+            {error}
+          </div>
+        )}
+
+        <div style={{ marginTop: 28 }}>
+          <PrimaryButton onClick={handleSaveLanguages} disabled={loading}>
+            {loading ? 'Saving...' : 'Continue'}
+          </PrimaryButton>
+          <div style={{ marginTop: 10 }}>
+            <OutlineButton onClick={() => goToSection(3)}>Back</OutlineButton>
+          </div>
+        </div>
+      </SectionWrapper>
+    );
+  }
+
+  /* ─── Section 5: Credentials ─── */
+
+  async function handleSaveCredentials() {
+    setError('');
+    setLoading(true);
+    try {
+      const supabase = createClient();
+
+      // Delete existing rows and re-insert
+      await supabase.from('interpreter_certifications').delete().eq('interpreter_id', profileId);
+      await supabase.from('interpreter_education').delete().eq('interpreter_id', profileId);
+
+      const validCerts = certifications.filter((c) => c.name.trim());
+      if (validCerts.length > 0) {
+        const { error: certError } = await supabase
+          .from('interpreter_certifications')
+          .insert(validCerts.map((c) => ({
+            interpreter_id: profileId,
+            name: c.name.trim(),
+            issuing_body: c.issuing_body.trim() || null,
+            year: c.year.trim() || null,
+          })));
+        if (certError) {
+          setError(certError.message);
+          setLoading(false);
+          return;
+        }
+      }
+
+      const validEdu = education.filter((e) => e.institution.trim());
+      if (validEdu.length > 0) {
+        const { error: eduError } = await supabase
+          .from('interpreter_education')
+          .insert(validEdu.map((e) => ({
+            interpreter_id: profileId,
+            institution: e.institution.trim(),
+            degree: e.degree.trim() || null,
+            year: e.year.trim() || null,
+          })));
+        if (eduError) {
+          setError(eduError.message);
+          setLoading(false);
+          return;
+        }
+      }
+
+      setLoading(false);
+      goToSection(6);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Save failed');
+      setLoading(false);
+    }
+  }
+
+  if (section === 5) {
+    const l4Style: React.CSSProperties = {
+      fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 13,
+      textTransform: 'uppercase', letterSpacing: '0.08em', color: '#00e5ff',
+      marginBottom: 12,
+    };
+
+    const rowInputStyle: React.CSSProperties = {
+      flex: 1, background: 'var(--surface)', border: '1px solid var(--border)',
+      borderRadius: 10, padding: '11px 14px', color: 'var(--text)', fontSize: 15,
+      fontFamily: "'Inter', sans-serif", outline: 'none', minWidth: 0,
+    };
+
+    return (
+      <SectionWrapper>
+        <StepHeading>Credentials</StepHeading>
+        <StepSubtext>Add your certifications and education. All fields are optional.</StepSubtext>
+
+        {/* Certifications */}
+        <div style={l4Style}>Certifications</div>
+        {certifications.map((cert, i) => (
+          <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 10, alignItems: 'center' }}>
+            <input
+              type="text"
+              value={cert.name}
+              onChange={(e) => {
+                const updated = [...certifications];
+                updated[i] = { ...cert, name: e.target.value };
+                setCertifications(updated);
+              }}
+              placeholder="e.g. NIC Advanced"
+              style={rowInputStyle}
+            />
+            <input
+              type="text"
+              value={cert.issuing_body}
+              onChange={(e) => {
+                const updated = [...certifications];
+                updated[i] = { ...cert, issuing_body: e.target.value };
+                setCertifications(updated);
+              }}
+              placeholder="e.g. RID"
+              style={{ ...rowInputStyle, maxWidth: 140 }}
+            />
+            <input
+              type="text"
+              value={cert.year}
+              onChange={(e) => {
+                const v = e.target.value.replace(/\D/g, '').slice(0, 4);
+                const updated = [...certifications];
+                updated[i] = { ...cert, year: v };
+                setCertifications(updated);
+              }}
+              placeholder="Year"
+              style={{ ...rowInputStyle, maxWidth: 80 }}
+            />
+            <button
+              type="button"
+              onClick={() => setCertifications(certifications.filter((_, j) => j !== i))}
+              style={{ background: 'none', border: 'none', color: '#96a0b8', cursor: 'pointer', fontSize: 18, padding: '0 4px' }}
+              aria-label="Remove certification"
+            >
+              &times;
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => setCertifications([...certifications, { name: '', issuing_body: '', year: '' }])}
+          style={{
+            background: 'transparent', border: '1px solid rgba(0,229,255,0.3)', color: '#00e5ff',
+            borderRadius: 10, padding: '6px 14px', fontFamily: "'Inter', sans-serif",
+            fontSize: 13, fontWeight: 500, cursor: 'pointer', marginBottom: 28,
+          }}
+        >
+          Add certification
+        </button>
+
+        {/* Education */}
+        <div style={{ ...l4Style, marginTop: 28 }}>Education</div>
+        {education.map((edu, i) => (
+          <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 10, alignItems: 'center' }}>
+            <input
+              type="text"
+              value={edu.institution}
+              onChange={(e) => {
+                const updated = [...education];
+                updated[i] = { ...edu, institution: e.target.value };
+                setEducation(updated);
+              }}
+              placeholder="e.g. Western Oregon University"
+              style={rowInputStyle}
+            />
+            <input
+              type="text"
+              value={edu.degree}
+              onChange={(e) => {
+                const updated = [...education];
+                updated[i] = { ...edu, degree: e.target.value };
+                setEducation(updated);
+              }}
+              placeholder="e.g. B.A. Interpreting Studies"
+              style={rowInputStyle}
+            />
+            <input
+              type="text"
+              value={edu.year}
+              onChange={(e) => {
+                const v = e.target.value.replace(/\D/g, '').slice(0, 4);
+                const updated = [...education];
+                updated[i] = { ...edu, year: v };
+                setEducation(updated);
+              }}
+              placeholder="Year"
+              style={{ ...rowInputStyle, maxWidth: 80 }}
+            />
+            <button
+              type="button"
+              onClick={() => setEducation(education.filter((_, j) => j !== i))}
+              style={{ background: 'none', border: 'none', color: '#96a0b8', cursor: 'pointer', fontSize: 18, padding: '0 4px' }}
+              aria-label="Remove education"
+            >
+              &times;
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => setEducation([...education, { institution: '', degree: '', year: '' }])}
+          style={{
+            background: 'transparent', border: '1px solid rgba(0,229,255,0.3)', color: '#00e5ff',
+            borderRadius: 10, padding: '6px 14px', fontFamily: "'Inter', sans-serif",
+            fontSize: 13, fontWeight: 500, cursor: 'pointer',
+          }}
+        >
+          Add education
+        </button>
+
+        {error && (
+          <div style={{
+            background: 'rgba(255,107,133,0.08)', border: '1px solid rgba(255,107,133,0.2)',
+            borderRadius: 10, padding: '12px 16px', color: '#ff6b85',
+            fontFamily: "'Inter', sans-serif", fontSize: 13, marginTop: 20,
+          }}>
+            {error}
+          </div>
+        )}
+
+        <div style={{ marginTop: 28 }}>
+          <PrimaryButton onClick={handleSaveCredentials} disabled={loading}>
+            {loading ? 'Saving...' : 'Continue'}
+          </PrimaryButton>
+          <div style={{ marginTop: 10 }}>
+            <OutlineButton onClick={() => goToSection(4)}>Back</OutlineButton>
+          </div>
+        </div>
+      </SectionWrapper>
+    );
+  }
+
+  /* ─── Section 6: About You ─── */
+
+  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !userId) return;
+
+    setPhotoUploading(true);
+    setError('');
+
+    try {
+      let uploadFile: File = file;
+
+      // Resize to max 400x400
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = reject;
+        img.src = url;
+      });
+
+      const maxDim = 400;
+      let { width, height } = img;
+      if (width > maxDim || height > maxDim) {
+        const ratio = Math.min(maxDim / width, maxDim / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(img, 0, 0, width, height);
+      URL.revokeObjectURL(url);
+
+      const blob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((b) => resolve(b!), 'image/jpeg', 0.85);
+      });
+      uploadFile = new File([blob], 'avatar.jpg', { type: 'image/jpeg' });
+
+      // If still too large, use the resizeImage helper
+      if (uploadFile.size > 2 * 1024 * 1024) {
+        uploadFile = await resizeImage(uploadFile, 2);
+      }
+
+      const supabase = createClient();
+      const path = `${userId}/${Date.now()}.jpg`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('profile-photos')
+        .upload(path, uploadFile, { upsert: true });
+
+      if (uploadError) {
+        setError(`Upload failed: ${uploadError.message}`);
+        setPhotoUploading(false);
+        return;
+      }
+
+      const { data: urlData } = supabase.storage.from('profile-photos').getPublicUrl(path);
+      const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`;
+
+      const { error: dbError } = await supabase
+        .from('interpreter_profiles')
+        .update({ photo_url: publicUrl })
+        .eq('user_id', userId);
+
+      if (dbError) {
+        setError(dbError.message);
+        setPhotoUploading(false);
+        return;
+      }
+
+      setPhotoUrl(publicUrl);
+      setPhotoUploading(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Upload failed');
+      setPhotoUploading(false);
+    }
+    if (photoInputRef.current) photoInputRef.current.value = '';
+  }
+
+  async function handleSaveAboutYou() {
+    if (bio && bio.length < 20) {
+      setError('Bio must be at least 20 characters.');
+      return;
+    }
+    if (bioSpecializations && bioSpecializations.length < 20) {
+      setError('Specialization description must be at least 20 characters.');
+      return;
+    }
+    setError('');
+    setLoading(true);
+    try {
+      const supabase = createClient();
+      const updateData: Record<string, string | null> = {
+        bio: bio || null,
+        bio_specializations: bioSpecializations || null,
+        bio_extra: bioExtra || null,
+      };
+      if (videoUrl) {
+        updateData.video_url = videoUrl;
+      }
+      const { error: updateError } = await supabase
+        .from('interpreter_profiles')
+        .update(updateData)
+        .eq('user_id', userId);
+      if (updateError) {
+        setError(updateError.message);
+        setLoading(false);
+        return;
+      }
+      setLoading(false);
+      goToSection(7);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Save failed');
+      setLoading(false);
+    }
+  }
+
+  if (section === 6) {
+    const l4Style: React.CSSProperties = {
+      fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 13,
+      textTransform: 'uppercase', letterSpacing: '0.08em', color: '#00e5ff',
+      marginBottom: 12,
+    };
+
+    return (
+      <SectionWrapper>
+        <StepHeading>About you</StepHeading>
+        <StepSubtext>Help people get to know you.</StepSubtext>
+
+        {/* Profile photo */}
+        <div style={l4Style}>Profile Photo</div>
+        <div style={{ marginBottom: 28 }}>
+          {photoUrl ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <div style={{
+                width: 80, height: 80, borderRadius: '50%', overflow: 'hidden',
+                border: '2px solid var(--border)',
+              }}>
+                <img src={photoUrl} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  type="button"
+                  onClick={() => photoInputRef.current?.click()}
+                  style={{
+                    background: 'transparent', border: '1px solid rgba(0,229,255,0.3)', color: '#00e5ff',
+                    borderRadius: 10, padding: '6px 14px', fontFamily: "'Inter', sans-serif",
+                    fontSize: 13, fontWeight: 500, cursor: 'pointer',
+                  }}
+                >
+                  Change photo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPhotoUrl('')}
+                  style={{
+                    background: 'transparent', border: '1px solid var(--border)', color: '#96a0b8',
+                    borderRadius: 10, padding: '6px 14px', fontFamily: "'Inter', sans-serif",
+                    fontSize: 13, fontWeight: 500, cursor: 'pointer',
+                  }}
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div
+              onClick={() => photoInputRef.current?.click()}
+              style={{
+                border: '2px dashed var(--border)', borderRadius: 10, padding: '28px 20px',
+                textAlign: 'center', cursor: 'pointer', transition: 'border-color 0.15s',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'rgba(0,229,255,0.3)')}
+              onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--border)')}
+            >
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#96a0b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ margin: '0 auto 8px' }}>
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 5 21" />
+              </svg>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#96a0b8', margin: 0 }}>
+                {photoUploading ? 'Uploading...' : 'Click to upload a photo'}
+              </p>
+            </div>
+          )}
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handlePhotoUpload}
+            style={{ display: 'none' }}
+          />
+        </div>
+
+        {/* Bio */}
+        <div style={{ ...l4Style, marginTop: 28 }}>Bio</div>
+
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 6 }}>
+            Describe your interpreting and community background
+          </label>
+          <textarea
+            value={bio}
+            onChange={(e) => setBio(e.target.value.slice(0, 500))}
+            placeholder="Share a few sentences about your interpreting background, how you got started, and the communities you serve."
+            style={{
+              width: '100%', minHeight: 100, background: 'var(--surface)', border: '1px solid var(--border)',
+              borderRadius: 10, padding: '11px 14px', color: 'var(--text)', fontSize: 15,
+              fontFamily: "'Inter', sans-serif", outline: 'none', resize: 'vertical', lineHeight: 1.6,
+            }}
+          />
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#96a0b8', marginTop: 4, textAlign: 'right' }}>
+            {bio.length} / 500
+          </p>
+        </div>
+
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 6 }}>
+            What settings or populations do you specialize in serving, and what draws you to that work?
+          </label>
+          <textarea
+            value={bioSpecializations}
+            onChange={(e) => setBioSpecializations(e.target.value.slice(0, 500))}
+            placeholder="Describe the settings you specialize in and what draws you to that work."
+            style={{
+              width: '100%', minHeight: 80, background: 'var(--surface)', border: '1px solid var(--border)',
+              borderRadius: 10, padding: '11px 14px', color: 'var(--text)', fontSize: 15,
+              fontFamily: "'Inter', sans-serif", outline: 'none', resize: 'vertical', lineHeight: 1.6,
+            }}
+          />
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#96a0b8', marginTop: 4, textAlign: 'right' }}>
+            {bioSpecializations.length} / 500
+          </p>
+        </div>
+
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 6 }}>
+            Something about my background or approach that doesn't fit neatly into a checkbox:
+          </label>
+          <textarea
+            value={bioExtra}
+            onChange={(e) => setBioExtra(e.target.value.slice(0, 300))}
+            placeholder="Optional"
+            style={{
+              width: '100%', minHeight: 70, background: 'var(--surface)', border: '1px solid var(--border)',
+              borderRadius: 10, padding: '11px 14px', color: 'var(--text)', fontSize: 15,
+              fontFamily: "'Inter', sans-serif", outline: 'none', resize: 'vertical', lineHeight: 1.6,
+            }}
+          />
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 12, color: '#96a0b8', marginTop: 4, textAlign: 'right' }}>
+            {bioExtra.length} / 300
+          </p>
+        </div>
+
+        {/* Intro video */}
+        <div style={{ ...l4Style, marginTop: 28 }}>Intro Video</div>
+        <p style={{
+          fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 13.5,
+          color: '#c8cdd8', lineHeight: 1.65, marginBottom: 16,
+        }}>
+          Watching an intro video in ASL lets Deaf people get to know you naturally. No written description can replace that. When we started developing signpost, intro videos were one of the most requested features.
+        </p>
+        <p style={{
+          fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 13.5,
+          color: '#c8cdd8', lineHeight: 1.65, marginBottom: 16,
+        }}>
+          Your video does not need to be polished or scripted. Just introduce yourself: share a little about your background, what kind of work you do, whatever feels right.
+        </p>
+
+        <InlineVideoCapture
+          onVideoSaved={(url) => setVideoUrl(url)}
+          accentColor="#00e5ff"
+          storageBucket="videos"
+          storagePath={userId ? `interpreters/${userId}/intro` : ''}
+          userId={userId || undefined}
+        />
+
+        {error && (
+          <div style={{
+            background: 'rgba(255,107,133,0.08)', border: '1px solid rgba(255,107,133,0.2)',
+            borderRadius: 10, padding: '12px 16px', color: '#ff6b85',
+            fontFamily: "'Inter', sans-serif", fontSize: 13, marginTop: 20,
+          }}>
+            {error}
+          </div>
+        )}
+
+        <div style={{ marginTop: 28 }}>
+          <PrimaryButton onClick={handleSaveAboutYou} disabled={loading}>
+            {loading ? 'Saving...' : 'Continue'}
+          </PrimaryButton>
+          <div style={{ marginTop: 10 }}>
+            <OutlineButton onClick={() => goToSection(5)}>Back</OutlineButton>
+          </div>
+        </div>
+      </SectionWrapper>
+    );
+  }
+
+  /* ─── Stub Sections 7-8 ─── */
 
   const stubLabel = SECTION_LABELS[section - 1] || 'Section';
 
