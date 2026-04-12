@@ -651,7 +651,7 @@ function DeafSignupForm() {
       style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         justifyContent: 'center', minHeight: 'calc(100vh - 73px)',
-        padding: '40px 24px',
+        padding: '80px 24px 40px',
       }}
     >
       <div style={{ maxWidth: 480, width: '100%' }}>
