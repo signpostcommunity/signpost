@@ -23,16 +23,26 @@ function ProgressBar({ step }: { step: number }) {
               width: 10,
               height: 10,
               borderRadius: '50%',
-              background: step >= d ? '#7b61ff' : 'rgba(255,255,255,0.08)',
+              background: step >= d ? '#a78bfa' : 'rgba(255,255,255,0.08)',
               border: step >= d ? 'none' : '1px solid rgba(255,255,255,0.3)',
               transition: 'background 0.2s',
             }}
           />
           {i < dots.length - 1 && (
-            <div style={{ width: 24, height: 1, background: step > d ? '#7b61ff' : 'rgba(255,255,255,0.15)' }} />
+            <div style={{ width: 24, height: 1, background: step > d ? '#a78bfa' : 'rgba(255,255,255,0.15)' }} />
           )}
         </div>
       ))}
+    </div>
+  );
+}
+
+/* ─── Form Card ─── */
+
+function FormCard({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="dhh-signup-form-card">
+      {children}
     </div>
   );
 }
@@ -96,6 +106,42 @@ const EDUCATION_CARDS: EducationCard[] = [
   },
 ];
 
+/* ─── Education Card Icons (Step 2) ─── */
+
+const CARD_ICONS: Record<string, React.ReactNode> = {
+  "Why doesn't signpost show interpreter rates publicly?": (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <line x1="12" y1="1" x2="12" y2="23" />
+      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+    </svg>
+  ),
+  "Why doesn't signpost screen interpreters' skills?": (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+  ),
+  "Why aren't interpreter ratings public?": (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  ),
+  'How is signpost cheaper than agencies?': (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+      <line x1="1" y1="10" x2="23" y2="10" />
+    </svg>
+  ),
+  'What is the Trusted Deaf Circle?': (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  ),
+};
+
 function ExpandableCard({ card }: { card: EducationCard }) {
   const [open, setOpen] = useState(false);
   return (
@@ -107,7 +153,7 @@ function ExpandableCard({ card }: { card: EducationCard }) {
         cursor: 'pointer',
         transition: 'border-color 0.15s',
       }}
-      onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'rgba(123,97,255,0.25)')}
+      onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'rgba(167,139,250,0.25)')}
       onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)')}
     >
       <div
@@ -118,18 +164,21 @@ function ExpandableCard({ card }: { card: EducationCard }) {
         aria-expanded={open}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(!open); } }}
       >
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 14, color: '#f0f2f8', marginBottom: open ? 0 : 4 }}>
-            {card.title}
-          </div>
-          {!open && (
-            <div style={{
-              fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 12.5, color: '#6b7082',
-              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-            }}>
-              {card.teaser}
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+          {CARD_ICONS[card.title]}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: 15, color: '#f0f2f8', marginBottom: open ? 0 : 4 }}>
+              {card.title}
             </div>
-          )}
+            {!open && (
+              <div style={{
+                fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14, color: '#96a0b8',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              }}>
+                {card.teaser}
+              </div>
+            )}
+          </div>
         </div>
         <svg
           width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
@@ -144,7 +193,7 @@ function ExpandableCard({ card }: { card: EducationCard }) {
             <p
               key={i}
               style={{
-                fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 13, color: '#96a0b8',
+                fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 15, color: '#96a0b8',
                 lineHeight: 1.7, margin: 0, marginBottom: i < card.body.length - 1 ? 12 : 0,
               }}
             >
@@ -162,8 +211,8 @@ function ExpandableCard({ card }: { card: EducationCard }) {
 function StepHeading({ children }: { children: React.ReactNode }) {
   return (
     <h1 style={{
-      fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 20,
-      color: '#f0f2f8', letterSpacing: '-0.01em', margin: '0 0 8px',
+      fontFamily: "'Syne', sans-serif", fontWeight: 775, fontSize: 27,
+      color: '#f0f2f8', letterSpacing: '-0.02em', margin: '0 0 8px',
     }}>
       {children}
     </h1>
@@ -173,7 +222,7 @@ function StepHeading({ children }: { children: React.ReactNode }) {
 function StepSubtext({ children }: { children: React.ReactNode }) {
   return (
     <p style={{
-      fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 13,
+      fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 15,
       color: '#96a0b8', lineHeight: 1.65, margin: '0 0 24px',
     }}>
       {children}
@@ -268,7 +317,7 @@ function AuthInput({ label, type = 'text', value, onChange, placeholder, require
           borderRadius: 10, padding: '11px 14px', color: 'var(--text)', fontSize: '15px',
           fontFamily: "'Inter', sans-serif", outline: 'none',
         }}
-        onFocus={(e) => (e.target.style.borderColor = 'rgba(157,135,255,0.5)')}
+        onFocus={(e) => (e.target.style.borderColor = 'rgba(167,139,250,0.5)')}
         onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
       />
     </div>
@@ -298,10 +347,10 @@ function SigningStylePills({ selected, onToggle }: { selected: string[]; onToggl
             type="button"
             onClick={() => onToggle(style)}
             style={{
-              padding: '8px 14px', borderRadius: 10, fontSize: 13,
+              padding: '8px 14px', borderRadius: 10, fontSize: 14,
               fontFamily: "'Inter', sans-serif", fontWeight: 500, cursor: 'pointer',
-              background: active ? 'rgba(123,97,255,0.15)' : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${active ? 'rgba(123,97,255,0.4)' : 'rgba(255,255,255,0.08)'}`,
+              background: active ? 'rgba(167,139,250,0.12)' : 'rgba(255,255,255,0.04)',
+              border: `1px solid ${active ? '#a78bfa' : 'rgba(255,255,255,0.08)'}`,
               color: active ? '#a78bfa' : '#96a0b8',
               transition: 'all 0.15s',
             }}
@@ -335,12 +384,20 @@ function Toggle({ checked, onChange, label }: { checked: boolean; onChange: (v: 
           transition: 'all 0.2s',
         }} />
       </div>
-      <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#c8cdd8', lineHeight: 1.5 }}>
+      <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#c8cdd8', lineHeight: 1.5 }}>
         {label}
       </span>
     </label>
   );
 }
+
+/* ─── Voice interpreting options ─── */
+
+const VOICE_OPTIONS = [
+  { value: 'interpreter', label: 'I always use the interpreter for voicing' },
+  { value: 'self', label: 'I always voice for myself' },
+  { value: 'depends', label: 'It depends on the situation' },
+];
 
 /* ─── Main Signup Form ─── */
 
@@ -351,6 +408,7 @@ function DeafSignupForm() {
 
   // Step state: addRole skips step 1
   const [step, setStep] = useState(isAddRole ? 2 : 1);
+  const [resuming, setResuming] = useState(!isAddRole);
 
   // Step 1: Account creation
   const [firstName, setFirstName] = useState('');
@@ -426,10 +484,100 @@ function DeafSignupForm() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAddRole]);
 
+  // Check if user is already authenticated - resume draft if possible
+  useEffect(() => {
+    if (isAddRole || userId) { setResuming(false); return; }
+    const timeout = setTimeout(() => setResuming(false), 500);
+    (async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setResuming(false); clearTimeout(timeout); return; }
+
+        setUserId(user.id);
+        setExistingUserId(user.id);
+        const fullName = user.user_metadata?.full_name;
+        if (fullName && !firstName) {
+          const parts = fullName.trim().split(' ');
+          setFirstName(parts.slice(0, -1).join(' ') || parts[0] || '');
+          setLastName(parts.length > 1 ? parts[parts.length - 1] : '');
+        }
+        if (user.email && !email) setEmail(user.email);
+
+        // Check for existing profile to resume
+        const { data: profile } = await supabase
+          .from('deaf_profiles')
+          .select('id, user_id, draft_step, draft_data, first_name, last_name, email, country, country_name, state, city')
+          .or(`id.eq.${user.id},user_id.eq.${user.id}`)
+          .maybeSingle();
+
+        if (profile) {
+          // Restore basic fields from profile
+          if (profile.first_name && !firstName) setFirstName(profile.first_name);
+          if (profile.last_name && !lastName) setLastName(profile.last_name);
+          if (profile.email && !email) setEmail(profile.email);
+          if (profile.country_name) setCountry(profile.country_name);
+          if (profile.state) setState(profile.state);
+          if (profile.city) setCity(profile.city);
+
+          // Restore draft_data fields
+          const d = profile.draft_data as Record<string, unknown> | null;
+          if (d) {
+            if (d.firstName) setFirstName(d.firstName as string);
+            if (d.lastName) setLastName(d.lastName as string);
+            if (d.email) setEmail(d.email as string);
+            if (d.country) setCountry(d.country as string);
+            if (d.state) setState(d.state as string);
+            if (d.city) setCity(d.city as string);
+            if (Array.isArray(d.signingStyles)) setSigningStyles(d.signingStyles as string[]);
+            if (d.otherSignLanguage) setOtherSignLanguage(d.otherSignLanguage as string);
+            if (d.voicePref) setVoicePref(d.voicePref as string);
+            if (typeof d.diPreferred === 'boolean') setDiPreferred(d.diPreferred);
+            if (d.commNotes) setCommNotes(d.commNotes as string);
+            if (d.writtenIntro) setWrittenIntro(d.writtenIntro as string);
+            if (typeof d.shareTextBefore === 'boolean') setShareTextBefore(d.shareTextBefore);
+            if (d.profileVideoUrl) setProfileVideoUrl(d.profileVideoUrl as string);
+            if (typeof d.shareVideoBefore === 'boolean') setShareVideoBefore(d.shareVideoBefore);
+            if (typeof d.autoSharePrefList === 'boolean') setAutoSharePrefList(d.autoSharePrefList);
+          }
+
+          // Jump to saved section
+          const targetStep = profile.draft_step ?? 2;
+          setStep(targetStep);
+        }
+      } catch (e) {
+        console.error('Auth/resume check failed:', e);
+      } finally {
+        setResuming(false);
+        clearTimeout(timeout);
+      }
+    })();
+    return () => clearTimeout(timeout);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function goToStep(s: number) {
     setError('');
     setStep(s);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Persist draft progress to Supabase
+    const uid = userId || existingUserId;
+    if (uid) {
+      const supabase = createClient();
+      const draftData = {
+        firstName, lastName, email, country, state, city,
+        signingStyles, otherSignLanguage, voicePref, diPreferred, commNotes,
+        writtenIntro, shareTextBefore, profileVideoUrl, shareVideoBefore, autoSharePrefList,
+      };
+      supabase
+        .from('deaf_profiles')
+        .update({ draft_step: s, draft_data: draftData })
+        .or(`id.eq.${uid},user_id.eq.${uid}`)
+        .then(({ error: draftErr }) => {
+          if (draftErr) console.warn('Failed to save draft:', draftErr.message);
+        });
+    }
   }
 
   function toggleSigningStyle(style: string) {
@@ -636,13 +784,23 @@ function DeafSignupForm() {
     }
   }
 
-  /* ─── Voice interpreting options ─── */
+  /* ─── Resuming check ─── */
 
-  const VOICE_OPTIONS = [
-    { value: 'interpreter', label: 'I always use the interpreter for voicing' },
-    { value: 'self', label: 'I always voice for myself' },
-    { value: 'depends', label: 'It depends on the situation' },
-  ];
+  if (resuming) {
+    return (
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        justifyContent: 'center', minHeight: 'calc(100vh - 73px)',
+        padding: '100px 24px 40px',
+      }}>
+        <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#96a0b8' }}>
+          Checking for saved progress...
+        </p>
+      </div>
+    );
+  }
+
+  const isAuthenticated = !!(userId || existingUserId);
 
   /* ─── Render ─── */
 
@@ -661,12 +819,13 @@ function DeafSignupForm() {
           <>
             <ProgressBar step={1} />
 
-            <StepHeading>Create your account</StepHeading>
+            <StepHeading>{isAuthenticated ? 'Continue your signup' : 'Create your account'}</StepHeading>
+            <FormCard>
             <div style={{ marginBottom: 20 }}>
               <GoogleSignInButton role="deaf" label="Continue with Google" />
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '4px 0' }}>
                 <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-                <span style={{ fontSize: 12, color: 'var(--muted)' }}>or</span>
+                <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#96a0b8' }}>or</span>
                 <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
               </div>
             </div>
@@ -674,7 +833,7 @@ function DeafSignupForm() {
               {error && (
                 <div style={{
                   background: 'rgba(255,107,133,0.1)', border: '1px solid rgba(255,107,133,0.3)',
-                  borderRadius: 10, padding: '12px 16px', color: 'var(--accent3)', fontSize: 13,
+                  borderRadius: 10, padding: '12px 16px', color: 'var(--accent3)', fontSize: 14,
                 }}>
                   {error}
                 </div>
@@ -684,7 +843,7 @@ function DeafSignupForm() {
                 <AuthInput label="Last Name" value={lastName} onChange={setLastName} placeholder="Last name" required />
               </div>
               <AuthInput label="Email" type="email" value={email} onChange={setEmail} placeholder="you@example.com" required />
-              {!isAddRole && (
+              {!isAddRole && !isAuthenticated && (
                 <AuthInput label="Password" type="password" value={password} onChange={setPassword} placeholder="Minimum 8 characters" required />
               )}
               <div style={{ marginTop: 4 }}>
@@ -695,10 +854,11 @@ function DeafSignupForm() {
                 />
               </div>
               <PrimaryButton type="submit" disabled={loading}>
-                {loading ? 'Creating account...' : 'Create Account'}
+                {loading ? 'Creating account...' : isAuthenticated ? 'Continue' : 'Create Account'}
               </PrimaryButton>
             </form>
-            <p style={{ fontWeight: 400, fontSize: 13, color: '#96a0b8', marginTop: 16, textAlign: 'center' }}>
+            </FormCard>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 15, color: '#96a0b8', marginTop: 16, textAlign: 'center' }}>
               Already have an account?{' '}
               <Link href="/dhh/login" style={{ color: '#a78bfa', textDecoration: 'none' }}>Sign in</Link>
             </p>
@@ -712,11 +872,13 @@ function DeafSignupForm() {
 
             <StepHeading>How signpost works for you</StepHeading>
             <StepSubtext>These explain how signpost is different. Read what interests you.</StepSubtext>
+            <FormCard>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {EDUCATION_CARDS.map((card, i) => (
                 <ExpandableCard key={i} card={card} />
               ))}
             </div>
+            </FormCard>
             <div style={{ marginTop: 28 }}>
               <PrimaryButton onClick={() => goToStep(3)}>
                 {"Got it, let's set up my profile"}
@@ -738,9 +900,10 @@ function DeafSignupForm() {
               This information is shared with interpreters any time you are tagged in a request. It helps them ensure they are a good match, and show up ready to work.
             </StepSubtext>
 
+            <FormCard>
             {/* Signing style */}
             <div style={{ marginBottom: 24 }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 10 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a78bfa', marginBottom: 10 }}>
                 Signing style
               </label>
               <SigningStylePills selected={signingStyles} onToggle={toggleSigningStyle} />
@@ -758,7 +921,7 @@ function DeafSignupForm() {
                     borderRadius: 10, padding: '11px 14px', color: 'var(--text)', fontSize: 15,
                     fontFamily: "'Inter', sans-serif", outline: 'none',
                   }}
-                  onFocus={(e) => (e.target.style.borderColor = 'rgba(157,135,255,0.5)')}
+                  onFocus={(e) => (e.target.style.borderColor = 'rgba(167,139,250,0.5)')}
                   onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
                 />
               </div>
@@ -766,7 +929,7 @@ function DeafSignupForm() {
 
             {/* Voice interpreting */}
             <div style={{ marginBottom: 24 }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 10 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a78bfa', marginBottom: 10 }}>
                 Voice interpreting
               </label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -780,7 +943,7 @@ function DeafSignupForm() {
                       onChange={() => setVoicePref(opt.value)}
                       style={{ accentColor: '#a78bfa', flexShrink: 0 }}
                     />
-                    <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 13.5, color: '#c8cdd8' }}>
+                    <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#f0f2f8' }}>
                       {opt.label}
                     </span>
                   </label>
@@ -799,7 +962,7 @@ function DeafSignupForm() {
 
             {/* Communication notes */}
             <div style={{ marginBottom: 24 }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 6 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a78bfa', marginBottom: 6 }}>
                 Communication notes
               </label>
               <textarea
@@ -813,11 +976,13 @@ function DeafSignupForm() {
                   fontFamily: "'Inter', sans-serif", outline: 'none', resize: 'vertical',
                   lineHeight: 1.6,
                 }}
-                onFocus={(e) => (e.target.style.borderColor = 'rgba(157,135,255,0.5)')}
+                onFocus={(e) => (e.target.style.borderColor = 'rgba(167,139,250,0.5)')}
                 onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
               />
             </div>
+            </FormCard>
 
+            <div style={{ marginTop: 28 }}>
             <PrimaryButton onClick={handleSaveCommPrefs} disabled={loading}>
               {loading ? 'Saving...' : 'Continue'}
             </PrimaryButton>
@@ -827,11 +992,12 @@ function DeafSignupForm() {
             {error && (
               <div style={{
                 background: 'rgba(255,107,133,0.1)', border: '1px solid rgba(255,107,133,0.3)',
-                borderRadius: 10, padding: '12px 16px', color: 'var(--accent3)', fontSize: 13, marginTop: 10,
+                borderRadius: 10, padding: '12px 16px', color: 'var(--accent3)', fontSize: 14, marginTop: 10,
               }}>
                 {error}
               </div>
             )}
+            </div>
           </>
         )}
 
@@ -842,12 +1008,12 @@ function DeafSignupForm() {
 
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
               <h1 style={{
-                fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 20,
-                color: '#f0f2f8', letterSpacing: '-0.01em', margin: 0,
+                fontFamily: "'Syne', sans-serif", fontWeight: 775, fontSize: 27,
+                color: '#f0f2f8', letterSpacing: '-0.02em', margin: 0,
               }}>
                 Introduce yourself
               </h1>
-              <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14, color: '#96a0b8' }}>
+              <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 15, color: '#96a0b8' }}>
                 (optional)
               </span>
             </div>
@@ -855,6 +1021,7 @@ function DeafSignupForm() {
               Give a brief introduction, with whatever information you want. For example: where you grew up, if you went to a Deaf school or mainstream, etc. You can write, record a video, or both.
             </StepSubtext>
 
+            <FormCard>
             {/* WRITTEN section */}
             <div style={{ marginBottom: 28 }}>
               <div style={{
@@ -874,7 +1041,7 @@ function DeafSignupForm() {
                   fontFamily: "'Inter', sans-serif", outline: 'none', resize: 'vertical',
                   lineHeight: 1.6, marginBottom: 12,
                 }}
-                onFocus={(e) => (e.target.style.borderColor = 'rgba(157,135,255,0.5)')}
+                onFocus={(e) => (e.target.style.borderColor = 'rgba(167,139,250,0.5)')}
                 onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
               />
               <Toggle
@@ -911,13 +1078,13 @@ function DeafSignupForm() {
             {/* INTERPRETER LIST SHARING section */}
             <div style={{ marginBottom: 28 }}>
               <div style={{
-                fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 15,
-                color: '#f0f2f8', marginBottom: 8,
+                fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 13,
+                textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a78bfa', marginBottom: 8,
               }}>
                 Interpreter list sharing
               </div>
               <p style={{
-                fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 13,
+                fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 15,
                 color: '#96a0b8', lineHeight: 1.65, margin: '0 0 14px',
               }}>
                 When someone requests an interpreter for you (through a booking form, your QR code, or your request link), should they automatically see your preferred interpreter list?
@@ -932,10 +1099,10 @@ function DeafSignupForm() {
                     style={{ accentColor: '#a78bfa', flexShrink: 0, marginTop: 3 }}
                   />
                   <div>
-                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 13.5, color: '#c8cdd8', fontWeight: 500 }}>
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#f0f2f8', fontWeight: 500 }}>
                       Yes, share automatically <span style={{ color: '#96a0b8', fontWeight: 400 }}>(recommended)</span>
                     </div>
-                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12.5, color: '#6b7082', lineHeight: 1.5, marginTop: 2 }}>
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: '#96a0b8', lineHeight: 1.5, marginTop: 2 }}>
                       Requesters will immediately see interpreters you trust, leading to better matches.
                     </div>
                   </div>
@@ -949,18 +1116,19 @@ function DeafSignupForm() {
                     style={{ accentColor: '#a78bfa', flexShrink: 0, marginTop: 3 }}
                   />
                   <div>
-                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 13.5, color: '#c8cdd8', fontWeight: 500 }}>
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#f0f2f8', fontWeight: 500 }}>
                       Ask me first
                     </div>
-                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 12.5, color: '#6b7082', lineHeight: 1.5, marginTop: 2 }}>
+                    <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: '#96a0b8', lineHeight: 1.5, marginTop: 2 }}>
                       You will be notified each time and can approve or decline.
                     </div>
                   </div>
                 </label>
               </div>
             </div>
+            </FormCard>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 28 }}>
               <PrimaryButton onClick={handleSaveIntro} disabled={loading}>
                 {loading ? 'Saving...' : 'Save and finish'}
               </PrimaryButton>
@@ -972,7 +1140,7 @@ function DeafSignupForm() {
             {error && (
               <div style={{
                 background: 'rgba(255,107,133,0.1)', border: '1px solid rgba(255,107,133,0.3)',
-                borderRadius: 10, padding: '12px 16px', color: 'var(--accent3)', fontSize: 13, marginTop: 10,
+                borderRadius: 10, padding: '12px 16px', color: 'var(--accent3)', fontSize: 14, marginTop: 10,
               }}>
                 {error}
               </div>
@@ -983,18 +1151,20 @@ function DeafSignupForm() {
         {/* ════════ STEP 5: Additional Roles ════════ */}
         {step === 5 && (
           <>
+            <StepHeading>Additional roles</StepHeading>
+            <StepSubtext>You can hold multiple roles on signpost.</StepSubtext>
 
-
+            <FormCard>
             {/* Section 1: Deaf Interpreter */}
             <div style={{ marginBottom: 32 }}>
               <h2 style={{
-                fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 18,
-                color: '#f0f2f8', margin: '0 0 10px',
+                fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 20,
+                color: '#f0f2f8', letterSpacing: '-0.01em', margin: '0 0 10px',
               }}>
                 Are you also a Deaf Interpreter?
               </h2>
               <p style={{
-                fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 13.5,
+                fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 15,
                 color: '#c8cdd8', lineHeight: 1.65, margin: '0 0 14px',
               }}>
                 If you are a Deaf Interpreter, you can create an interpreter profile to receive requests and be listed in the directory. Your name, location, and email will automatically be filled in. You can finish setting up your interpreter profile from your portal.
@@ -1006,7 +1176,7 @@ function DeafSignupForm() {
                 {addedInterpreter ? 'Interpreter profile added' : 'Yes, add interpreter profile'}
               </CyanOutlineButton>
               {interpreterConfirmMsg && (
-                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 12.5, color: '#96a0b8', marginTop: 8 }}>
+                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: '#96a0b8', marginTop: 8 }}>
                   {interpreterConfirmMsg}
                 </p>
               )}
@@ -1015,13 +1185,13 @@ function DeafSignupForm() {
             {/* Section 2: Requester/Coordinator */}
             <div style={{ marginBottom: 32 }}>
               <h2 style={{
-                fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 18,
-                color: '#f0f2f8', margin: '0 0 10px',
+                fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 20,
+                color: '#f0f2f8', letterSpacing: '-0.01em', margin: '0 0 10px',
               }}>
                 Do you also coordinate interpreters for an organization?
               </h2>
               <p style={{
-                fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 13.5,
+                fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 15,
                 color: '#c8cdd8', lineHeight: 1.65, margin: '0 0 14px',
               }}>
                 If you coordinate interpreters for a workplace, school, medical office, or other organization, you can access the full requester portal. Your basic information will automatically be filled in. You can finish setting up your requester profile from your portal.
@@ -1033,24 +1203,27 @@ function DeafSignupForm() {
                 {addedRequester ? 'Requester access added' : 'Yes, add requester access'}
               </CyanOutlineButton>
               {requesterConfirmMsg && (
-                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 12.5, color: '#96a0b8', marginTop: 8 }}>
+                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: '#96a0b8', marginTop: 8 }}>
                   {requesterConfirmMsg}
                 </p>
               )}
             </div>
 
             <p style={{
-              fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 12.5,
-              color: '#96a0b8', lineHeight: 1.6, marginBottom: 20,
+              fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 15,
+              color: '#96a0b8', lineHeight: 1.6, marginBottom: 0,
             }}>
               You can always switch between your roles or add new ones from the role switcher in your portal.
             </p>
+            </FormCard>
 
+            <div style={{ marginTop: 28 }}>
             <PrimaryButton onClick={() => goToStep(6)}>
               Continue to finish
             </PrimaryButton>
             <div style={{ marginTop: 10 }}>
               <OutlineButton onClick={() => goToStep(4)}>Back</OutlineButton>
+            </div>
             </div>
           </>
         )}
@@ -1059,11 +1232,10 @@ function DeafSignupForm() {
         {step === 6 && (
           <>
 
-
             {/* Checkmark */}
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
               <div style={{
-                width: 56, height: 56, borderRadius: '50%', background: 'rgba(123,97,255,0.15)',
+                width: 56, height: 56, borderRadius: '50%', background: 'rgba(167,139,250,0.15)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -1073,13 +1245,13 @@ function DeafSignupForm() {
             </div>
 
             <h1 style={{
-              fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 22,
-              color: '#f0f2f8', textAlign: 'center', margin: '0 0 8px',
+              fontFamily: "'Syne', sans-serif", fontWeight: 775, fontSize: 27,
+              color: '#f0f2f8', letterSpacing: '-0.02em', textAlign: 'center', margin: '0 0 8px',
             }}>
               {"You're all set!"}
             </h1>
             <p style={{
-              fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 13,
+              fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 15,
               color: '#96a0b8', textAlign: 'center', margin: '0 0 28px',
             }}>
               {"Your profile is ready. Here's what to do next:"}
@@ -1090,11 +1262,11 @@ function DeafSignupForm() {
               {/* Card 1: Browse directory */}
               <div style={{
                 background: '#111118', border: '1px solid rgba(255,255,255,0.06)',
-                borderRadius: 10, padding: '16px 18px', display: 'flex', alignItems: 'flex-start', gap: 14,
+                borderRadius: 16, padding: '16px 18px', display: 'flex', alignItems: 'flex-start', gap: 14,
               }}>
                 <div style={{
                   width: 36, height: 36, minWidth: 36, borderRadius: 8,
-                  background: 'rgba(123,97,255,0.1)', border: '1px solid rgba(123,97,255,0.2)',
+                  background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1103,10 +1275,10 @@ function DeafSignupForm() {
                   </svg>
                 </div>
                 <div>
-                  <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 13, color: '#f0f2f8', marginBottom: 3 }}>
+                  <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: 15, color: '#f0f2f8', marginBottom: 3 }}>
                     Browse the interpreter directory
                   </div>
-                  <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 11.5, color: '#6b7082', lineHeight: 1.5 }}>
+                  <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14, color: '#96a0b8', lineHeight: 1.5 }}>
                     Watch intro videos, check credentials, and start building your Preferred Interpreter List.
                   </div>
                 </div>
@@ -1115,14 +1287,14 @@ function DeafSignupForm() {
               {/* Card 2: Dashboard */}
               <div style={{
                 background: '#111118', border: '1px solid rgba(255,255,255,0.06)',
-                borderRadius: 10, padding: '16px 18px', display: 'flex', alignItems: 'flex-start', gap: 14,
+                borderRadius: 16, padding: '16px 18px', display: 'flex', alignItems: 'flex-start', gap: 14,
               }}>
                 <div style={{
                   width: 36, height: 36, minWidth: 36, borderRadius: 8,
-                  background: 'rgba(0,229,255,0.08)', border: '1px solid rgba(0,229,255,0.15)',
+                  background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="3" width="7" height="7" rx="1" />
                     <rect x="14" y="3" width="7" height="7" rx="1" />
                     <rect x="3" y="14" width="7" height="7" rx="1" />
@@ -1130,10 +1302,10 @@ function DeafSignupForm() {
                   </svg>
                 </div>
                 <div>
-                  <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 13, color: '#f0f2f8', marginBottom: 3 }}>
+                  <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: 15, color: '#f0f2f8', marginBottom: 3 }}>
                     Go to your dashboard
                   </div>
-                  <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 11.5, color: '#6b7082', lineHeight: 1.5 }}>
+                  <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14, color: '#96a0b8', lineHeight: 1.5 }}>
                     See your QR code, request link, and manage everything from one place.
                   </div>
                 </div>
@@ -1142,11 +1314,11 @@ function DeafSignupForm() {
               {/* Card 3: Share request link */}
               <div style={{
                 background: '#111118', border: '1px solid rgba(255,255,255,0.06)',
-                borderRadius: 10, padding: '16px 18px', display: 'flex', alignItems: 'flex-start', gap: 14,
+                borderRadius: 16, padding: '16px 18px', display: 'flex', alignItems: 'flex-start', gap: 14,
               }}>
                 <div style={{
                   width: 36, height: 36, minWidth: 36, borderRadius: 8,
-                  background: 'rgba(123,97,255,0.1)', border: '1px solid rgba(123,97,255,0.2)',
+                  background: 'rgba(167,139,250,0.1)', border: '1px solid rgba(167,139,250,0.2)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1157,10 +1329,10 @@ function DeafSignupForm() {
                   </svg>
                 </div>
                 <div>
-                  <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 13, color: '#f0f2f8', marginBottom: 3 }}>
+                  <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: 15, color: '#f0f2f8', marginBottom: 3 }}>
                     Share your request link
                   </div>
-                  <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 11.5, color: '#6b7082', lineHeight: 1.5 }}>
+                  <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14, color: '#96a0b8', lineHeight: 1.5 }}>
                     Give your QR code or link to anyone who books interpreters for you.
                   </div>
                 </div>
@@ -1173,7 +1345,7 @@ function DeafSignupForm() {
                 href="/directory"
                 style={{
                   display: 'block', width: '100%', padding: '14px 24px',
-                  background: '#7b61ff', color: '#fff', borderRadius: 10,
+                  background: '#a78bfa', color: '#0a0a0f', borderRadius: 10,
                   fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 14.5,
                   textAlign: 'center', textDecoration: 'none',
                 }}
@@ -1184,7 +1356,7 @@ function DeafSignupForm() {
                 href="/dhh/dashboard"
                 style={{
                   display: 'block', width: '100%', padding: '10px 20px',
-                  background: 'transparent', border: '1px solid rgba(123,97,255,0.3)',
+                  background: 'transparent', border: '1px solid rgba(167,139,250,0.3)',
                   color: '#a78bfa', borderRadius: 10,
                   fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 13.5,
                   textAlign: 'center', textDecoration: 'none',
@@ -1197,8 +1369,19 @@ function DeafSignupForm() {
         )}
       </div>
 
-      {/* Mobile responsive */}
+      {/* FormCard + Mobile responsive */}
       <style>{`
+        .dhh-signup-form-card {
+          background: #111118;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          border-radius: 16px;
+          padding: 32px;
+        }
+        @media (max-width: 640px) {
+          .dhh-signup-form-card {
+            padding: 20px;
+          }
+        }
         @media (max-width: 480px) {
           .dhh-signup-container { padding: 24px 16px !important; }
         }
