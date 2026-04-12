@@ -78,13 +78,13 @@ export default function InterpreterPortalClient() {
         {/* Founders */}
         <p
           style={{
-            fontFamily: "'Inter', sans-serif",
-            fontWeight: 500,
-            fontSize: 16,
-            color: '#c8cdd8',
-            lineHeight: 1.7,
+            fontFamily: "'Syne', sans-serif",
+            fontWeight: 600,
+            fontSize: 18,
+            color: '#f0f2f8',
             textAlign: 'center',
-            marginBottom: 16,
+            lineHeight: 1.5,
+            marginBottom: 20,
             marginTop: 0,
           }}
         >
