@@ -680,6 +680,35 @@ function InterpreterSignupForm() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Auto-save draft data periodically
+  useEffect(() => {
+    const uid = userId || existingUserId;
+    if (!uid) return;
+
+    const interval = setInterval(() => {
+      const supabase = createClient();
+      const draftData = {
+        firstName, lastName, email, country, state, city,
+        interpreterType, yearsExperience, workMode, genderIdentity, selectedPronouns, otherPronouns, phone, phoneType, eventCoordination,
+        signLanguages, otherSignLanguage, spokenLanguages, otherSpokenLanguage,
+        certifications, education,
+        bio, bioSpecializations, bioExtra, videoUrl, photoUrl,
+        specializations, specializedSkills,
+        lgbtq, deafParented, bipoc, bipocDetails, religiousAffiliation, religiousDetails,
+        mentorshipOffering, mentorshipSeeking,
+      };
+      supabase
+        .from('interpreter_profiles')
+        .update({ draft_step: section, draft_data: draftData })
+        .eq('user_id', uid)
+        .then(({ error }) => {
+          if (error) console.warn('Auto-save draft failed:', error.message);
+        });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  });
+
   function goToSection(s: number) {
     setError('');
     setCompletedSections(prev => {
@@ -743,7 +772,7 @@ function InterpreterSignupForm() {
         if (authError) {
           // If user already exists, try signing in instead
           if (authError.message.includes('already') || authError.message.includes('registered')) {
-            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
             if (signInError) {
               setError(signInError.message);
               setLoading(false);
@@ -762,7 +791,7 @@ function InterpreterSignupForm() {
           // Check if we actually got a session (not a fake obfuscation response)
           if (!authData.session) {
             // No session means user likely already exists. Try sign in.
-            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
             if (signInError) {
               setError(signInError.message);
               setLoading(false);
@@ -975,8 +1004,8 @@ function InterpreterSignupForm() {
                 setError(''); setLoading(true);
                 try {
                   const supabase = createClient();
-                  const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-                  if (signInError) { setError(signInError.message); setLoading(false); return; }
+                  const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email: email.trim().toLowerCase(), password });
+                  if (signInError) { setError('Could not sign in. Please check your email and password, or create a new account.'); setLoading(false); return; }
                   if (!signInData.user) { setError('Sign in failed.'); setLoading(false); return; }
                   const uid = signInData.user.id;
                   setUserId(uid); setExistingUserId(uid);

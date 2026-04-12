@@ -304,7 +304,7 @@ function AuthInput({ label, type = 'text', value, onChange, placeholder, require
   const id = label.toLowerCase().replace(/\s+/g, '-');
   return (
     <div>
-      <label htmlFor={id} style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#c8cdd8', marginBottom: '6px' }}>{label}</label>
+      <label htmlFor={id} style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#a78bfa', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>{label}</label>
       <input
         id={id}
         type={type}
@@ -555,6 +555,30 @@ function DeafSignupForm() {
     return () => clearTimeout(timeout);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Auto-save draft data periodically
+  useEffect(() => {
+    const uid = userId || existingUserId;
+    if (!uid) return;
+
+    const interval = setInterval(() => {
+      const supabase = createClient();
+      const draftData = {
+        firstName, lastName, email, country, state, city,
+        signingStyles, otherSignLanguage, voicePref, diPreferred, commNotes,
+        writtenIntro, shareTextBefore, profileVideoUrl, shareVideoBefore, autoSharePrefList,
+      };
+      supabase
+        .from('deaf_profiles')
+        .update({ draft_step: step, draft_data: draftData })
+        .or(`id.eq.${uid},user_id.eq.${uid}`)
+        .then(({ error }) => {
+          if (error) console.warn('Auto-save draft failed:', error.message);
+        });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  });
 
   function goToStep(s: number) {
     setError('');
