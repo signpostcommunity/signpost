@@ -336,6 +336,35 @@ function AuthInput({ label, type = 'text', value, onChange, placeholder, require
   );
 }
 
+/* ─── Layout Wrapper ─── */
+
+function SectionWrapper({ section, completedSections, children }: {
+  section: number; completedSections: number[]; children: React.ReactNode;
+}) {
+  return (
+    <div style={{ padding: '20px 28px 36px', minHeight: '100vh', background: 'var(--bg)' }}>
+      <div className="interpreter-signup-layout" style={{ maxWidth: 900, margin: '0 auto' }}>
+        <SidebarNav currentSection={section} completedSections={completedSections} />
+        <div style={{ flex: 1, maxWidth: 600 }}>
+          {children}
+        </div>
+      </div>
+      <style>{`
+        .interpreter-signup-layout {
+          display: flex;
+          flex-direction: column;
+        }
+        @media (min-width: 768px) {
+          .interpreter-signup-layout {
+            flex-direction: row;
+            gap: 40px;
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
+
 /* ─── Main Signup Form ─── */
 
 function InterpreterSignupForm() {
@@ -479,7 +508,7 @@ function InterpreterSignupForm() {
 
     try {
       const supabase = createClient();
-      let uid: string;
+      let uid: string = '';
 
       if (isAddRole && existingUserId) {
         uid = existingUserId;
@@ -488,16 +517,75 @@ function InterpreterSignupForm() {
         uid = existingUserId;
       } else {
         const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
-        if (authError || !authData.user) {
-          setError(authError?.message || 'Failed to create account');
+
+        if (authError) {
+          // If user already exists, try signing in instead
+          if (authError.message.includes('already') || authError.message.includes('registered')) {
+            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+            if (signInError) {
+              setError(signInError.message);
+              setLoading(false);
+              return;
+            }
+            if (signInData.user) {
+              uid = signInData.user.id;
+              setExistingUserId(uid);
+            }
+          } else {
+            setError(authError.message);
+            setLoading(false);
+            return;
+          }
+        } else if (authData.user) {
+          // Check if we actually got a session (not a fake obfuscation response)
+          if (!authData.session) {
+            // No session means user likely already exists. Try sign in.
+            const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+            if (signInError) {
+              setError(signInError.message);
+              setLoading(false);
+              return;
+            }
+            if (signInData.user) {
+              uid = signInData.user.id;
+              setExistingUserId(uid);
+            }
+          } else {
+            uid = authData.user.id;
+            // Only insert user_profiles for genuinely new users
+            const { error: upError } = await supabase.from('user_profiles').insert({
+              id: uid, role: 'interpreter', pending_roles: [],
+            });
+            if (upError && !upError.message.includes('duplicate')) {
+              console.warn('user_profiles insert warning:', upError.message);
+            }
+          }
+        } else {
+          setError('Failed to create account');
           setLoading(false);
           return;
         }
-        uid = authData.user.id;
+      }
 
-        await supabase.from('user_profiles').insert({
-          id: uid, role: 'interpreter', pending_roles: [],
-        });
+      if (!uid) {
+        setError('Failed to create account');
+        setLoading(false);
+        return;
+      }
+
+      // Check if profile already exists (resume flow)
+      const { data: existingProfile } = await supabase
+        .from('interpreter_profiles')
+        .select('id')
+        .eq('user_id', uid)
+        .maybeSingle();
+
+      if (existingProfile) {
+        setProfileId(existingProfile.id);
+        setUserId(uid);
+        setLoading(false);
+        goToSection(2);
+        return;
       }
 
       const firstNameVal = firstName.trim();
@@ -584,38 +672,11 @@ function InterpreterSignupForm() {
     }
   }
 
-  /* ─── Layout Wrapper ─── */
-
-  function SectionWrapper({ children }: { children: React.ReactNode }) {
-    return (
-      <div style={{ padding: '36px 28px', minHeight: '100vh', background: 'var(--bg)' }}>
-        <div className="interpreter-signup-layout" style={{ maxWidth: 900, margin: '0 auto' }}>
-          <SidebarNav currentSection={section} completedSections={completedSections} />
-          <div style={{ flex: 1, maxWidth: 600 }}>
-            {children}
-          </div>
-        </div>
-        <style>{`
-          .interpreter-signup-layout {
-            display: flex;
-            flex-direction: column;
-          }
-          @media (min-width: 768px) {
-            .interpreter-signup-layout {
-              flex-direction: row;
-              gap: 40px;
-            }
-          }
-        `}</style>
-      </div>
-    );
-  }
-
   /* ─── Section 1: Account ─── */
 
   if (section === 1) {
     return (
-      <SectionWrapper>
+      <SectionWrapper section={section} completedSections={completedSections}>
         <StepHeading>Create your account</StepHeading>
         <div style={{ marginBottom: 20 }}>
           <GoogleSignInButton role="interpreter" label="Continue with Google" />
@@ -680,7 +741,7 @@ function InterpreterSignupForm() {
 
   if (section === 2) {
     return (
-      <SectionWrapper>
+      <SectionWrapper section={section} completedSections={completedSections}>
         <StepHeading>How signpost works for interpreters</StepHeading>
         <StepSubtext>These explain how signpost is different. Read what interests you.</StepSubtext>
 
@@ -756,7 +817,7 @@ function InterpreterSignupForm() {
     ];
 
     return (
-      <SectionWrapper>
+      <SectionWrapper section={section} completedSections={completedSections}>
         <StepHeading>Professional background</StepHeading>
         <StepSubtext>Tell us about your interpreting practice.</StepSubtext>
 
@@ -975,7 +1036,7 @@ function InterpreterSignupForm() {
     });
 
     return (
-      <SectionWrapper>
+      <SectionWrapper section={section} completedSections={completedSections}>
         <StepHeading>Languages</StepHeading>
         <StepSubtext>Select all languages you work with.</StepSubtext>
 
@@ -1137,7 +1198,7 @@ function InterpreterSignupForm() {
     };
 
     return (
-      <SectionWrapper>
+      <SectionWrapper section={section} completedSections={completedSections}>
         <StepHeading>Credentials</StepHeading>
         <StepSubtext>Add your certifications and education. All fields are optional.</StepSubtext>
 
@@ -1411,7 +1472,7 @@ function InterpreterSignupForm() {
     };
 
     return (
-      <SectionWrapper>
+      <SectionWrapper section={section} completedSections={completedSections}>
         <StepHeading>About you</StepHeading>
         <StepSubtext>Help people get to know you.</StepSubtext>
 
@@ -1590,7 +1651,7 @@ function InterpreterSignupForm() {
   const stubLabel = SECTION_LABELS[section - 1] || 'Section';
 
   return (
-    <SectionWrapper>
+    <SectionWrapper section={section} completedSections={completedSections}>
       <StepHeading>{stubLabel}</StepHeading>
       <p style={{
         fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14,
