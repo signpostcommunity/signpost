@@ -838,7 +838,7 @@ function DeafSignupForm() {
         position: 'relative' as const, zIndex: 1,
       }}
     >
-      <div style={{ maxWidth: 480, width: '100%' }}>
+      <div style={{ maxWidth: 560, width: '100%' }}>
 
         {/* ════════ STEP 1: Create Account ════════ */}
         {step === 1 && (

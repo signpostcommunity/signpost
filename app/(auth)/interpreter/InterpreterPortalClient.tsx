@@ -17,7 +17,7 @@ export default function InterpreterPortalClient() {
       <div
         className="interp-landing-card"
         style={{
-          maxWidth: 480,
+          maxWidth: 560,
           width: '100%',
           background: '#111118',
           border: '1px solid rgba(0, 229, 255, 0.15)',
@@ -69,7 +69,7 @@ export default function InterpreterPortalClient() {
             margin: '0 0 20px',
           }}
         >
-          Your interpreter profile, working <span style={{ fontStyle: 'italic', color: '#00e5ff' }}>for you</span>.
+          How is signpost <span style={{ fontStyle: 'italic', color: '#00e5ff' }}>different</span> from an agency?
         </h1>
 
         {/* Divider */}
@@ -118,7 +118,6 @@ export default function InterpreterPortalClient() {
               fontFamily: "'Inter', sans-serif",
               fontWeight: 500,
               fontSize: 16,
-              fontStyle: 'italic',
               color: '#00e5ff',
               lineHeight: 1.7,
               marginTop: 12,

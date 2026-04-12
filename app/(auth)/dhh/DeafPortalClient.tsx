@@ -17,7 +17,7 @@ export default function DeafPortalClient() {
       <div
         className="dhh-landing-card"
         style={{
-          maxWidth: 480,
+          maxWidth: 560,
           width: '100%',
           background: '#111118',
           border: '1px solid rgba(167, 139, 250, 0.15)',
@@ -122,7 +122,6 @@ export default function DeafPortalClient() {
               fontFamily: "'Inter', sans-serif",
               fontWeight: 500,
               fontSize: 16,
-              fontStyle: 'italic',
               color: '#a78bfa',
               lineHeight: 1.7,
               marginTop: 12,
