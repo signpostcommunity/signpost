@@ -620,6 +620,29 @@ export default function RequestSignupClient() {
   const [existingUserId, setExistingUserId] = useState<string | null>(null);
   const [openCard, setOpenCard] = useState<number | null>(null);
 
+  // Redirect authenticated users who already have a requester profile
+  useEffect(() => {
+    if (isAddRole) return;
+    (async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data: profile } = await supabase
+          .from('requester_profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (profile) {
+          window.location.href = '/request/dashboard';
+        }
+      } catch (e) {
+        console.error('Auth redirect check failed:', e);
+      }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Pre-fill from existing profile when adding a role
   useEffect(() => {
     if (!isAddRole) return;
