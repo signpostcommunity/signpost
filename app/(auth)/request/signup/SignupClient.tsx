@@ -530,7 +530,7 @@ function DoneStep() {
               fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 15,
               color: '#c8cdd8', lineHeight: 1.65, margin: '0 0 12px',
             }}>
-              If you are Deaf, DeafBlind, or Hard of Hearing, you can also create your Deaf/DB/HH profile to build your preferred interpreter list, share your request link, and book interpreters for personal events at no cost.
+              If you are Deaf, DeafBlind, or Hard of Hearing, you can also create your Deaf/DB/HH profile to build your preferred interpreter list, share your request link, and book interpreters for personal events. signpost does not charge a booking fee for personal events.
             </p>
             <button
               type="button"
