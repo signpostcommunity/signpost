@@ -210,6 +210,9 @@ export default function RequestPortalPage() {
           How is signpost <span style={{ fontStyle: 'italic', color: '#00e5ff' }}>different</span> from an agency?
         </h1>
 
+        {/* Divider */}
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', marginBottom: 20 }} />
+
         {/* Lead-in subheading */}
         <p
           style={{
@@ -225,9 +228,6 @@ export default function RequestPortalPage() {
         >
           signpost connects you directly with sign language interpreters.
         </p>
-
-        {/* Divider */}
-        <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', marginBottom: 20 }} />
 
         {/* Body paragraph */}
         <p
