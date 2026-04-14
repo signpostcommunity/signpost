@@ -3,7 +3,6 @@ import { Hr, Text } from '@react-email/components'
 import { SignpostEmail, COLORS } from './SignpostEmail'
 import {
   EmailParagraph,
-  EmailFeature,
   EmailButton,
 } from './components'
 
@@ -32,6 +31,27 @@ const footerText: React.CSSProperties = {
   fontSize: '13px',
   textAlign: 'center' as const,
   margin: '24px 0 0',
+}
+
+const cardWrap = (borderColor: string): React.CSSProperties => ({
+  borderLeft: `3px solid ${borderColor}`,
+  paddingLeft: '16px',
+  borderRadius: 0,
+  marginBottom: '16px',
+})
+
+const cardTitle = (color: string): React.CSSProperties => ({
+  color,
+  fontSize: '15px',
+  fontWeight: 700,
+  margin: '0 0 6px',
+})
+
+const cardDesc: React.CSSProperties = {
+  color: COLORS.muted,
+  fontSize: '14px',
+  lineHeight: '1.6',
+  margin: '0',
 }
 
 export function InterpreterInviteEmail({
@@ -67,24 +87,44 @@ export function InterpreterInviteEmail({
       <Hr style={divider} />
 
       {/* Section label */}
-      <Text style={sectionLabel}>WHAT YOU GET ON SIGNPOST</Text>
+      <Text style={sectionLabel}>HOW SIGNPOST IS DIFFERENT</Text>
 
       {/* Feature cards */}
-      <EmailFeature title="Set your own rates and terms">
-        You decide what you charge. Clients pay your rate directly.
-      </EmailFeature>
+      <div style={cardWrap(COLORS.cyan)}>
+        <Text style={cardTitle(COLORS.cyan)}>
+          Set your own rates and connect directly with clients
+        </Text>
+        <Text style={cardDesc}>
+          You decide what you charge and clients pay your rate directly. No agency in the middle, no fees added on top.
+        </Text>
+      </div>
 
-      <EmailFeature title="Connect directly with clients, with no agency fees added on top">
-        No middleman between you and the people you work with.
-      </EmailFeature>
+      <div style={cardWrap('#a78bfa')}>
+        <Text style={cardTitle('#f0f2f8')}>
+          A Deaf-centered approach to interpreter booking
+        </Text>
+        <Text style={cardDesc}>
+          signpost's tools prioritize finding the right fit for each Deaf person, whether through their preferred interpreter list or by browsing profiles and intro videos in the directory. The Deaf portal provides live status tracking for all interpreter requests, and lets Deaf clients share job details in English or ASL/video with interpreters before they arrive.
+        </Text>
+      </div>
 
-      <EmailFeature title="Build your professional profile with intro videos and credentials">
-        Show your skills, specializations, and certifications in one place.
-      </EmailFeature>
+      <div style={cardWrap(COLORS.cyan)}>
+        <Text style={cardTitle(COLORS.cyan)}>
+          Your freelance interpreting work, all in one place
+        </Text>
+        <Text style={cardDesc}>
+          Build your professional profile with intro videos, credentials, specializations, and rate profiles. Share your custom signpost URL or Book Me badge anywhere, and requesters are taken directly to a booking form for you. Manage your schedule, respond to requests, and handle invoicing from your dashboard.
+        </Text>
+      </div>
 
-      <EmailFeature title="Help grow our field with mentorship matching">
-        Whether you are deepening your skills in a new specialty or sharing expertise in one you know well, signpost helps connect interpreters for mentorship by area of practice.
-      </EmailFeature>
+      <div style={cardWrap('#a78bfa')}>
+        <Text style={cardTitle('#f0f2f8')}>
+          Help grow our field with mentorship matching
+        </Text>
+        <Text style={cardDesc}>
+          Whether you are deepening your skills in a new specialty or sharing expertise in one you know well, signpost helps connect interpreters for mentorship by area of practice.
+        </Text>
+      </div>
 
       {/* Closing + second CTA */}
       <EmailParagraph>
