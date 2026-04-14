@@ -2137,6 +2137,12 @@ export default function ProfileClient({ profile: rawProfile, userEmail, rateProf
           .profile-editor-layout { flex-direction: column !important; }
           .profile-editor-content { padding: 0 !important; }
         }
+        .signup-select {
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2300e5ff' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: right 14px center;
+          background-size: 12px;
+        }
       `}</style>
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
@@ -2456,64 +2462,27 @@ function SkillsTab({ specs, setSpecs, aspirationalSpecs, setAspirationalSpecs, s
         </div>
       )}
 
-      {/* Category groups */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 32 }}>
-        {Object.entries(SPECIALIZATION_CATEGORIES).map(([category, subs]) => {
-          const isCollapsed = collapsed[category]
-          const selectedCount = subs.filter(s => specs.includes(s)).length
-          return (
-            <div key={category} style={{
-              background: 'var(--surface2)', border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-sm)', overflow: 'hidden',
-            }}>
-              <button
-                onClick={() => toggleCategory(category)}
-                style={{
-                  width: '100%', padding: '12px 16px',
-                  background: 'none', border: 'none', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  fontSize: '12px', fontWeight: 500,
-                  letterSpacing: '0.06em', textTransform: 'uppercase',
-                  color: selectedCount > 0 ? '#00e5ff' : '#96a0b8',
-                }}
-              >
-                <span>{category}</span>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {selectedCount > 0 && (
-                    <span style={{
-                      background: 'rgba(0,229,255,0.15)', color: 'var(--accent)',
-                      borderRadius: 100, padding: '1px 7px', fontSize: '0.7rem', fontWeight: 700,
-                      fontFamily: "'Inter', sans-serif",
-                    }}>{selectedCount}</span>
-                  )}
-                  <span style={{ fontSize: '0.7rem', transition: 'transform 0.15s', transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▾</span>
-                </span>
-              </button>
-              {!isCollapsed && (
-                <div style={{ padding: '0 12px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  {subs.map(sub => (
-                    <label key={sub} style={{
-                      display: 'flex', alignItems: 'center', gap: 10,
-                      padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
-                      background: specs.includes(sub) ? 'rgba(0,229,255,0.06)' : 'transparent',
-                      transition: 'background 0.15s',
-                      fontSize: '0.85rem', color: specs.includes(sub) ? 'var(--text)' : 'var(--muted)',
-                    }}>
-                      <input
-                        type="checkbox"
-                        checked={specs.includes(sub)}
-                        onChange={() => toggleSpec(sub)}
-                        style={{ accentColor: 'var(--accent)', width: 'auto', flexShrink: 0 }}
-                      />
-                      {sub}
-                    </label>
-                  ))}
-                </div>
-              )}
-            </div>
-          )
-        })}
-      </div>
+      {/* Categorized dropdown */}
+      <select
+        className="signup-select"
+        value=""
+        onChange={(e) => { if (e.target.value) { toggleSpec(e.target.value); e.target.value = ''; } }}
+        style={{
+          width: '100%', background: 'var(--surface)', border: '1px solid var(--border)',
+          borderRadius: 10, padding: '11px 14px', color: 'var(--text)', fontSize: '0.85rem',
+          fontFamily: "'Inter', sans-serif", outline: 'none', appearance: 'none',
+          marginBottom: 32,
+        }}
+      >
+        <option value="">Select specializations...</option>
+        {Object.entries(SPECIALIZATION_CATEGORIES).map(([category, items]) => (
+          <optgroup key={category} label={category}>
+            {items.filter(item => !specs.includes(item)).map(item => (
+              <option key={item} value={item}>{item}</option>
+            ))}
+          </optgroup>
+        ))}
+      </select>
 
       {/* Section 1b: Working Towards (aspirational specializations) */}
       <div style={{

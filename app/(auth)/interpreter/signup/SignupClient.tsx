@@ -2324,20 +2324,50 @@ function InterpreterSignupForm() {
               {"Without specializations, your profile won't appear when requesters filter the directory by appointment type."}
             </p>
           </div>
-          {Object.entries(SPECIALIZATION_CATEGORIES).map(([category, items]) => (
-            <div key={category} style={{ marginBottom: 16 }}>
-              <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#96a0b8', marginBottom: 8 }}>
-                {category}
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                {items.map((s) => (
-                  <button key={s} type="button" onClick={() => {
-                    setSpecializations(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
-                  }} style={pillStyle(specializations.includes(s))}>{s}</button>
+          {/* Selected tags */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: specializations.length ? 12 : 0 }}>
+            {specializations.map(spec => (
+              <span key={spec} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '6px 12px', borderRadius: 8,
+                background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.3)',
+                color: '#00e5ff', fontSize: 13, fontFamily: "'Inter', sans-serif",
+              }}>
+                {spec}
+                <button type="button" onClick={() => setSpecializations(prev => prev.filter(x => x !== spec))} style={{
+                  background: 'none', border: 'none', color: '#00e5ff',
+                  cursor: 'pointer', padding: 0, fontSize: 14, lineHeight: 1,
+                }}>×</button>
+              </span>
+            ))}
+          </div>
+
+          {/* Count */}
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#00e5ff', fontWeight: 600, marginBottom: 8 }}>
+            {specializations.length} specialization{specializations.length !== 1 ? 's' : ''} selected
+          </div>
+
+          {/* Categorized dropdown */}
+          <select
+            className="signup-select"
+            value=""
+            onChange={(e) => { if (e.target.value) { setSpecializations(prev => prev.includes(e.target.value) ? prev : [...prev, e.target.value]); e.target.value = ''; } }}
+            style={{
+              width: '100%', background: 'var(--surface)', border: '1px solid var(--border)',
+              borderRadius: 10, padding: '11px 14px', color: 'var(--text)', fontSize: 15,
+              fontFamily: "'Inter', sans-serif", outline: 'none', appearance: 'none',
+              marginBottom: 8,
+            }}
+          >
+            <option value="">Select specializations...</option>
+            {Object.entries(SPECIALIZATION_CATEGORIES).map(([category, items]) => (
+              <optgroup key={category} label={category}>
+                {items.filter(item => !specializations.includes(item)).map(item => (
+                  <option key={item} value={item}>{item}</option>
                 ))}
-              </div>
-            </div>
-          ))}
+              </optgroup>
+            ))}
+          </select>
 
           {/* Specialized Skills */}
           <div style={{ ...l4Style, marginTop: 28 }}>Specialized Skills</div>
