@@ -2,6 +2,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { sendEmail } from '@/lib/email'
 import { emailTemplate } from '@/lib/email-template'
 import { sendSms } from '@/lib/sms'
+import { normalizePhone } from '@/lib/phone'
 
 export type AdminAlertType =
   | 'new_flag'
@@ -65,10 +66,13 @@ export async function sendAdminAlert(options: AlertOptions): Promise<void> {
 
       // Send SMS if opted in
       if (alertPref.sms && adminUser.admin_phone) {
-        sendSms({
-          to: adminUser.admin_phone,
-          message: options.smsMessage,
-        }).catch(e => console.error('[admin-alert] SMS failed:', e))
+        const e164 = normalizePhone(adminUser.admin_phone)
+        if (e164) {
+          sendSms({
+            to: e164,
+            message: options.smsMessage,
+          }).catch(e => console.error('[admin-alert] SMS failed:', e))
+        }
       }
     }
   } catch (e) {

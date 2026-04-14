@@ -1,18 +1,43 @@
 // lib/phone.ts
 // Phone number formatting and validation utilities
-// Normalizes US phone numbers to E.164 format (+1XXXXXXXXXX)
+// Normalizes phone numbers to E.164 format using libphonenumber-js
+
+import { parsePhoneNumber, isValidPhoneNumber } from 'libphonenumber-js'
+import type { CountryCode } from 'libphonenumber-js'
 
 /**
  * Normalize a phone number to E.164 format.
- * Accepts: (206) 555-1234, 206-555-1234, 2065551234, +12065551234
- * Returns: +12065551234 or null if invalid
+ * Uses defaultCountry as fallback when no country code is provided.
+ * Returns null if the number can't be parsed or is invalid.
+ *
+ * Examples:
+ *   normalizePhone('4252833971')            → '+14252833971'
+ *   normalizePhone('+44 7911 123456')       → '+447911123456'
+ *   normalizePhone('06 12 34 56 78', 'FR')  → '+33612345678'
+ *   normalizePhone('+81 90-1234-5678')      → '+819012345678'
  */
-export function normalizePhone(input: string): string | null {
-  const digits = input.replace(/\D/g, '')
-  if (digits.length === 10) return `+1${digits}`
-  if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`
-  if (input.startsWith('+') && digits.length >= 10) return `+${digits}`
-  return null
+export function normalizePhone(phone: string, defaultCountry: string = 'US'): string | null {
+  try {
+    const countryCode = defaultCountry.toUpperCase() as CountryCode
+    const parsed = parsePhoneNumber(phone, countryCode)
+    if (parsed && parsed.isValid()) {
+      return parsed.format('E.164')
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Validate a phone number for a given country.
+ */
+export function isValidPhone(phone: string, defaultCountry: string = 'US'): boolean {
+  try {
+    return isValidPhoneNumber(phone, defaultCountry.toUpperCase() as CountryCode)
+  } catch {
+    return false
+  }
 }
 
 /**

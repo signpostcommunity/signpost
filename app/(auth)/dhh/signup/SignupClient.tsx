@@ -324,7 +324,7 @@ function AuthInput({ label, type = 'text', value, onChange, placeholder, require
   );
 }
 
-/* ─── Signing Style Pills ─── */
+/* ─── Signing Styles (7 items -> two-column checkboxes per design system) ─── */
 
 const SIGNING_STYLES = [
   'ASL',
@@ -336,29 +336,37 @@ const SIGNING_STYLES = [
   'Other',
 ];
 
-function SigningStylePills({ selected, onToggle }: { selected: string[]; onToggle: (s: string) => void }) {
+function SigningStyleCheckboxes({ selected, onToggle }: { selected: string[]; onToggle: (s: string) => void }) {
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-      {SIGNING_STYLES.map((style) => {
-        const active = selected.includes(style);
-        return (
-          <button
-            key={style}
-            type="button"
-            onClick={() => onToggle(style)}
+    <div className="checkbox-grid-responsive" style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(2, 1fr)',
+      gap: '6px 16px',
+    }}>
+      {SIGNING_STYLES.map(item => (
+        <label key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', padding: '4px 0' }}>
+          <div
+            onClick={(e) => { e.preventDefault(); onToggle(item); }}
             style={{
-              padding: '8px 14px', borderRadius: 10, fontSize: 14,
-              fontFamily: "'Inter', sans-serif", fontWeight: 500, cursor: 'pointer',
-              background: active ? 'rgba(167,139,250,0.12)' : 'rgba(255,255,255,0.04)',
-              border: `1px solid ${active ? '#a78bfa' : 'rgba(255,255,255,0.08)'}`,
-              color: active ? '#a78bfa' : '#96a0b8',
+              width: 16, height: 16, minWidth: 16,
+              border: `1.5px solid ${selected.includes(item) ? '#a78bfa' : 'rgba(255,255,255,0.2)'}`,
+              borderRadius: 3, marginTop: 1,
+              background: selected.includes(item) ? 'rgba(167,139,250,0.15)' : 'transparent',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
               transition: 'all 0.15s',
             }}
           >
-            {style}
-          </button>
-        );
-      })}
+            {selected.includes(item) && (
+              <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                <path d="M1 4l2.5 2.5L9 1" stroke="#a78bfa" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          </div>
+          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: '#c8cdd8', lineHeight: 1.4 }}>
+            {item}
+          </span>
+        </label>
+      ))}
     </div>
   );
 }
@@ -932,7 +940,7 @@ function DeafSignupForm() {
               <label style={{ display: 'block', fontSize: 13, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a78bfa', marginBottom: 10 }}>
                 Signing style
               </label>
-              <SigningStylePills selected={signingStyles} onToggle={toggleSigningStyle} />
+              <SigningStyleCheckboxes selected={signingStyles} onToggle={toggleSigningStyle} />
               <div style={{ marginTop: 14 }}>
                 <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#c8cdd8', marginBottom: 6 }}>
                   I use a different signed language

@@ -2,6 +2,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { sendEmail } from '@/lib/email'
 import { emailTemplate, EmailContentBlock } from '@/lib/email-template'
 import { sendSms } from '@/lib/sms'
+import { normalizePhone } from '@/lib/phone'
 import { smsTemplates } from '@/lib/sms-templates'
 
 export type NotificationType =
@@ -779,10 +780,15 @@ export async function createNotification(params: CreateNotificationParams) {
       }
 
       if (smsEnabled && smsPhone) {
-        const smsMessage = getSmsMessage(params.type, params.metadata ?? {})
-        if (smsMessage) {
-          sendSms({ to: smsPhone, message: smsMessage })
-            .catch(e => console.error('[notifications] SMS failed:', e))
+        const e164 = normalizePhone(smsPhone)
+        if (e164) {
+          const smsMessage = getSmsMessage(params.type, params.metadata ?? {})
+          if (smsMessage) {
+            sendSms({ to: e164, message: smsMessage })
+              .catch(e => console.error('[notifications] SMS failed:', e))
+          }
+        } else {
+          console.warn(`[notifications] Invalid phone number for user ${params.recipientUserId}: ${smsPhone}`)
         }
       }
     } catch (e) {

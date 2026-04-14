@@ -236,6 +236,91 @@ Use this consistently for: /dhh/dashboard/interpreters, /directory, /interpreter
 
 ---
 
+## Multi-Select Patterns
+
+**Pills** for ≤5 ungrouped short-label options. Quick-tap selections where labels are 1-3 words.
+**Two-column checkboxes** for 6+ options, OR any set with category groupings regardless of count.
+
+Examples:
+- Pronouns (3 items, ungrouped) -> pills
+- Phone type (3 items) -> pills
+- Communication method (4 items) -> pills
+- Sign languages (10+) -> two-column checkboxes
+- Spoken languages (8+) -> two-column checkboxes
+- Specializations (40+, grouped) -> two-column checkboxes with cyan category headers
+- Specialized skills (7 items) -> two-column checkboxes
+
+Checkbox styling: 16x16 custom box, 1.5px border, rgba(255,255,255,0.2) unchecked, rgba(0,229,255,0.15) bg + #00e5ff border checked, cyan check SVG inside. Text: Inter 14px, #c8cdd8. Grid gap: 6px 16px. Single column at 640px breakpoint.
+
+Category headers (grouped sets): Inter 13px, fontWeight 600, #00e5ff, uppercase, letterSpacing 0.06em, borderBottom 1px solid rgba(0,229,255,0.1).
+
+Pills styling: padding 8px 16px, borderRadius 8-10px. Selected: bg rgba(0,229,255,0.12), border 1px solid rgba(0,229,255,0.4), color #00e5ff. Unselected: bg transparent, border 1px solid rgba(255,255,255,0.12), color #96a0b8. Purple portal variant: swap #00e5ff for #a78bfa.
+
+---
+
+## Form Patterns
+
+**FormCard**: bg #111118, borderRadius 16px, padding 32px (20px on mobile ≤640px). Wraps all form fields within a signup section.
+
+**Labels**: Inter 13px, fontWeight 600, textTransform uppercase, letterSpacing 0.08em. Color: #00e5ff (interpreter/requester portals), #a78bfa (Deaf portal).
+
+**Inputs**: bg #16161f, border 1px solid rgba(0,229,255,0.15), borderRadius 10px, padding 11px 14px, color #f0f2f8, fontSize 14px. Focus: borderColor rgba(0,229,255,0.5).
+
+**Dropdowns**: Add .signup-select CSS class for custom chevron caret. appearance: none + SVG background-image chevron. Cyan chevron for interpreter/requester, purple for Deaf portal.
+
+**Required field indicators**: Asterisk (*) after label text on all required fields. Validation errors: Inter 14px, color #f06b85, shown inline below the Continue button or at top of section.
+
+**Amber info notes** (encouraging, not blocking): bg rgba(240,166,35,0.08), borderLeft 3px solid #f0a623, padding 10px 14px, borderRadius 0. Text: Inter 14px, color #f0a623.
+
+---
+
+## Landing Page Editorial Card
+
+All portal landing pages use the same editorial card pattern:
+
+- Card: bg #111118, borderRadius 16px, maxWidth 560px, border 1px solid rgba(accent,0.15), overflow hidden, padding 0 36px 36px
+- Gradient accent bar: 3px height at top, full width via negative margin, linear-gradient(90deg, primary accent, secondary accent)
+- Icon: 64x64, borderRadius 16px, centered, accent-tinted background
+- Heading: Syne 700/24px, centered, key word in italic + accent color
+- Subheading: Syne 600/18px, #f0f2f8, centered
+- Divider: 1px rgba(255,255,255,0.06), directly below heading
+- Body: Inter 400/15px, #96a0b8
+- Tagline: Inter 500/16px, accent color, only "your" in italic via <em> tag. Parent element does NOT have fontStyle italic.
+- Buttons: two side-by-side. Primary: accent bg, dark text. Secondary: transparent bg, accent border + text.
+
+---
+
+## Education Cards (Expandable Accordion)
+
+Used in signup Step 1/2 across all portals for "How signpost works" content.
+
+- Accordion behavior: only one card open at a time
+- Card header: icon (16x16 accent SVG) + title (Inter 15px/600, #f0f2f8) + chevron (rotates on expand)
+- Card body: Inter 15px, #96a0b8, lineHeight 1.7
+- Cards inside a FormCard container
+- Step-flow cards (sequential steps): use centered accent down-arrow SVGs between steps
+- Closing/summary lines: brighter color #c8cdd8 to stand out from body
+- "Got it" button at bottom: full width, accent bg
+
+---
+
+## Sidebar Navigation (Interpreter Signup)
+
+8-section sidebar with section names, checkmarks on completed sections, left border indicator on current section.
+
+- Section names are clickable for completed and current sections
+- Future (unvisited) sections: disabled, muted color, cursor default
+- Clicking scrolls to top: window.scrollTo({ top: 0, behavior: 'smooth' })
+- Font: Syne 700/0.92rem for section names
+
+---
+
+## Single-Sided Borders
+
+borderRadius: 0 on any element with a border on only one side (border-left accents, border-bottom dividers, pull-quote blocks, amber info notes). Rounded corners only apply when all sides have borders.
+
+---
+
 ## General rules
 
 - **"signpost" is always lowercase** in all UI text, copy, code comments, docs. Never "Signpost" or "SIGNPOST" (exception: env variable names).

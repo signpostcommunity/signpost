@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
+import { isValidPhone } from '@/lib/phone'
 
 type Contact = {
   name: string
@@ -413,6 +414,7 @@ function InviteContent() {
     if (!name) { setErrorMsg('Recipient name is required.'); return }
     if (channel === 'email' && !email) { setErrorMsg('Email is required to send via email.'); return }
     if (channel === 'sms' && !phone) { setErrorMsg('Phone is required to send via text.'); return }
+    if (channel === 'sms' && phone && !isValidPhone(phone)) { setErrorMsg('Please enter a valid phone number.'); return }
     if (!email && !phone && channel !== 'clipboard') { setErrorMsg('At least an email or phone is required.'); return }
     if (!sName) { setErrorMsg('Your name is required.'); return }
 

@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { sendEmail } from '@/lib/email'
 import { sendSms } from '@/lib/sms'
+import { normalizePhone } from '@/lib/phone'
 import { render } from '@react-email/components'
 import { InterpreterInviteEmail } from '@/emails/InterpreterInviteEmail'
 
@@ -137,9 +138,14 @@ export async function POST(req: NextRequest) {
   }
 
   if (channel === 'sms' && recipientPhone) {
+    const e164 = normalizePhone(recipientPhone)
+    if (!e164) {
+      console.error(`[invites] Invalid phone number: ${recipientPhone}`)
+      return NextResponse.json({ error: 'Invalid phone number format' }, { status: 400 })
+    }
     const smsBody = `${resolvedSenderName || 'Someone'} wants to add you to their preferred interpreter team on signpost. Set your own rates, connect directly with clients. Join: signpost.community/interpreter/signup?invite=${token}`
     try {
-      await sendSms({ to: recipientPhone, message: smsBody })
+      await sendSms({ to: e164, message: smsBody })
     } catch (smsErr) {
       console.error('[invites] SMS send error:', smsErr)
     }

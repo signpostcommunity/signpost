@@ -2394,18 +2394,22 @@ function InterpreterSignupForm() {
           <CommunityToggle label="Deaf-Parented Interpreter / CODA" helper="Select if you grew up with Deaf parents or are a Child of Deaf Adults" checked={deafParented} onChange={() => setDeafParented(!deafParented)} />
           <CommunityToggle label="BIPOC" checked={bipoc} onChange={() => { if (bipoc) { setBipoc(false); setBipocDetails([]); } else { setBipoc(true); } }} />
           {bipoc && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', marginBottom: 8, paddingLeft: 52 }}>
-              {BIPOC_OPTIONS.map(opt => (
-                <button key={opt} type="button" onClick={() => setBipocDetails(prev => prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt])} style={pillStyle(bipocDetails.includes(opt))}>{opt}</button>
-              ))}
+            <div style={{ marginBottom: 8, paddingLeft: 52 }}>
+              <CheckboxGrid
+                items={BIPOC_OPTIONS}
+                selected={bipocDetails}
+                onToggle={(opt) => setBipocDetails(prev => prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt])}
+              />
             </div>
           )}
           <CommunityToggle label="Religious affiliation" checked={religiousAffiliation} onChange={() => { if (religiousAffiliation) { setReligiousAffiliation(false); setReligiousDetails([]); } else { setReligiousAffiliation(true); } }} />
           {religiousAffiliation && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', marginBottom: 8, paddingLeft: 52 }}>
-              {RELIGIOUS_OPTIONS.map(opt => (
-                <button key={opt} type="button" onClick={() => setReligiousDetails(prev => prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt])} style={pillStyle(religiousDetails.includes(opt))}>{opt}</button>
-              ))}
+            <div style={{ marginBottom: 8, paddingLeft: 52 }}>
+              <CheckboxGrid
+                items={RELIGIOUS_OPTIONS}
+                selected={religiousDetails}
+                onToggle={(opt) => setReligiousDetails(prev => prev.includes(opt) ? prev.filter(x => x !== opt) : [...prev, opt])}
+              />
             </div>
           )}
 
