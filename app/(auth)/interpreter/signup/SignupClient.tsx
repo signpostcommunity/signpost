@@ -241,6 +241,7 @@ const EDUCATION_CARDS: EducationCard[] = [
     body: [
       'Watching an intro video in ASL lets Deaf people get to know you naturally. No written description can replace that. When we started developing signpost, intro videos were one of the most requested features.',
       'Your video does not need to be polished or scripted. Just introduce yourself: share a little about your background, what kind of work you do, whatever feels right.',
+      'If you would prefer to share a sample of your interpreting work instead, that is welcome too. Make sure work samples are accessible in both the source and target languages (for example, yourself signing with the original English captioned, or a video interpreted from ASL with yourself voicing and captions). Please use clips from a public source such as a YouTube video or TED talk.',
     ],
   },
   {
@@ -2222,6 +2223,13 @@ function InterpreterSignupForm() {
             Deaf users consistently rate interpreter intro videos as one of their most valued features of signpost.
           </p>
         </div>
+
+        <p style={{
+          fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 13,
+          color: '#96a0b8', lineHeight: 1.6, marginBottom: 16,
+        }}>
+          You can record an introduction, upload a video, or paste a URL. Work samples are welcome too. If sharing a work sample, make sure it is accessible in both the source and target languages (for example, yourself signing with the original English captioned, or a video interpreted from ASL with yourself voicing and captions). Please use clips from a public source.
+        </p>
 
         <InlineVideoCapture
           onVideoSaved={(url) => setVideoUrl(url)}
