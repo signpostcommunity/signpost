@@ -88,6 +88,48 @@ function Chip({ label, selected, onToggle }: { label: string; selected: boolean;
   )
 }
 
+// ── CheckboxGrid ─────────────────────────────────────────────────────────────
+
+function ProfileCheckboxGrid({ items, selected, onToggle, columns = 2 }: {
+  items: string[];
+  selected: string[];
+  onToggle: (item: string) => void;
+  columns?: number;
+}) {
+  return (
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: `repeat(${columns}, 1fr)`,
+      gap: '6px 16px',
+    }}>
+      {items.map(item => (
+        <label key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', padding: '4px 0' }}>
+          <div
+            onClick={(e) => { e.preventDefault(); onToggle(item); }}
+            style={{
+              width: 16, height: 16, minWidth: 16,
+              border: `1.5px solid ${selected.includes(item) ? '#00e5ff' : 'rgba(255,255,255,0.2)'}`,
+              borderRadius: 3, marginTop: 1,
+              background: selected.includes(item) ? 'rgba(0,229,255,0.15)' : 'transparent',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.15s',
+            }}
+          >
+            {selected.includes(item) && (
+              <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                <path d="M1 4l2.5 2.5L9 1" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          </div>
+          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: '#c8cdd8', lineHeight: 1.4 }}>
+            {item}
+          </span>
+        </label>
+      ))}
+    </div>
+  );
+}
+
 // ── Region toggle tile ───────────────────────────────────────────────────────
 
 const REGIONS = [
@@ -1571,14 +1613,11 @@ export default function ProfileClient({ profile: rawProfile, userEmail, rateProf
           <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
             Select all sign languages in which you have professional-level fluency.
           </p>
-          <div style={{ fontWeight: 500, fontSize: '12px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#96a0b8', marginBottom: 10 }}>
-            Most common
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 6, marginBottom: 12 }}>
-            {SIGN_LANGUAGES_TOP6.map(lang => (
-              <Chip key={lang} label={lang} selected={signLangs.includes(lang)} onToggle={() => toggleInList(signLangs, lang, setSignLangs)} />
-            ))}
-          </div>
+          <ProfileCheckboxGrid
+            items={SIGN_LANGUAGES_TOP6}
+            selected={signLangs}
+            onToggle={(lang) => toggleInList(signLangs, lang, setSignLangs)}
+          />
           <div style={{ fontWeight: 500, fontSize: '12px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#96a0b8', marginBottom: 6 }}>
             More languages by region
           </div>
@@ -1615,14 +1654,11 @@ export default function ProfileClient({ profile: rawProfile, userEmail, rateProf
           <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12 }}>
             Select all spoken languages in which you have professional-level fluency.
           </p>
-          <div style={{ fontWeight: 500, fontSize: '12px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#96a0b8', marginBottom: 10 }}>
-            Most common
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 6, marginBottom: 12 }}>
-            {SPOKEN_LANGUAGES_TOP6.map(lang => (
-              <Chip key={lang} label={lang} selected={spokenLangs.includes(lang)} onToggle={() => toggleInList(spokenLangs, lang, setSpokenLangs)} />
-            ))}
-          </div>
+          <ProfileCheckboxGrid
+            items={SPOKEN_LANGUAGES_TOP6}
+            selected={spokenLangs}
+            onToggle={(lang) => toggleInList(spokenLangs, lang, setSpokenLangs)}
+          />
           <div style={{ fontWeight: 500, fontSize: '12px', letterSpacing: '0.06em', textTransform: 'uppercase', color: '#96a0b8', marginBottom: 6 }}>
             More languages by region
           </div>
@@ -2438,51 +2474,27 @@ function SkillsTab({ specs, setSpecs, aspirationalSpecs, setAspirationalSpecs, s
         Select the settings and specialization areas where you work. These help clients find you.
       </p>
 
-      <div style={{
-        fontSize: '0.82rem', color: 'var(--accent)', fontWeight: 600, marginBottom: 16,
-      }}>
+      {Object.entries(SPECIALIZATION_CATEGORIES).map(([category, items], catIdx) => (
+        <div key={category}>
+          <div style={{
+            fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
+            color: '#00e5ff', textTransform: 'uppercase' as const, letterSpacing: '0.06em',
+            borderBottom: '1px solid rgba(0,229,255,0.1)',
+            marginTop: catIdx === 0 ? 0 : 20,
+            paddingBottom: 6, marginBottom: 10,
+          }}>
+            {category}
+          </div>
+          <ProfileCheckboxGrid
+            items={items}
+            selected={specs}
+            onToggle={(spec) => toggleSpec(spec)}
+          />
+        </div>
+      ))}
+      <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#96a0b8', marginTop: 12, marginBottom: 32 }}>
         {specs.length} specialization{specs.length !== 1 ? 's' : ''} selected
       </div>
-
-      {/* Selected tags */}
-      {specs.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 20 }}>
-          {specs.map(spec => (
-            <span key={spec} style={{
-              padding: '4px 12px', fontSize: '0.78rem',
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              borderRadius: 20, border: '1px solid rgba(0,229,255,0.4)',
-              background: 'rgba(0,229,255,0.1)', color: 'var(--accent)',
-              fontFamily: "'Inter', sans-serif",
-            }}>
-              {spec}
-              <button onClick={() => toggleSpec(spec)} aria-label={`Remove ${spec}`} style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6, fontSize: '0.85rem', color: 'inherit', padding: 0 }}><span aria-hidden="true">✕</span></button>
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Categorized dropdown */}
-      <select
-        className="signup-select"
-        value=""
-        onChange={(e) => { if (e.target.value) { toggleSpec(e.target.value); e.target.value = ''; } }}
-        style={{
-          width: '100%', background: 'var(--surface)', border: '1px solid var(--border)',
-          borderRadius: 10, padding: '11px 14px', color: 'var(--text)', fontSize: '0.85rem',
-          fontFamily: "'Inter', sans-serif", outline: 'none', appearance: 'none',
-          marginBottom: 32,
-        }}
-      >
-        <option value="">Select specializations...</option>
-        {Object.entries(SPECIALIZATION_CATEGORIES).map(([category, items]) => (
-          <optgroup key={category} label={category}>
-            {items.filter(item => !specs.includes(item)).map(item => (
-              <option key={item} value={item}>{item}</option>
-            ))}
-          </optgroup>
-        ))}
-      </select>
 
       {/* Section 1b: Working Towards (aspirational specializations) */}
       <div style={{
@@ -2579,25 +2591,12 @@ function SkillsTab({ specs, setSpecs, aspirationalSpecs, setAspirationalSpecs, s
       <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, marginTop: -12, lineHeight: 1.6 }}>
         Select any highly specialized skills you hold. These are highlighted separately on your profile.
       </p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 24 }}>
-        {SPECIALIZED_SKILLS.map(skill => (
-          <label key={skill} style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            padding: '10px 14px', borderRadius: 'var(--radius-sm)', cursor: 'pointer',
-            background: specializedSkills.includes(skill) ? 'rgba(123,97,255,0.08)' : 'var(--surface2)',
-            border: specializedSkills.includes(skill) ? '1px solid rgba(123,97,255,0.3)' : '1px solid var(--border)',
-            transition: 'all 0.15s',
-            fontSize: '0.85rem', color: specializedSkills.includes(skill) ? 'var(--text)' : 'var(--muted)',
-          }}>
-            <input
-              type="checkbox"
-              checked={specializedSkills.includes(skill)}
-              onChange={() => toggleSkill(skill)}
-              style={{ accentColor: '#a78bfa', width: 'auto', flexShrink: 0 }}
-            />
-            {skill}
-          </label>
-        ))}
+      <div style={{ marginBottom: 24 }}>
+        <ProfileCheckboxGrid
+          items={SPECIALIZED_SKILLS}
+          selected={specializedSkills}
+          onToggle={(skill) => toggleSkill(skill)}
+        />
       </div>
 
       <SaveButton saving={saving} onClick={onSave} />

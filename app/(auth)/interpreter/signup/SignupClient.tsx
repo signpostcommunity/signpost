@@ -59,6 +59,48 @@ function CommunityToggle({ label, helper, checked, onChange }: { label: string; 
   );
 }
 
+/* ─── CheckboxGrid (reusable multi-select) ─── */
+
+function CheckboxGrid({ items, selected, onToggle, columns = 2 }: {
+  items: string[];
+  selected: string[];
+  onToggle: (item: string) => void;
+  columns?: number;
+}) {
+  return (
+    <div className="checkbox-grid-responsive" style={{
+      display: 'grid',
+      gridTemplateColumns: `repeat(${columns}, 1fr)`,
+      gap: '6px 16px',
+    }}>
+      {items.map(item => (
+        <label key={item} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', padding: '4px 0' }}>
+          <div
+            onClick={(e) => { e.preventDefault(); onToggle(item); }}
+            style={{
+              width: 16, height: 16, minWidth: 16,
+              border: `1.5px solid ${selected.includes(item) ? '#00e5ff' : 'rgba(255,255,255,0.2)'}`,
+              borderRadius: 3, marginTop: 1,
+              background: selected.includes(item) ? 'rgba(0,229,255,0.15)' : 'transparent',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.15s',
+            }}
+          >
+            {selected.includes(item) && (
+              <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                <path d="M1 4l2.5 2.5L9 1" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
+          </div>
+          <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: '#c8cdd8', lineHeight: 1.4 }}>
+            {item}
+          </span>
+        </label>
+      ))}
+    </div>
+  );
+}
+
 /* ─── Section labels ─── */
 
 const SECTION_LABELS = [
@@ -77,9 +119,11 @@ const SECTION_LABELS = [
 interface SidebarNavProps {
   currentSection: number;
   completedSections: number[];
+  highestVisited: number;
+  onNavigate: (section: number) => void;
 }
 
-function SidebarNav({ currentSection, completedSections }: SidebarNavProps) {
+function SidebarNav({ currentSection, completedSections, highestVisited, onNavigate }: SidebarNavProps) {
   return (
     <>
       {/* Desktop sidebar */}
@@ -90,6 +134,7 @@ function SidebarNav({ currentSection, completedSections }: SidebarNavProps) {
             const isCurrent = num === currentSection;
             const isCompleted = completedSections.includes(num);
             const isFuture = !isCurrent && !isCompleted;
+            const isClickable = num <= highestVisited;
 
             return (
               <div
@@ -105,7 +150,11 @@ function SidebarNav({ currentSection, completedSections }: SidebarNavProps) {
                   fontSize: 13.5,
                   color: isCurrent ? '#00e5ff' : '#96a0b8',
                   opacity: isFuture ? 0.5 : 1,
+                  cursor: isClickable ? 'pointer' : 'default',
                 }}
+                onClick={isClickable ? () => onNavigate(num) : undefined}
+                onMouseEnter={isClickable ? (e) => { if (!isCurrent) e.currentTarget.style.color = '#c8cdd8'; } : undefined}
+                onMouseLeave={isClickable ? (e) => { if (!isCurrent) e.currentTarget.style.color = '#96a0b8'; } : undefined}
               >
                 {isCompleted && (
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#96a0b8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -127,10 +176,12 @@ function SidebarNav({ currentSection, completedSections }: SidebarNavProps) {
             const isCurrent = num === currentSection;
             const isCompleted = completedSections.includes(num);
             const isActive = isCurrent || isCompleted;
+            const isClickable = num <= highestVisited;
 
             return (
               <div key={num} style={{ display: 'flex', alignItems: 'center' }}>
                 <div
+                  onClick={isClickable ? () => onNavigate(num) : undefined}
                   style={{
                     width: 10,
                     height: 10,
@@ -138,6 +189,7 @@ function SidebarNav({ currentSection, completedSections }: SidebarNavProps) {
                     background: isActive ? '#00e5ff' : 'transparent',
                     border: isActive ? 'none' : '1px solid rgba(255,255,255,0.15)',
                     transition: 'background 0.2s',
+                    cursor: isClickable ? 'pointer' : 'default',
                   }}
                 />
                 {i < SECTION_LABELS.length - 1 && (
@@ -442,13 +494,13 @@ function FormCard({ children }: { children: React.ReactNode }) {
   );
 }
 
-function SectionWrapper({ section, completedSections, children }: {
-  section: number; completedSections: number[]; children: React.ReactNode;
+function SectionWrapper({ section, completedSections, highestVisited, onNavigate, children }: {
+  section: number; completedSections: number[]; highestVisited: number; onNavigate: (s: number) => void; children: React.ReactNode;
 }) {
   return (
     <div style={{ padding: '100px 28px 80px', minHeight: '100vh', background: 'var(--bg)', position: 'relative', zIndex: 1 }}>
       <div className="interpreter-signup-layout" style={{ maxWidth: 900, margin: '0 auto' }}>
-        <SidebarNav currentSection={section} completedSections={completedSections} />
+        <SidebarNav currentSection={section} completedSections={completedSections} highestVisited={highestVisited} onNavigate={onNavigate} />
         <div style={{ flex: 1, maxWidth: 600 }}>
           {children}
         </div>
@@ -475,6 +527,14 @@ function SectionWrapper({ section, completedSections, children }: {
             padding: 20px;
           }
         }
+        .checkbox-grid-responsive {
+          /* default is fine */
+        }
+        @media (max-width: 640px) {
+          .checkbox-grid-responsive {
+            grid-template-columns: 1fr !important;
+          }
+        }
         .signup-select {
           appearance: none;
           -webkit-appearance: none;
@@ -497,6 +557,7 @@ function InterpreterSignupForm() {
   const isAddRole = searchParams.get('addRole') === 'true';
 
   const [section, setSection] = useState(isAddRole ? 2 : 1);
+  const [highestVisited, setHighestVisited] = useState(isAddRole ? 2 : 1);
   const [completedSections, setCompletedSections] = useState<number[]>([]);
   const [resuming, setResuming] = useState(!isAddRole);
   const [userId, setUserId] = useState<string | null>(null);
@@ -678,6 +739,7 @@ function InterpreterSignupForm() {
           const completed = Array.from({ length: targetSection - 1 }, (_, i) => i + 1);
           setCompletedSections(completed);
           setSection(targetSection);
+          setHighestVisited(targetSection);
         }
       } catch (e) {
         console.error('Auth/resume check failed:', e);
@@ -719,6 +781,12 @@ function InterpreterSignupForm() {
     return () => clearInterval(interval);
   });
 
+  const handleSidebarNav = (s: number) => {
+    setError('');
+    setSection(s);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   function goToSection(s: number) {
     setError('');
     setCompletedSections(prev => {
@@ -726,6 +794,7 @@ function InterpreterSignupForm() {
       return prev.includes(current) ? prev : [...prev, current];
     });
     setSection(s);
+    setHighestVisited(prev => Math.max(prev, s));
     window.scrollTo({ top: 0, behavior: 'smooth' });
 
     // Persist draft progress to Supabase
@@ -762,6 +831,11 @@ function InterpreterSignupForm() {
     }
     if (!isAddRole && password.length < 8) {
       setError('Password must be at least 8 characters.');
+      return;
+    }
+    const COUNTRIES_REQUIRING_STATE = ['United States', 'Canada'];
+    if (COUNTRIES_REQUIRING_STATE.includes(country) && !state) {
+      setError('Please select your state.');
       return;
     }
     setError('');
@@ -937,7 +1011,7 @@ function InterpreterSignupForm() {
 
   if (resuming) {
     return (
-      <SectionWrapper section={1} completedSections={[]}>
+      <SectionWrapper section={1} completedSections={[]} highestVisited={highestVisited} onNavigate={handleSidebarNav}>
         <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 14, color: '#96a0b8' }}>
           Checking for saved progress...
         </p>
@@ -951,7 +1025,7 @@ function InterpreterSignupForm() {
 
   if (section === 1) {
     return (
-      <SectionWrapper section={section} completedSections={completedSections}>
+      <SectionWrapper section={section} completedSections={completedSections} highestVisited={highestVisited} onNavigate={handleSidebarNav}>
         <StepHeading>Create your account</StepHeading>
         <FormCard>
         <div style={{ marginBottom: 20 }}>
@@ -1086,7 +1160,7 @@ function InterpreterSignupForm() {
 
   if (section === 2) {
     return (
-      <SectionWrapper section={section} completedSections={completedSections}>
+      <SectionWrapper section={section} completedSections={completedSections} highestVisited={highestVisited} onNavigate={handleSidebarNav}>
         <StepHeading>How signpost works for interpreters</StepHeading>
         <StepSubtext>These explain how signpost is different. Read what interests you.</StepSubtext>
 
@@ -1169,7 +1243,7 @@ function InterpreterSignupForm() {
     ];
 
     return (
-      <SectionWrapper section={section} completedSections={completedSections}>
+      <SectionWrapper section={section} completedSections={completedSections} highestVisited={highestVisited} onNavigate={handleSidebarNav}>
         <StepHeading>Professional background</StepHeading>
         <StepSubtext>Tell us about your interpreting practice.</StepSubtext>
 
@@ -1197,7 +1271,7 @@ function InterpreterSignupForm() {
         {/* Years of experience */}
         <div style={{ marginBottom: 24 }}>
           <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#00e5ff', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>
-            Years of experience
+            Years of experience <span style={{ color: '#ff6b85' }}>*</span>
           </label>
           <select
             className="signup-select"
@@ -1217,7 +1291,7 @@ function InterpreterSignupForm() {
         {/* Mode of work */}
         <div style={{ marginBottom: 24 }}>
           <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#00e5ff', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>
-            Mode of work
+            Mode of work <span style={{ color: '#ff6b85' }}>*</span>
           </label>
           {workModes.map((m) => (
             <label key={m} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, cursor: 'pointer' }}>
@@ -1262,29 +1336,12 @@ function InterpreterSignupForm() {
           <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#00e5ff', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>
             Pronouns
           </label>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
-            {['she/her', 'he/him', 'they/them'].map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => setSelectedPronouns(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])}
-                style={{
-                  padding: '8px 16px',
-                  borderRadius: 999,
-                  border: selectedPronouns.includes(p) ? '1px solid #00e5ff' : '1px solid rgba(0,229,255,0.2)',
-                  background: selectedPronouns.includes(p) ? 'rgba(0,229,255,0.12)' : 'transparent',
-                  color: selectedPronouns.includes(p) ? '#00e5ff' : '#c8cdd8',
-                  fontFamily: "'Inter', sans-serif",
-                  fontSize: 14,
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  transition: 'all 0.15s',
-                }}
-              >
-                {p}
-              </button>
-            ))}
-          </div>
+          <CheckboxGrid
+            items={['she/her', 'he/him', 'they/them']}
+            selected={selectedPronouns}
+            onToggle={(p) => setSelectedPronouns(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])}
+          />
+          <div style={{ marginTop: 10 }}>
           <input
             type="text"
             value={otherPronouns}
@@ -1298,6 +1355,7 @@ function InterpreterSignupForm() {
             onFocus={(e) => (e.target.style.borderColor = 'rgba(0,229,255,0.5)')}
             onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
           />
+          </div>
         </div>
 
         {/* Phone */}
@@ -1459,22 +1517,6 @@ function InterpreterSignupForm() {
   }
 
   if (section === 4) {
-    const pillStyle = (selected: boolean): React.CSSProperties => ({
-      display: 'inline-block',
-      padding: '8px 16px',
-      borderRadius: 999,
-      border: selected ? '1px solid #00e5ff' : '1px solid rgba(0,229,255,0.2)',
-      background: selected ? 'rgba(0,229,255,0.12)' : 'transparent',
-      color: selected ? '#00e5ff' : '#c8cdd8',
-      fontFamily: "'Inter', sans-serif",
-      fontSize: 14,
-      fontWeight: 500,
-      cursor: 'pointer',
-      transition: 'all 0.15s',
-      marginRight: 8,
-      marginBottom: 8,
-    });
-
     const SIGN_LANGUAGES_BY_REGION = {
       'Africa & Middle East': [
         'Arabic Sign Language (ArSL)', 'Ethiopian Sign Language', 'Ghana Sign Language', 'Kenyan Sign Language',
@@ -1552,7 +1594,7 @@ function InterpreterSignupForm() {
     const spokenDropdownSelections = spokenLanguages.filter(l => !SPOKEN_LANGUAGE_OPTIONS.includes(l) && l !== otherSpokenLanguage);
 
     return (
-      <SectionWrapper section={section} completedSections={completedSections}>
+      <SectionWrapper section={section} completedSections={completedSections} highestVisited={highestVisited} onNavigate={handleSidebarNav}>
         <StepHeading>Working Languages</StepHeading>
         <StepSubtext>Select all languages in which you hold professional-level fluency.</StepSubtext>
 
@@ -1560,20 +1602,13 @@ function InterpreterSignupForm() {
         {/* Sign languages */}
         <div style={{ marginBottom: 28 }}>
           <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#00e5ff', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>
-            Sign languages
+            Sign languages <span style={{ color: '#ff6b85' }}>*</span>
           </label>
-          <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-            {SIGN_LANGUAGE_OPTIONS.map((lang) => (
-              <button
-                key={lang}
-                type="button"
-                onClick={() => toggleInList(signLanguages, lang, setSignLanguages)}
-                style={pillStyle(signLanguages.includes(lang))}
-              >
-                {lang}
-              </button>
-            ))}
-          </div>
+          <CheckboxGrid
+            items={SIGN_LANGUAGE_OPTIONS}
+            selected={signLanguages}
+            onToggle={(lang) => toggleInList(signLanguages, lang, setSignLanguages)}
+          />
           <select
             className="signup-select"
             value=""
@@ -1628,20 +1663,13 @@ function InterpreterSignupForm() {
         {/* Spoken languages */}
         <div style={{ marginBottom: 28 }}>
           <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#00e5ff', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>
-            Spoken languages
+            Spoken languages <span style={{ color: '#ff6b85' }}>*</span>
           </label>
-          <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-            {SPOKEN_LANGUAGE_OPTIONS.map((lang) => (
-              <button
-                key={lang}
-                type="button"
-                onClick={() => toggleInList(spokenLanguages, lang, setSpokenLanguages)}
-                style={pillStyle(spokenLanguages.includes(lang))}
-              >
-                {lang}
-              </button>
-            ))}
-          </div>
+          <CheckboxGrid
+            items={SPOKEN_LANGUAGE_OPTIONS}
+            selected={spokenLanguages}
+            onToggle={(lang) => toggleInList(spokenLanguages, lang, setSpokenLanguages)}
+          />
           <select
             className="signup-select"
             value=""
@@ -1784,7 +1812,7 @@ function InterpreterSignupForm() {
     };
 
     return (
-      <SectionWrapper section={section} completedSections={completedSections}>
+      <SectionWrapper section={section} completedSections={completedSections} highestVisited={highestVisited} onNavigate={handleSidebarNav}>
         <StepHeading>Credentials</StepHeading>
         <StepSubtext>Add your certifications and education. All fields are optional.</StepSubtext>
 
@@ -2067,7 +2095,7 @@ function InterpreterSignupForm() {
     };
 
     return (
-      <SectionWrapper section={section} completedSections={completedSections}>
+      <SectionWrapper section={section} completedSections={completedSections} highestVisited={highestVisited} onNavigate={handleSidebarNav}>
         <StepHeading>About you</StepHeading>
         <StepSubtext>Help people get to know you.</StepSubtext>
 
@@ -2306,7 +2334,7 @@ function InterpreterSignupForm() {
     };
 
     return (
-      <SectionWrapper section={section} completedSections={completedSections}>
+      <SectionWrapper section={section} completedSections={completedSections} highestVisited={highestVisited} onNavigate={handleSidebarNav}>
         <StepHeading>How people find you</StepHeading>
         <StepSubtext>These help requesters find interpreters who are the right fit for their needs.</StepSubtext>
 
@@ -2324,59 +2352,36 @@ function InterpreterSignupForm() {
               {"Without specializations, your profile won't appear when requesters filter the directory by appointment type."}
             </p>
           </div>
-          {/* Selected tags */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: specializations.length ? 12 : 0 }}>
-            {specializations.map(spec => (
-              <span key={spec} style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '6px 12px', borderRadius: 8,
-                background: 'rgba(0,229,255,0.1)', border: '1px solid rgba(0,229,255,0.3)',
-                color: '#00e5ff', fontSize: 13, fontFamily: "'Inter', sans-serif",
+          {Object.entries(SPECIALIZATION_CATEGORIES).map(([category, items], catIdx) => (
+            <div key={category}>
+              <div style={{
+                fontFamily: "'Inter', sans-serif", fontSize: 13, fontWeight: 600,
+                color: '#00e5ff', textTransform: 'uppercase' as const, letterSpacing: '0.06em',
+                borderBottom: '1px solid rgba(0,229,255,0.1)',
+                marginTop: catIdx === 0 ? 0 : 20,
+                paddingBottom: 6, marginBottom: 10,
               }}>
-                {spec}
-                <button type="button" onClick={() => setSpecializations(prev => prev.filter(x => x !== spec))} style={{
-                  background: 'none', border: 'none', color: '#00e5ff',
-                  cursor: 'pointer', padding: 0, fontSize: 14, lineHeight: 1,
-                }}>×</button>
-              </span>
-            ))}
-          </div>
-
-          {/* Count */}
-          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#00e5ff', fontWeight: 600, marginBottom: 8 }}>
+                {category}
+              </div>
+              <CheckboxGrid
+                items={items}
+                selected={specializations}
+                onToggle={(spec) => setSpecializations(prev => prev.includes(spec) ? prev.filter(x => x !== spec) : [...prev, spec])}
+              />
+            </div>
+          ))}
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#96a0b8', marginTop: 12, marginBottom: 4 }}>
             {specializations.length} specialization{specializations.length !== 1 ? 's' : ''} selected
           </div>
 
-          {/* Categorized dropdown */}
-          <select
-            className="signup-select"
-            value=""
-            onChange={(e) => { if (e.target.value) { setSpecializations(prev => prev.includes(e.target.value) ? prev : [...prev, e.target.value]); e.target.value = ''; } }}
-            style={{
-              width: '100%', background: 'var(--surface)', border: '1px solid var(--border)',
-              borderRadius: 10, padding: '11px 14px', color: 'var(--text)', fontSize: 15,
-              fontFamily: "'Inter', sans-serif", outline: 'none', appearance: 'none',
-              marginBottom: 8,
-            }}
-          >
-            <option value="">Select specializations...</option>
-            {Object.entries(SPECIALIZATION_CATEGORIES).map(([category, items]) => (
-              <optgroup key={category} label={category}>
-                {items.filter(item => !specializations.includes(item)).map(item => (
-                  <option key={item} value={item}>{item}</option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
-
           {/* Specialized Skills */}
           <div style={{ ...l4Style, marginTop: 28 }}>Specialized Skills</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', marginBottom: 28 }}>
-            {SPECIALIZED_SKILLS.map((s) => (
-              <button key={s} type="button" onClick={() => {
-                setSpecializedSkills(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
-              }} style={pillStyle(specializedSkills.includes(s))}>{s}</button>
-            ))}
+          <div style={{ marginBottom: 28 }}>
+            <CheckboxGrid
+              items={SPECIALIZED_SKILLS}
+              selected={specializedSkills}
+              onToggle={(s) => setSpecializedSkills(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])}
+            />
           </div>
 
           {/* Community & Identity */}
@@ -2477,34 +2482,12 @@ function InterpreterSignupForm() {
     };
 
     return (
-      <SectionWrapper section={section} completedSections={completedSections}>
+      <SectionWrapper section={section} completedSections={completedSections} highestVisited={highestVisited} onNavigate={handleSidebarNav}>
         <StepHeading>Almost done</StepHeading>
 
         <FormCard>
-          {/* Terms */}
-          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', marginBottom: 12 }}>
-            <input type="checkbox" checked={agreeTerms} onChange={(e) => { setAgreeTerms(e.target.checked); setTermsError(false); }}
-              style={{ accentColor: '#00e5ff', width: 18, height: 18, marginTop: 2, flexShrink: 0 }} />
-            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#f0f2f8', lineHeight: 1.5 }}>
-              I have read and agree to signpost&apos;s{' '}
-              <a href="/policies" target="_blank" rel="noopener noreferrer" style={{ color: '#00e5ff', textDecoration: 'none' }}>Terms of Service</a>
-              {' '}and{' '}
-              <a href="/policies" target="_blank" rel="noopener noreferrer" style={{ color: '#00e5ff', textDecoration: 'none' }}>Platform Booking Policy</a>
-            </span>
-          </label>
-
-          {termsError && (
-            <div style={{
-              background: 'rgba(255,107,133,0.08)', border: '1px solid rgba(255,107,133,0.2)',
-              borderRadius: 10, padding: '10px 14px', color: '#ff6b85',
-              fontFamily: "'Inter', sans-serif", fontSize: 13, marginBottom: 20,
-            }}>
-              Please agree to the terms before continuing.
-            </div>
-          )}
-
           {/* Additional role: Deaf/DB/HH */}
-          <div style={{ background: '#16161f', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, padding: 20, marginBottom: 16, marginTop: 16 }}>
+          <div style={{ background: '#16161f', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, padding: 20, marginBottom: 16 }}>
             <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: 18, color: '#f0f2f8', margin: '0 0 8px' }}>
               Are you also Deaf, DeafBlind, or Hard of Hearing?
             </h3>
@@ -2554,6 +2537,28 @@ function InterpreterSignupForm() {
           <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#96a0b8', marginBottom: 28, lineHeight: 1.5 }}>
             You can always switch between your roles or add new ones from the role switcher in your portal.
           </p>
+
+          {/* Terms */}
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, cursor: 'pointer', marginBottom: 12 }}>
+            <input type="checkbox" checked={agreeTerms} onChange={(e) => { setAgreeTerms(e.target.checked); setTermsError(false); }}
+              style={{ accentColor: '#00e5ff', width: 18, height: 18, marginTop: 2, flexShrink: 0 }} />
+            <span style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#f0f2f8', lineHeight: 1.5 }}>
+              I have read and agree to signpost&apos;s{' '}
+              <a href="/policies" target="_blank" rel="noopener noreferrer" style={{ color: '#00e5ff', textDecoration: 'none' }}>Terms of Service</a>
+              {' '}and{' '}
+              <a href="/policies" target="_blank" rel="noopener noreferrer" style={{ color: '#00e5ff', textDecoration: 'none' }}>Platform Booking Policy</a>
+            </span>
+          </label>
+
+          {termsError && (
+            <div style={{
+              background: 'rgba(255,107,133,0.08)', border: '1px solid rgba(255,107,133,0.2)',
+              borderRadius: 10, padding: '10px 14px', color: '#ff6b85',
+              fontFamily: "'Inter', sans-serif", fontSize: 13, marginBottom: 20,
+            }}>
+              Please agree to the terms before continuing.
+            </div>
+          )}
 
           {error && (
             <div style={{
