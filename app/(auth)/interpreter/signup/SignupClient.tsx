@@ -1112,8 +1112,12 @@ function InterpreterSignupForm() {
   /* ─── Section 3: Professional ─── */
 
   async function handleSaveProfessional() {
-    if (!interpreterType) {
-      setError('Please select your interpreter type.');
+    const errors: string[] = [];
+    if (!interpreterType) errors.push('Please select your interpreter type.');
+    if (!workMode) errors.push('Please select your mode of work.');
+    if (!yearsExperience) errors.push('Please select your years of experience.');
+    if (errors.length > 0) {
+      setError(errors.join('\n'));
       return;
     }
     setError('');
@@ -1358,10 +1362,10 @@ function InterpreterSignupForm() {
         {error && (
           <div style={{
             background: 'rgba(255,107,133,0.08)', border: '1px solid rgba(255,107,133,0.2)',
-            borderRadius: 10, padding: '12px 16px', color: '#ff6b85',
-            fontFamily: "'Inter', sans-serif", fontSize: 13, marginTop: 20,
+            borderRadius: 10, padding: '12px 16px', color: '#f06b85',
+            fontFamily: "'Inter', sans-serif", fontSize: 14, marginTop: 20,
           }}>
-            {error}
+            {error.split('\n').map((line, i) => <div key={i}>{line}</div>)}
           </div>
         )}
 
@@ -1413,6 +1417,13 @@ function InterpreterSignupForm() {
   }
 
   async function handleSaveLanguages() {
+    const errors: string[] = [];
+    if (signLanguages.length === 0) errors.push('Please select at least one sign language.');
+    if (spokenLanguages.length === 0) errors.push('Please select at least one spoken language.');
+    if (errors.length > 0) {
+      setError(errors.join('\n'));
+      return;
+    }
     setError('');
     setLoading(true);
     try {
@@ -1684,10 +1695,10 @@ function InterpreterSignupForm() {
         {error && (
           <div style={{
             background: 'rgba(255,107,133,0.08)', border: '1px solid rgba(255,107,133,0.2)',
-            borderRadius: 10, padding: '12px 16px', color: '#ff6b85',
-            fontFamily: "'Inter', sans-serif", fontSize: 13,
+            borderRadius: 10, padding: '12px 16px', color: '#f06b85',
+            fontFamily: "'Inter', sans-serif", fontSize: 14,
           }}>
-            {error}
+            {error.split('\n').map((line, i) => <div key={i}>{line}</div>)}
           </div>
         )}
 
@@ -1777,6 +1788,9 @@ function InterpreterSignupForm() {
         <StepSubtext>Add your certifications and education. All fields are optional.</StepSubtext>
 
         <FormCard>
+        <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 13, color: '#96a0b8', margin: '0 0 20px' }}>
+          If you hold any certifications or credentials, add them here. You can always add more later.
+        </p>
         {/* Certifications */}
         <div style={l4Style}>Certifications</div>
         {certifications.map((cert, i) => (
@@ -2003,6 +2017,10 @@ function InterpreterSignupForm() {
   }
 
   async function handleSaveAboutYou() {
+    if (!photoUrl) {
+      setError('A profile photo is required. It helps Deaf community members recognize you and feel comfortable before an appointment.');
+      return;
+    }
     if (bio && bio.length < 20) {
       setError('Bio must be at least 20 characters.');
       return;
@@ -2120,6 +2138,9 @@ function InterpreterSignupForm() {
 
         {/* Bio */}
         <div style={{ ...l4Style, marginTop: 28 }}>Bio</div>
+        <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 13, color: '#96a0b8', margin: '0 0 12px' }}>
+          Even a few sentences make a difference.
+        </p>
 
         <div style={{ marginBottom: 20 }}>
           <label style={{ display: 'block', fontSize: 15, fontWeight: 400, color: '#96a0b8', marginBottom: 6, fontFamily: "'Inter', sans-serif" }}>
@@ -2193,6 +2214,15 @@ function InterpreterSignupForm() {
           Your video does not need to be polished or scripted. Just introduce yourself: share a little about your background, what kind of work you do, whatever feels right.
         </p>
 
+        <div style={{
+          background: 'rgba(240,166,35,0.08)', borderLeft: '3px solid #f0a623',
+          padding: '12px 16px', marginBottom: 16,
+        }}>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14, color: '#f0a623', margin: 0, lineHeight: 1.5 }}>
+            Deaf users consistently rate interpreter intro videos as one of their most valued features of signpost.
+          </p>
+        </div>
+
         <InlineVideoCapture
           onVideoSaved={(url) => setVideoUrl(url)}
           accentColor="#00e5ff"
@@ -2204,8 +2234,8 @@ function InterpreterSignupForm() {
         {error && (
           <div style={{
             background: 'rgba(255,107,133,0.08)', border: '1px solid rgba(255,107,133,0.2)',
-            borderRadius: 10, padding: '12px 16px', color: '#ff6b85',
-            fontFamily: "'Inter', sans-serif", fontSize: 13, marginTop: 20,
+            borderRadius: 10, padding: '12px 16px', color: '#f06b85',
+            fontFamily: "'Inter', sans-serif", fontSize: 14, marginTop: 20,
           }}>
             {error}
           </div>
@@ -2278,6 +2308,14 @@ function InterpreterSignupForm() {
           <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#96a0b8', lineHeight: 1.6, margin: '0 0 14px' }}>
             Select the settings where you have experience or are available to work.
           </p>
+          <div style={{
+            background: 'rgba(240,166,35,0.08)', borderLeft: '3px solid #f0a623',
+            padding: '12px 16px', marginBottom: 16,
+          }}>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 14, color: '#f0a623', margin: 0, lineHeight: 1.5 }}>
+              {"Without specializations, your profile won't appear when requesters filter the directory by appointment type."}
+            </p>
+          </div>
           {Object.entries(SPECIALIZATION_CATEGORIES).map(([category, items]) => (
             <div key={category} style={{ marginBottom: 16 }}>
               <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.06em', color: '#96a0b8', marginBottom: 8 }}>
