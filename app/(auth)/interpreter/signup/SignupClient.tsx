@@ -1336,11 +1336,21 @@ function InterpreterSignupForm() {
           <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#00e5ff', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>
             Pronouns
           </label>
-          <CheckboxGrid
-            items={['she/her', 'he/him', 'they/them']}
-            selected={selectedPronouns}
-            onToggle={(p) => setSelectedPronouns(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])}
-          />
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            {['she/her', 'he/him', 'they/them'].map(p => {
+              const active = selectedPronouns.includes(p);
+              return (
+                <button key={p} type="button" onClick={() => setSelectedPronouns(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p])} style={{
+                  padding: '8px 16px', borderRadius: 10, fontSize: 14,
+                  fontFamily: "'Inter', sans-serif", fontWeight: 500, cursor: 'pointer',
+                  background: active ? 'rgba(0,229,255,0.12)' : 'transparent',
+                  border: `1px solid ${active ? 'rgba(0,229,255,0.4)' : 'rgba(255,255,255,0.12)'}`,
+                  color: active ? '#00e5ff' : '#96a0b8',
+                  transition: 'all 0.15s',
+                }}>{p}</button>
+              );
+            })}
+          </div>
           <div style={{ marginTop: 10 }}>
           <input
             type="text"
