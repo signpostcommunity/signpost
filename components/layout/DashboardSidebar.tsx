@@ -51,7 +51,7 @@ const NAV: NavGroup[] = [
     items: [
       { label: 'Account Settings', href: '/interpreter/dashboard/profile?tab=account-settings', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 10a2 2 0 100-4 2 2 0 000 4z" stroke="currentColor" strokeWidth="1.3"/><path d="M13.5 8a5.5 5.5 0 01-.28 1.74l1.18.68-.75 1.3-1.18-.68A5.5 5.5 0 018 13.5a5.5 5.5 0 01-4.47-2.46l-1.18.68-.75-1.3 1.18-.68A5.5 5.5 0 012.5 8c0-.6.1-1.18.28-1.74L1.6 5.58l.75-1.3 1.18.68A5.5 5.5 0 018 2.5a5.5 5.5 0 014.47 2.46l1.18-.68.75 1.3-1.18.68c.18.56.28 1.14.28 1.74z" stroke="currentColor" strokeWidth="1.3"/></svg> },
       { label: 'Browse Interpreter Directory', href: '/directory?context=interpreter', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.3"/><path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg> },
-      { label: 'Back to front page', href: '/', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg> },
+      { label: 'Back to signpost', href: '/', icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg> },
     ],
   },
 ]
