@@ -1,0 +1,118 @@
+import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+
+export const dynamic = 'force-dynamic'
+
+const DEFAULT_PREFS = {
+  email_enabled: true,
+  sms_enabled: false,
+  categories: {
+    tagged_in_request: { email: true, sms: false },
+    pref_list_access_request: { email: true, sms: false },
+    interpreter_confirmed: { email: true, sms: false },
+    request_forwarded_next_tier: { email: true, sms: false },
+    still_searching: { email: true, sms: false },
+    booking_reminder: { email: true, sms: false },
+    interpreter_cancelled_replacement: { email: true, sms: false },
+    replacement_confirmed: { email: true, sms: false },
+    request_expired: { email: true, sms: false },
+    booking_completed_rate: { email: true, sms: false },
+    comm_prefs_shared: { email: true, sms: false },
+    new_message_interpreter: { email: true, sms: false },
+    new_message_requester: { email: true, sms: false },
+    trusted_circle_invite: { email: true, sms: false },
+    trusted_circle_response: { email: true, sms: false },
+    pref_list_accessed: { email: true, sms: false },
+    welcome_onboarding: { email: true, sms: false },
+    profile_completion_reminder: { email: true, sms: false },
+  },
+}
+
+const VALID_CATEGORY_KEYS = new Set(Object.keys(DEFAULT_PREFS.categories))
+
+export async function GET() {
+  try {
+    const supabase = await createClient()
+    const { data: { user }, error: authErr } = await supabase.auth.getUser()
+
+    if (authErr || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { data, error } = await supabase
+      .from('deaf_profiles')
+      .select('notification_preferences, notification_phone')
+      .or(`id.eq.${user.id},user_id.eq.${user.id}`)
+      .maybeSingle()
+
+    if (error) {
+      console.error('[dhh-notif-prefs] GET error:', error.message)
+      return NextResponse.json({ error: 'Failed to fetch preferences' }, { status: 500 })
+    }
+
+    return NextResponse.json({
+      preferences: data?.notification_preferences ?? DEFAULT_PREFS,
+      notification_phone: data?.notification_phone ?? '',
+    })
+  } catch (err) {
+    console.error('[dhh-notif-prefs] error:', err instanceof Error ? err.message : err)
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const supabase = await createClient()
+    const { data: { user }, error: authErr } = await supabase.auth.getUser()
+
+    if (authErr || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const payload: Record<string, unknown> = {}
+
+    if (body.notification_preferences != null) {
+      const prefs = body.notification_preferences
+      if (typeof prefs.email_enabled !== 'boolean' || typeof prefs.sms_enabled !== 'boolean') {
+        return NextResponse.json({ error: 'Invalid preferences structure' }, { status: 400 })
+      }
+      if (!prefs.categories || typeof prefs.categories !== 'object') {
+        return NextResponse.json({ error: 'Invalid categories' }, { status: 400 })
+      }
+      for (const key of Object.keys(prefs.categories)) {
+        if (!VALID_CATEGORY_KEYS.has(key)) {
+          return NextResponse.json({ error: `Unknown category: ${key}` }, { status: 400 })
+        }
+        const cat = prefs.categories[key]
+        if (typeof cat.email !== 'boolean' || typeof cat.sms !== 'boolean') {
+          return NextResponse.json({ error: `Invalid values for category: ${key}` }, { status: 400 })
+        }
+      }
+      payload.notification_preferences = prefs
+    }
+
+    if (body.notification_phone !== undefined) {
+      payload.notification_phone = body.notification_phone
+    }
+
+    if (Object.keys(payload).length === 0) {
+      return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
+    }
+
+    const { error } = await supabase
+      .from('deaf_profiles')
+      .update(payload)
+      .or(`id.eq.${user.id},user_id.eq.${user.id}`)
+
+    if (error) {
+      console.error('[dhh-notif-prefs] PATCH error:', error.message)
+      return NextResponse.json({ error: 'Failed to save preferences' }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true })
+  } catch (err) {
+    console.error('[dhh-notif-prefs] error:', err instanceof Error ? err.message : err)
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+  }
+}

@@ -77,6 +77,11 @@ const NAV: NavGroup[] = [
         icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5.5" r="2.5" stroke="currentColor" strokeWidth="1.3"/><path d="M2.5 14c0-3.04 2.46-5.5 5.5-5.5s5.5 2.46 5.5 5.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
       },
       {
+        label: 'Notifications',
+        href: '/dhh/dashboard/notifications',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 5.5a4 4 0 0 0-8 0c0 4-1.5 5.5-1.5 5.5h11S12 9.5 12 5.5z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/><path d="M9.15 13a1.5 1.5 0 0 1-2.3 0" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+      },
+      {
         label: 'Browse Interpreter Directory',
         href: '/directory?context=deaf',
         icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.3"/><path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
