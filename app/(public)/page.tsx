@@ -4,20 +4,20 @@ import Link from 'next/link';
 import Image from 'next/image';
 const features = [
   {
-    label: 'Your choice, always',
-    body: 'Watch interpreters introduce themselves or see a sample of their work. Check specializations, read profiles, and choose the person who is genuinely the right fit.',
+    label: 'Discover interpreters who are the right fit',
+    body: 'Browse the directory and find interpreters based on real skills you can see. Watch videos of interpreters introducing themselves, read their bios, and learn about their specialized skills. Discover talented interpreters who are the right fit for you.',
   },
   {
-    label: 'Global reach, local knowledge',
-    body: 'ASL, BSL, International Sign, Auslan, LSF, DGS and dozens more. Find interpreters who know your language, your region, and your community, wherever you are.',
+    label: 'Deaf-centered booking',
+    body: 'Deaf and Hard of Hearing users build a preferred interpreter list and easily share it with anyone who books on their behalf. Finding the right interpreter is easy when you start with a strong foundation.',
   },
   {
-    label: 'Transparent credentials & rates',
-    body: "Every rate is set by the interpreter, so you always know what you're agreeing to. Certifications are listed directly, with verified badges for documented credentials.",
+    label: 'Skip the agency markup',
+    body: 'Agencies add <em>hourly</em> fees on top of what the interpreter charges. signpost doesn\'t. Interpreters set their own rates and clients pay them directly. signpost\'s only fee is a flat $15 per booking.',
   },
   {
-    label: 'Direct booking, no middlemen',
-    body: 'Communicate and confirm one-to-one with your interpreter. Legal, medical, technical, academic, conference. Find the specialist your situation actually demands.',
+    label: 'Track your request at every step',
+    body: 'Know where your request stands at all times. See when it\'s been sent, which interpreters have responded, and when a booking is confirmed. No more wondering if the message got through or if anyone is working on it.',
   },
 ];
 
@@ -207,9 +207,7 @@ export default function HomePage() {
               >
                 {f.label}
               </div>
-              <div style={{ fontSize: '0.9rem', lineHeight: 1.65, color: 'var(--muted)' }}>
-                {f.body}
-              </div>
+              <div style={{ fontSize: '0.9rem', lineHeight: 1.65, color: 'var(--muted)' }} dangerouslySetInnerHTML={{ __html: f.body }} />
             </div>
           ))}
         </div>
