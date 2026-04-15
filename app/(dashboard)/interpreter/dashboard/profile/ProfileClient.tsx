@@ -16,9 +16,11 @@ import { getVideoEmbedUrl, isValidVideoUrl } from '@/lib/videoUtils'
 import { TIMEZONE_LABELS, getTimezoneLabel } from '@/lib/timezones'
 import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
 import LocationPicker from '@/components/shared/LocationPicker'
-import { useDialCode } from '@/components/shared/PhoneWithDialCode'
+import PhoneInput from '@/components/ui/PhoneInput'
+import { normalizePhone } from '@/lib/phone'
 import { generateSlug, validateSlug } from '@/lib/slugUtils'
-import { getInterpreterCompletionItems, isProfileComplete, completionCount } from '@/lib/profile-completion'
+import { getInterpreterCompletionItems } from '@/lib/profile-completion'
+import ProfileCompletionCard from '@/components/ui/ProfileCompletionCard'
 import { resizeImage } from '@/lib/imageUtils'
 import PhotoCropModal from '@/components/PhotoCropModal'
 import { readFileAsDataUrl } from '@/lib/cropImage'
@@ -353,7 +355,7 @@ function ProfileSidebarNav({ active, onChange }: { active: Tab; onChange: (t: Ta
   )
 }
 
-// ── Profile Completion Checklist ─────────────────────────────────────────────
+// ── Profile Completion (tab map for link navigation) ────────────────────────
 
 const TAB_MAP: Record<string, string> = {
   'personal': 'Personal',
@@ -364,111 +366,6 @@ const TAB_MAP: Record<string, string> = {
   'community-&-identity': 'Community & Identity',
   'mentorship': 'Mentorship',
   'account-settings': 'Account Settings',
-}
-
-function ProfileCompletionChecklist({ profile, rateProfileCount, onTabClick }: {
-  profile: {
-    photo_url: string | null
-    bio: string | null
-    bio_specializations: string | null
-    video_url: string | null
-    sign_languages: string[] | null
-    spoken_languages: string[] | null
-    specializations: string[] | null
-  }
-  rateProfileCount: number
-  onTabClick: (tab: Tab) => void
-}) {
-  const items = getInterpreterCompletionItems(profile, rateProfileCount)
-  const allComplete = isProfileComplete(items)
-  const { done, total } = completionCount(items)
-  const [successDismissed, setSuccessDismissed] = useState(false)
-
-  useEffect(() => {
-    if (!allComplete) return
-    const timer = setTimeout(() => setSuccessDismissed(true), 5000)
-    return () => clearTimeout(timer)
-  }, [allComplete])
-
-  if (allComplete && successDismissed) return null
-
-  if (allComplete) {
-    return (
-      <div style={{
-        background: '#111118', border: '1px solid #1e2433', borderLeft: '4px solid #22c55e',
-        borderRadius: 10, padding: '16px 20px', marginBottom: 24,
-      }}>
-        <div style={{
-          fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 14,
-          color: '#f0f2f8',
-        }}>
-          Your profile is complete. You&apos;re visible in the interpreter directory.
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div style={{
-      background: '#111118', border: '1px solid #1e2433',
-      borderRadius: 10, padding: '20px 24px', marginBottom: 24,
-    }}>
-      <div style={{
-        fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 15,
-        color: '#f0f2f8', marginBottom: 16,
-      }}>
-        Complete your profile ({done} of {total})
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {items.map(item => (
-          <div key={item.key} style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            fontFamily: "'Inter', sans-serif", fontSize: 13,
-          }}>
-            <span style={{
-              width: 16, height: 16, flexShrink: 0, borderRadius: 3,
-              border: `1.5px solid ${item.complete ? '#22c55e' : '#5a6070'}`,
-              background: item.complete ? '#22c55e' : 'transparent',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: 10, color: '#0a0a0f', fontWeight: 700,
-            }}>
-              {item.complete ? '\u2713' : ''}
-            </span>
-            <span style={{ color: item.complete ? '#96a0b8' : '#f0f2f8', flex: 1 }}>
-              {item.label}
-            </span>
-            {!item.complete && item.editorTab && (
-              <button
-                type="button"
-                onClick={() => {
-                  const tabName = TAB_MAP[item.editorTab]
-                  if (tabName) onTabClick(tabName as Tab)
-                }}
-                style={{
-                  background: 'none', border: 'none', padding: 0,
-                  fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 13,
-                  color: '#f59e0b', cursor: 'pointer', whiteSpace: 'nowrap',
-                }}
-              >
-                &rarr; {item.tabLabel}
-              </button>
-            )}
-            {!item.complete && !item.editorTab && (
-              <a
-                href="/interpreter/dashboard/rates"
-                style={{
-                  fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 13,
-                  color: '#f59e0b', textDecoration: 'none', whiteSpace: 'nowrap',
-                }}
-              >
-                &rarr; {item.tabLabel}
-              </a>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
 }
 
 // ── Save button ──────────────────────────────────────────────────────────────
@@ -535,7 +432,6 @@ export default function ProfileClient({ profile: rawProfile, userEmail, rateProf
   const [city, setCity] = useState(fallback(p.city, 'city', ''))
   const [stateProvince, setStateProvince] = useState(fallback(p.state, 'state', ''))
   const [country, setCountry] = useState(fallback(p.country, 'country', ''))
-  const dialCode = useDialCode(country)
   const [phone, setPhone] = useState(fallback(p.phone, 'phone', ''))
   const [yearsExperience, setYearsExperience] = useState(fallback(p.years_experience, 'yearsExperience', ''))
   const [interpreterType, setInterpreterType] = useState(fallback(p.interpreter_type, 'interpreterType', ''))
@@ -1144,19 +1040,28 @@ export default function ProfileClient({ profile: rawProfile, userEmail, rateProf
         )}
       </div>
 
-      {/* Profile completion checklist */}
-      <ProfileCompletionChecklist
-        profile={{
-          photo_url: photoUrl || null,
-          bio: bio || null,
-          bio_specializations: bioSpecializations || null,
-          video_url: videoUrl || null,
-          sign_languages: signLangs.length > 0 ? signLangs : null,
-          spoken_languages: spokenLangs.length > 0 ? spokenLangs : null,
-          specializations: specs.length > 0 ? specs : null,
-        }}
-        rateProfileCount={rateProfileCount}
-        onTabClick={setActiveTab}
+      {/* Profile completion card */}
+      <ProfileCompletionCard
+        items={getInterpreterCompletionItems(
+          {
+            photo_url: photoUrl || null,
+            bio: bio || null,
+            bio_specializations: bioSpecializations || null,
+            video_url: videoUrl || null,
+            sign_languages: signLangs.length > 0 ? signLangs : null,
+            spoken_languages: spokenLangs.length > 0 ? spokenLangs : null,
+            specializations: specs.length > 0 ? specs : null,
+          },
+          rateProfileCount,
+        ).map(item => ({
+          label: item.label,
+          completed: item.complete,
+          linkText: item.tabLabel,
+          ...(item.editorTab
+            ? { onLinkClick: () => { const t = TAB_MAP[item.editorTab]; if (t) setActiveTab(t as Tab) } }
+            : { linkHref: '/interpreter/dashboard/rates' }
+          ),
+        }))}
       />
 
       {/* Sidebar + Content layout */}
@@ -1512,16 +1417,14 @@ export default function ProfileClient({ profile: rawProfile, userEmail, rateProf
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, marginBottom: 16 }}>
             <div>
-              <label style={labelStyle}>Phone / WhatsApp</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-                <span style={{
-                  background: 'var(--surface2)', border: '1px solid var(--border)',
-                  borderRight: 'none', borderRadius: 'var(--radius-sm) 0 0 var(--radius-sm)',
-                  padding: '10px 10px', color: 'var(--muted)', fontSize: '0.9rem',
-                  whiteSpace: 'nowrap', lineHeight: 1.4,
-                }}>{dialCode}</span>
-                <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="555 000 0000" style={{ ...inputStyle, borderRadius: '0 var(--radius-sm) var(--radius-sm) 0' }} onFocus={handleFocus} onBlur={handleBlur} />
-              </div>
+              <PhoneInput
+                label="Phone / WhatsApp"
+                value={phone}
+                onChange={setPhone}
+                defaultCountry={country || 'US'}
+                accent="cyan"
+                disabled={saving}
+              />
             </div>
             <div>
               <label style={labelStyle}>Years of Experience</label>
@@ -1596,7 +1499,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail, rateProf
 
           <SaveButton saving={saving} onClick={() => saveFields({
             first_name: firstName, last_name: lastName, pronouns, gender_identity: genderIdentity,
-            city, state: stateProvince, country, phone,
+            city, state: stateProvince, country, phone: phone ? (normalizePhone(phone) || phone) : null,
             years_experience: yearsExperience, interpreter_type: interpreterType,
             work_mode: modeOfWork,
             event_coordination: eventCoordination, event_coordination_desc: coordinationBio,
@@ -2863,7 +2766,7 @@ function SettingsTab({
     if (!user) { setNotifSaving(false); return }
 
     const payload: Record<string, unknown> = { notification_preferences: updated }
-    if (phone !== undefined) payload.notification_phone = phone
+    if (phone !== undefined) payload.notification_phone = phone ? (normalizePhone(phone) || phone) : ''
 
     const { error } = await supabase
       .from('interpreter_profiles')
@@ -3156,15 +3059,12 @@ function SettingsTab({
             {notifPrefs.sms_enabled && (
               <div style={{ marginTop: 12, display: 'flex', gap: 10, alignItems: 'flex-end', maxWidth: 400 }}>
                 <div style={{ flex: 1 }}>
-                  <label style={labelStyle}>Phone number for SMS</label>
-                  <input
-                    type="tel"
+                  <PhoneInput
+                    label="Phone number for SMS"
                     value={notifPhone}
-                    onChange={e => setNotifPhone(e.target.value)}
-                    placeholder="+1 (555) 123-4567"
-                    style={inputStyle}
-                    onFocus={handleFocus}
-                    onBlur={handleBlur}
+                    onChange={setNotifPhone}
+                    accent="cyan"
+                    disabled={notifSaving}
                   />
                 </div>
                 <button

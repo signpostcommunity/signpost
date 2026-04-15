@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { normalizePhone, isValidPhone } from '@/lib/phone'
 
 export const dynamic = 'force-dynamic'
 
@@ -93,7 +94,15 @@ export async function PATCH(request: Request) {
     }
 
     if (body.notification_phone !== undefined) {
-      payload.notification_phone = body.notification_phone
+      if (body.notification_phone) {
+        const normalized = normalizePhone(body.notification_phone)
+        if (!normalized && !isValidPhone(body.notification_phone)) {
+          return NextResponse.json({ error: 'Invalid phone number' }, { status: 400 })
+        }
+        payload.notification_phone = normalized || body.notification_phone
+      } else {
+        payload.notification_phone = ''
+      }
     }
 
     if (Object.keys(payload).length === 0) {

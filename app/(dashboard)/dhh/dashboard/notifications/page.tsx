@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import PhoneInput from '@/components/ui/PhoneInput'
+import { normalizePhone } from '@/lib/phone'
 
 export const dynamic = 'force-dynamic'
 
@@ -183,7 +185,8 @@ export default function DhhNotificationsPage() {
   }
 
   function savePhone() {
-    savePrefs(prefs, phone)
+    const normalized = phone ? (normalizePhone(phone) || phone) : ''
+    savePrefs(prefs, normalized)
   }
 
   if (loading) {
@@ -248,24 +251,11 @@ export default function DhhNotificationsPage() {
             {prefs.sms_enabled && (
               <div style={{ marginTop: 12, display: 'flex', gap: 10, alignItems: 'flex-end', maxWidth: 400 }}>
                 <div style={{ flex: 1 }}>
-                  <label style={{
-                    display: 'block', fontFamily: "'Inter', sans-serif",
-                    fontWeight: 500, fontSize: 13, color: '#c8cdd8', marginBottom: 6,
-                  }}>
-                    Phone number for SMS
-                  </label>
-                  <input
-                    type="tel"
+                  <PhoneInput
+                    label="Phone number for SMS"
                     value={phone}
-                    onChange={e => setPhone(e.target.value)}
-                    placeholder="+1 (555) 123-4567"
-                    style={{
-                      width: '100%', background: 'var(--surface)', border: '1px solid var(--border)',
-                      borderRadius: 'var(--radius-sm)', padding: '11px 14px', color: '#f0f2f8',
-                      fontSize: 15, fontFamily: "'Inter', sans-serif", outline: 'none',
-                    }}
-                    onFocus={e => { e.target.style.borderColor = 'rgba(167,139,250,0.5)' }}
-                    onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
+                    onChange={setPhone}
+                    accent="purple"
                   />
                 </div>
                 <button

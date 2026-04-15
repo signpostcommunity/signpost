@@ -5,6 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import Toast from '@/components/ui/Toast'
 import PaymentMethodSection from '@/components/dashboard/requester/PaymentMethodSection'
 import BetaTryThis from '@/components/ui/BetaTryThis'
+import PhoneInput from '@/components/ui/PhoneInput'
+import { normalizePhone } from '@/lib/phone'
 
 /* ── Shared styles ── */
 
@@ -143,7 +145,7 @@ export default function ProfileClient({ profile, userEmail }: Props) {
         first_name: normFirst,
         last_name: normLast,
         name: displayName,
-        phone: phone || null,
+        phone: phone ? (normalizePhone(phone) || phone) : null,
         country_name: (norm.country_name as string) || countryName || country,
         city: (norm.city as string) || city || null,
         state: (norm.state as string) || state || null,
@@ -219,14 +221,12 @@ export default function ProfileClient({ profile, userEmail }: Props) {
               </div>
             </div>
             <div>
-              <label style={labelStyle}>Phone</label>
-              <input
+              <PhoneInput
+                label="Phone"
                 value={phone}
-                onChange={e => setPhone(e.target.value)}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-                style={inputStyle}
-                placeholder="555 000 0000"
+                onChange={setPhone}
+                defaultCountry={country || 'US'}
+                accent="cyan"
               />
             </div>
           </div>

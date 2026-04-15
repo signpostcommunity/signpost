@@ -3,7 +3,8 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useCallback } from 'react'
-import { normalizePhone } from '@/lib/phone'
+import { normalizePhone, isValidPhone } from '@/lib/phone'
+import PhoneInput from '@/components/ui/PhoneInput'
 
 const ORANGE = '#ff7e45'
 
@@ -227,15 +228,14 @@ export default function AdminSettingsPage() {
             SMS Phone Number
           </div>
           {phoneEditing ? (
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-              <input
-                type="tel"
-                value={phone}
-                onChange={e => setPhone(e.target.value)}
-                placeholder="+1 (555) 000-0000"
-                style={inputStyle}
-                autoFocus
-              />
+            <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
+              <div style={{ flex: 1 }}>
+                <PhoneInput
+                  value={phone}
+                  onChange={setPhone}
+                  accent="cyan"
+                />
+              </div>
               <button
                 onClick={() => savePhone(phone)}
                 style={{

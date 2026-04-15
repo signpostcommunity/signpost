@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { syncNameFields } from '@/lib/nameSync'
+import { normalizePhone } from '@/lib/phone'
 import { useForm } from './FormContext'
 import { StepWrapper, FormSection, SectionTitle, FormNav } from './FormFields'
 
@@ -110,7 +111,7 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         draft_data: formData,
         pronouns: formData.pronouns || null,
         email: formData.email,
-        phone: formData.phone,
+        phone: formData.phone ? (normalizePhone(formData.phone) || formData.phone) : null,
         country: normalizedFields.country as string || formData.country,
         city: normalizedFields.city as string || formData.city,
         state: normalizedFields.state as string || formData.state,

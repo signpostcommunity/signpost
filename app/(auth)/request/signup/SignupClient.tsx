@@ -7,6 +7,8 @@ import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { syncNameFields } from '@/lib/nameSync';
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton';
+import PhoneInput from '@/components/ui/PhoneInput';
+import { normalizePhone } from '@/lib/phone';
 
 const TOTAL_STEPS = 4;
 
@@ -740,7 +742,7 @@ export default function RequestSignupClient() {
       first_name: normFirst,
       last_name: normLast,
       email: form.email.trim().toLowerCase(),
-      phone: form.phone || null,
+      phone: form.phone ? (normalizePhone(form.phone) || form.phone) : null,
       country_name: (norm.country_name as string) || form.country,
       city: (norm.city as string) || form.city,
       org_name: form.requesterType === 'organization' ? form.orgName : null,
@@ -996,7 +998,13 @@ export default function RequestSignupClient() {
                 <AuthInput label="Last Name" value={form.lastName} onChange={v => update('lastName', v)} placeholder="Rivera" />
               </div>
 
-              <AuthInput label="Phone" type="tel" value={form.phone} onChange={v => update('phone', v)} placeholder="555 000 0000" />
+              <PhoneInput
+                label="Phone"
+                value={form.phone}
+                onChange={v => update('phone', v)}
+                defaultCountry={form.country || 'US'}
+                accent="cyan"
+              />
               <AuthInput label="Email *" type="email" value={form.email} onChange={v => update('email', v)} placeholder="you@example.com" required />
 
               {/* Location */}

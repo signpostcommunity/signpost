@@ -11,6 +11,8 @@ import { generateSlug } from '@/lib/slugUtils';
 import { syncNameFields } from '@/lib/nameSync';
 import { resizeImage } from '@/lib/imageUtils';
 import { SPECIALIZATION_CATEGORIES, SPECIALIZED_SKILLS } from '@/lib/constants/specializations';
+import PhoneInput from '@/components/ui/PhoneInput';
+import { normalizePhone } from '@/lib/phone';
 
 /* ─── Community & identity constants ─── */
 
@@ -1207,7 +1209,7 @@ function InterpreterSignupForm() {
           work_mode: workMode || null,
           gender_identity: genderIdentity || null,
           pronouns: [...selectedPronouns, ...(otherPronouns.trim() ? [otherPronouns.trim()] : [])].join(', ') || null,
-          phone: phone || null,
+          phone: phone ? (normalizePhone(phone) || phone) : null,
           phone_type: phoneType || null,
           event_coordination: eventCoordination,
         })
@@ -1370,21 +1372,12 @@ function InterpreterSignupForm() {
 
         {/* Phone */}
         <div style={{ marginBottom: 24 }}>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#00e5ff', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>
-            Phone
-          </label>
-          <input
-            type="text"
+          <PhoneInput
+            label="Phone"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="Phone number"
-            style={{
-              width: '100%', background: 'var(--surface)', border: '1px solid var(--border)',
-              borderRadius: 10, padding: '11px 14px', color: 'var(--text)', fontSize: 15,
-              fontFamily: "'Inter', sans-serif", outline: 'none',
-            }}
-            onFocus={(e) => (e.target.style.borderColor = 'rgba(0,229,255,0.5)')}
-            onBlur={(e) => (e.target.style.borderColor = 'var(--border)')}
+            onChange={setPhone}
+            defaultCountry={country || 'US'}
+            accent="cyan"
           />
           <div style={{ display: 'flex', gap: 20, marginTop: 10 }}>
             {[

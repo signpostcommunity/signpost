@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react'
 import { createBrowserClient } from '@supabase/ssr'
+import { normalizePhone } from '@/lib/phone'
 
 export type RateProfile = {
   id: string
@@ -202,7 +203,7 @@ export function FormProvider({ children }: { children: ReactNode }) {
           last_name: formData.lastName,
           pronouns: formData.pronouns || null,
           email: formData.email,
-          phone: formData.phone,
+          phone: formData.phone ? (normalizePhone(formData.phone) || formData.phone) : null,
           country: formData.country,
           city: formData.city,
           state: formData.state,
