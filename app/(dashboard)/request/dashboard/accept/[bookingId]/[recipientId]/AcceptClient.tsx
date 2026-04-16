@@ -93,49 +93,24 @@ export default function AcceptClient({
   async function handleConfirm() {
     setConfirming(true)
     try {
-      const supabase = createClient()
+      // 1. Server-side confirm: updates recipient, recounts, fills booking,
+      // and sends notifications (chosen interpreter, requester receipt,
+      // unchosen-when-filled).
+      const res = await fetch('/api/request/confirm-recipient', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingId: booking.id, recipientId: recipient.id }),
+      })
+      const result = await res.json()
 
-      // 1. Update booking_recipients status to confirmed
-      const { error: recErr } = await supabase
-        .from('booking_recipients')
-        .update({ status: 'confirmed', confirmed_at: new Date().toISOString() })
-        .eq('id', recipient.id)
-
-      if (recErr) {
-        console.error('[accept] recipient update error:', recErr.message)
-        setToast({ message: 'Failed to confirm booking. Please try again.', type: 'error' })
+      if (!res.ok || !result.success) {
+        console.error('[accept] confirm error:', result.error || res.statusText)
+        setToast({ message: result.error || 'Failed to confirm booking. Please try again.', type: 'error' })
         setConfirming(false)
         return
       }
 
-      // 2. Update bookings status to filled
-      const { error: bookingStatusErr } = await supabase
-        .from('bookings')
-        .update({ status: 'filled' })
-        .eq('id', booking.id)
-
-      if (bookingStatusErr) {
-        console.error('[accept] booking status update error:', bookingStatusErr.message)
-      }
-
-      // 3. Update interpreters_confirmed count
-      const { data: allRecs } = await supabase
-        .from('booking_recipients')
-        .select('id, status')
-        .eq('booking_id', booking.id)
-
-      const confirmedCount = (allRecs || []).filter(r => r.status === 'confirmed').length
-
-      const { error: countErr } = await supabase
-        .from('bookings')
-        .update({ interpreters_confirmed: confirmedCount })
-        .eq('id', booking.id)
-
-      if (countErr) {
-        console.error('[accept] confirmed count update error:', countErr.message)
-      }
-
-      // 4. Charge $15 platform fee (non-blocking - booking still confirms on failure)
+      // 2. Charge $15 platform fee (non-blocking - booking still confirms on failure)
       try {
         const chargeRes = await fetch('/api/stripe/charge-platform-fee', {
           method: 'POST',
@@ -150,7 +125,11 @@ export default function AcceptClient({
         console.error('[accept] Platform fee charge error:', chargeErr)
       }
 
-      setToast({ message: `Booking confirmed. ${interpreterName} has been notified.`, type: 'success' })
+      const toastMessage = result.bookingFilled
+        ? `Booking confirmed. ${interpreterName} has been notified.`
+        : `${interpreterName} confirmed. Still looking for more interpreters.`
+
+      setToast({ message: toastMessage, type: 'success' })
       setShowConfirm(false)
       setConfirming(false)
 
