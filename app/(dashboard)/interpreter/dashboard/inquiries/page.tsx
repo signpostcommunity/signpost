@@ -147,12 +147,17 @@ function AcceptModal({ booking, onClose, onAccepted }: {
     setSaving(true)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
+    const rateAmounts: Record<string, number> = { standard: 95, community: 65, multiday: 750 }
+    const responseRate = rateProfile === 'custom'
+      ? (Number(customHourly) || null)
+      : (rateAmounts[rateProfile] ?? null)
     const { error } = await supabase
       .from('booking_recipients')
       .update({
         status: 'responded',
         responded_at: new Date().toISOString(),
         response_notes: note || null,
+        response_rate: responseRate,
       })
       .eq('id', booking.recipient_id)
 
