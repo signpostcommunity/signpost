@@ -196,18 +196,10 @@ function AcceptModal({ booking, onClose, onAccepted }: {
         interpreter_name: selfName,
       }
 
-      // Notify interpreter (self-confirmation)
-      sendNotification({
-        recipientUserId: user.id,
-        type: 'booking_confirmed',
-        subject: `Booking confirmed: ${booking.title || 'Booking'}, ${dateStr}`,
-        body: `Your booking for ${booking.title || 'Booking'} on ${dateStr} with ${booking.requester_name || 'the requester'} has been confirmed.`,
-        metadata: { ...bookingMeta, recipient_role: 'interpreter' },
-        ctaText: 'View Confirmed Booking',
-        ctaUrl: 'https://signpost.community/interpreter/dashboard/confirmed',
-      }).catch(err => console.error('[inquiries] confirm notification failed:', err))
-
-      // Notify requester about rate response + booking confirmation
+      // Notify requester that the interpreter has responded with a rate.
+      // Do NOT send booking_confirmed here — the booking is not confirmed on
+      // response; it only becomes confirmed once the requester picks an
+      // interpreter. That notification is wired from the requester-side pick.
       if (booking.requester_id) {
         sendNotification({
           recipientUserId: booking.requester_id,
@@ -226,16 +218,6 @@ function AcceptModal({ booking, onClose, onAccepted }: {
           ctaText: 'Review and Accept',
           ctaUrl: `https://signpost.community/request/dashboard/accept/${booking.id}/${booking.recipient_id}`,
         }).catch(err => console.error('[inquiries] rate_response notification failed:', err))
-
-        sendNotification({
-          recipientUserId: booking.requester_id,
-          type: 'booking_confirmed',
-          subject: `Booking confirmed: ${booking.title || 'Booking'}, ${dateStr}`,
-          body: `${selfName} has been confirmed for your request.`,
-          metadata: { ...bookingMeta, recipient_role: 'requester' },
-          ctaText: 'View Booking Details',
-          ctaUrl: 'https://signpost.community/request/dashboard/requests',
-        }).catch(err => console.error('[inquiries] requester confirm notification failed:', err))
       }
     }
 
