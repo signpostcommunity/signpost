@@ -408,9 +408,20 @@ export async function GET() {
 
     const enriched = (bookings || []).map(rawBooking => {
       const b = decryptFields(rawBooking, [...BOOKING_ENCRYPTED_FIELDS])
+      // On professional bookings the Deaf user is a participant, not the
+      // requester, and must not see interpreter rates, response notes, or
+      // decline reasons. On personal bookings the Deaf user IS the requester
+      // and needs those fields to pick an interpreter. Redact on the way out
+      // rather than in the select so TypeScript sees consistent shapes.
+      const redactRateFields = b.request_type !== 'personal'
       const bookingRecipients = (recipientsByBooking[b.id] || []).map(r => ({
         ...r,
         interpreter: interpreterMap[r.interpreter_id] || null,
+        ...(redactRateFields ? {
+          response_rate: null,
+          response_notes: null,
+          decline_reason: null,
+        } : {}),
       }))
 
       const isOnBehalf = onBehalfBookingIds.has(b.id)
