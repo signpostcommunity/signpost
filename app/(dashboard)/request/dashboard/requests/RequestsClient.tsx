@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { sendNotification } from '@/lib/notifications'
 import Toast from '@/components/ui/Toast'
 import RequesterInterpreterPicker from '@/components/requester/RequesterInterpreterPicker'
 import BetaTryThis from '@/components/ui/BetaTryThis'
@@ -346,7 +347,7 @@ export default function RequestsClient({
         return
       }
 
-      // Withdraw pending recipients
+      // Withdraw pending recipients (sent/viewed)
       const bookingRecs = recipientsByBooking.get(bookingId) || []
       const pendingRecIds = bookingRecs
         .filter(r => r.status === 'sent' || r.status === 'viewed')
@@ -363,6 +364,63 @@ export default function RequestsClient({
         }
       }
 
+      // Withdraw responded/proposed recipients and notify them
+      const respondedRecs = bookingRecs.filter(
+        r => r.status === 'responded' || r.status === 'proposed'
+      )
+
+      if (respondedRecs.length > 0) {
+        const respondedIds = respondedRecs.map(r => r.id)
+        const { error: respErr } = await supabase
+          .from('booking_recipients')
+          .update({ status: 'withdrawn', withdrawn_at: new Date().toISOString() })
+          .in('id', respondedIds)
+
+        if (respErr) {
+          console.error('[cancel] responded recipients update error:', respErr.message)
+        }
+
+        // Find the booking for metadata
+        const bk = bookings.find(b => b.id === bookingId)
+
+        // Send booking_cancelled to each responded/proposed interpreter
+        for (const rec of respondedRecs) {
+          try {
+            const { data: interpProfile } = await supabase
+              .from('interpreter_profiles')
+              .select('user_id')
+              .eq('id', rec.interpreter_id)
+              .maybeSingle()
+
+            if (interpProfile?.user_id) {
+              const interpName = interpreterMap[rec.interpreter_id]?.name || ''
+              await sendNotification({
+                recipientUserId: interpProfile.user_id,
+                type: 'booking_cancelled',
+                subject: `Booking cancelled: ${bk?.title || 'Booking'}`,
+                body: `The requester has cancelled the request for ${bk?.title || 'this booking'}${bk?.date ? ' on ' + bk.date : ''}.`,
+                metadata: {
+                  booking_id: bookingId,
+                  booking_title: bk?.title || '',
+                  booking_date: bk?.date || '',
+                  booking_time: bk ? formatTime(bk.time_start, bk.time_end) : '',
+                  booking_location: bk?.location || '',
+                  booking_format: bk?.format || '',
+                  interpreter_name: interpName,
+                  canceller_name: 'The requester',
+                  cancelled_by_role: 'requester',
+                  recipient_role: 'interpreter',
+                },
+                ctaText: 'View Inquiries',
+                ctaUrl: 'https://signpost.community/interpreter/dashboard/inquiries',
+              })
+            }
+          } catch (e) {
+            console.error('[cancel] interpreter notification failed:', e)
+          }
+        }
+      }
+
       setToast({ message: 'Request cancelled.', type: 'success' })
       setCancelModalId(null)
       setCancelReason('')
@@ -375,31 +433,60 @@ export default function RequestsClient({
     }
   }
 
-  // Wave: send to more handler
+  // Accept at suggested time: uses the shared confirm-recipient API route
   async function acceptAtSuggested(
+    bookingId: string,
     recipientId: string,
     interpName: string,
     proposedStart: string | null,
     proposedEnd: string | null,
     proposedDate: string | null,
   ) {
-    const supabase = createClient()
-    const { error } = await supabase
-      .from('booking_recipients')
-      .update({ status: 'confirmed', confirmed_at: new Date().toISOString() })
-      .eq('id', recipientId)
-    if (error) {
-      console.error('[accept-suggested] error:', error.message)
-      setToast({ message: 'Failed to confirm. Please try again.', type: 'error' })
-      return
+    try {
+      const res = await fetch('/api/request/confirm-recipient', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingId,
+          recipientId,
+          ...(proposedDate && proposedStart && proposedEnd
+            ? {
+                newDateTime: {
+                  date: proposedDate,
+                  timeStart: proposedStart,
+                  timeEnd: proposedEnd,
+                },
+              }
+            : {}),
+        }),
+      })
+      const result = await res.json()
+
+      if (!res.ok || !result.success) {
+        console.error('[accept-suggested] error:', result.error || res.statusText)
+        setToast({ message: result.error || 'Failed to confirm. Please try again.', type: 'error' })
+        return
+      }
+
+      const dateLabel = proposedDate ? formatProposedDate(proposedDate) : ''
+      const timeLabel = formatTimeRange(proposedStart, proposedEnd)
+
+      if (result.bookingFilled) {
+        setToast({
+          message: `${interpName} is confirmed for ${dateLabel} ${timeLabel}. ${interpName} has been notified.`,
+          type: 'success',
+        })
+      } else {
+        setToast({
+          message: `${interpName} is confirmed for ${dateLabel} ${timeLabel}. Other interpreters remain at the originally scheduled time.`,
+          type: 'success',
+        })
+      }
+      setTimeout(() => { router.refresh() }, 1500)
+    } catch (err) {
+      console.error('[accept-suggested] error:', err)
+      setToast({ message: 'An error occurred. Please try again.', type: 'error' })
     }
-    const dateLabel = proposedDate ? formatProposedDate(proposedDate) : ''
-    const timeLabel = formatTimeRange(proposedStart, proposedEnd)
-    setToast({
-      message: `${interpName} is confirmed for ${dateLabel} ${timeLabel}. Other interpreters remain at the originally scheduled time.`,
-      type: 'success',
-    })
-    setTimeout(() => { router.refresh() }, 1500)
   }
 
   function openSendMore(bookingId: string, skipFriction = false) {
@@ -807,7 +894,7 @@ export default function RequestsClient({
                                   {rec.status === 'proposed' && (
                                     <>
                                       <button
-                                        onClick={(e) => { e.stopPropagation(); acceptAtSuggested(rec.id, interpName, rec.proposed_start_time, rec.proposed_end_time, rec.proposed_date) }}
+                                        onClick={(e) => { e.stopPropagation(); acceptAtSuggested(booking.id, rec.id, interpName, rec.proposed_start_time, rec.proposed_end_time, rec.proposed_date) }}
                                         style={{
                                           background: '#a78bfa', color: '#000', border: 'none',
                                           padding: '10px 18px', borderRadius: 'var(--radius-sm)',
