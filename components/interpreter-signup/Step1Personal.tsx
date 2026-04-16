@@ -8,7 +8,9 @@ import {
   ToggleTile, FormNav, FieldError,
 } from './FormFields'
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton'
-import LocationPicker from '@/components/shared/LocationPicker'
+import LocationInput from '@/components/ui/LocationInput'
+import type { LocationFields } from '@/components/ui/LocationInput'
+import { getCountryName } from '@/lib/countries'
 import PhoneInput from '@/components/ui/PhoneInput'
 import { createClient } from '@/lib/supabase/client'
 import { useSearchParams } from 'next/navigation'
@@ -483,15 +485,23 @@ export default function Step1Personal({ onContinue }: { onContinue: () => void }
           </FormField>
         </FormRow>
 
-        <LocationPicker
-          country={formData.country}
-          state={formData.state}
+        <LocationInput
+          address={formData.address}
           city={formData.city}
-          onChange={({ country, state, city }) => {
-            updateField('country', country)
-            updateField('state', state)
-            updateField('city', city)
+          state={formData.state}
+          zip={formData.zip}
+          country={formData.country}
+          onChange={(loc: LocationFields) => {
+            updateField('address', loc.address)
+            updateField('city', loc.city)
+            updateField('state', loc.state)
+            updateField('zip', loc.zip)
+            updateField('country', loc.country)
           }}
+          showLocationName={false}
+          showMeetingLink={false}
+          defaultCountry="US"
+          accent="cyan"
         />
         {(errors.city || errors.state) && (
           <FieldError>{errors.city || errors.state}</FieldError>

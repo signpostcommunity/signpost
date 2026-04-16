@@ -5,7 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton';
-import LocationPicker from '@/components/shared/LocationPicker';
+import LocationInput from '@/components/ui/LocationInput';
+import type { LocationFields } from '@/components/ui/LocationInput';
+import { getCountryName } from '@/lib/countries';
 import InlineVideoCapture from '@/components/ui/InlineVideoCapture';
 import { generateSlug } from '@/lib/slugUtils';
 import { syncNameFields } from '@/lib/nameSync';
@@ -568,9 +570,11 @@ function InterpreterSignupForm() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [address, setAddress] = useState('');
   const [country, setCountry] = useState('');
   const [state, setState] = useState('');
   const [city, setCity] = useState('');
+  const [zip, setZip] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [existingUserId, setExistingUserId] = useState<string | null>(null);
@@ -687,7 +691,7 @@ function InterpreterSignupForm() {
         // Check for existing profile to resume
         const { data: profile } = await supabase
           .from('interpreter_profiles')
-          .select('id, draft_step, draft_data, first_name, last_name, email, country, state, city')
+          .select('id, draft_step, draft_data, first_name, last_name, email, address, country, state, city, zip')
           .eq('user_id', user.id)
           .maybeSingle();
 
@@ -697,9 +701,11 @@ function InterpreterSignupForm() {
           if (profile.first_name && !firstName) setFirstName(profile.first_name);
           if (profile.last_name && !lastName) setLastName(profile.last_name);
           if (profile.email && !email) setEmail(profile.email);
+          if (profile.address) setAddress(profile.address);
           if (profile.country) setCountry(profile.country);
           if (profile.state) setState(profile.state);
           if (profile.city) setCity(profile.city);
+          if (profile.zip) setZip(profile.zip);
 
           // Restore draft_data fields
           const d = profile.draft_data as Record<string, unknown> | null;
@@ -762,7 +768,7 @@ function InterpreterSignupForm() {
     const interval = setInterval(() => {
       const supabase = createClient();
       const draftData = {
-        firstName, lastName, email, country, state, city,
+        firstName, lastName, email, address, country, state, city, zip,
         interpreterType, yearsExperience, workMode, genderIdentity, selectedPronouns, otherPronouns, phone, phoneType, eventCoordination,
         signLanguages, otherSignLanguage, spokenLanguages, otherSpokenLanguage,
         certifications, education,
@@ -804,7 +810,7 @@ function InterpreterSignupForm() {
     if (uid) {
       const supabase = createClient();
       const draftData = {
-        firstName, lastName, email, country, state, city,
+        firstName, lastName, email, address, country, state, city, zip,
         interpreterType, yearsExperience, workMode, genderIdentity, selectedPronouns, otherPronouns, phone, phoneType, eventCoordination,
         signLanguages, otherSignLanguage, spokenLanguages, otherSpokenLanguage,
         certifications, education,
@@ -835,7 +841,7 @@ function InterpreterSignupForm() {
       setError('Password must be at least 8 characters.');
       return;
     }
-    const COUNTRIES_REQUIRING_STATE = ['United States', 'Canada'];
+    const COUNTRIES_REQUIRING_STATE = ['US', 'CA'];
     if (COUNTRIES_REQUIRING_STATE.includes(country) && !state) {
       setError('Please select your state.');
       return;
@@ -940,9 +946,13 @@ function InterpreterSignupForm() {
         last_name: lastNorm,
         name: fullName,
         email,
+        address: address || null,
         country: (norm.country as string) || country,
+        country_name: getCountryName((norm.country as string) || country) || country || null,
         state: (norm.state as string) || state,
         city: (norm.city as string) || city,
+        zip: zip || null,
+        location: [(norm.city as string) || city, (norm.state as string) || state].filter(Boolean).join(', ') || null,
       });
 
       const { data: insertedProfile, error: profileError } = await supabase
@@ -1052,12 +1062,17 @@ function InterpreterSignupForm() {
 
           <div>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#00e5ff', marginBottom: '6px', textTransform: 'uppercase' as const, letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>Location</label>
-            <LocationPicker
-              country={country}
-              state={state}
+            <LocationInput
+              address={address}
               city={city}
-              onChange={(loc) => { setCountry(loc.country); setState(loc.state); setCity(loc.city); }}
-              accentColor="#00e5ff"
+              state={state}
+              zip={zip}
+              country={country}
+              onChange={(loc: LocationFields) => { setAddress(loc.address); setCity(loc.city); setState(loc.state); setZip(loc.zip); setCountry(loc.country); }}
+              showLocationName={false}
+              showMeetingLink={false}
+              defaultCountry="US"
+              accent="cyan"
             />
           </div>
 

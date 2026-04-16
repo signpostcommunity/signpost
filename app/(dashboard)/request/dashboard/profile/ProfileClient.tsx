@@ -8,6 +8,9 @@ import BetaTryThis from '@/components/ui/BetaTryThis'
 import PhoneInput from '@/components/ui/PhoneInput'
 import { normalizePhone } from '@/lib/phone'
 import { TIMEZONE_LABELS, getTimezoneLabel } from '@/lib/timezones'
+import LocationInput from '@/components/ui/LocationInput'
+import type { LocationFields } from '@/components/ui/LocationInput'
+import { getCountryName, getCountryCode } from '@/lib/countries'
 
 /* ── Shared styles ── */
 
@@ -78,10 +81,12 @@ export default function ProfileClient({ profile, userEmail }: Props) {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [phone, setPhone] = useState('')
+  const [address, setAddress] = useState('')
   const [country, setCountry] = useState('')
   const [countryName, setCountryName] = useState('')
   const [city, setCity] = useState('')
   const [state, setState] = useState('')
+  const [zip, setZip] = useState('')
   const [orgName, setOrgName] = useState('')
   const [orgType, setOrgType] = useState('')
   const [requesterType, setRequesterType] = useState('')
@@ -98,10 +103,12 @@ export default function ProfileClient({ profile, userEmail }: Props) {
       setFirstName((profile.first_name as string) || '')
       setLastName((profile.last_name as string) || '')
       setPhone((profile.phone as string) || '')
+      setAddress((profile.address as string) || '')
       setCountry((profile.country as string) || '')
       setCountryName((profile.country_name as string) || '')
       setCity((profile.city as string) || '')
       setState((profile.state as string) || '')
+      setZip((profile.zip as string) || '')
       setOrgName((profile.org_name as string) || '')
       setOrgType((profile.org_type as string) || '')
       setRequesterType((profile.requester_type as string) || '')
@@ -167,9 +174,13 @@ export default function ProfileClient({ profile, userEmail }: Props) {
         last_name: normLast,
         name: displayName,
         phone: phone ? (normalizePhone(phone) || phone) : null,
-        country_name: (norm.country_name as string) || countryName || country,
+        address: address || null,
+        country: country || null,
+        country_name: getCountryName(country) || countryName || country || null,
         city: (norm.city as string) || city || null,
         state: (norm.state as string) || state || null,
+        zip: zip || null,
+        location: [city, state].filter(Boolean).join(', ') || null,
         org_name: orgName || null,
         org_type: orgType || null,
         requester_type: requesterType || null,
@@ -290,43 +301,25 @@ export default function ProfileClient({ profile, userEmail }: Props) {
         {/* Section 3 - Location */}
         <div style={cardStyle}>
           <div style={sectionTitleStyle}>Location</div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div>
-              <label style={labelStyle}>Country</label>
-              <input
-                value={countryName || country}
-                onChange={e => { setCountryName(e.target.value); setCountry(e.target.value) }}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-                style={inputStyle}
-                placeholder="United States"
-              />
-            </div>
-            <div className="profile-location-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              <div>
-                <label style={labelStyle}>City / Region</label>
-                <input
-                  value={city}
-                  onChange={e => setCity(e.target.value)}
-                  onFocus={handleFocus}
-                  onBlur={handleBlur}
-                  style={inputStyle}
-                  placeholder="Los Angeles"
-                />
-              </div>
-              <div>
-                <label style={labelStyle}>State (optional)</label>
-                <input
-                  value={state}
-                  onChange={e => setState(e.target.value)}
-                  onFocus={handleFocus}
-                  onBlur={handleBlur}
-                  style={inputStyle}
-                  placeholder="California"
-                />
-              </div>
-            </div>
-          </div>
+          <LocationInput
+            address={address}
+            city={city}
+            state={state}
+            zip={zip}
+            country={country}
+            onChange={(loc: LocationFields) => {
+              setAddress(loc.address)
+              setCity(loc.city)
+              setState(loc.state)
+              setZip(loc.zip)
+              setCountry(loc.country)
+              setCountryName(getCountryName(loc.country) || loc.country)
+            }}
+            showLocationName={false}
+            showMeetingLink={false}
+            defaultCountry={country || 'US'}
+            accent="cyan"
+          />
         </div>
 
         {/* Section 4 - Timezone */}

@@ -1,3 +1,4 @@
+// DEPRECATED: Use components/ui/LocationInput instead
 'use client'
 
 import { useState, useEffect, useMemo, useRef } from 'react'

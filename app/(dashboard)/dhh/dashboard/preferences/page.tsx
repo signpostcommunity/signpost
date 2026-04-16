@@ -4,7 +4,9 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import LocationPicker from '@/components/shared/LocationPicker'
+import LocationInput from '@/components/ui/LocationInput'
+import type { LocationFields } from '@/components/ui/LocationInput'
+import { getCountryName, getCountryCode } from '@/lib/countries'
 import { PageHeader, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
@@ -62,9 +64,11 @@ export default function DhhPreferencesPage() {
   const [email, setEmail] = useState('')
   const [authEmail, setAuthEmail] = useState('')
   const [pronouns, setPronouns] = useState('')
+  const [address, setAddress] = useState('')
   const [country, setCountry] = useState('')
   const [stateProvince, setStateProvince] = useState('')
   const [city, setCity] = useState('')
+  const [zip, setZip] = useState('')
   const [photoUrl, setPhotoUrl] = useState('')
   const [bio, setBio] = useState('')
   const [uploading, setUploading] = useState(false)
@@ -128,9 +132,11 @@ export default function DhhPreferencesPage() {
         setLastName(profile.last_name || '')
         setEmail(profile.email || user.email || '')
         setPronouns(profile.pronouns || '')
+        setAddress(profile.address || '')
         setCountry(profile.country || '')
         setStateProvince(profile.state || '')
         setCity(profile.city || '')
+        setZip(profile.zip || '')
         setPhotoUrl(profile.photo_url || '')
         setBio(profile.bio || '')
         setProfileVideoUrl(profile.profile_video_url || '')
@@ -266,9 +272,13 @@ export default function DhhPreferencesPage() {
       last_name: lastName.trim(),
       email: email.trim(),
       pronouns: pronouns.trim(),
+      address: address || null,
       country,
+      country_name: getCountryName(country) || country || null,
       state: stateProvince,
       city,
+      zip: zip || null,
+      location: [city, stateProvince].filter(Boolean).join(', ') || null,
       photo_url: photoUrl,
       bio: bio.trim(),
       profile_video_url: profileVideoUrl || null,
@@ -677,16 +687,23 @@ export default function DhhPreferencesPage() {
           {/* Location */}
           <div style={fieldGroupStyle}>
             <label style={labelStyle}>Location</label>
-            <LocationPicker
-              country={country}
-              state={stateProvince}
+            <LocationInput
+              address={address}
               city={city}
-              onChange={({ country: c, state: s, city: ci }) => {
-                setCountry(c)
-                setStateProvince(s)
-                setCity(ci)
+              state={stateProvince}
+              zip={zip}
+              country={country}
+              onChange={(loc: LocationFields) => {
+                setAddress(loc.address)
+                setCity(loc.city)
+                setStateProvince(loc.state)
+                setZip(loc.zip)
+                setCountry(loc.country)
               }}
-              accentColor="#9d87ff"
+              showLocationName={false}
+              showMeetingLink={false}
+              defaultCountry={country || 'US'}
+              accent="purple"
             />
           </div>
 

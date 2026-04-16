@@ -5,7 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton';
-import LocationPicker from '@/components/shared/LocationPicker';
+import LocationInput from '@/components/ui/LocationInput';
+import type { LocationFields } from '@/components/ui/LocationInput';
+import { getCountryName } from '@/lib/countries';
 import InlineVideoCapture from '@/components/ui/InlineVideoCapture';
 import { generateSlug } from '@/lib/slugUtils';
 import { syncNameFields } from '@/lib/nameSync';
@@ -423,9 +425,11 @@ function DeafSignupForm() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [address, setAddress] = useState('');
   const [country, setCountry] = useState('');
   const [state, setState] = useState('');
   const [city, setCity] = useState('');
+  const [zip, setZip] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [existingUserId, setExistingUserId] = useState<string | null>(null);
@@ -515,7 +519,7 @@ function DeafSignupForm() {
         // Check for existing profile to resume
         const { data: profile } = await supabase
           .from('deaf_profiles')
-          .select('id, user_id, draft_step, draft_data, first_name, last_name, email, country, country_name, state, city')
+          .select('id, user_id, draft_step, draft_data, first_name, last_name, email, address, country, country_name, state, city, zip')
           .or(`id.eq.${user.id},user_id.eq.${user.id}`)
           .maybeSingle();
 
@@ -524,9 +528,12 @@ function DeafSignupForm() {
           if (profile.first_name && !firstName) setFirstName(profile.first_name);
           if (profile.last_name && !lastName) setLastName(profile.last_name);
           if (profile.email && !email) setEmail(profile.email);
-          if (profile.country_name) setCountry(profile.country_name);
+          if (profile.address) setAddress(profile.address);
+          if (profile.country) setCountry(profile.country);
+          else if (profile.country_name) setCountry(profile.country_name);
           if (profile.state) setState(profile.state);
           if (profile.city) setCity(profile.city);
+          if (profile.zip) setZip(profile.zip);
 
           // Restore draft_data fields
           const d = profile.draft_data as Record<string, unknown> | null;
@@ -534,9 +541,11 @@ function DeafSignupForm() {
             if (d.firstName) setFirstName(d.firstName as string);
             if (d.lastName) setLastName(d.lastName as string);
             if (d.email) setEmail(d.email as string);
+            if (d.address) setAddress(d.address as string);
             if (d.country) setCountry(d.country as string);
             if (d.state) setState(d.state as string);
             if (d.city) setCity(d.city as string);
+            if (d.zip) setZip(d.zip as string);
             if (Array.isArray(d.signingStyles)) setSigningStyles(d.signingStyles as string[]);
             if (d.otherSignLanguage) setOtherSignLanguage(d.otherSignLanguage as string);
             if (d.voicePref) setVoicePref(d.voicePref as string);
@@ -572,7 +581,7 @@ function DeafSignupForm() {
     const interval = setInterval(() => {
       const supabase = createClient();
       const draftData = {
-        firstName, lastName, email, country, state, city,
+        firstName, lastName, email, address, country, state, city, zip,
         signingStyles, otherSignLanguage, voicePref, diPreferred, commNotes,
         writtenIntro, shareTextBefore, profileVideoUrl, shareVideoBefore, autoSharePrefList,
       };
@@ -598,7 +607,7 @@ function DeafSignupForm() {
     if (uid) {
       const supabase = createClient();
       const draftData = {
-        firstName, lastName, email, country, state, city,
+        firstName, lastName, email, address, country, state, city, zip,
         signingStyles, otherSignLanguage, voicePref, diPreferred, commNotes,
         writtenIntro, shareTextBefore, profileVideoUrl, shareVideoBefore, autoSharePrefList,
       };
@@ -653,7 +662,7 @@ function DeafSignupForm() {
       const lastNameVal = lastName.trim();
       const fullName = `${firstNameVal} ${lastNameVal}`.trim();
       const { normalizeProfileFields } = await import('@/lib/normalize');
-      const norm = normalizeProfileFields({ first_name: firstNameVal, last_name: lastNameVal, city, state, country_name: country });
+      const norm = normalizeProfileFields({ first_name: firstNameVal, last_name: lastNameVal, city, state });
       const firstNorm = (norm.first_name as string) || firstNameVal;
       const lastNorm = (norm.last_name as string) || lastNameVal;
 
@@ -664,9 +673,13 @@ function DeafSignupForm() {
         last_name: lastNorm,
         name: fullName,
         email,
-        country_name: (norm.country_name as string) || country,
+        address: address || null,
+        country: country || null,
+        country_name: getCountryName(country) || country || null,
         state: (norm.state as string) || state,
         city: (norm.city as string) || city,
+        zip: zip || null,
+        location: [(norm.city as string) || city, (norm.state as string) || state].filter(Boolean).join(', ') || null,
       }));
 
       // Auto-generate vanity slug
@@ -881,10 +894,17 @@ function DeafSignupForm() {
                 <AuthInput label="Password" type="password" value={password} onChange={setPassword} placeholder="Minimum 8 characters" required />
               )}
               <div style={{ marginTop: 4 }}>
-                <LocationPicker
-                  country={country} state={state} city={city}
-                  onChange={({ country: c, state: s, city: ci }) => { setCountry(c); setState(s); setCity(ci); }}
-                  accentColor="var(--accent2)"
+                <LocationInput
+                  address={address}
+                  city={city}
+                  state={state}
+                  zip={zip}
+                  country={country}
+                  onChange={(loc: LocationFields) => { setAddress(loc.address); setCity(loc.city); setState(loc.state); setZip(loc.zip); setCountry(loc.country); }}
+                  showLocationName={false}
+                  showMeetingLink={false}
+                  defaultCountry="US"
+                  accent="purple"
                 />
               </div>
               <PrimaryButton type="submit" disabled={loading}>

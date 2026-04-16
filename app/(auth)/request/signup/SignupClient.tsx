@@ -9,6 +9,9 @@ import { syncNameFields } from '@/lib/nameSync';
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton';
 import PhoneInput from '@/components/ui/PhoneInput';
 import { normalizePhone } from '@/lib/phone';
+import LocationInput from '@/components/ui/LocationInput';
+import type { LocationFields } from '@/components/ui/LocationInput';
+import { getCountryName } from '@/lib/countries';
 
 const TOTAL_STEPS = 4;
 
@@ -28,8 +31,11 @@ interface FormData {
   email: string;
   password: string;
   phone: string;
+  address: string;
   country: string;
   city: string;
+  state: string;
+  zip: string;
   orgName: string;
   orgType: string;
   commPrefs: string[];
@@ -37,7 +43,7 @@ interface FormData {
 
 const defaultForm: FormData = {
   requesterType: null, firstName: '', lastName: '', email: '', password: '',
-  phone: '', country: '', city: '', orgName: '', orgType: '',
+  phone: '', address: '', country: '', city: '', state: '', zip: '', orgName: '', orgType: '',
   commPrefs: ['Email'],
 };
 
@@ -732,7 +738,7 @@ export default function RequestSignupClient() {
     }
 
     const { normalizeProfileFields } = await import('@/lib/normalize');
-    const norm = normalizeProfileFields({ first_name: form.firstName, last_name: form.lastName, city: form.city, country_name: form.country });
+    const norm = normalizeProfileFields({ first_name: form.firstName, last_name: form.lastName, city: form.city, state: form.state });
     const normFirst = (norm.first_name as string) || form.firstName;
     const normLast = (norm.last_name as string) || form.lastName;
     const normDisplayName = `${normFirst} ${normLast}`.trim() || form.email;
@@ -743,8 +749,13 @@ export default function RequestSignupClient() {
       last_name: normLast,
       email: form.email.trim().toLowerCase(),
       phone: form.phone ? (normalizePhone(form.phone) || form.phone) : null,
-      country_name: (norm.country_name as string) || form.country,
+      address: form.address || null,
+      country: form.country || null,
+      country_name: getCountryName(form.country) || form.country || null,
       city: (norm.city as string) || form.city,
+      state: (norm.state as string) || form.state || null,
+      zip: form.zip || null,
+      location: [(norm.city as string) || form.city, (norm.state as string) || form.state].filter(Boolean).join(', ') || null,
       org_name: form.requesterType === 'organization' ? form.orgName : null,
       org_type: form.requesterType === 'organization' ? form.orgType : null,
       requester_type: form.requesterType,
@@ -1008,10 +1019,24 @@ export default function RequestSignupClient() {
               <AuthInput label="Email *" type="email" value={form.email} onChange={v => update('email', v)} placeholder="you@example.com" required />
 
               {/* Location */}
-              <div className="signup-location-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                <AuthInput label="Country *" value={form.country} onChange={v => update('country', v)} placeholder="United States" required />
-                <AuthInput label="City / Region *" value={form.city} onChange={v => update('city', v)} placeholder="Los Angeles" required />
-              </div>
+              <LocationInput
+                address={form.address}
+                city={form.city}
+                state={form.state}
+                zip={form.zip}
+                country={form.country}
+                onChange={(loc: LocationFields) => {
+                  update('address', loc.address)
+                  update('city', loc.city)
+                  update('state', loc.state)
+                  update('zip', loc.zip)
+                  update('country', loc.country)
+                }}
+                showLocationName={false}
+                showMeetingLink={false}
+                defaultCountry="US"
+                accent="cyan"
+              />
 
               {/* Communication Preferences */}
               <div>

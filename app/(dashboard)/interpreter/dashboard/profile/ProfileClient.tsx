@@ -15,7 +15,9 @@ import { MENTORSHIP_CATEGORIES, type MentorshipCategory } from '@/lib/mentorship
 import { getVideoEmbedUrl, isValidVideoUrl } from '@/lib/videoUtils'
 import { TIMEZONE_LABELS, getTimezoneLabel } from '@/lib/timezones'
 import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
-import LocationPicker from '@/components/shared/LocationPicker'
+import LocationInput from '@/components/ui/LocationInput'
+import type { LocationFields } from '@/components/ui/LocationInput'
+import { getCountryName, getCountryCode } from '@/lib/countries'
 import PhoneInput from '@/components/ui/PhoneInput'
 import { normalizePhone } from '@/lib/phone'
 import { generateSlug, validateSlug } from '@/lib/slugUtils'
@@ -173,9 +175,12 @@ interface ProfileData {
   last_name?: string | null
   email?: string | null
   pronouns?: string | null
+  address?: string | null
   city?: string | null
   state?: string | null
+  zip?: string | null
   country?: string | null
+  country_name?: string | null
   phone?: string | null
   years_experience?: string | null
   interpreter_type?: string | null
@@ -429,8 +434,10 @@ export default function ProfileClient({ profile: rawProfile, userEmail, rateProf
   // ── Personal state (columns → draft_data fallback) ─────────────────────
   const [firstName, setFirstName] = useState(fallback(p.first_name, 'firstName', ''))
   const [lastName, setLastName] = useState(fallback(p.last_name, 'lastName', ''))
+  const [address, setAddress] = useState(fallback(p.address, 'address', ''))
   const [city, setCity] = useState(fallback(p.city, 'city', ''))
   const [stateProvince, setStateProvince] = useState(fallback(p.state, 'state', ''))
+  const [zip, setZip] = useState(fallback(p.zip, 'zip', ''))
   const [country, setCountry] = useState(fallback(p.country, 'country', ''))
   const [phone, setPhone] = useState(fallback(p.phone, 'phone', ''))
   const [yearsExperience, setYearsExperience] = useState(fallback(p.years_experience, 'yearsExperience', ''))
@@ -624,7 +631,7 @@ export default function ProfileClient({ profile: rawProfile, userEmail, rateProf
       // Now try interpreter_profiles
       const { data, error, status, statusText } = await supabase
         .from('interpreter_profiles')
-        .select('id, name, first_name, last_name, email, pronouns, city, state, country, phone, years_experience, interpreter_type, work_mode, bio, bio_specializations, bio_extra, sign_languages, spoken_languages, specializations, aspirational_specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms, notification_preferences, notification_phone, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, vanity_slug, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_types_offering, mentorship_types_seeking, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking, directory_visible, timezone')
+        .select('id, name, first_name, last_name, email, pronouns, address, city, state, zip, country, country_name, phone, years_experience, interpreter_type, work_mode, bio, bio_specializations, bio_extra, sign_languages, spoken_languages, specializations, aspirational_specializations, specialized_skills, regions, video_url, video_desc, event_coordination, event_coordination_desc, draft_data, status, photo_url, invoicing_preference, payment_methods, default_payment_terms, notification_preferences, notification_phone, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, vanity_slug, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_types_offering, mentorship_types_seeking, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking, directory_visible, timezone')
         .eq('user_id', user.id)
         .maybeSingle()
       console.log('PROFILE CLIENT-SIDE LOAD:', JSON.stringify({ data, error, status, statusText, userId: user.id }, null, 2))
@@ -632,8 +639,10 @@ export default function ProfileClient({ profile: rawProfile, userEmail, rateProf
       const d = data as ProfileData
       if (d.first_name != null) setFirstName(d.first_name)
       if (d.last_name != null) setLastName(d.last_name)
+      if (d.address != null) setAddress(d.address)
       if (d.city != null) setCity(d.city)
       if (d.state != null) setStateProvince(d.state)
+      if (d.zip != null) setZip(d.zip)
       if (d.country != null) setCountry(d.country)
       if (d.phone != null) setPhone(d.phone)
       if (d.years_experience != null) setYearsExperience(d.years_experience)
@@ -829,8 +838,10 @@ export default function ProfileClient({ profile: rawProfile, userEmail, rateProf
       const saved = result.data[0] as ProfileData
       if (saved.first_name !== undefined) setFirstName(saved.first_name || '')
       if (saved.last_name !== undefined) setLastName(saved.last_name || '')
+      if (saved.address !== undefined) setAddress(saved.address || '')
       if (saved.city !== undefined) setCity(saved.city || '')
       if (saved.state !== undefined) setStateProvince(saved.state || '')
+      if (saved.zip !== undefined) setZip(saved.zip || '')
       if (saved.country !== undefined) setCountry(saved.country || '')
       if (saved.phone !== undefined) setPhone(saved.phone || '')
       if (saved.photo_url !== undefined) setPhotoUrl(saved.photo_url || '')
@@ -1404,15 +1415,23 @@ export default function ProfileClient({ profile: rawProfile, userEmail, rateProf
             </div>
           </div>
           <div style={{ marginBottom: 16 }}>
-            <LocationPicker
-              country={country}
-              state={stateProvince}
+            <LocationInput
+              address={address}
               city={city}
-              onChange={({ country: c, state: s, city: ci }) => {
-                setCountry(c)
-                setStateProvince(s)
-                setCity(ci)
+              state={stateProvince}
+              zip={zip}
+              country={country}
+              onChange={(loc: LocationFields) => {
+                setAddress(loc.address)
+                setCity(loc.city)
+                setStateProvince(loc.state)
+                setZip(loc.zip)
+                setCountry(loc.country)
               }}
+              showLocationName={false}
+              showMeetingLink={false}
+              defaultCountry={country || 'US'}
+              accent="cyan"
             />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 220px), 1fr))', gap: 16, marginBottom: 16 }}>
@@ -1499,7 +1518,13 @@ export default function ProfileClient({ profile: rawProfile, userEmail, rateProf
 
           <SaveButton saving={saving} onClick={() => saveFields({
             first_name: firstName, last_name: lastName, pronouns, gender_identity: genderIdentity,
-            city, state: stateProvince, country, phone: phone ? (normalizePhone(phone) || phone) : null,
+            address: address || null,
+            city, state: stateProvince,
+            zip: zip || null,
+            country,
+            country_name: getCountryName(country) || country || null,
+            location: [city, stateProvince].filter(Boolean).join(', ') || null,
+            phone: phone ? (normalizePhone(phone) || phone) : null,
             years_experience: yearsExperience, interpreter_type: interpreterType,
             work_mode: modeOfWork,
             event_coordination: eventCoordination, event_coordination_desc: coordinationBio,

@@ -49,9 +49,11 @@ export type FormData = {
   phone: string
   email: string
   password: string
+  address: string
   country: string
   city: string
   state: string
+  zip: string
   interpreterType: string
   modeOfWork: string
   yearsExperience: string
@@ -125,7 +127,7 @@ const defaultRateProfiles: RateProfile[] = [
 
 const initialFormData: FormData = {
   firstName: '', lastName: '', pronouns: '', phone: '', email: '', password: '',
-  country: '', city: '', state: '', interpreterType: '', modeOfWork: '',
+  address: '', country: '', city: '', state: '', zip: '', interpreterType: '', modeOfWork: '',
   yearsExperience: '', regions: [],
   eventCoordination: false, coordinationBio: '',
   avatarUrl: '',
@@ -204,9 +206,11 @@ export function FormProvider({ children }: { children: ReactNode }) {
           pronouns: formData.pronouns || null,
           email: formData.email,
           phone: formData.phone ? (normalizePhone(formData.phone) || formData.phone) : null,
+          address: formData.address || null,
           country: formData.country,
           city: formData.city,
           state: formData.state,
+          zip: formData.zip || null,
           bio: formData.bio,
           bio_specializations: formData.bioSpecializations,
           bio_extra: formData.bioExtra,
