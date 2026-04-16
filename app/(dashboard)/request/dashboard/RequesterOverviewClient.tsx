@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import Link from 'next/link'
 import BetaTryThis from '@/components/ui/BetaTryThis'
+import { formatLocationShort } from '@/lib/location-display'
 
 /* ── Types ── */
 
@@ -312,7 +313,7 @@ export default function RequesterOverviewClient({
                     }}
                   >
                     {booking.location && (
-                      <div><span style={{ color: 'var(--muted)' }}>Location: </span>{booking.location}</div>
+                      <div><span style={{ color: 'var(--muted)' }}>Location: </span>{formatLocationShort(booking)}</div>
                     )}
                     {booking.event_category && (
                       <div><span style={{ color: 'var(--muted)' }}>Category: </span>{booking.event_category}</div>

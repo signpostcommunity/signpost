@@ -36,6 +36,14 @@ export async function POST(request: NextRequest) {
     const onsiteContactName = body.onsite_contact_name ? sanitizeText(body.onsite_contact_name) : null
     const onsiteContactPhone = body.onsite_contact_phone ? sanitizeText(body.onsite_contact_phone) : null
     const onsiteContactEmail = body.onsite_contact_email ? sanitizeText(body.onsite_contact_email) : null
+    // Structured location fields
+    const locationName = body.location_name ? sanitizeText(body.location_name) : null
+    const locationAddress = body.location_address ? sanitizeText(body.location_address) : null
+    const locationCity = body.location_city ? sanitizeText(body.location_city) : null
+    const locationState = body.location_state ? sanitizeText(body.location_state) : null
+    const locationZip = body.location_zip ? sanitizeText(body.location_zip) : null
+    const locationCountry = body.location_country ? sanitizeText(body.location_country) : null
+    const meetingLink = body.meeting_link ? sanitizeText(body.meeting_link) : null
 
     if (!saveAsDraft && (!title || !date || !timeStart || !timeEnd || !format)) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -76,6 +84,13 @@ export async function POST(request: NextRequest) {
       timezone: timezone || 'America/Los_Angeles',
       format: dbFormat || null,
       location: location || null,
+      location_name: locationName,
+      location_address: locationAddress,
+      location_city: locationCity,
+      location_state: locationState,
+      location_zip: locationZip,
+      location_country: locationCountry,
+      meeting_link: meetingLink,
       event_type: eventType || null,
       event_category: eventCategory || null,
       specialization: specialization || null,

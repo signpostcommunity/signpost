@@ -56,6 +56,14 @@ export async function POST(request: NextRequest) {
     const title = body.title ? sanitizeText(body.title) : ''
     const location = body.location ? sanitizeText(body.location) : null
     const description = body.description ? sanitizeText(body.description) : null
+    // Structured location fields
+    const locationName = body.location_name ? sanitizeText(body.location_name) : null
+    const locationAddress = body.location_address ? sanitizeText(body.location_address) : null
+    const locationCity = body.location_city ? sanitizeText(body.location_city) : null
+    const locationState = body.location_state ? sanitizeText(body.location_state) : null
+    const locationZip = body.location_zip ? sanitizeText(body.location_zip) : null
+    const locationCountry = body.location_country ? sanitizeText(body.location_country) : null
+    const meetingLink = body.meeting_link ? sanitizeText(body.meeting_link) : null
 
     if (!saveAsDraft && (!title || !date || !timeStart || !timeEnd || !format || !interpreterIds?.length)) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -92,6 +100,13 @@ export async function POST(request: NextRequest) {
       timezone: timezone || 'America/Los_Angeles',
       format: dbFormat || null,
       location: location || null,
+      location_name: locationName,
+      location_address: locationAddress,
+      location_city: locationCity,
+      location_state: locationState,
+      location_zip: locationZip,
+      location_country: locationCountry,
+      meeting_link: meetingLink,
       event_type: eventType || null,
       event_category: eventCategory || null,
       interpreter_count: interpreterCount || (interpreterIds?.length || 1),
@@ -297,6 +312,8 @@ export async function GET() {
       .from('bookings')
       .select(`
         id, title, date, time_start, time_end, timezone, location, format,
+        location_name, location_address, location_city, location_state,
+        location_zip, location_country, meeting_link,
         status, request_type, event_type, event_category, interpreter_count,
         description, notes, is_seed,
         cancellation_reason, cancelled_by, cancelled_at, sub_search_initiated,

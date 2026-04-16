@@ -10,6 +10,7 @@ import VideoRecorder from '@/components/ui/VideoRecorder'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
 import BookingFilterBar, { filterBySearch, filterByDateRange, groupByTimeCategory, timeCategoryHeaderStyle } from '@/components/dashboard/shared/BookingFilterBar'
 import { decryptBatchClient } from '@/lib/decrypt-client'
+import { formatLocationShort, formatLocationFull } from '@/lib/location-display'
 
 /* ── Types ── */
 
@@ -34,6 +35,13 @@ interface Booking {
   time_start: string
   time_end: string
   location: string | null
+  location_name?: string | null
+  location_address?: string | null
+  location_city?: string | null
+  location_state?: string | null
+  location_zip?: string | null
+  location_country?: string | null
+  meeting_link?: string | null
   format: string | null
   status: string
   request_type: string | null
@@ -337,7 +345,17 @@ function DetailModal({ booking, onClose, onToast }: {
                   <path d="M7 1C4.79 1 3 2.79 3 5C3 8.5 7 13 7 13C7 13 11 8.5 11 5C11 2.79 9.21 1 7 1ZM7 7C5.9 7 5 6.1 5 5C5 3.9 5.9 3 7 3C8.1 3 9 3.9 9 5C9 6.1 8.1 7 7 7Z" fill="currentColor"/>
                 </svg>
               )}
-              <div>{isRemote ? 'Remote' : (booking.location || 'TBD')}</div>
+              <div style={{ whiteSpace: 'pre-line' }}>
+                {formatLocationFull(booking)}
+                {isRemote && booking.meeting_link && (
+                  <div style={{ marginTop: 4 }}>
+                    <a href={booking.meeting_link} target="_blank" rel="noopener noreferrer"
+                      style={{ color: '#a78bfa', textDecoration: 'underline', fontSize: '0.85rem' }}>
+                      {booking.meeting_link}
+                    </a>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -455,6 +473,7 @@ function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast, on
           </div>
           <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: 3 }}>
             {booking.title || 'Booking'}
+            {' '}<span style={{ color: '#666', fontSize: '0.78rem' }}>{formatLocationShort(booking)}</span>
           </div>
           <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 2, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
             {booking.requester_display ? (

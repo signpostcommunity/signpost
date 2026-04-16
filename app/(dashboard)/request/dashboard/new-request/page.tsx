@@ -7,6 +7,8 @@ import Toast from '@/components/ui/Toast'
 import RequesterInterpreterPicker from '@/components/requester/RequesterInterpreterPicker'
 import BetaTryThis from '@/components/ui/BetaTryThis'
 import { createClient } from '@/lib/supabase/client'
+import LocationInput from '@/components/ui/LocationInput'
+import type { LocationFields } from '@/components/ui/LocationInput'
 
 /* -- Constants -- */
 
@@ -122,8 +124,15 @@ export default function NewRequestPage() {
   const [timeEnd, setTimeEnd] = useState('')
   const [recurrence, setRecurrence] = useState('One-time')
   const [format, setFormat] = useState<'in_person' | 'remote'>('in_person')
-  const [location, setLocation] = useState('')
-  const [remotePlatform, setRemotePlatform] = useState('')
+  const [locationFields, setLocationFields] = useState<LocationFields>({
+    locationName: '',
+    address: '',
+    city: '',
+    state: '',
+    zip: '',
+    country: '',
+    meetingLink: '',
+  })
   const [signLanguage, setSignLanguage] = useState('ASL')
   const [spokenLanguage, setSpokenLanguage] = useState('English')
   const [interpreterCount, setInterpreterCount] = useState(1)
@@ -269,7 +278,7 @@ export default function NewRequestPage() {
     if (!timeStart) errs.timeStart = 'Start time is required'
     if (!timeEnd) errs.timeEnd = 'End time is required'
     if (!signLanguage) errs.signLanguage = 'Sign language is required'
-    if (format === 'in_person' && !location.trim()) errs.location = 'Location is required for in-person events'
+    if (format === 'in_person' && !locationFields.city.trim()) errs.location = 'City is required for in-person events'
     if (date) {
       const today = new Date().toISOString().split('T')[0]
       if (date < today) errs.date = 'Date must be today or in the future'
@@ -292,7 +301,16 @@ export default function NewRequestPage() {
       timeStart: timeStart || null,
       timeEnd: timeEnd || null,
       format,
-      location: format === 'in_person' ? location : remotePlatform,
+      location: format === 'in_person'
+        ? [locationFields.locationName, locationFields.address, locationFields.city, locationFields.state, locationFields.zip].filter(Boolean).join(', ')
+        : 'Remote',
+      location_name: locationFields.locationName || null,
+      location_address: locationFields.address || null,
+      location_city: locationFields.city || null,
+      location_state: locationFields.state || null,
+      location_zip: locationFields.zip || null,
+      location_country: locationFields.country || null,
+      meeting_link: locationFields.meetingLink || null,
       eventCategory: eventCategory || null,
       specialization: specialization || null,
       recurrence: recurrence.toLowerCase().replace('-', '_'),
@@ -665,32 +683,23 @@ export default function NewRequestPage() {
           </div>
         </div>
 
-        {format === 'in_person' && (
-          <div style={{ marginBottom: 20 }}>
-            <label style={labelStyle}>Location *</label>
-            <input
-              type="text"
-              value={location}
-              onChange={e => setLocation(e.target.value)}
-              placeholder="Full address"
-              style={inputStyle}
-            />
-            {errors.location && <div style={errorStyle}>{errors.location}</div>}
-          </div>
-        )}
-
-        {format === 'remote' && (
-          <div style={{ marginBottom: 20 }}>
-            <label style={labelStyle}>Remote Platform</label>
-            <input
-              type="text"
-              value={remotePlatform}
-              onChange={e => setRemotePlatform(e.target.value)}
-              placeholder="e.g. Zoom, Microsoft Teams, Google Meet"
-              style={inputStyle}
-            />
-          </div>
-        )}
+        <div style={{ marginBottom: 20 }}>
+          <LocationInput
+            locationName={locationFields.locationName}
+            address={locationFields.address}
+            city={locationFields.city}
+            state={locationFields.state}
+            zip={locationFields.zip}
+            country={locationFields.country}
+            meetingLink={locationFields.meetingLink}
+            onChange={setLocationFields}
+            showLocationName={format === 'in_person'}
+            showMeetingLink={format === 'remote'}
+            accent="cyan"
+            defaultCountry="US"
+          />
+          {errors.location && <div style={errorStyle}>{errors.location}</div>}
+        </div>
 
         <div style={{ marginBottom: 20 }}>
           <label style={labelStyle}>Sign Language Needed *</label>
@@ -1291,7 +1300,7 @@ export default function NewRequestPage() {
           if (signLanguage) params.set('signLang', signLanguage)
           if (spokenLanguage) params.set('spokenLang', spokenLanguage)
           if (specialization) params.set('spec', specialization)
-          if (location) params.set('location', location)
+          if (locationFields.city) params.set('location', locationFields.city)
           if (format) params.set('workMode', format)
           return (
             <Link

@@ -10,6 +10,8 @@ import CommPrefsDisplay from '@/components/dhh/CommPrefsDisplay'
 import { PageHeader, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
+import LocationInput from '@/components/ui/LocationInput'
+import type { LocationFields } from '@/components/ui/LocationInput'
 
 const TIMEZONES = [
   { label: 'Pacific Time (PT)', value: 'America/Los_Angeles' },
@@ -147,7 +149,15 @@ export default function DhhRequestPage() {
   const [title, setTitle] = useState('')
   const [eventType, setEventType] = useState('')
   const [format, setFormat] = useState('in-person')
-  const [location, setLocation] = useState('')
+  const [locationFields, setLocationFields] = useState<LocationFields>({
+    locationName: '',
+    address: '',
+    city: '',
+    state: '',
+    zip: '',
+    country: '',
+    meetingLink: '',
+  })
   const [date, setDate] = useState('')
   const [timeStart, setTimeStart] = useState('')
   const [timeEnd, setTimeEnd] = useState('')
@@ -197,7 +207,14 @@ export default function DhhRequestPage() {
           timeEnd: timeEnd || null,
           timezone,
           format,
-          location: format === 'remote' ? 'Remote' : location.trim() || null,
+          location: format === 'remote' ? 'Remote' : [locationFields.locationName, locationFields.address, locationFields.city, locationFields.state, locationFields.zip].filter(Boolean).join(', ') || null,
+          location_name: locationFields.locationName || null,
+          location_address: locationFields.address || null,
+          location_city: locationFields.city || null,
+          location_state: locationFields.state || null,
+          location_zip: locationFields.zip || null,
+          location_country: locationFields.country || null,
+          meeting_link: locationFields.meetingLink || null,
           eventType: eventType || null,
           eventCategory: eventType ? 'Personal & Life Events' : null,
           interpreterCount,
@@ -231,7 +248,7 @@ export default function DhhRequestPage() {
     if (!date) { showToast('Please select a date', 'error'); return }
     if (!timeStart) { showToast('Please select a start time', 'error'); return }
     if (!timeEnd) { showToast('Please select an end time', 'error'); return }
-    if (format !== 'remote' && !location.trim()) { showToast('Please enter a location', 'error'); return }
+    if (format !== 'remote' && !locationFields.city.trim()) { showToast('Please enter at least a city for the location', 'error'); return }
     if (selectedInterpreters.length === 0) { showToast('Please select at least one interpreter', 'error'); return }
 
     setSubmitting(true)
@@ -246,7 +263,14 @@ export default function DhhRequestPage() {
           timeEnd,
           timezone,
           format,
-          location: format === 'remote' ? 'Remote' : location.trim(),
+          location: format === 'remote' ? 'Remote' : [locationFields.locationName, locationFields.address, locationFields.city, locationFields.state, locationFields.zip].filter(Boolean).join(', '),
+          location_name: locationFields.locationName || null,
+          location_address: locationFields.address || null,
+          location_city: locationFields.city || null,
+          location_state: locationFields.state || null,
+          location_zip: locationFields.zip || null,
+          location_country: locationFields.country || null,
+          meeting_link: locationFields.meetingLink || null,
           eventType: eventType || null,
           eventCategory: eventType ? 'Personal & Life Events' : null,
           interpreterCount,
@@ -353,19 +377,22 @@ export default function DhhRequestPage() {
             </div>
           </div>
 
-          {format !== 'remote' && (
-            <div style={fieldGroupStyle}>
-              <label style={labelStyle}>Physical address or Meeting ID *</label>
-              <input
-                type="text"
-                value={location}
-                onChange={e => setLocation(e.target.value)}
-                placeholder="e.g. 123 Main St, Seattle WA or Zoom meeting link"
-                style={inputStyle}
-                required={format !== 'remote'}
-              />
-            </div>
-          )}
+          <div style={fieldGroupStyle}>
+            <LocationInput
+              locationName={locationFields.locationName}
+              address={locationFields.address}
+              city={locationFields.city}
+              state={locationFields.state}
+              zip={locationFields.zip}
+              country={locationFields.country}
+              meetingLink={locationFields.meetingLink}
+              onChange={setLocationFields}
+              showLocationName={format !== 'remote'}
+              showMeetingLink={format === 'remote'}
+              accent="purple"
+              defaultCountry="US"
+            />
+          </div>
         </div>
 
         {/* Section 2: Schedule */}

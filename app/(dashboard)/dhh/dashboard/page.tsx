@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import RequestTracker from '@/components/dashboard/dhh/RequestTracker'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
+import { formatLocationShort } from '@/lib/location-display'
 import { decryptBatchClient } from '@/lib/decrypt-client'
 import InterpreterRequestLinkCard from '@/components/dashboard/dhh/InterpreterRequestLinkCard'
 import PendingRolesNudge from '@/components/shared/PendingRolesNudge'
@@ -225,7 +226,7 @@ function DetailModal({ booking, onClose }: { booking: RecentBooking; onClose: ()
   const focusTrapRef = useFocusTrap(true)
   const confirmedRecipients = booking.recipients.filter(r => r.status === 'confirmed')
   const formatLabel = booking.format === 'remote' ? 'Remote' : booking.format === 'in_person' ? 'In-person' : 'TBD'
-  const locationText = booking.format === 'remote' ? 'Remote' : booking.location || 'TBD'
+  const locationText = formatLocationShort(booking)
   const statusColors = getStatusColors(booking.status)
 
   return (
@@ -368,20 +369,8 @@ function DetailModal({ booking, onClose }: { booking: RecentBooking; onClose: ()
               <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
                 Location
               </div>
-              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
-                {booking.format === 'remote' ? (
-                  <span style={{ color: '#00e5ff' }}>Remote</span>
-                ) : booking.location ? (
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.location)}`}
-                    target="_blank" rel="noopener noreferrer"
-                    style={{ color: '#00e5ff', textDecoration: 'none' }}
-                    onMouseOver={e => (e.currentTarget.style.textDecoration = 'underline')}
-                    onMouseOut={e => (e.currentTarget.style.textDecoration = 'none')}
-                  >
-                    {booking.location}
-                  </a>
-                ) : 'TBD'}
+              <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'var(--text)', whiteSpace: 'pre-line' }}>
+                {locationText}
               </div>
             </div>
 
@@ -490,7 +479,7 @@ function StatCard({ num, label, href }: { num: number; label: string; href: stri
 
 function RecentRequestCard({ booking, onClick }: { booking: RecentBooking; onClick: () => void }) {
   const formatLabel = booking.format === 'remote' ? 'Remote' : booking.format === 'in_person' ? 'In-person' : 'TBD'
-  const locationText = booking.format === 'remote' ? 'Remote' : booking.location || 'TBD'
+  const locationText = formatLocationShort(booking)
   const statusColors = getStatusColors(booking.status)
   const confirmedRecipients = booking.recipients.filter(r => r.status === 'confirmed')
 

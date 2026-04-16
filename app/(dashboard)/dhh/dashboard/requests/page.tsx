@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/client'
 import BookingFilterBar, { filterBySearch, filterByDateRange, groupByTimeCategory, timeCategoryHeaderStyle } from '@/components/dashboard/shared/BookingFilterBar'
 import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
+import { formatLocationShort, formatLocationFull } from '@/lib/location-display'
 
 interface Recipient {
   id: string
@@ -42,6 +43,13 @@ interface BookingWithRecipients {
   time_end: string
   timezone: string | null
   location: string | null
+  location_name?: string | null
+  location_address?: string | null
+  location_city?: string | null
+  location_state?: string | null
+  location_zip?: string | null
+  location_country?: string | null
+  meeting_link?: string | null
   format: string | null
   status: string
   request_type: string | null
@@ -853,7 +861,7 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
   const confirmedRecipients = booking.recipients.filter(r => r.status === 'confirmed')
   const statusColors = getStatusColors(booking.status)
   const formatLabel = booking.format === 'remote' ? 'Remote' : booking.format === 'in_person' ? 'In-person' : 'TBD'
-  const locationText = booking.format === 'remote' ? 'Remote' : booking.location || 'TBD'
+  const locationText = formatLocationShort(booking)
 
   // Check if ALL confirmed interpreters on this booking have been rated
   const allRated = confirmedRecipients.length > 0 &&
@@ -1056,18 +1064,31 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
                   <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
                     Location
                   </div>
-                  <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
+                  <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'var(--text)', whiteSpace: 'pre-line' }}>
                     {booking.format === 'remote' ? (
-                      <span style={{ color: '#00e5ff' }}>Remote</span>
-                    ) : booking.location ? (
+                      <>
+                        <span style={{ color: '#00e5ff' }}>Remote</span>
+                        {booking.meeting_link && (
+                          <div style={{ marginTop: 4 }}>
+                            <a
+                              href={booking.meeting_link}
+                              target="_blank" rel="noopener noreferrer"
+                              style={{ color: '#a78bfa', textDecoration: 'underline', fontSize: '0.85rem' }}
+                            >
+                              {booking.meeting_link}
+                            </a>
+                          </div>
+                        )}
+                      </>
+                    ) : (booking.location || booking.location_city) ? (
                       <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(booking.location)}`}
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(formatLocationFull(booking).replace(/\n/g, ', '))}`}
                         target="_blank" rel="noopener noreferrer"
                         style={{ color: '#00e5ff', textDecoration: 'none' }}
                         onMouseOver={e => (e.currentTarget.style.textDecoration = 'underline')}
                         onMouseOut={e => (e.currentTarget.style.textDecoration = 'none')}
                       >
-                        {booking.location}
+                        {formatLocationFull(booking)}
                       </a>
                     ) : 'TBD'}
                   </div>
