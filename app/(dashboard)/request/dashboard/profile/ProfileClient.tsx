@@ -7,6 +7,7 @@ import PaymentMethodSection from '@/components/dashboard/requester/PaymentMethod
 import BetaTryThis from '@/components/ui/BetaTryThis'
 import PhoneInput from '@/components/ui/PhoneInput'
 import { normalizePhone } from '@/lib/phone'
+import { TIMEZONE_LABELS, getTimezoneLabel } from '@/lib/timezones'
 
 /* ── Shared styles ── */
 
@@ -85,6 +86,9 @@ export default function ProfileClient({ profile, userEmail }: Props) {
   const [orgType, setOrgType] = useState('')
   const [requesterType, setRequesterType] = useState('')
   const [commPrefs, setCommPrefs] = useState<string[]>([])
+  const [timezone, setTimezone] = useState('')
+  const [editingTimezone, setEditingTimezone] = useState(false)
+  const [timezoneDraft, setTimezoneDraft] = useState('')
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
 
@@ -101,6 +105,23 @@ export default function ProfileClient({ profile, userEmail }: Props) {
       setOrgName((profile.org_name as string) || '')
       setOrgType((profile.org_type as string) || '')
       setRequesterType((profile.requester_type as string) || '')
+
+      const tz = (profile.timezone as string) || ''
+      setTimezone(tz)
+      setTimezoneDraft(tz)
+
+      // Auto-detect timezone on first load if empty
+      if (!tz) {
+        try {
+          const detected = Intl.DateTimeFormat().resolvedOptions().timeZone
+          if (detected) {
+            setTimezone(detected)
+            setTimezoneDraft(detected)
+          }
+        } catch {
+          // Ignore detection errors
+        }
+      }
 
       // Parse comm_prefs
       const cp = profile.comm_prefs
@@ -152,6 +173,7 @@ export default function ProfileClient({ profile, userEmail }: Props) {
         org_name: orgName || null,
         org_type: orgType || null,
         requester_type: requesterType || null,
+        timezone: timezone || null,
         comm_prefs: JSON.stringify(commPrefs),
         updated_at: new Date().toISOString(),
       })
@@ -307,7 +329,83 @@ export default function ProfileClient({ profile, userEmail }: Props) {
           </div>
         </div>
 
-        {/* Section 4 - Communication Preferences */}
+        {/* Section 4 - Timezone */}
+        <div style={cardStyle}>
+          <div style={sectionTitleStyle}>Timezone</div>
+          {!editingTimezone ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, color: '#f0f2f8', fontWeight: 500 }}>
+                  {timezone ? getTimezoneLabel(timezone) : 'Not set'}
+                </div>
+                {timezone && (
+                  <div style={{ fontSize: 13, color: '#96a0b8', marginTop: 4 }}>
+                    Auto-detected from your browser
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => { setTimezoneDraft(timezone); setEditingTimezone(true) }}
+                style={{
+                  background: 'transparent', border: '1px solid rgba(0,229,255,0.3)',
+                  borderRadius: 10, padding: '8px 16px', fontSize: '13.5px',
+                  color: '#00e5ff', cursor: 'pointer', fontFamily: "'Inter', sans-serif",
+                  fontWeight: 600,
+                }}
+              >
+                Change
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div>
+                <label style={labelStyle}>Select your timezone</label>
+                <select
+                  value={timezoneDraft}
+                  onChange={e => setTimezoneDraft(e.target.value)}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur}
+                  style={inputStyle}
+                >
+                  <option value="">Select timezone...</option>
+                  {Object.entries(TIMEZONE_LABELS).map(([tz, label]) => (
+                    <option key={tz} value={tz}>{label}</option>
+                  ))}
+                  {timezoneDraft && !TIMEZONE_LABELS[timezoneDraft] && (
+                    <option value={timezoneDraft}>{timezoneDraft}</option>
+                  )}
+                </select>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button
+                  type="button"
+                  onClick={() => { setTimezone(timezoneDraft); setEditingTimezone(false) }}
+                  style={{
+                    background: '#00e5ff', color: '#0a0a0f', border: 'none',
+                    borderRadius: 10, padding: '8px 16px', fontSize: '13.5px',
+                    fontWeight: 600, cursor: 'pointer', fontFamily: "'Inter', sans-serif",
+                  }}
+                >
+                  Confirm
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setTimezoneDraft(timezone); setEditingTimezone(false) }}
+                  style={{
+                    background: 'transparent', border: '1px solid var(--border)',
+                    borderRadius: 10, padding: '8px 16px', fontSize: '13.5px',
+                    color: 'var(--muted)', cursor: 'pointer', fontFamily: "'Inter', sans-serif",
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Section 5 - Communication Preferences */}
         <div style={cardStyle}>
           <div style={sectionTitleStyle}>Communication Preferences</div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
