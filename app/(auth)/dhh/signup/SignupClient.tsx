@@ -5,9 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import GoogleSignInButton from '@/components/ui/GoogleSignInButton';
-import LocationInput from '@/components/ui/LocationInput';
-import type { LocationFields } from '@/components/ui/LocationInput';
-import { getCountryName } from '@/lib/countries';
 import InlineVideoCapture from '@/components/ui/InlineVideoCapture';
 import { generateSlug } from '@/lib/slugUtils';
 import { syncNameFields } from '@/lib/nameSync';
@@ -54,7 +51,7 @@ function FormCard({ children }: { children: React.ReactNode }) {
 interface EducationCard {
   title: string;
   teaser: string;
-  body: string[];
+  body: React.ReactNode[];
 }
 
 const EDUCATION_CARDS: EducationCard[] = [
@@ -84,7 +81,7 @@ const EDUCATION_CARDS: EducationCard[] = [
       "In the Deaf and interpreting world, everyone knows each other.",
       "Research on rating systems in small, close-knit communities shows a consistent pattern: when you know the person you are rating and you will see them again, most people give 5 stars even when the experience was not great.",
       "People who had a bad experience often stay silent rather than risk hurting the relationship. Public ratings can actually oppress the reviewers from sharing their honest opinions and makes the ratings unreliable.",
-      "signpost wants honest feedback, not polite feedback. That is why ratings on signpost are confidential. Your ratings are never shared with interpreters and never shown on their profiles.",
+      "Honest feedback helps interpreters grow their skills and helps signpost serve you better. That's why your ratings are always confidential. Your ratings are never shared with interpreters and never shown on their profiles.",
       "signpost administrators receive your feedback anonymously and can use it to highlight great interpreters and remove interpreters who consistently get complaints or low ratings.",
       "If you want to share your ratings and pref lists with other Deaf community members you trust, you can do that privately through your Trusted Deaf Circle.",
     ],
@@ -93,7 +90,7 @@ const EDUCATION_CARDS: EducationCard[] = [
     title: 'How is signpost cheaper than agencies?',
     teaser: "Agencies charge an hourly fee on top of the interpreter's rate. That fee can range from...",
     body: [
-      "Agencies charge an hourly fee on top of the interpreter's rate. That fee can range from about $20 to $80+ per hour. This can become very expensive for requesters.",
+      <>Agencies charge an <em>hourly</em> fee on top of the interpreter&apos;s rate. That fee can range from about $20 to $80+ <em>per hour</em>. This can become very expensive for requesters.</>,
       'Instead, signpost charges one flat $15 booking fee per confirmed booking. This covers the cost of building and running the platform: the booking system, encrypted messaging, notifications, and the interpreter directory. That is the only fee signpost collects, ever.',
       'Interpreters set their own rates and are paid directly by the requester. signpost does not add any fees on top of interpreter rates.',
       'signpost never charges any booking fees for Deaf, DeafBlind, and Hard of Hearing individuals (or their family/friends) when booking interpreters for personal events.',
@@ -425,11 +422,6 @@ function DeafSignupForm() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [address, setAddress] = useState('');
-  const [country, setCountry] = useState('');
-  const [state, setState] = useState('');
-  const [city, setCity] = useState('');
-  const [zip, setZip] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [existingUserId, setExistingUserId] = useState<string | null>(null);
@@ -482,9 +474,6 @@ function DeafSignupForm() {
             const defaults = await res.json();
             if (defaults.first_name) setFirstName(defaults.first_name);
             if (defaults.last_name) setLastName(defaults.last_name);
-            if (defaults.country) setCountry(defaults.country);
-            if (defaults.state) setState(defaults.state);
-            if (defaults.city) setCity(defaults.city);
           }
         } catch (prefillErr) {
           console.warn('Failed to fetch profile defaults:', prefillErr);
@@ -519,7 +508,7 @@ function DeafSignupForm() {
         // Check for existing profile to resume
         const { data: profile } = await supabase
           .from('deaf_profiles')
-          .select('id, user_id, draft_step, draft_data, first_name, last_name, email, address, country, country_name, state, city, zip')
+          .select('id, user_id, draft_step, draft_data, first_name, last_name, email')
           .or(`id.eq.${user.id},user_id.eq.${user.id}`)
           .maybeSingle();
 
@@ -528,12 +517,6 @@ function DeafSignupForm() {
           if (profile.first_name && !firstName) setFirstName(profile.first_name);
           if (profile.last_name && !lastName) setLastName(profile.last_name);
           if (profile.email && !email) setEmail(profile.email);
-          if (profile.address) setAddress(profile.address);
-          if (profile.country) setCountry(profile.country);
-          else if (profile.country_name) setCountry(profile.country_name);
-          if (profile.state) setState(profile.state);
-          if (profile.city) setCity(profile.city);
-          if (profile.zip) setZip(profile.zip);
 
           // Restore draft_data fields
           const d = profile.draft_data as Record<string, unknown> | null;
@@ -541,11 +524,6 @@ function DeafSignupForm() {
             if (d.firstName) setFirstName(d.firstName as string);
             if (d.lastName) setLastName(d.lastName as string);
             if (d.email) setEmail(d.email as string);
-            if (d.address) setAddress(d.address as string);
-            if (d.country) setCountry(d.country as string);
-            if (d.state) setState(d.state as string);
-            if (d.city) setCity(d.city as string);
-            if (d.zip) setZip(d.zip as string);
             if (Array.isArray(d.signingStyles)) setSigningStyles(d.signingStyles as string[]);
             if (d.otherSignLanguage) setOtherSignLanguage(d.otherSignLanguage as string);
             if (d.voicePref) setVoicePref(d.voicePref as string);
@@ -581,7 +559,7 @@ function DeafSignupForm() {
     const interval = setInterval(() => {
       const supabase = createClient();
       const draftData = {
-        firstName, lastName, email, address, country, state, city, zip,
+        firstName, lastName, email,
         signingStyles, otherSignLanguage, voicePref, diPreferred, commNotes,
         writtenIntro, shareTextBefore, profileVideoUrl, shareVideoBefore, autoSharePrefList,
       };
@@ -607,7 +585,7 @@ function DeafSignupForm() {
     if (uid) {
       const supabase = createClient();
       const draftData = {
-        firstName, lastName, email, address, country, state, city, zip,
+        firstName, lastName, email,
         signingStyles, otherSignLanguage, voicePref, diPreferred, commNotes,
         writtenIntro, shareTextBefore, profileVideoUrl, shareVideoBefore, autoSharePrefList,
       };
@@ -662,7 +640,7 @@ function DeafSignupForm() {
       const lastNameVal = lastName.trim();
       const fullName = `${firstNameVal} ${lastNameVal}`.trim();
       const { normalizeProfileFields } = await import('@/lib/normalize');
-      const norm = normalizeProfileFields({ first_name: firstNameVal, last_name: lastNameVal, city, state });
+      const norm = normalizeProfileFields({ first_name: firstNameVal, last_name: lastNameVal });
       const firstNorm = (norm.first_name as string) || firstNameVal;
       const lastNorm = (norm.last_name as string) || lastNameVal;
 
@@ -673,13 +651,6 @@ function DeafSignupForm() {
         last_name: lastNorm,
         name: fullName,
         email,
-        address: address || null,
-        country: country || null,
-        country_name: getCountryName(country) || country || null,
-        state: (norm.state as string) || state,
-        city: (norm.city as string) || city,
-        zip: zip || null,
-        location: [(norm.city as string) || city, (norm.state as string) || state].filter(Boolean).join(', ') || null,
       }));
 
       // Auto-generate vanity slug
@@ -757,14 +728,14 @@ function DeafSignupForm() {
         .eq('user_id', uid);
 
       setLoading(false);
-      goToStep(4);
+      goToStep(3);
     } catch {
       setLoading(false);
       setError('Failed to save preferences. Please try again.');
     }
   }
 
-  /* ─── Step 4: Save Intro ─── */
+  /* ─── Step 3: Save Intro ─── */
 
   async function handleSaveIntro() {
     const uid = userId || existingUserId;
@@ -788,7 +759,7 @@ function DeafSignupForm() {
         .eq('user_id', uid);
 
       setLoading(false);
-      goToStep(5);
+      goToStep(4);
     } catch {
       setLoading(false);
       setError('Failed to save. Please try again.');
@@ -893,20 +864,6 @@ function DeafSignupForm() {
               {!isAddRole && !isAuthenticated && (
                 <AuthInput label="Password" type="password" value={password} onChange={setPassword} placeholder="Minimum 8 characters" required />
               )}
-              <div style={{ marginTop: 4 }}>
-                <LocationInput
-                  address={address}
-                  city={city}
-                  state={state}
-                  zip={zip}
-                  country={country}
-                  onChange={(loc: LocationFields) => { setAddress(loc.address); setCity(loc.city); setState(loc.state); setZip(loc.zip); setCountry(loc.country); }}
-                  showLocationName={false}
-                  showMeetingLink={false}
-                  defaultCountry="US"
-                  accent="purple"
-                />
-              </div>
               <PrimaryButton type="submit" disabled={loading}>
                 {loading ? 'Creating account...' : isAuthenticated ? 'Continue' : 'Create Account'}
               </PrimaryButton>
@@ -919,35 +876,10 @@ function DeafSignupForm() {
           </>
         )}
 
-        {/* ════════ STEP 2: How signpost works for you ════════ */}
+        {/* ════════ STEP 2: Communication Preferences ════════ */}
         {step === 2 && (
           <>
             <ProgressBar step={2} />
-
-            <StepHeading>How signpost works for you</StepHeading>
-            <StepSubtext>These explain how signpost is different. Read what interests you.</StepSubtext>
-            <FormCard>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {EDUCATION_CARDS.map((card, i) => (
-                <ExpandableCard key={i} card={card} />
-              ))}
-            </div>
-            </FormCard>
-            <div style={{ marginTop: 28 }}>
-              <PrimaryButton onClick={() => goToStep(3)}>
-                {"Got it, let's set up my profile"}
-              </PrimaryButton>
-              <div style={{ marginTop: 10 }}>
-                <OutlineButton onClick={() => goToStep(1)}>Back</OutlineButton>
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* ════════ STEP 3: Communication Preferences ════════ */}
-        {step === 3 && (
-          <>
-            <ProgressBar step={3} />
 
             <StepHeading>Communication preferences</StepHeading>
             <StepSubtext>
@@ -1041,7 +973,7 @@ function DeafSignupForm() {
               {loading ? 'Saving...' : 'Continue'}
             </PrimaryButton>
             <div style={{ marginTop: 10 }}>
-              <OutlineButton onClick={() => goToStep(2)}>Back</OutlineButton>
+              <OutlineButton onClick={() => goToStep(1)}>Back</OutlineButton>
             </div>
             {error && (
               <div style={{
@@ -1055,10 +987,10 @@ function DeafSignupForm() {
           </>
         )}
 
-        {/* ════════ STEP 4: Introduce Yourself ════════ */}
-        {step === 4 && (
+        {/* ════════ STEP 3: Introduce Yourself ════════ */}
+        {step === 3 && (
           <>
-            <ProgressBar step={4} />
+            <ProgressBar step={3} />
 
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
               <h1 style={{
@@ -1186,10 +1118,10 @@ function DeafSignupForm() {
               <PrimaryButton onClick={handleSaveIntro} disabled={loading}>
                 {loading ? 'Saving...' : 'Save and finish'}
               </PrimaryButton>
-              <OutlineButton onClick={() => goToStep(5)}>
+              <OutlineButton onClick={() => goToStep(4)}>
                 Skip for now
               </OutlineButton>
-              <OutlineButton onClick={() => goToStep(3)} style={{ marginTop: 0 }}>Back</OutlineButton>
+              <OutlineButton onClick={() => goToStep(2)} style={{ marginTop: 0 }}>Back</OutlineButton>
             </div>
             {error && (
               <div style={{
@@ -1199,6 +1131,31 @@ function DeafSignupForm() {
                 {error}
               </div>
             )}
+          </>
+        )}
+
+        {/* ════════ STEP 4: How signpost works for you ════════ */}
+        {step === 4 && (
+          <>
+            <ProgressBar step={4} />
+
+            <StepHeading>How signpost works for you</StepHeading>
+            <StepSubtext>These explain how signpost is different. Read what interests you.</StepSubtext>
+            <FormCard>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {EDUCATION_CARDS.map((card, i) => (
+                <ExpandableCard key={i} card={card} />
+              ))}
+            </div>
+            </FormCard>
+            <div style={{ marginTop: 28 }}>
+              <PrimaryButton onClick={() => goToStep(5)}>
+                {"Got it, let's set up my profile"}
+              </PrimaryButton>
+              <div style={{ marginTop: 10 }}>
+                <OutlineButton onClick={() => goToStep(3)}>Back</OutlineButton>
+              </div>
+            </div>
           </>
         )}
 
