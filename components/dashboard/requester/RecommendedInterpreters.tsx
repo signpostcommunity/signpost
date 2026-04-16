@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
 
 interface InterpreterInfo {
   id: string
@@ -40,12 +41,14 @@ interface PreferencesData {
 function InterpreterTierCard({
   interpreter,
   tier,
+  isRequesterDnb = false,
 }: {
   interpreter: InterpreterInfo
   tier: 'preferred' | 'approved'
+  isRequesterDnb?: boolean
 }) {
   const i = interpreter
-  const isDnb = false
+  const isDnb = isRequesterDnb
   const initials = (i.name || '')
     .split(' ')
     .map(w => w[0])
@@ -184,7 +187,7 @@ function InterpreterTierCard({
 
         {isDnb ? (
           <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
-            Not recommended for this request
+            Not available for bookings through your organization
           </div>
         ) : (
           <div style={{ fontSize: '0.78rem', color: 'var(--muted)', display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -233,24 +236,43 @@ export default function RecommendedInterpreters({ dhhUserId }: { dhhUserId: stri
   const [loading, setLoading] = useState(true)
   const [noConnection, setNoConnection] = useState(false)
   const [notifyToast, setNotifyToast] = useState(false)
+  const [requesterDnbIds, setRequesterDnbIds] = useState<Set<string>>(new Set())
 
   const displayName = data?.dhh_user?.first_name || data?.dhh_user?.name || 'this person'
 
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`/api/connections/preferences?dhh_user_id=${dhhUserId}`)
-        if (res.status === 403) {
+        // Fetch Deaf user's preferences and requester's DNB list in parallel
+        const supabase = createClient()
+        const [prefsRes, { data: { user } }] = await Promise.all([
+          fetch(`/api/connections/preferences?dhh_user_id=${dhhUserId}`),
+          supabase.auth.getUser(),
+        ])
+
+        if (prefsRes.status === 403) {
           setNoConnection(true)
           setLoading(false)
           return
         }
-        if (!res.ok) {
+        if (!prefsRes.ok) {
           setLoading(false)
           return
         }
-        const json = await res.json()
+        const json = await prefsRes.json()
         setData(json)
+
+        // Fetch requester's own DNB IDs
+        if (user) {
+          const { data: dnbRows } = await supabase
+            .from('requester_roster')
+            .select('interpreter_id')
+            .eq('requester_user_id', user.id)
+            .eq('tier', 'dnb')
+          if (dnbRows && dnbRows.length > 0) {
+            setRequesterDnbIds(new Set(dnbRows.map(r => r.interpreter_id)))
+          }
+        }
       } catch {
         // silent fail - show normal form
       }
@@ -362,7 +384,7 @@ export default function RecommendedInterpreters({ dhhUserId }: { dhhUserId: stri
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {data.preferred.map(i => (
-                  <InterpreterTierCard key={i.id} interpreter={i} tier="preferred" />
+                  <InterpreterTierCard key={i.id} interpreter={i} tier="preferred" isRequesterDnb={requesterDnbIds.has(i.id)} />
                 ))}
               </div>
             </div>
@@ -380,7 +402,7 @@ export default function RecommendedInterpreters({ dhhUserId }: { dhhUserId: stri
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {data.approved.map(i => (
-                  <InterpreterTierCard key={i.id} interpreter={i} tier="approved" />
+                  <InterpreterTierCard key={i.id} interpreter={i} tier="approved" isRequesterDnb={requesterDnbIds.has(i.id)} />
                 ))}
               </div>
             </div>

@@ -13,7 +13,7 @@ import BetaTryThis from '@/components/ui/BetaTryThis'
 type RosterInterpreter = {
   roster_id: string
   interpreter_id: string
-  tier: 'preferred' | 'secondary'
+  tier: 'preferred' | 'secondary' | 'dnb'
   notes: string | null
   name: string
   first_name: string
@@ -25,15 +25,30 @@ type RosterInterpreter = {
   state: string | null
   sign_languages: string[]
   certifications: string[]
+  dnb_reasons: string[] | null
+  dnb_notes: string | null
+  dnb_added_at: string | null
 }
+
+const DNB_REASONS = [
+  'Unprofessional conduct',
+  'Late arrival or no-show',
+  'Skill level did not meet needs',
+  'Communication difficulties',
+  'Client expressed discomfort',
+  'Scheduling reliability concerns',
+  'Confidentiality concern',
+  'Other',
+]
 
 // ── Interpreter Card ──────────────────────────────────────────────────────────
 
-function InterpreterCard({ interp, onMoveTier, onRemove, onEditNote, targetTierLabel }: {
+function InterpreterCard({ interp, onMoveTier, onRemove, onEditNote, onMoveToDnb, targetTierLabel }: {
   interp: RosterInterpreter
   onMoveTier: () => void
   onRemove: () => void
   onEditNote: () => void
+  onMoveToDnb: () => void
   targetTierLabel: string
 }) {
   const [hover, setHover] = useState(false)
@@ -174,6 +189,19 @@ function InterpreterCard({ interp, onMoveTier, onRemove, onEditNote, targetTierL
             Edit Note
           </button>
           <button
+            onClick={onMoveToDnb}
+            style={{
+              background: 'none', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
+              fontSize: '0.75rem', padding: '5px 14px', cursor: 'pointer',
+              whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'Inter', sans-serif",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(248,113,113,0.4)'; e.currentTarget.style.color = '#f87171' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
+          >
+            Do Not Book
+          </button>
+          <button
             onClick={onRemove}
             style={{
               background: 'none', border: '1px solid var(--border)',
@@ -192,6 +220,265 @@ function InterpreterCard({ interp, onMoveTier, onRemove, onEditNote, targetTierL
   )
 }
 
+// ── DNB Card ──────────────────────────────────────────────────────────────────
+
+function DnbInterpreterCard({ interp, onRemoveFromDnb }: {
+  interp: RosterInterpreter
+  onRemoveFromDnb: () => void
+}) {
+  const [hover, setHover] = useState(false)
+  const location = [interp.city, interp.state].filter(Boolean).join(', ')
+  const addedDate = interp.dnb_added_at
+    ? new Date(interp.dnb_added_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : null
+
+  return (
+    <div
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        background: 'var(--card-bg)',
+        border: `1px solid ${hover ? 'rgba(248,113,113,0.3)' : 'rgba(248,113,113,0.12)'}`,
+        borderRadius: 'var(--radius)', padding: '20px 22px',
+        display: 'flex', alignItems: 'flex-start', gap: 16,
+        transition: 'border-color 0.2s',
+      }}
+    >
+      {/* Avatar */}
+      <div style={{ flexShrink: 0 }}>
+        {interp.photo_url ? (
+          <img src={interp.photo_url} alt={interp.name} style={{
+            width: 48, height: 48, borderRadius: '50%', objectFit: 'cover',
+            border: '2px solid rgba(248,113,113,0.3)',
+            filter: 'grayscale(0.4)',
+          }} />
+        ) : (
+          <div style={{
+            width: 48, height: 48, borderRadius: '50%',
+            background: interp.avatar_color || 'linear-gradient(135deg, #7b61ff, #00e5ff)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontWeight: 700, fontSize: '0.9rem', color: '#fff',
+            filter: 'grayscale(0.4)',
+          }}>
+            {interp.initials}
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text)' }}>
+            {interp.name}
+          </span>
+          {addedDate && (
+            <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>
+              Added {addedDate}
+            </span>
+          )}
+        </div>
+
+        {location && (
+          <div style={{ color: 'var(--muted)', fontSize: '0.8rem', marginTop: 3 }}>
+            {location}
+          </div>
+        )}
+
+        {/* DNB Reason pills */}
+        {interp.dnb_reasons && interp.dnb_reasons.length > 0 && (
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
+            {interp.dnb_reasons.map(reason => (
+              <span key={reason} style={{
+                padding: '3px 10px', borderRadius: 20,
+                background: 'rgba(248,113,113,0.08)',
+                border: '1px solid rgba(248,113,113,0.2)',
+                color: '#f87171', fontSize: '0.72rem', fontWeight: 500,
+              }}>
+                {reason}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* DNB Notes preview */}
+        {interp.dnb_notes && (
+          <div style={{
+            fontSize: '0.8rem', color: 'var(--muted)', fontStyle: 'italic',
+            marginTop: 8, lineHeight: 1.5,
+            overflow: 'hidden', textOverflow: 'ellipsis',
+            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+          }}>
+            {interp.dnb_notes}
+          </div>
+        )}
+
+        {/* Actions */}
+        <div style={{
+          display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12,
+          paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)',
+        }}>
+          <button
+            onClick={onRemoveFromDnb}
+            style={{
+              background: 'none', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
+              fontSize: '0.75rem', padding: '5px 14px', cursor: 'pointer',
+              whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'Inter', sans-serif",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
+          >
+            Remove from Do Not Book
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── DNB Modal ─────────────────────────────────────────────────────────────────
+
+function DnbModal({ name, onConfirm, onCancel }: {
+  name: string
+  onConfirm: (reasons: string[], notes: string) => void
+  onCancel: () => void
+}) {
+  const [selectedReasons, setSelectedReasons] = useState<string[]>([])
+  const [notes, setNotes] = useState('')
+  const modalRef = useFocusTrap(true)
+
+  function toggleReason(reason: string) {
+    setSelectedReasons(prev =>
+      prev.includes(reason) ? prev.filter(r => r !== reason) : [...prev, reason]
+    )
+  }
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 10000, padding: 20,
+      }}
+      onClick={onCancel}
+      onKeyDown={e => { if (e.key === 'Escape') onCancel() }}
+    >
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Add ${name} to Do Not Book`}
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: '#111118', border: '1px solid #1e2433',
+          borderRadius: 16, padding: 32, maxWidth: 480, width: '100%',
+          maxHeight: '90vh', overflowY: 'auto',
+        }}
+      >
+        <h3 style={{
+          fontFamily: "'Syne', sans-serif", fontWeight: 600,
+          fontSize: '15px', color: '#f0f2f8', margin: '0 0 6px 0',
+        }}>
+          Add {name} to Do Not Book
+        </h3>
+        <p style={{ color: 'var(--muted)', fontSize: '0.82rem', margin: '0 0 20px 0', lineHeight: 1.5 }}>
+          This interpreter will be excluded from your booking requests. This action is private to your organization.
+        </p>
+
+        {/* Reason chips */}
+        <div style={{ marginBottom: 20 }}>
+          <label style={{
+            display: 'block', fontSize: '0.82rem', fontWeight: 600,
+            color: 'var(--text)', marginBottom: 10,
+            fontFamily: "'Inter', sans-serif",
+          }}>
+            Why are you adding this interpreter to Do Not Book?
+          </label>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {DNB_REASONS.map(reason => {
+              const isSelected = selectedReasons.includes(reason)
+              return (
+                <button
+                  key={reason}
+                  type="button"
+                  onClick={() => toggleReason(reason)}
+                  style={{
+                    padding: '7px 14px', borderRadius: 10,
+                    background: isSelected ? 'rgba(0,229,255,0.1)' : 'transparent',
+                    border: `1px solid ${isSelected ? 'rgba(0,229,255,0.4)' : 'var(--border)'}`,
+                    color: isSelected ? 'var(--accent)' : 'var(--muted)',
+                    fontSize: '0.8rem', fontWeight: 500, cursor: 'pointer',
+                    fontFamily: "'Inter', sans-serif",
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {reason}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Notes field */}
+        <div style={{ marginBottom: 24 }}>
+          <label style={{
+            display: 'block', fontSize: '0.82rem', fontWeight: 600,
+            color: 'var(--text)', marginBottom: 6,
+            fontFamily: "'Inter', sans-serif",
+          }}>
+            Additional notes (private to your organization)
+          </label>
+          <textarea
+            value={notes}
+            onChange={e => setNotes(e.target.value)}
+            placeholder="Optional notes..."
+            rows={3}
+            style={{
+              width: '100%', boxSizing: 'border-box',
+              background: 'var(--surface)', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)', padding: '10px 14px',
+              color: 'var(--text)', fontFamily: "'Inter', sans-serif", fontSize: '0.85rem',
+              outline: 'none', resize: 'vertical', minHeight: 60,
+            }}
+            onFocus={e => (e.target.style.borderColor = 'var(--accent)')}
+            onBlur={e => (e.target.style.borderColor = 'var(--border)')}
+          />
+        </div>
+
+        {/* Actions */}
+        <div className="req-modal-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+          <button
+            onClick={onCancel}
+            style={{
+              background: 'transparent', border: '1px solid var(--border)',
+              borderRadius: 10, padding: '11px 20px', color: 'var(--muted)',
+              fontSize: '0.85rem', cursor: 'pointer', fontFamily: "'Inter', sans-serif",
+              minHeight: 44,
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => onConfirm(selectedReasons, notes)}
+            disabled={selectedReasons.length === 0}
+            style={{
+              background: selectedReasons.length === 0 ? 'rgba(248,113,113,0.3)' : '#f87171',
+              border: 'none', borderRadius: 10, padding: '11px 20px',
+              color: selectedReasons.length === 0 ? 'rgba(255,255,255,0.5)' : '#000',
+              fontSize: '0.85rem', fontWeight: 700,
+              cursor: selectedReasons.length === 0 ? 'not-allowed' : 'pointer',
+              fontFamily: "'Inter', sans-serif", minHeight: 44,
+              transition: 'all 0.15s',
+            }}
+          >
+            Add to Do Not Book
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Main Client Component ─────────────────────────────────────────────────────
 
 export default function InterpretersClient() {
@@ -201,23 +488,29 @@ export default function InterpretersClient() {
 
   // Confirm modal for tier move / remove
   const [confirmModal, setConfirmModal] = useState<{
-    rosterId: string; name: string; action: 'move' | 'remove'; newTier?: string
+    rosterId: string; name: string; action: 'move' | 'remove' | 'remove-dnb'; newTier?: string
   } | null>(null)
   const confirmModalRef = useFocusTrap(!!confirmModal)
+
+  // DNB modal
+  const [dnbModal, setDnbModal] = useState<{ rosterId: string; name: string } | null>(null)
 
   // Note editing
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null)
   const [editNoteText, setEditNoteText] = useState('')
+
+  // DNB section collapse state (collapsed by default)
+  const [dnbCollapsed, setDnbCollapsed] = useState(true)
 
   const fetchRoster = useCallback(async () => {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { setLoading(false); return }
 
-    // Step 1: Fetch roster rows
+    // Step 1: Fetch roster rows (including DNB fields)
     const { data: rosterRows, error: rosterErr } = await supabase
       .from('requester_roster')
-      .select('id, interpreter_id, tier, notes')
+      .select('id, interpreter_id, tier, notes, do_not_book, dnb_reasons, dnb_notes, dnb_added_at')
       .eq('requester_user_id', user.id)
 
     if (rosterErr) {
@@ -256,9 +549,8 @@ export default function InterpretersClient() {
       certsMap[c.interpreter_id].push(c.name)
     }
 
-    // Step 4: Map to display objects
+    // Step 4: Map to display objects (include all tiers)
     const mapped: RosterInterpreter[] = rosterRows
-      .filter(r => r.tier === 'preferred' || r.tier === 'secondary')
       .map(row => {
         const p = profileMap[row.interpreter_id]
         const firstName = p?.first_name || ''
@@ -269,7 +561,7 @@ export default function InterpretersClient() {
         return {
           roster_id: row.id,
           interpreter_id: row.interpreter_id,
-          tier: row.tier as 'preferred' | 'secondary',
+          tier: row.tier as 'preferred' | 'secondary' | 'dnb',
           notes: row.notes,
           name: fullName,
           first_name: firstName,
@@ -281,6 +573,9 @@ export default function InterpretersClient() {
           state: p?.state || null,
           sign_languages: (p?.sign_languages as string[]) || [],
           certifications: certsMap[row.interpreter_id] || [],
+          dnb_reasons: (row.dnb_reasons as string[]) || null,
+          dnb_notes: row.dnb_notes as string | null,
+          dnb_added_at: row.dnb_added_at as string | null,
         }
       })
 
@@ -303,6 +598,18 @@ export default function InterpretersClient() {
     const item = roster.find(r => r.roster_id === rosterId)
     if (!item) return
     setConfirmModal({ rosterId, name: item.name, action: 'remove' })
+  }
+
+  function requestDnb(rosterId: string) {
+    const item = roster.find(r => r.roster_id === rosterId)
+    if (!item) return
+    setDnbModal({ rosterId, name: item.name })
+  }
+
+  function requestRemoveFromDnb(rosterId: string) {
+    const item = roster.find(r => r.roster_id === rosterId)
+    if (!item) return
+    setConfirmModal({ rosterId, name: item.name, action: 'remove-dnb' })
   }
 
   async function confirmAction() {
@@ -335,7 +642,55 @@ export default function InterpretersClient() {
         return
       }
       setToast({ message: 'Removed from your list.', type: 'success' })
+    } else if (action === 'remove-dnb') {
+      const { error } = await supabase
+        .from('requester_roster')
+        .update({
+          tier: 'secondary',
+          do_not_book: false,
+          dnb_reasons: null,
+          dnb_notes: null,
+          dnb_added_by: null,
+          dnb_added_at: null,
+        })
+        .eq('id', rosterId)
+        .eq('requester_user_id', user.id)
+      if (error) {
+        setToast({ message: `Error: ${error.message}`, type: 'error' })
+        return
+      }
+      setToast({ message: 'Removed from Do Not Book. Moved to Secondary Tier.', type: 'success' })
     }
+    fetchRoster()
+  }
+
+  async function confirmDnb(reasons: string[], notes: string) {
+    if (!dnbModal) return
+    const { rosterId } = dnbModal
+    setDnbModal(null)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+
+    const { error } = await supabase
+      .from('requester_roster')
+      .update({
+        tier: 'dnb',
+        do_not_book: true,
+        dnb_reasons: reasons,
+        dnb_notes: notes || null,
+        dnb_added_by: user.id,
+        dnb_added_at: new Date().toISOString(),
+      })
+      .eq('id', rosterId)
+      .eq('requester_user_id', user.id)
+
+    if (error) {
+      setToast({ message: `Error: ${error.message}`, type: 'error' })
+      return
+    }
+    setToast({ message: 'Added to Do Not Book.', type: 'success' })
+    setDnbCollapsed(false)
     fetchRoster()
   }
 
@@ -367,6 +722,7 @@ export default function InterpretersClient() {
 
   const preferred = roster.filter(r => r.tier === 'preferred')
   const secondary = roster.filter(r => r.tier === 'secondary')
+  const dnb = roster.filter(r => r.tier === 'dnb')
 
   if (loading) {
     return (
@@ -384,7 +740,7 @@ export default function InterpretersClient() {
           Preferred Interpreters
         </h1>
         <p style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', margin: 0 }}>
-          Manage your preferred and secondary tier interpreter roster.
+          Manage your preferred, secondary, and do not book interpreter lists.
         </p>
       </div>
 
@@ -487,6 +843,7 @@ export default function InterpretersClient() {
                     onMoveTier={() => requestMoveTier(interp.roster_id)}
                     onRemove={() => requestRemove(interp.roster_id)}
                     onEditNote={() => startEditNote(interp.roster_id)}
+                    onMoveToDnb={() => requestDnb(interp.roster_id)}
                     targetTierLabel="Move to Secondary"
                   />
                 )}
@@ -585,6 +942,7 @@ export default function InterpretersClient() {
                     onMoveTier={() => requestMoveTier(interp.roster_id)}
                     onRemove={() => requestRemove(interp.roster_id)}
                     onEditNote={() => startEditNote(interp.roster_id)}
+                    onMoveToDnb={() => requestDnb(interp.roster_id)}
                     targetTierLabel="Move to Preferred"
                   />
                 )}
@@ -594,9 +952,80 @@ export default function InterpretersClient() {
         )}
       </div>
 
-      {/* ── Confirm Modal ── */}
+      {/* ── Do Not Book Section ── */}
+      <div style={{ marginBottom: 36 }}>
+        <button
+          type="button"
+          onClick={() => setDnbCollapsed(prev => !prev)}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            width: '100%', padding: '16px 20px', marginBottom: dnbCollapsed ? 0 : 12,
+            background: 'rgba(248,113,113,0.1)',
+            border: '1px solid rgba(248,113,113,0.25)',
+            borderRadius: dnbCollapsed ? 'var(--radius)' : 'var(--radius) var(--radius) 0 0',
+            cursor: 'pointer', textAlign: 'left',
+            transition: 'all 0.2s',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ transform: dnbCollapsed ? 'rotate(0deg)' : 'rotate(90deg)', transition: 'transform 0.2s', flexShrink: 0 }}>
+              <path d="M6 4l4 4-4 4" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px', color: '#f87171' }}>
+              Do Not Book
+            </span>
+            <span style={{
+              fontSize: '0.75rem', fontWeight: 600,
+              padding: '2px 8px', borderRadius: 12,
+              background: 'rgba(248,113,113,0.15)', color: '#f87171',
+            }}>
+              {dnb.length}
+            </span>
+          </div>
+        </button>
+
+        {!dnbCollapsed && (
+          <div style={{
+            borderLeft: '1px solid rgba(248,113,113,0.25)',
+            borderRight: '1px solid rgba(248,113,113,0.25)',
+            borderBottom: '1px solid rgba(248,113,113,0.25)',
+            borderRadius: '0 0 var(--radius) var(--radius)',
+            padding: '16px 20px',
+            background: 'rgba(248,113,113,0.02)',
+          }}>
+            <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', marginBottom: 16 }}>
+              These interpreters will not appear in your booking requests. This list is private to your organization.
+            </div>
+
+            {dnb.length === 0 ? (
+              <div style={{
+                textAlign: 'center', padding: '28px 24px',
+                background: 'var(--surface)', border: '1px dashed rgba(248,113,113,0.15)',
+                borderRadius: 'var(--radius)',
+              }}>
+                <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>
+                  No interpreters on your Do Not Book list.
+                </p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {dnb.map(interp => (
+                  <DnbInterpreterCard
+                    key={interp.roster_id}
+                    interp={interp}
+                    onRemoveFromDnb={() => requestRemoveFromDnb(interp.roster_id)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ── Confirm Modal (move tier / remove / remove from DNB) ── */}
       {confirmModal && (() => {
         const isRemove = confirmModal.action === 'remove'
+        const isRemoveDnb = confirmModal.action === 'remove-dnb'
         const tierLabel = confirmModal.newTier === 'preferred' ? 'Preferred' : 'Secondary Tier'
         return (
           <div
@@ -612,7 +1041,7 @@ export default function InterpretersClient() {
               ref={confirmModalRef}
               role="dialog"
               aria-modal="true"
-              aria-label={isRemove ? `Remove ${confirmModal.name}` : `Move ${confirmModal.name}`}
+              aria-label={isRemoveDnb ? `Remove ${confirmModal.name} from Do Not Book` : isRemove ? `Remove ${confirmModal.name}` : `Move ${confirmModal.name}`}
               onClick={e => e.stopPropagation()}
               style={{
                 background: '#111118', border: '1px solid #1e2433',
@@ -623,12 +1052,19 @@ export default function InterpretersClient() {
                 fontFamily: "'Syne', sans-serif", fontWeight: 600,
                 fontSize: '15px', color: '#f0f2f8', margin: '0 0 12px 0',
               }}>
-                {isRemove ? `Remove ${confirmModal.name}?` : `Move ${confirmModal.name}?`}
+                {isRemoveDnb
+                  ? `Remove ${confirmModal.name} from Do Not Book?`
+                  : isRemove
+                    ? `Remove ${confirmModal.name}?`
+                    : `Move ${confirmModal.name}?`
+                }
               </h3>
               <p style={{ color: 'var(--muted)', fontSize: '0.85rem', margin: '0 0 24px 0', lineHeight: 1.5 }}>
-                {isRemove
-                  ? `Remove ${confirmModal.name} from your interpreter list? You can add them back later from the directory.`
-                  : `Move ${confirmModal.name} to ${tierLabel}?`
+                {isRemoveDnb
+                  ? `Remove ${confirmModal.name} from your Do Not Book list? They will be moved back to your Secondary Tier.`
+                  : isRemove
+                    ? `Remove ${confirmModal.name} from your interpreter list? You can add them back later from the directory.`
+                    : `Move ${confirmModal.name} to ${tierLabel}?`
                 }
               </p>
               <div className="req-modal-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
@@ -646,20 +1082,29 @@ export default function InterpretersClient() {
                 <button
                   onClick={confirmAction}
                   style={{
-                    background: isRemove ? '#ff6b85' : 'var(--accent)',
+                    background: isRemove ? '#ff6b85' : isRemoveDnb ? 'var(--accent)' : 'var(--accent)',
                     border: 'none', borderRadius: 10, padding: '11px 20px',
                     color: isRemove ? '#fff' : '#000', fontSize: '0.85rem',
                     fontWeight: 700, cursor: 'pointer', fontFamily: "'Inter', sans-serif",
                     minHeight: 44,
                   }}
                 >
-                  {isRemove ? 'Remove' : 'Move'}
+                  {isRemoveDnb ? 'Remove from Do Not Book' : isRemove ? 'Remove' : 'Move'}
                 </button>
               </div>
             </div>
           </div>
         )
       })()}
+
+      {/* ── DNB Modal ── */}
+      {dnbModal && (
+        <DnbModal
+          name={dnbModal.name}
+          onConfirm={(reasons, notes) => confirmDnb(reasons, notes)}
+          onCancel={() => setDnbModal(null)}
+        />
+      )}
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 

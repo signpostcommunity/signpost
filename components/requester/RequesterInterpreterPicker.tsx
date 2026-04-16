@@ -33,6 +33,7 @@ interface RequesterInterpreterPickerProps {
   showRosterFallback?: boolean
   rosterLabel?: string
   emptyMessage?: string
+  requesterDnbIds?: string[]
 }
 
 interface RosterInterpreter {
@@ -54,10 +55,12 @@ export default function RequesterInterpreterPicker({
   showRosterFallback = true,
   rosterLabel = 'Your roster',
   emptyMessage,
+  requesterDnbIds = [],
 }: RequesterInterpreterPickerProps) {
   const [rosterInterpreters, setRosterInterpreters] = useState<RosterInterpreter[]>([])
   const [rosterLoading, setRosterLoading] = useState(true)
   const [collapsedGroups, setCollapsedGroups] = useState<Record<number, boolean>>({})
+  const [ownDnbIds, setOwnDnbIds] = useState<Set<string>>(new Set())
 
   // Initialize collapsed state from group defaults
   useEffect(() => {
@@ -94,9 +97,19 @@ export default function RequesterInterpreterPicker({
         return
       }
 
-      const interpIds = rosterRows.map(r => r.interpreter_id)
+      // Track DNB IDs for greyed-out display in Deaf list groups
+      const dnbSet = new Set<string>()
+      for (const r of rosterRows) {
+        if (r.tier === 'dnb') dnbSet.add(r.interpreter_id)
+      }
+      setOwnDnbIds(dnbSet)
+
+      // Only show preferred/secondary in the picker roster
+      const activeRows = rosterRows.filter(r => r.tier === 'preferred' || r.tier === 'secondary')
+      const interpIds = activeRows.map(r => r.interpreter_id)
+      if (interpIds.length === 0) { setRosterLoading(false); return }
       const tierMap: Record<string, string> = {}
-      for (const r of rosterRows) tierMap[r.interpreter_id] = r.tier
+      for (const r of activeRows) tierMap[r.interpreter_id] = r.tier
 
       const { data: profiles, error: profileErr } = await supabase
         .from('interpreter_profiles')
@@ -180,6 +193,9 @@ export default function RequesterInterpreterPicker({
   const atLimit = selectedIds.length >= MAX_INTERPRETERS
   const hasAnyGroups = interpreterGroups.length > 0
 
+  // Combined set of requester's own DNB IDs (from prop + fetched)
+  const allRequesterDnbIds = new Set([...requesterDnbIds, ...ownDnbIds])
+
   // Build list of all interpreter IDs already shown in groups (to dedupe roster)
   const groupInterpreterIds = new Set<string>()
   for (const g of interpreterGroups) {
@@ -253,8 +269,10 @@ export default function RequesterInterpreterPicker({
 
       {/* Interpreter groups from Deaf lists */}
       {interpreterGroups.map((group, idx) => {
-        const visibleInterpreters = group.interpreters.filter(i => !i.is_dnb)
-        if (visibleInterpreters.length === 0) return null
+        // Separate: selectable (not Deaf-DNB and not requester-DNB) vs requester-DNB'd (greyed out)
+        const selectableInterpreters = group.interpreters.filter(i => !i.is_dnb && !allRequesterDnbIds.has(i.id))
+        const requesterDnbInterpreters = group.interpreters.filter(i => !i.is_dnb && allRequesterDnbIds.has(i.id))
+        if (selectableInterpreters.length === 0 && requesterDnbInterpreters.length === 0) return null
         const isCollapsed = collapsedGroups[idx]
         const accentColor = group.accent === 'purple' ? '#a78bfa' : 'var(--accent)'
         const accentBg = group.accent === 'purple' ? 'rgba(167,139,250,0.08)' : 'rgba(0,229,255,0.08)'
@@ -282,15 +300,15 @@ export default function RequesterInterpreterPicker({
                   {group.label}
                 </span>
                 <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontFamily: "'Inter', sans-serif" }}>
-                  ({visibleInterpreters.length})
+                  ({selectableInterpreters.length})
                 </span>
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
                 <span
                   role="button"
                   tabIndex={0}
-                  onClick={(e) => { e.stopPropagation(); selectAllInGroup(visibleInterpreters) }}
-                  onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); selectAllInGroup(visibleInterpreters) } }}
+                  onClick={(e) => { e.stopPropagation(); selectAllInGroup(selectableInterpreters) }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); selectAllInGroup(selectableInterpreters) } }}
                   style={{ fontSize: '0.72rem', color: accentColor, cursor: 'pointer', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}
                 >
                   Select all
@@ -299,8 +317,8 @@ export default function RequesterInterpreterPicker({
                 <span
                   role="button"
                   tabIndex={0}
-                  onClick={(e) => { e.stopPropagation(); clearGroup(visibleInterpreters) }}
-                  onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); clearGroup(visibleInterpreters) } }}
+                  onClick={(e) => { e.stopPropagation(); clearGroup(selectableInterpreters) }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); clearGroup(selectableInterpreters) } }}
                   style={{ fontSize: '0.72rem', color: 'var(--muted)', cursor: 'pointer', fontFamily: "'Inter', sans-serif" }}
                 >
                   Clear
@@ -311,7 +329,9 @@ export default function RequesterInterpreterPicker({
             {/* Group cards */}
             {!isCollapsed && (
               <div className="req-interp-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                {visibleInterpreters.map(interp => renderCard(interp, accentColor, accentBg, accentBorder))}
+                {selectableInterpreters.map(interp => renderCard(interp, accentColor, accentBg, accentBorder))}
+                {/* Requester-DNB'd interpreters shown greyed out */}
+                {requesterDnbInterpreters.map(interp => renderDnbGreyedCard(interp))}
               </div>
             )}
           </div>
@@ -474,6 +494,51 @@ export default function RequesterInterpreterPicker({
       `}</style>
     </div>
   )
+
+  function renderDnbGreyedCard(interp: InterpreterItem) {
+    const firstName = interp.name.split(' ')[0] || ''
+    const lastName = interp.name.split(' ').slice(1).join(' ')
+    const initials = firstName
+      ? `${firstName[0]}${(lastName[0] || '')}`.toUpperCase()
+      : 'I'
+
+    return (
+      <div
+        key={interp.id}
+        style={{
+          display: 'flex', alignItems: 'flex-start', gap: 12,
+          padding: '14px 16px',
+          background: 'var(--surface2)',
+          border: '1px solid rgba(200,207,224,0.08)',
+          borderRadius: 'var(--radius-sm)',
+          opacity: 0.4,
+          filter: 'grayscale(1)',
+          pointerEvents: 'none',
+        }}
+      >
+        {interp.avatar_url ? (
+          <img src={interp.avatar_url} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', objectPosition: 'center 20%', flexShrink: 0 }} />
+        ) : (
+          <div style={{
+            width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+            background: interp.avatar_color || 'linear-gradient(135deg, #7b61ff, #00e5ff)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.78rem', color: '#fff',
+          }}>
+            {initials}
+          </div>
+        )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)', marginBottom: 4 }}>
+            {interp.name}
+          </div>
+          <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
+            Not available for bookings through your organization
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   function renderCard(interp: InterpreterItem, accentColor: string, accentBg: string, accentBorder: string) {
     const selected = selectedIds.includes(interp.id)
