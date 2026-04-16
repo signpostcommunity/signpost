@@ -1,6 +1,7 @@
 export type NotificationType =
   | 'welcome' | 'profile_approved' | 'profile_denied'
   | 'new_request' | 'booking_confirmed' | 'rate_response'
+  | 'booking_filled_other_selected'
   | 'booking_cancelled'
   | 'cancelled_by_requester' | 'cancelled_by_you'
   | 'sub_search_update' | 'booking_reminder'

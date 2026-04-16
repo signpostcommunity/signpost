@@ -8,6 +8,7 @@ import { smsTemplates } from '@/lib/sms-templates'
 export type NotificationType =
   | 'welcome' | 'profile_approved' | 'profile_denied'
   | 'new_request' | 'booking_confirmed' | 'rate_response'
+  | 'booking_filled_other_selected'
   | 'booking_cancelled'
   | 'cancelled_by_requester' | 'cancelled_by_you'
   | 'sub_search_update' | 'booking_reminder'
@@ -73,6 +74,8 @@ function getSmsMessage(type: NotificationType, metadata: Record<string, unknown>
       }
       return smsTemplates.bookingConfirmedRequester(interpreterName || 'Your interpreter', date)
     }
+    case 'booking_filled_other_selected':
+      return `[signpost] The request for ${date} has been filled. No action needed. View inquiries at signpost.community/interpreter/dashboard/inquiries`
     case 'booking_cancelled':
     case 'cancelled_by_requester':
     case 'cancelled_by_you':
@@ -244,6 +247,41 @@ ${bookMeSection}
       ctaUrl,
       contentBlocks,
       preferencesUrl: preferencesUrlForRole(recipientRole),
+    }
+  }
+
+  if (type === 'booking_filled_other_selected') {
+    const bookingTitle = (metadata.booking_title as string) || ''
+    const bookingDate = (metadata.booking_date as string) || ''
+    const bookingTime = (metadata.booking_time as string) || ''
+    const bookingLocation = (metadata.booking_location as string) || ''
+    const bookingFormat = (metadata.booking_format as string) || ''
+    const requesterName = (metadata.requester_name as string) || ''
+
+    const contentBlocks: EmailContentBlock[] = [{
+      type: 'booking_details',
+      data: {
+        title: bookingTitle,
+        date: bookingDate,
+        time: bookingTime,
+        location: bookingLocation,
+        format: bookingFormat === 'in_person' ? 'In Person' : bookingFormat === 'remote' ? 'Remote' : bookingFormat,
+        ...(requesterName ? { requesterName } : {}),
+      },
+    }]
+
+    const requesterDisplay = requesterName || 'the requester'
+    const titleDisplay = bookingTitle || 'this request'
+    const dateClause = bookingDate ? ` on ${bookingDate}` : ''
+    const bodyText = `Thanks for responding to ${requesterDisplay}'s request for ${titleDisplay}${dateClause}. They've confirmed another interpreter, so this booking is now filled. You're free to take other work, as always. No action needed on your part.`
+
+    return {
+      subject: 'A booking you responded to has been filled',
+      htmlBody: `<p>${bodyText}</p>`,
+      ctaText: 'View your inquiries',
+      ctaUrl: 'https://signpost.community/interpreter/dashboard/inquiries',
+      contentBlocks,
+      preferencesUrl: preferencesUrlForRole('interpreter'),
     }
   }
 
