@@ -90,7 +90,7 @@ const EDUCATION_CARDS: EducationCard[] = [
     title: 'How is signpost cheaper than agencies?',
     teaser: "Agencies charge an hourly fee on top of the interpreter's rate. That fee can range from...",
     body: [
-      <>Agencies charge an <em>hourly</em> fee on top of the interpreter&apos;s rate. That fee can range from about $20 to $80+ <em>per hour</em>. This can become very expensive for requesters.</>,
+      <>Agencies charge an <em>hourly</em> fee on top of the interpreter&apos;s rate. That fee can range from about $20 to $80+ per hour. This can become very expensive for requesters.</>,
       'Instead, signpost charges one flat $15 booking fee per confirmed booking. This covers the cost of building and running the platform: the booking system, encrypted messaging, notifications, and the interpreter directory. That is the only fee signpost collects, ever.',
       'Interpreters set their own rates and are paid directly by the requester. signpost does not add any fees on top of interpreter rates.',
       'signpost never charges any booking fees for Deaf, DeafBlind, and Hard of Hearing individuals (or their family/friends) when booking interpreters for personal events.',
@@ -1006,6 +1006,12 @@ function DeafSignupForm() {
             <StepSubtext>
               Give a brief introduction, with whatever information you want. For example: where you grew up, if you went to a Deaf school or mainstream, etc. You can write, record a video, or both.
             </StepSubtext>
+            <p style={{
+              fontFamily: "'Inter', sans-serif", fontWeight: 400, fontSize: 15,
+              color: '#96a0b8', lineHeight: 1.65, margin: '-12px 0 24px',
+            }}>
+              If now is not the right time to record a video, you can add one later from your dashboard.
+            </p>
 
             <FormCard>
             {/* WRITTEN section */}
@@ -1150,7 +1156,7 @@ function DeafSignupForm() {
             </FormCard>
             <div style={{ marginTop: 28 }}>
               <PrimaryButton onClick={() => goToStep(5)}>
-                {"Got it, let's set up my profile"}
+                Next
               </PrimaryButton>
               <div style={{ marginTop: 10 }}>
                 <OutlineButton onClick={() => goToStep(3)}>Back</OutlineButton>
