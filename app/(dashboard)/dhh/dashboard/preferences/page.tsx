@@ -11,6 +11,7 @@ import { getVideoEmbedUrl } from '@/lib/videoUtils'
 import { generateSlug, validateSlug } from '@/lib/slugUtils'
 import { resizeImage } from '@/lib/imageUtils'
 import { syncNameFields } from '@/lib/nameSync'
+import { TIMEZONE_LABELS, getTimezoneLabel } from '@/lib/timezones'
 import { QRCodeSVG } from 'qrcode.react'
 
 const SIGNING_STYLES = [
@@ -95,6 +96,11 @@ export default function DhhPreferencesPage() {
   const [slugError, setSlugError] = useState('')
   const [slugCopied, setSlugCopied] = useState(false)
 
+  // Timezone
+  const [timezone, setTimezone] = useState('')
+  const [editingTimezone, setEditingTimezone] = useState(false)
+  const [timezoneDraft, setTimezoneDraft] = useState('')
+
   // Comm prefs
   const [signingStyles, setSigningStyles] = useState<string[]>([])
   const [voicePref, setVoicePref] = useState('')
@@ -161,6 +167,21 @@ export default function DhhPreferencesPage() {
         }
 
         setAutoSharePrefList(profile.auto_share_pref_list !== false)
+
+        const tz = (profile.timezone as string) || ''
+        setTimezone(tz)
+        setTimezoneDraft(tz)
+
+        // Auto-detect timezone on first load if empty
+        if (!tz) {
+          try {
+            const detected = Intl.DateTimeFormat().resolvedOptions().timeZone
+            if (detected) {
+              setTimezone(detected)
+              setTimezoneDraft(detected)
+            }
+          } catch { /* ignore */ }
+        }
 
         const cp = profile.comm_prefs as Record<string, unknown> | null
         if (cp) {
@@ -255,6 +276,7 @@ export default function DhhPreferencesPage() {
       share_intro_video_before_confirm: shareVideoBefore,
       auto_share_pref_list: autoSharePrefList,
       comm_prefs: commPrefs,
+      timezone: timezone || null,
       updated_at: new Date().toISOString(),
     })
 
@@ -666,6 +688,80 @@ export default function DhhPreferencesPage() {
               }}
               accentColor="#9d87ff"
             />
+          </div>
+
+          {/* Timezone */}
+          <div style={fieldGroupStyle}>
+            <label style={labelStyle}>Timezone</label>
+            {!editingTimezone ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 15, color: '#f0f2f8', fontWeight: 500 }}>
+                    {timezone ? getTimezoneLabel(timezone) : 'Not set'}
+                  </div>
+                  {timezone && (
+                    <div style={{ fontSize: 13, color: '#96a0b8', marginTop: 4 }}>
+                      Auto-detected from your browser
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setTimezoneDraft(timezone); setEditingTimezone(true) }}
+                  style={{
+                    background: 'transparent', border: '1px solid rgba(167,139,250,0.3)',
+                    borderRadius: 10, padding: '8px 16px', fontSize: '13.5px',
+                    color: '#a78bfa', cursor: 'pointer', fontFamily: "'Inter', sans-serif",
+                    fontWeight: 600,
+                  }}
+                >
+                  Change
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div>
+                  <label style={labelStyle}>Select your timezone</label>
+                  <select
+                    value={timezoneDraft}
+                    onChange={e => setTimezoneDraft(e.target.value)}
+                    style={inputStyle}
+                  >
+                    <option value="">Select timezone...</option>
+                    {Object.entries(TIMEZONE_LABELS).map(([tz, label]) => (
+                      <option key={tz} value={tz}>{label}</option>
+                    ))}
+                    {timezoneDraft && !TIMEZONE_LABELS[timezoneDraft] && (
+                      <option value={timezoneDraft}>{timezoneDraft}</option>
+                    )}
+                  </select>
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button
+                    type="button"
+                    onClick={() => { setTimezone(timezoneDraft); setEditingTimezone(false) }}
+                    style={{
+                      background: '#a78bfa', color: '#0a0a0f', border: 'none',
+                      borderRadius: 10, padding: '8px 16px', fontSize: '13.5px',
+                      fontWeight: 600, cursor: 'pointer', fontFamily: "'Inter', sans-serif",
+                    }}
+                  >
+                    Confirm
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setTimezoneDraft(timezone); setEditingTimezone(false) }}
+                    style={{
+                      background: 'transparent', border: '1px solid var(--border)',
+                      borderRadius: 10, padding: '8px 16px', fontSize: '13.5px',
+                      color: 'var(--muted)', cursor: 'pointer', fontFamily: "'Inter', sans-serif",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
         </div>
