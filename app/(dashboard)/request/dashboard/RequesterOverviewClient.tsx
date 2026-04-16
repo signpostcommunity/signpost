@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import Link from 'next/link'
 import BetaTryThis from '@/components/ui/BetaTryThis'
 import { formatLocationShort } from '@/lib/location-display'
+import RequestTracker from '@/components/dashboard/dhh/RequestTracker'
 
 /* ── Types ── */
 
@@ -54,26 +55,6 @@ function formatTime(start: string | null, end: string | null): string {
     return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
   }
   return `${fmt(start)} – ${fmt(end)}`
-}
-
-function statusBadge(status: string) {
-  const map: Record<string, { bg: string; color: string; label: string }> = {
-    open: { bg: 'rgba(255,165,0,0.12)', color: '#f97316', label: 'Pending' },
-    filled: { bg: 'rgba(52,211,153,0.12)', color: '#34d399', label: 'Confirmed' },
-    completed: { bg: 'rgba(157,135,255,0.12)', color: '#9d87ff', label: 'Completed' },
-    cancelled: { bg: 'rgba(200,207,224,0.1)', color: 'var(--muted)', label: 'Cancelled' },
-    draft: { bg: 'rgba(200,207,224,0.1)', color: 'var(--muted)', label: 'Draft' },
-  }
-  const s = map[status] || map.open
-  return (
-    <span style={{
-      fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px',
-      borderRadius: 100, background: s.bg, color: s.color,
-      fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em', whiteSpace: 'nowrap',
-    }}>
-      {s.label}
-    </span>
-  )
 }
 
 /* ── Stat Card ── */
@@ -230,37 +211,47 @@ export default function RequesterOverviewClient({
                 cursor: 'pointer', transition: 'border-color 0.15s',
                 marginBottom: 12,
               }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Inter', sans-serif", display: 'flex', alignItems: 'center', gap: 8 }}>
-                      {(booking.title || '').startsWith('[Sample]') && (
-                        <span style={{
-                          fontSize: '10px', fontWeight: 600, textTransform: 'uppercase',
-                          letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 4,
-                          background: 'rgba(249, 115, 22, 0.15)', color: '#f97316',
-                          border: '1px solid rgba(249, 115, 22, 0.3)',
-                          fontFamily: "'Inter', sans-serif", whiteSpace: 'nowrap',
-                        }}>SAMPLE</span>
-                      )}
-                      {(booking.title || '').startsWith('[Sample] ') ? (booking.title || '').replace('[Sample] ', '') : (booking.title || 'Untitled Request')}
-                    </div>
-                    {booking.event_category && (
-                      <div style={{ color: 'var(--muted)', fontSize: '0.76rem', marginTop: 3 }}>
-                        {booking.event_category}
-                      </div>
+                {/* Title */}
+                <div style={{ marginBottom: 8 }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.95rem', fontFamily: "'Syne', sans-serif", display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {(booking.title || '').startsWith('[Sample]') && (
+                      <span style={{
+                        fontSize: '10px', fontWeight: 600, textTransform: 'uppercase',
+                        letterSpacing: '0.08em', padding: '2px 8px', borderRadius: 4,
+                        background: 'rgba(249, 115, 22, 0.15)', color: '#f97316',
+                        border: '1px solid rgba(249, 115, 22, 0.3)',
+                        fontFamily: "'Inter', sans-serif", whiteSpace: 'nowrap',
+                      }}>SAMPLE</span>
                     )}
+                    {(booking.title || '').startsWith('[Sample] ') ? (booking.title || '').replace('[Sample] ', '') : (booking.title || 'Untitled Request')}
                   </div>
-                  {statusBadge(booking.status)}
                 </div>
+
+                {/* Date, time, location */}
                 <div style={{
                   display: 'flex', gap: 16, flexWrap: 'wrap',
                   fontSize: '0.8rem', color: 'var(--muted)',
-                  padding: '10px 0', borderTop: '1px solid var(--border)',
+                  marginBottom: 4,
                 }}>
                   <span>{formatDate(booking.date)}</span>
                   <span>{formatTime(booking.time_start, booking.time_end)}</span>
-                  <span>{booking.interpreter_count} interpreter{booking.interpreter_count !== 1 ? 's' : ''}</span>
+                  <span>{formatLocationShort(booking)}</span>
                 </div>
+
+                {/* Tracker timeline */}
+                <RequestTracker
+                  booking={{
+                    id: booking.id,
+                    status: booking.status,
+                    date: booking.date,
+                    interpreter_count: booking.interpreter_count,
+                  }}
+                  recipients={recentRecipients
+                    .filter(r => r.booking_id === booking.id)
+                    .map(r => ({ id: r.id, interpreter_id: r.interpreter_id, status: r.status }))
+                  }
+                  compact
+                />
                 {/* Per-interpreter status for multi-interpreter bookings */}
                 {(() => {
                   const recs = recentRecipients.filter(r => r.booking_id === booking.id)
@@ -296,12 +287,14 @@ export default function RequesterOverviewClient({
                     </div>
                   )
                 })()}
-                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                  <span aria-hidden="true" style={{
-                    color: 'var(--muted)', fontSize: '0.85rem',
-                    transition: 'transform 0.2s', display: 'inline-block',
-                    transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
-                  }}>▾</span>
+                {/* View details */}
+                <div style={{ marginTop: 4 }}>
+                  <span style={{
+                    fontFamily: "'Inter', sans-serif", fontWeight: 500,
+                    fontSize: '0.78rem', color: 'var(--accent)',
+                  }}>
+                    View details
+                  </span>
                 </div>
                 {isExpanded && (
                   <div
@@ -312,13 +305,9 @@ export default function RequesterOverviewClient({
                       fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6,
                     }}
                   >
-                    {booking.location && (
-                      <div><span style={{ color: 'var(--muted)' }}>Location: </span>{formatLocationShort(booking)}</div>
-                    )}
                     {booking.event_category && (
                       <div><span style={{ color: 'var(--muted)' }}>Category: </span>{booking.event_category}</div>
                     )}
-                    <div><span style={{ color: 'var(--muted)' }}>Status: </span>{booking.status}</div>
                     <Link
                       href={`/request/dashboard/requests?expand=${booking.id}`}
                       style={{
@@ -326,7 +315,7 @@ export default function RequesterOverviewClient({
                         fontSize: '0.82rem', fontWeight: 600,
                       }}
                     >
-                      Open in full requests view →
+                      Open in full requests view
                     </Link>
                   </div>
                 )}

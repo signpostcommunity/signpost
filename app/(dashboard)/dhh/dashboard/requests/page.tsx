@@ -882,11 +882,12 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
     >
       {/* COLLAPSED VIEW */}
       <div style={{ padding: '20px 24px' }}>
-        {/* Line 1: Title */}
+        {/* Title */}
         <div style={{ marginBottom: 8 }}>
           <span style={{
-            fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1rem',
-            color: 'var(--text)',
+            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1rem',
+            color: 'var(--text)', display: 'block',
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }}>
             {booking.title || 'Interpreter Request'}
           </span>

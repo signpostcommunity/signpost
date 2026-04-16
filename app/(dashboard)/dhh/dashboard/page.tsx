@@ -97,22 +97,6 @@ function getDisplayName(firstName: string | null, lastName: string | null, name:
   return name || 'Unknown'
 }
 
-function getDisplayStatusLabel(status: string): string {
-  if (status === 'open') return 'Still looking'
-  if (status === 'filled') return 'Confirmed'
-  if (status === 'cancelled') return 'Cancelled'
-  if (status === 'completed') return 'Completed'
-  return status
-}
-
-function getStatusColors(status: string) {
-  if (status === 'open') return { bg: 'rgba(255,165,0,0.12)', border: 'rgba(255,165,0,0.3)', text: '#ffa500' }
-  if (status === 'filled') return { bg: 'rgba(52,211,153,0.1)', border: 'rgba(52,211,153,0.3)', text: '#34d399' }
-  if (status === 'completed') return { bg: 'rgba(0,229,255,0.1)', border: 'rgba(0,229,255,0.3)', text: '#00e5ff' }
-  if (status === 'cancelled') return { bg: 'rgba(255,77,109,0.1)', border: 'rgba(255,77,109,0.3)', text: '#ff8099' }
-  return { bg: 'rgba(255,255,255,0.06)', border: 'var(--border)', text: 'var(--muted)' }
-}
-
 /* ── SVG Icons ── */
 
 function CalendarIcon() {
@@ -225,9 +209,7 @@ function InterpreterMiniCard({ recipient }: { recipient: Recipient }) {
 function DetailModal({ booking, onClose }: { booking: RecentBooking; onClose: () => void }) {
   const focusTrapRef = useFocusTrap(true)
   const confirmedRecipients = booking.recipients.filter(r => r.status === 'confirmed')
-  const formatLabel = booking.format === 'remote' ? 'Remote' : booking.format === 'in_person' ? 'In-person' : 'TBD'
   const locationText = formatLocationShort(booking)
-  const statusColors = getStatusColors(booking.status)
 
   return (
     <div
@@ -265,30 +247,14 @@ function DetailModal({ booking, onClose }: { booking: RecentBooking; onClose: ()
           <CloseIcon />
         </button>
 
-        {/* Line 1: Title + badges */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10,
-          paddingRight: 32,
-        }}>
+        {/* Title */}
+        <div style={{ marginBottom: 10, paddingRight: 32 }}>
           <span style={{
-            fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1.1rem',
-            color: 'var(--text)',
+            fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem',
+            color: 'var(--text)', display: 'block',
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
           }}>
             {booking.title || 'Interpreter Request'}
-          </span>
-          <span style={{
-            fontSize: '0.7rem', fontWeight: 600, padding: '2px 10px',
-            borderRadius: 100, background: 'none',
-            color: 'var(--muted)', border: '1px solid #333',
-          }}>
-            {formatLabel}
-          </span>
-          <span style={{
-            fontSize: '0.7rem', fontWeight: 600, padding: '2px 10px',
-            borderRadius: 100, background: statusColors.bg,
-            color: statusColors.text, border: `1px solid ${statusColors.border}`,
-          }}>
-            {getDisplayStatusLabel(booking.status)}
           </span>
         </div>
 
@@ -478,10 +444,7 @@ function StatCard({ num, label, href }: { num: number; label: string; href: stri
 /* ── Recent Request Card (compact, clickable for modal) ── */
 
 function RecentRequestCard({ booking, onClick }: { booking: RecentBooking; onClick: () => void }) {
-  const formatLabel = booking.format === 'remote' ? 'Remote' : booking.format === 'in_person' ? 'In-person' : 'TBD'
   const locationText = formatLocationShort(booking)
-  const statusColors = getStatusColors(booking.status)
-  const confirmedRecipients = booking.recipients.filter(r => r.status === 'confirmed')
 
   return (
     <div
@@ -494,31 +457,14 @@ function RecentRequestCard({ booking, onClick }: { booking: RecentBooking; onCli
       onMouseOver={e => (e.currentTarget.style.borderColor = 'rgba(157,135,255,0.3)')}
       onMouseOut={e => (e.currentTarget.style.borderColor = '#1e2433')}
     >
-      {/* Line 1: Title + badges */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 6,
-      }}>
+      {/* Title */}
+      <div style={{ marginBottom: 6 }}>
         <span style={{
-          fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.95rem',
-          color: 'var(--text)', flex: 1, minWidth: 0,
+          fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '0.95rem',
+          color: 'var(--text)', display: 'block',
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>
           {booking.title || 'Interpreter Request'}
-        </span>
-        <span style={{
-          fontSize: '0.65rem', fontWeight: 600, padding: '2px 8px',
-          borderRadius: 100, color: 'var(--muted)', border: '1px solid #333',
-          whiteSpace: 'nowrap',
-        }}>
-          {formatLabel}
-        </span>
-        <span style={{
-          fontSize: '0.65rem', fontWeight: 600, padding: '2px 8px',
-          borderRadius: 100, background: statusColors.bg,
-          color: statusColors.text, border: `1px solid ${statusColors.border}`,
-          whiteSpace: 'nowrap',
-        }}>
-          {getDisplayStatusLabel(booking.status)}
         </span>
       </div>
 
@@ -545,48 +491,12 @@ function RecentRequestCard({ booking, onClick }: { booking: RecentBooking; onCli
         </span>
       </div>
 
-      {/* Line 3: Progress tracker */}
+      {/* Tracker timeline */}
       <RequestTracker booking={booking} recipients={booking.recipients} compact hasRating={false} />
-
-      {/* Line 4 (conditional): Confirmed interpreter */}
-      {confirmedRecipients.length > 0 && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
-          {confirmedRecipients.slice(0, 2).map(r => {
-            const interp = r.interpreter
-            const name = interp?.first_name
-              ? `${interp.first_name} ${interp.last_name || ''}`.trim()
-              : interp?.name || 'Interpreter'
-            const initials = interp?.first_name
-              ? `${interp.first_name[0]}${interp.last_name?.[0] || ''}`.toUpperCase()
-              : (interp?.name?.[0] || 'I').toUpperCase()
-            return (
-              <span key={r.id} style={{
-                display: 'inline-flex', alignItems: 'center', gap: 5,
-                fontSize: '0.75rem', color: '#34d399', fontWeight: 500,
-              }}>
-                {interp?.photo_url ? (
-                  <img src={interp.photo_url} alt="" style={{ width: 20, height: 20, borderRadius: '50%', objectFit: 'cover' }} />
-                ) : (
-                  <div style={{
-                    width: 20, height: 20, borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontWeight: 700, fontSize: '0.45rem', color: '#fff',
-                  }}>
-                    {initials}
-                  </div>
-                )}
-                {name}
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399' }} />
-              </span>
-            )
-          })}
-        </div>
-      )}
 
       {/* View details link */}
       <div style={{
-        marginTop: 8, fontFamily: "'Inter', sans-serif", fontWeight: 500,
+        marginTop: 4, fontFamily: "'Inter', sans-serif", fontWeight: 500,
         fontSize: '0.78rem', color: '#00e5ff',
       }}>
         View details

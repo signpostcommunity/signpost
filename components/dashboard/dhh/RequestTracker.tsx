@@ -1,14 +1,19 @@
 'use client'
 
 /*
- * RequestTracker - visual status stepper for interpreter bookings.
- * Shows Deaf users where their request stands, like package tracking.
+ * RequestTracker - color-coded visual status stepper for interpreter bookings.
+ * Shows users where their request stands, like package tracking.
  *
- * Steps: Sent → Still looking → Confirmed → Rate
- * Terminal states: All declined, Cancelled
+ * Steps: Sent > Still looking > Confirmed > Rate
  *
- * Design: outlined circles with checkmarks/radio dots, connecting lines.
- * Green accent for confirmed step when all interpreters confirmed.
+ * Color system:
+ * - Completed: Cyan (#00e5ff) filled circle + white checkmark
+ * - Active searching: Yellow (#eab308)
+ * - Active confirmed: Green (#22c55e)
+ * - Active rate: Purple (#a78bfa)
+ * - Cancelled: Soft red (rgba(248, 113, 113, 0.7))
+ * - Muted (post-cancel): Dark (#3a3f4b)
+ * - Unreached: Cyan outline, no fill
  */
 
 interface Recipient {
@@ -39,7 +44,7 @@ interface TrackerBooking {
   date: string
   interpreter_count?: number | null
   interpreters_confirmed?: number | null
-  created_at: string
+  created_at?: string
   cancellation_reason?: string | null
   cancelled_at?: string | null
 }
@@ -49,99 +54,144 @@ interface RequestTrackerProps {
   recipients: Recipient[]
   compact?: boolean
   hasRating?: boolean
-  /** When true, grey out prior steps and highlight Rate step with pulsing glow */
+  /** When true, dim prior steps and highlight Rate step with pulsing glow */
   ratingPending?: boolean
 }
 
-type StepState = 'completed' | 'current' | 'future'
+type CircleState = 'completed' | 'active' | 'unreached' | 'cancelled' | 'muted'
 type TerminalState = 'all_declined' | 'cancelled' | null
+
+const COLORS = {
+  cyan: '#00e5ff',
+  searching: '#eab308',
+  confirmed: '#22c55e',
+  rate: '#a78bfa',
+  cancelled: 'rgba(248, 113, 113, 0.7)',
+  muted: '#3a3f4b',
+}
 
 interface Step {
   label: string
-  state: StepState
+  circleState: CircleState
+  activeColor?: string
   sublabel?: string | null
-  isConfirmedAllGreen?: boolean
 }
 
 function getSteps(booking: TrackerBooking, recipients: Recipient[], hasRating: boolean): { steps: Step[]; terminal: TerminalState } {
   const status = booking.status
-  const bookingDate = new Date(booking.date + 'T23:59:59')
-  const isPast = bookingDate < new Date()
   const interpCount = booking.interpreter_count || 1
   const confirmedCount = recipients.filter(r => r.status === 'confirmed').length
-
-  // Terminal: cancelled
-  if (status === 'cancelled') {
-    return {
-      steps: [
-        { label: 'Sent', state: 'completed' },
-        { label: 'Cancelled', state: 'current', sublabel: booking.cancellation_reason || null },
-      ],
-      terminal: 'cancelled',
-    }
-  }
-
-  // Terminal: all recipients declined, booking still open
   const activeRecipients = recipients.filter(r => r.status !== 'withdrawn')
-  const allDeclined = activeRecipients.length > 0 && activeRecipients.every(r => r.status === 'declined')
-  if (allDeclined && status === 'open') {
-    return {
-      steps: [
-        { label: 'Sent', state: 'completed' },
-        { label: 'All unavailable', state: 'current', sublabel: 'All interpreters declined' },
-      ],
-      terminal: 'all_declined',
-    }
-  }
-
-  // Normal flow
   const respondedOrBetter = recipients.filter(r =>
     ['viewed', 'responded', 'confirmed'].includes(r.status)
   )
   const hasResponses = respondedOrBetter.length > 0
-  const isFilled = status === 'filled'
-  const isCompleted = status === 'completed' || (isFilled && isPast)
 
   const respondSublabel = hasResponses
     ? `${respondedOrBetter.length} of ${activeRecipients.length} responded`
     : null
-
   const confirmSublabel = confirmedCount > 0
     ? (confirmedCount >= interpCount
       ? 'All interpreters confirmed'
       : `${confirmedCount} of ${interpCount} confirmed`)
     : null
 
-  let currentIndex: number
-  if (isCompleted) {
-    currentIndex = 3
-  } else if (isFilled) {
-    currentIndex = 2
-  } else if (hasResponses) {
-    currentIndex = 1
-  } else {
-    currentIndex = 0
+  // Terminal: all recipients declined
+  const allDeclined = activeRecipients.length > 0 && activeRecipients.every(r => r.status === 'declined')
+  if (allDeclined && status === 'open') {
+    return {
+      steps: [
+        { label: 'Sent', circleState: 'completed' },
+        { label: 'Still looking', circleState: 'cancelled', sublabel: 'All interpreters declined' },
+        { label: 'Confirmed', circleState: 'muted' },
+        { label: 'Rate', circleState: 'muted' },
+      ],
+      terminal: 'all_declined',
+    }
   }
 
-  // Check if all needed interpreters are confirmed (for green accent)
-  const allConfirmed = confirmedCount >= interpCount && interpCount > 0
+  // Cancelled flow
+  if (status === 'cancelled') {
+    const hadConfirmed = confirmedCount > 0
+    return {
+      steps: [
+        { label: 'Sent', circleState: 'completed' },
+        { label: 'Still looking', circleState: hadConfirmed ? 'completed' : 'cancelled', sublabel: hadConfirmed ? null : (booking.cancellation_reason || null) },
+        { label: 'Confirmed', circleState: hadConfirmed ? 'cancelled' : 'muted', sublabel: hadConfirmed ? (booking.cancellation_reason || null) : null },
+        { label: 'Rate', circleState: 'muted' },
+      ],
+      terminal: 'cancelled',
+    }
+  }
 
-  const allSteps = [
-    { label: 'Sent', sublabel: null },
-    { label: 'Still looking', sublabel: respondSublabel },
-    { label: 'Confirmed', sublabel: confirmSublabel, isConfirmedAllGreen: allConfirmed },
-    { label: hasRating ? 'Rated' : 'Rate', sublabel: null },
-  ]
+  // Normal flow
+  const bookingDate = new Date(booking.date + 'T23:59:59')
+  const isPast = bookingDate < new Date()
+  const isFilled = status === 'filled'
+  const isCompleted = status === 'completed' || (isFilled && isPast)
 
-  const steps: Step[] = allSteps.map((s, i) => {
-    let state: StepState
-    if (i < currentIndex) state = 'completed'
-    else if (i === currentIndex) state = 'current'
-    else state = 'future'
-    return { ...s, state }
-  })
+  // Rated: all steps completed
+  if (hasRating) {
+    return {
+      steps: [
+        { label: 'Sent', circleState: 'completed' },
+        { label: 'Still looking', circleState: 'completed' },
+        { label: 'Confirmed', circleState: 'completed' },
+        { label: 'Rated', circleState: 'completed' },
+      ],
+      terminal: null,
+    }
+  }
 
-  return { steps, terminal: null }
+  // Completed: Rate step active (purple)
+  if (isCompleted) {
+    return {
+      steps: [
+        { label: 'Sent', circleState: 'completed' },
+        { label: 'Still looking', circleState: 'completed' },
+        { label: 'Confirmed', circleState: 'completed', sublabel: confirmSublabel },
+        { label: 'Rate', circleState: 'active', activeColor: COLORS.rate },
+      ],
+      terminal: null,
+    }
+  }
+
+  // Filled: Confirmed step active (green)
+  if (isFilled) {
+    return {
+      steps: [
+        { label: 'Sent', circleState: 'completed' },
+        { label: 'Still looking', circleState: 'completed' },
+        { label: 'Confirmed', circleState: 'active', activeColor: COLORS.confirmed, sublabel: confirmSublabel },
+        { label: 'Rate', circleState: 'unreached' },
+      ],
+      terminal: null,
+    }
+  }
+
+  // Open with responses: Still Looking active (yellow)
+  if (hasResponses) {
+    return {
+      steps: [
+        { label: 'Sent', circleState: 'completed' },
+        { label: 'Still looking', circleState: 'active', activeColor: COLORS.searching, sublabel: respondSublabel },
+        { label: 'Confirmed', circleState: 'unreached' },
+        { label: 'Rate', circleState: 'unreached' },
+      ],
+      terminal: null,
+    }
+  }
+
+  // Open, no responses yet
+  return {
+    steps: [
+      { label: 'Sent', circleState: 'completed' },
+      { label: 'Still looking', circleState: 'unreached' },
+      { label: 'Confirmed', circleState: 'unreached' },
+      { label: 'Rate', circleState: 'unreached' },
+    ],
+    terminal: null,
+  }
 }
 
 /* SVG icons */
@@ -161,27 +211,66 @@ function XIcon({ size }: { size: number }) {
   )
 }
 
-function StarIcon({ size, filled = false }: { size: number; filled?: boolean }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill={filled ? 'rgba(0,229,255,0.15)' : 'none'} stroke="#00e5ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-    </svg>
-  )
+function getLineStyle(current: Step, next: Step): React.CSSProperties {
+  const base: React.CSSProperties = {
+    flex: 1,
+    minWidth: 8,
+    marginTop: 0,
+    borderRadius: 0,
+  }
+
+  // Dashed line helper
+  const dashed = (color: string): React.CSSProperties => ({
+    ...base,
+    height: 0,
+    borderTop: 'none',
+    background: `repeating-linear-gradient(to right, ${color} 0, ${color} 4px, transparent 4px, transparent 8px)`,
+    backgroundSize: '100% 1.5px',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center',
+    minHeight: 1.5,
+  })
+
+  const solid = (bg: string): React.CSSProperties => ({
+    ...base,
+    height: 1.5,
+    background: bg,
+  })
+
+  // Completed to completed: solid cyan
+  if (current.circleState === 'completed' && next.circleState === 'completed') {
+    return solid(COLORS.cyan)
+  }
+
+  // Completed to active: gradient
+  if (current.circleState === 'completed' && next.circleState === 'active') {
+    return solid(`linear-gradient(to right, ${COLORS.cyan}, ${next.activeColor || COLORS.cyan})`)
+  }
+
+  // Completed to cancelled: gradient
+  if (current.circleState === 'completed' && next.circleState === 'cancelled') {
+    return solid(`linear-gradient(to right, ${COLORS.cyan}, ${COLORS.cancelled})`)
+  }
+
+  // Any to unreached: dashed muted
+  if (next.circleState === 'unreached') {
+    return dashed(COLORS.muted)
+  }
+
+  // After cancellation or muted: solid muted
+  if (current.circleState === 'cancelled' || current.circleState === 'muted' || next.circleState === 'muted') {
+    return solid(COLORS.muted)
+  }
+
+  // Fallback
+  return dashed(COLORS.muted)
 }
 
 export default function RequestTracker({ booking, recipients, compact = false, hasRating = false, ratingPending = false }: RequestTrackerProps) {
-  const { steps, terminal } = getSteps(booking, recipients, hasRating)
-  const circleSize = 20
-  const iconSize = 10
+  const { steps } = getSteps(booking, recipients, hasRating)
+  const circleSize = compact ? 18 : 22
+  const iconSize = compact ? 9 : 11
   const gap = compact ? 2 : 4
-
-  const isTerminal = terminal !== null
-
-  // When ratingPending, prior steps get dimmed colors
-  const dimBorder = '#2e3650'
-  const dimBg = '#0e0e17'
-  const dimLine = '#1e2433'
-  const dimLabel = '#2e3650'
 
   return (
     <>
@@ -198,16 +287,13 @@ export default function RequestTracker({ booking, recipients, compact = false, h
       >
         {steps.map((step, i) => {
           const isLast = i === steps.length - 1
-          const isError = isTerminal && isLast
-          const isRateStep = !isTerminal && isLast && step.state === 'current'
-          const isGreenCheck = isRateStep && hasRating
-          // Confirmed step with all interpreters confirmed uses green
-          const useGreen = step.isConfirmedAllGreen && (step.state === 'completed' || step.state === 'current')
+          const isRateStep = step.label === 'Rate' || step.label === 'Rated'
 
-          // ratingPending mode: dim all non-rate steps
-          const isDimmed = ratingPending && !hasRating && !isLast
+          // ratingPending dims prior steps, pulses Rate
+          const isDimmed = ratingPending && !hasRating && !isRateStep
+          const isPulsing = ratingPending && !hasRating && isRateStep && step.circleState === 'active'
 
-          // Determine circle style
+          // Circle style
           let circleStyle: React.CSSProperties = {
             width: circleSize,
             height: circleSize,
@@ -216,43 +302,77 @@ export default function RequestTracker({ booking, recipients, compact = false, h
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
-            position: 'relative',
+            transition: 'opacity 0.2s',
           }
 
           if (isDimmed) {
-            circleStyle = { ...circleStyle, background: dimBg, border: `1.5px solid ${dimBorder}` }
-          } else if (isError) {
-            circleStyle = { ...circleStyle, background: '#ff6b85' }
-          } else if (isGreenCheck) {
-            circleStyle = { ...circleStyle, background: 'none', border: '1.5px solid #34d399' }
-          } else if (useGreen && step.state === 'completed') {
-            circleStyle = { ...circleStyle, background: 'none', border: '1.5px solid #34d399' }
-          } else if (useGreen && step.state === 'current') {
-            circleStyle = { ...circleStyle, background: 'none', border: '2px solid #34d399' }
-          } else if (ratingPending && isLast && !hasRating) {
-            // Rate step pulsing glow
-            circleStyle = { ...circleStyle, background: 'none', border: '2px solid #00e5ff', animation: 'rate-pulse 2s ease-in-out infinite' }
-          } else if (step.state === 'completed') {
-            circleStyle = { ...circleStyle, background: 'none', border: '1.5px solid #00e5ff' }
-          } else if (step.state === 'current') {
-            circleStyle = { ...circleStyle, background: 'none', border: '2px solid #00e5ff' }
+            // Dimmed completed circles
+            if (step.circleState === 'completed') {
+              circleStyle = { ...circleStyle, background: COLORS.cyan, opacity: 0.35 }
+            } else {
+              circleStyle = { ...circleStyle, background: 'none', border: `1.5px solid ${COLORS.cyan}`, opacity: 0.35 }
+            }
           } else {
-            circleStyle = { ...circleStyle, background: 'none', border: '1.5px solid #444' }
+            switch (step.circleState) {
+              case 'completed':
+                circleStyle = { ...circleStyle, background: COLORS.cyan }
+                break
+              case 'active':
+                circleStyle = {
+                  ...circleStyle,
+                  background: step.activeColor || COLORS.cyan,
+                  ...(isPulsing ? { animation: 'rate-pulse 2s ease-in-out infinite' } : {}),
+                }
+                break
+              case 'unreached':
+                circleStyle = { ...circleStyle, background: 'none', border: `1.5px solid ${COLORS.cyan}` }
+                break
+              case 'cancelled':
+                circleStyle = { ...circleStyle, background: COLORS.cancelled }
+                break
+              case 'muted':
+                circleStyle = { ...circleStyle, background: COLORS.muted }
+                break
+            }
           }
 
           // Label color
-          let labelColor = '#666'
-          if (isDimmed) labelColor = dimLabel
-          else if (isError) labelColor = '#ff6b85'
-          else if (isGreenCheck) labelColor = '#34d399'
-          else if (useGreen) labelColor = '#34d399'
-          else if (ratingPending && isLast && !hasRating) labelColor = '#00e5ff'
-          else if (step.state === 'current') labelColor = '#fff'
-          else if (step.state === 'completed') labelColor = 'var(--muted)'
-          else labelColor = '#666'
+          let labelColor: string
+          if (isDimmed) {
+            labelColor = '#2e3650'
+          } else {
+            switch (step.circleState) {
+              case 'completed': labelColor = 'var(--muted)'; break
+              case 'active': labelColor = step.activeColor || COLORS.cyan; break
+              case 'unreached': labelColor = '#666'; break
+              case 'cancelled': labelColor = COLORS.cancelled; break
+              case 'muted': labelColor = COLORS.muted; break
+              default: labelColor = '#666'
+            }
+          }
 
-          // Line color
-          const lineColor = isDimmed ? dimLine : (step.state === 'completed' ? '#00e5ff' : '#333')
+          // Sublabel color
+          const sublabelColor = isDimmed
+            ? '#2e3650'
+            : step.circleState === 'cancelled' ? COLORS.cancelled : '#666'
+
+          // Connecting line
+          const nextStep = i < steps.length - 1 ? steps[i + 1] : null
+          const lineStyleObj = nextStep ? getLineStyle(step, nextStep) : null
+          // Dim lines when ratingPending
+          const dimmedLineStyle = isDimmed && lineStyleObj
+            ? { ...lineStyleObj, opacity: 0.35 }
+            : lineStyleObj
+
+          // Circle content
+          let circleContent: React.ReactNode = null
+          if (isDimmed && step.circleState === 'completed') {
+            circleContent = <CheckIcon size={iconSize} color="#fff" />
+          } else if (step.circleState === 'completed') {
+            circleContent = <CheckIcon size={iconSize} color="#fff" />
+          } else if (step.circleState === 'cancelled') {
+            circleContent = <XIcon size={iconSize} />
+          }
 
           return (
             <div
@@ -273,26 +393,8 @@ export default function RequestTracker({ booking, recipients, compact = false, h
                 minWidth: compact ? 44 : 56,
                 maxWidth: compact ? 60 : 80,
               }}>
-                <div style={circleStyle} aria-label={`${step.label}: ${step.state}`}>
-                  {isDimmed ? (
-                    <CheckIcon size={iconSize} color={dimBorder} />
-                  ) : isError ? (
-                    <XIcon size={iconSize} />
-                  ) : isGreenCheck ? (
-                    <CheckIcon size={iconSize} color="#34d399" />
-                  ) : useGreen && step.state === 'completed' ? (
-                    <CheckIcon size={iconSize} color="#34d399" />
-                  ) : useGreen && step.state === 'current' ? (
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#34d399' }} />
-                  ) : ratingPending && isLast && !hasRating ? (
-                    <StarIcon size={iconSize} filled />
-                  ) : step.state === 'completed' ? (
-                    <CheckIcon size={iconSize} color="#fff" />
-                  ) : step.state === 'current' && !isRateStep ? (
-                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#00e5ff' }} />
-                  ) : isRateStep && !hasRating ? (
-                    <StarIcon size={iconSize} />
-                  ) : null}
+                <div style={circleStyle} aria-label={`${step.label}: ${step.circleState}`}>
+                  {circleContent}
                 </div>
 
                 {/* Label */}
@@ -300,7 +402,7 @@ export default function RequestTracker({ booking, recipients, compact = false, h
                   <span style={{
                     fontFamily: "'Inter', sans-serif",
                     fontSize: compact ? '0.62rem' : '0.69rem',
-                    fontWeight: (ratingPending && isLast && !hasRating) || step.state === 'current' ? 700 : 500,
+                    fontWeight: step.circleState === 'active' ? 700 : 500,
                     color: labelColor,
                     lineHeight: 1.3,
                     maxWidth: compact ? 60 : 80,
@@ -313,7 +415,7 @@ export default function RequestTracker({ booking, recipients, compact = false, h
                   {step.sublabel && (
                     <span style={{
                       fontSize: compact ? '0.56rem' : '0.58rem',
-                      color: isDimmed ? dimLabel : (isError ? '#ff6b85' : '#666'),
+                      color: sublabelColor,
                       lineHeight: 1.3,
                       display: 'block',
                       marginTop: 1,
@@ -325,14 +427,10 @@ export default function RequestTracker({ booking, recipients, compact = false, h
               </div>
 
               {/* Connecting line */}
-              {!isLast && (
+              {!isLast && dimmedLineStyle && (
                 <div style={{
-                  flex: 1,
-                  height: 1,
+                  ...dimmedLineStyle,
                   marginTop: circleSize / 2,
-                  minWidth: 8,
-                  background: lineColor,
-                  borderRadius: 0,
                 }} />
               )}
             </div>
@@ -343,8 +441,8 @@ export default function RequestTracker({ booking, recipients, compact = false, h
       {ratingPending && !hasRating && (
         <style>{`
           @keyframes rate-pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(0,229,255,0.4); }
-            50% { box-shadow: 0 0 0 5px rgba(0,229,255,0); }
+            0%, 100% { box-shadow: 0 0 0 0 rgba(167,139,250,0.4); }
+            50% { box-shadow: 0 0 0 5px rgba(167,139,250,0); }
           }
         `}</style>
       )}
