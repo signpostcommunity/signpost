@@ -162,7 +162,6 @@ export default function RequestPortalPage() {
           border: '1px solid rgba(0, 229, 255, 0.15)',
           borderRadius: 16,
           padding: '0 36px 36px',
-          overflow: 'hidden',
         }}
       >
         {/* Gradient accent bar */}

@@ -23,7 +23,6 @@ export default function DeafPortalClient() {
           border: '1px solid rgba(167, 139, 250, 0.15)',
           borderRadius: 16,
           padding: '0 36px 36px',
-          overflow: 'hidden',
         }}
       >
         {/* Gradient accent bar */}
@@ -75,44 +74,16 @@ export default function DeafPortalClient() {
         </h1>
 
         {/* Divider */}
-        <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', marginBottom: 20 }} />
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.06)' }} />
 
-        {/* Founders */}
-        <p
-          style={{
-            fontFamily: "'Syne', sans-serif",
-            fontWeight: 600,
-            fontSize: 18,
-            color: '#f0f2f8',
-            textAlign: 'center',
-            lineHeight: 1.5,
-            marginBottom: 20,
-            marginTop: 0,
-          }}
-        >
-          signpost started as a &ldquo;what if?&rdquo; chat between two best friends.
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 12, marginBottom: 20, fontFamily: "'Inter', sans-serif" }}>
-          <p style={{ fontSize: 15, color: '#96a0b8', lineHeight: 1.65, margin: 0 }}>
-            <span style={{ color: '#a78bfa', fontWeight: 500 }}>Regina McGinnis</span> is a Deaf mental health professional.
-          </p>
-          <p style={{ fontSize: 15, color: '#96a0b8', lineHeight: 1.65, margin: 0 }}>
-            <span style={{ color: '#00e5ff', fontWeight: 500 }}>Molly Sano-Mahgoub</span> is a certified ASL interpreter, with a DeafBlind son.
-          </p>
-          <p style={{ fontSize: 15, color: '#96a0b8', lineHeight: 1.65, margin: 0 }}>
-            We have both experienced the challenges of booking interpreters firsthand, and we believe a new model is possible that works better for everyone.
-          </p>
-          <p style={{ fontSize: 15, color: '#c8cdd8', lineHeight: 1.65, margin: 0, fontWeight: 500 }}>
-            So we decided to build the platform we have always dreamt of.
-          </p>
-        </div>
-
-        {/* Pull-quote: Mission + Tagline */}
+        {/* Mission inset */}
         <div
           style={{
-            borderLeft: '2px solid #a78bfa',
-            paddingLeft: 16,
-            margin: '20px 0 24px',
+            background: 'rgba(123,97,255,0.06)',
+            borderLeft: '3px solid #7b61ff',
+            borderRadius: 0,
+            padding: '16px 20px',
+            marginTop: 24,
           }}
         >
           <p
@@ -141,6 +112,39 @@ export default function DeafPortalClient() {
             }}
           >
             signpost is <em>your</em> interpreter platform.
+          </p>
+        </div>
+
+        {/* Second divider */}
+        <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', marginTop: 32 }} />
+
+        {/* Founders */}
+        <p
+          style={{
+            fontFamily: "'Syne', sans-serif",
+            fontWeight: 700,
+            fontSize: 16,
+            color: '#f0f2f8',
+            textAlign: 'center',
+            lineHeight: 1.5,
+            marginBottom: 16,
+            marginTop: 28,
+          }}
+        >
+          signpost started as a &ldquo;what if?&rdquo; chat between two best friends.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column' as const, marginBottom: 20, fontFamily: "'Inter', sans-serif" }}>
+          <p style={{ fontSize: 15, color: '#96a0b8', lineHeight: 1.65, margin: '0 0 6px' }}>
+            <span style={{ color: '#a78bfa', fontWeight: 500 }}>Regina McGinnis</span> is a Deaf mental health professional.
+          </p>
+          <p style={{ fontSize: 15, color: '#96a0b8', lineHeight: 1.65, margin: '0 0 16px' }}>
+            <span style={{ color: '#00e5ff', fontWeight: 500 }}>Molly Sano-Mahgoub</span> is a certified ASL interpreter, with a DeafBlind son.
+          </p>
+          <p style={{ fontSize: 15, color: '#96a0b8', lineHeight: 1.65, margin: '0 0 12px' }}>
+            We have both experienced the challenges of booking interpreters firsthand, and we believe a new model is possible that works better for everyone.
+          </p>
+          <p style={{ fontSize: 15, color: '#c8cdd8', lineHeight: 1.65, margin: 0, fontWeight: 500 }}>
+            So we decided to build the platform we have always dreamt of.
           </p>
         </div>
 
