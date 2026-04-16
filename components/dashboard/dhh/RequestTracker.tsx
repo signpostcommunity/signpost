@@ -6,14 +6,17 @@
  *
  * Steps: Sent > Still looking > Confirmed > Rate
  *
+ * Visual language: all circles are outlined (stroke only) with icons inside.
+ * Active circles get a thicker outline (2.5px) to draw attention.
+ *
  * Color system:
- * - Completed: Cyan (#00e5ff) filled circle + white checkmark
- * - Active searching: Yellow (#eab308)
- * - Active confirmed: Green (#22c55e)
- * - Active rate: Purple (#a78bfa)
- * - Cancelled: Soft red (rgba(248, 113, 113, 0.7))
- * - Muted (post-cancel): Dark (#3a3f4b)
- * - Unreached: Cyan outline, no fill
+ * - Completed: Cyan (#00e5ff) outline + cyan checkmark inside
+ * - Active searching: Yellow (#eab308) outline + yellow dot inside
+ * - Active confirmed: Green (#22c55e) outline + green dot inside
+ * - Active rate: Purple (#a78bfa) outline + purple star inside
+ * - Cancelled: Soft red (rgba(248, 113, 113, 0.7)) outline + soft red X inside
+ * - Muted (post-cancel): Muted (#3a3f4b) outline, empty inside
+ * - Unreached: Cyan outline at 30% opacity, empty inside
  */
 
 interface Recipient {
@@ -63,11 +66,13 @@ type TerminalState = 'all_declined' | 'cancelled' | null
 
 const COLORS = {
   cyan: '#00e5ff',
+  cyanFaint: 'rgba(0, 229, 255, 0.3)',
   searching: '#eab308',
   confirmed: '#22c55e',
   rate: '#a78bfa',
   cancelled: 'rgba(248, 113, 113, 0.7)',
   muted: '#3a3f4b',
+  mutedLabel: '#96a0b8',
 }
 
 interface Step {
@@ -194,19 +199,36 @@ function getSteps(booking: TrackerBooking, recipients: Recipient[], hasRating: b
   }
 }
 
-/* SVG icons */
-function CheckIcon({ size, color = '#fff' }: { size: number; color?: string }) {
+/* SVG icons - use currentColor so parent sets the color */
+
+function CheckIcon({ size = 12 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M20 6L9 17l-5-5" />
+    <svg width={size} height={size} viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <path d="M2.5 6.5L5 9L9.5 3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
 
-function XIcon({ size }: { size: number }) {
+function DotIcon({ size = 12 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 6L6 18M6 6l12 12" />
+    <svg width={size} height={size} viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <circle cx="6" cy="6" r="3" fill="currentColor" />
+    </svg>
+  )
+}
+
+function StarIcon({ size = 14 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <path d="M7 1.5L8.7 5L12.5 5.6L9.75 8.3L10.4 12.1L7 10.3L3.6 12.1L4.25 8.3L1.5 5.6L5.3 5L7 1.5Z" fill="currentColor" stroke="currentColor" strokeWidth="0.5" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function XIcon({ size = 12 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <path d="M3 3L9 9M9 3L3 9" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
   )
 }
@@ -268,9 +290,8 @@ function getLineStyle(current: Step, next: Step): React.CSSProperties {
 
 export default function RequestTracker({ booking, recipients, compact = false, hasRating = false, ratingPending = false }: RequestTrackerProps) {
   const { steps } = getSteps(booking, recipients, hasRating)
-  const circleSize = compact ? 18 : 22
-  const iconSize = compact ? 9 : 11
-  const gap = compact ? 2 : 4
+  const circleSize = compact ? 22 : 28
+  const gap = compact ? 3 : 5
 
   return (
     <>
@@ -280,7 +301,7 @@ export default function RequestTracker({ booking, recipients, compact = false, h
           alignItems: 'flex-start',
           width: '100%',
           padding: compact ? '6px 0' : '12px 0',
-          minHeight: compact ? 36 : undefined,
+          minHeight: compact ? 40 : undefined,
         }}
         role="group"
         aria-label="Request status tracker"
@@ -293,86 +314,91 @@ export default function RequestTracker({ booking, recipients, compact = false, h
           const isDimmed = ratingPending && !hasRating && !isRateStep
           const isPulsing = ratingPending && !hasRating && isRateStep && step.circleState === 'active'
 
-          // Circle style
-          let circleStyle: React.CSSProperties = {
+          // Resolve outline color, outline width, and inner icon per state
+          let outlineColor: string = COLORS.cyanFaint
+          let outlineWidth = 1.5
+          let iconElement: React.ReactNode = null
+          let iconColor: string = COLORS.cyan
+
+          switch (step.circleState) {
+            case 'completed':
+              outlineColor = COLORS.cyan
+              outlineWidth = 1.5
+              iconColor = COLORS.cyan
+              iconElement = <CheckIcon size={compact ? 10 : 12} />
+              break
+            case 'active': {
+              const activeCol = step.activeColor || COLORS.cyan
+              outlineColor = activeCol
+              outlineWidth = 2.5
+              iconColor = activeCol
+              iconElement = isRateStep
+                ? <StarIcon size={compact ? 12 : 14} />
+                : <DotIcon size={compact ? 10 : 12} />
+              break
+            }
+            case 'unreached':
+              outlineColor = COLORS.cyanFaint
+              outlineWidth = 1.5
+              iconElement = null
+              break
+            case 'cancelled':
+              outlineColor = COLORS.cancelled
+              outlineWidth = 2.5
+              iconColor = COLORS.cancelled
+              iconElement = <XIcon size={compact ? 10 : 12} />
+              break
+            case 'muted':
+              outlineColor = COLORS.muted
+              outlineWidth = 1.5
+              iconElement = null
+              break
+          }
+
+          // Circle style - outlined only, icon rendered inside
+          const circleStyle: React.CSSProperties = {
             width: circleSize,
             height: circleSize,
             borderRadius: '50%',
+            background: 'transparent',
+            border: `${outlineWidth}px solid ${outlineColor}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0,
-            transition: 'opacity 0.2s',
+            color: iconColor,
+            transition: 'opacity 0.2s, border-color 0.2s',
+            boxSizing: 'border-box',
+            ...(isDimmed ? { opacity: 0.35 } : {}),
+            ...(isPulsing ? { animation: 'rate-pulse 2s ease-in-out infinite' } : {}),
           }
 
-          if (isDimmed) {
-            // Dimmed completed circles
-            if (step.circleState === 'completed') {
-              circleStyle = { ...circleStyle, background: COLORS.cyan, opacity: 0.35 }
-            } else {
-              circleStyle = { ...circleStyle, background: 'none', border: `1.5px solid ${COLORS.cyan}`, opacity: 0.35 }
-            }
-          } else {
-            switch (step.circleState) {
-              case 'completed':
-                circleStyle = { ...circleStyle, background: COLORS.cyan }
-                break
-              case 'active':
-                circleStyle = {
-                  ...circleStyle,
-                  background: step.activeColor || COLORS.cyan,
-                  ...(isPulsing ? { animation: 'rate-pulse 2s ease-in-out infinite' } : {}),
-                }
-                break
-              case 'unreached':
-                circleStyle = { ...circleStyle, background: 'none', border: `1.5px solid ${COLORS.cyan}` }
-                break
-              case 'cancelled':
-                circleStyle = { ...circleStyle, background: COLORS.cancelled }
-                break
-              case 'muted':
-                circleStyle = { ...circleStyle, background: COLORS.muted }
-                break
-            }
-          }
-
-          // Label color
+          // Label color per state
           let labelColor: string
           if (isDimmed) {
             labelColor = '#2e3650'
           } else {
             switch (step.circleState) {
-              case 'completed': labelColor = 'var(--muted)'; break
+              case 'completed': labelColor = COLORS.cyan; break
               case 'active': labelColor = step.activeColor || COLORS.cyan; break
-              case 'unreached': labelColor = '#666'; break
+              case 'unreached': labelColor = COLORS.mutedLabel; break
               case 'cancelled': labelColor = COLORS.cancelled; break
-              case 'muted': labelColor = COLORS.muted; break
-              default: labelColor = '#666'
+              case 'muted': labelColor = COLORS.mutedLabel; break
+              default: labelColor = COLORS.mutedLabel
             }
           }
 
-          // Sublabel color
+          // Sublabel: cancelled reasons show soft red; everything else stays muted gray
           const sublabelColor = isDimmed
             ? '#2e3650'
-            : step.circleState === 'cancelled' ? COLORS.cancelled : '#666'
+            : step.circleState === 'cancelled' ? COLORS.cancelled : COLORS.mutedLabel
 
           // Connecting line
           const nextStep = i < steps.length - 1 ? steps[i + 1] : null
           const lineStyleObj = nextStep ? getLineStyle(step, nextStep) : null
-          // Dim lines when ratingPending
           const dimmedLineStyle = isDimmed && lineStyleObj
             ? { ...lineStyleObj, opacity: 0.35 }
             : lineStyleObj
-
-          // Circle content
-          let circleContent: React.ReactNode = null
-          if (isDimmed && step.circleState === 'completed') {
-            circleContent = <CheckIcon size={iconSize} color="#fff" />
-          } else if (step.circleState === 'completed') {
-            circleContent = <CheckIcon size={iconSize} color="#fff" />
-          } else if (step.circleState === 'cancelled') {
-            circleContent = <XIcon size={iconSize} />
-          }
 
           return (
             <div
@@ -394,7 +420,7 @@ export default function RequestTracker({ booking, recipients, compact = false, h
                 maxWidth: compact ? 60 : 80,
               }}>
                 <div style={circleStyle} aria-label={`${step.label}: ${step.circleState}`}>
-                  {circleContent}
+                  {iconElement}
                 </div>
 
                 {/* Label */}
