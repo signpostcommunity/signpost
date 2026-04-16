@@ -11,6 +11,7 @@ import BookingFilterBar, { filterBySearch, filterByDateRange, groupByTimeCategor
 import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
 import { formatLocationShort, formatLocationFull } from '@/lib/location-display'
+import { formatContactedAgo } from '@/lib/format-time'
 
 interface Recipient {
   id: string
@@ -263,6 +264,11 @@ function InterpreterMiniCard({ recipient }: { recipient: Recipient }) {
         }}>
           {sc.label}
         </span>
+        {recipient.sent_at && (
+          <div style={{ fontSize: '11px', fontWeight: 400, color: '#96a0b8', marginTop: 4 }}>
+            Contacted {formatContactedAgo(recipient.sent_at)}
+          </div>
+        )}
       </div>
     </div>
   )

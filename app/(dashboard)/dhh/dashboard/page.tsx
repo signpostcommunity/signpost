@@ -9,6 +9,7 @@ import { DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import RequestTracker from '@/components/dashboard/dhh/RequestTracker'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
 import { formatLocationShort } from '@/lib/location-display'
+import { formatContactedAgo } from '@/lib/format-time'
 import { decryptBatchClient } from '@/lib/decrypt-client'
 import InterpreterRequestLinkCard from '@/components/dashboard/dhh/InterpreterRequestLinkCard'
 import PendingRolesNudge from '@/components/shared/PendingRolesNudge'
@@ -199,6 +200,11 @@ function InterpreterMiniCard({ recipient }: { recipient: Recipient }) {
         }}>
           {sc.label}
         </span>
+        {recipient.sent_at && (
+          <div style={{ fontSize: '11px', fontWeight: 400, color: '#96a0b8', marginTop: 4 }}>
+            Contacted {formatContactedAgo(recipient.sent_at)}
+          </div>
+        )}
       </div>
     </div>
   )
