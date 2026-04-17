@@ -478,14 +478,19 @@ function InviteContent() {
     const results: InviteResult[] = []
 
     for (const contact of selected) {
-      const channel = contact.email ? 'email' : 'sms'
+      // SMS disabled until 10DLC approval — skip contacts with no email
+      if (!contact.email) {
+        results.push({ name: contact.name, channel: 'sms', success: false, error: 'SMS invites coming soon' })
+        continue
+      }
+      const channel = 'email' as const
       try {
         const res = await fetch('/api/invites', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             recipientName: contact.name,
-            recipientEmail: contact.email || null,
+            recipientEmail: contact.email,
             recipientPhone: contact.phone || null,
             senderName,
             senderEmail,
@@ -697,13 +702,18 @@ function InviteContent() {
               >
                 {sending ? 'Sending...' : 'Send via email'}
               </button>
-              <button
-                onClick={() => sendInvite('sms')}
-                disabled={sending}
-                style={{ ...btnSecondaryStyle, opacity: sending ? 0.6 : 1 }}
-              >
-                Send via text
-              </button>
+              <div style={{ position: 'relative' }}>
+                <button
+                  disabled
+                  style={{ ...btnSecondaryStyle, opacity: 0.4, cursor: 'not-allowed' }}
+                  title="SMS invites coming soon"
+                >
+                  Send via text
+                </button>
+                <span style={{ display: 'block', fontSize: '11px', color: 'var(--muted)', marginTop: 4 }}>
+                  SMS invites coming soon
+                </span>
+              </div>
               <button
                 onClick={() => sendInvite('clipboard')}
                 disabled={sending}
