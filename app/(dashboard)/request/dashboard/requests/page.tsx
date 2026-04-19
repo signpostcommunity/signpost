@@ -20,7 +20,7 @@ export default async function AllRequestsPage() {
   // Fetch all bookings for this requester
   const { data: bookings, error: bookingsErr } = await supabase
     .from('bookings')
-    .select('id, title, description, notes, date, time_start, time_end, location, format, specialization, event_type, event_category, recurrence, interpreter_count, interpreters_confirmed, status, platform_fee_amount, platform_fee_status, wave_alerts_sent, current_wave, created_at, prep_notes, onsite_contact_name, onsite_contact_phone, onsite_contact_email')
+    .select('id, title, description, notes, date, time_start, time_end, location, format, specialization, event_type, event_category, recurrence, interpreter_count, interpreters_confirmed, status, platform_fee_amount, platform_fee_status, wave_alerts_sent, current_wave, created_at, prep_notes, onsite_contact_name, onsite_contact_phone, onsite_contact_email, request_type')
     .eq('requester_id', user.id)
     .order('date', { ascending: false })
 
@@ -47,12 +47,13 @@ export default async function AllRequestsPage() {
     proposed_start_time: string | null
     proposed_end_time: string | null
     proposal_note: string | null
+    sent_at: string | null
   }[] = []
 
   if (bookingIds.length > 0) {
     const { data: recipients, error: recipErr } = await supabase
       .from('booking_recipients')
-      .select('id, booking_id, interpreter_id, status, wave_number, response_rate, response_notes, rate_profile_id, confirmed_at, declined_at, proposed_date, proposed_start_time, proposed_end_time, proposal_note')
+      .select('id, booking_id, interpreter_id, status, wave_number, response_rate, response_notes, rate_profile_id, confirmed_at, declined_at, proposed_date, proposed_start_time, proposed_end_time, proposal_note, sent_at')
       .in('booking_id', bookingIds)
 
     if (recipErr) {
@@ -90,13 +91,13 @@ export default async function AllRequestsPage() {
 
   // Fetch interpreter names for all recipients (use admin to bypass RLS)
   const interpreterIds = [...new Set(allRecipients.map(r => r.interpreter_id))]
-  let interpreterMap: Record<string, { name: string; first_name: string | null; last_name: string | null }> = {}
+  let interpreterMap: Record<string, { name: string; first_name: string | null; last_name: string | null; photo_url: string | null }> = {}
 
   if (interpreterIds.length > 0) {
     const admin = getSupabaseAdmin()
     const { data: interps, error: interpErr } = await admin
       .from('interpreter_profiles')
-      .select('id, name, first_name, last_name')
+      .select('id, name, first_name, last_name, photo_url')
       .in('id', interpreterIds)
 
     if (interpErr) {
@@ -108,6 +109,7 @@ export default async function AllRequestsPage() {
           name: ip.first_name && ip.last_name ? `${ip.first_name} ${ip.last_name}` : ip.name || 'Unknown',
           first_name: ip.first_name,
           last_name: ip.last_name,
+          photo_url: ip.photo_url || null,
         }
       }
     }

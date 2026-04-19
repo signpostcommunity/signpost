@@ -3,7 +3,8 @@
 import { useState, useRef } from 'react'
 import Link from 'next/link'
 import BetaTryThis from '@/components/ui/BetaTryThis'
-import { formatLocationShort } from '@/lib/location-display'
+import { formatLocationShort, formatLocationFull } from '@/lib/location-display'
+import { formatContactedAgo } from '@/lib/format-time'
 import RequestTracker from '@/components/dashboard/dhh/RequestTracker'
 
 /* ── Types ── */
@@ -17,7 +18,23 @@ interface RecentBooking {
   status: string
   interpreter_count: number
   event_category: string | null
+  request_type?: string | null
   location?: string | null
+  format?: string | null
+  specialization?: string | null
+  description?: string | null
+  notes?: string | null
+  prep_notes?: string | null
+  onsite_contact_name?: string | null
+  onsite_contact_phone?: string | null
+  onsite_contact_email?: string | null
+  location_name?: string | null
+  location_address?: string | null
+  location_city?: string | null
+  location_state?: string | null
+  location_zip?: string | null
+  location_country?: string | null
+  meeting_link?: string | null
 }
 
 interface RecentRecipient {
@@ -25,6 +42,36 @@ interface RecentRecipient {
   booking_id: string
   interpreter_id: string
   status: string
+  sent_at?: string | null
+  response_rate?: number | null
+  wave_number?: number
+  response_notes?: string | null
+  rate_profile_id?: string | null
+  confirmed_at?: string | null
+  declined_at?: string | null
+  proposed_date?: string | null
+  proposed_start_time?: string | null
+  proposed_end_time?: string | null
+  proposal_note?: string | null
+}
+
+interface InterpreterInfo {
+  name: string
+  first_name: string | null
+  last_name: string | null
+  photo_url: string | null
+}
+
+interface RateProfileTerms {
+  hourly_rate: number | null
+  currency: string | null
+  min_booking: number | null
+  after_hours_diff: number | null
+  after_hours_description: string | null
+  cancellation_policy: string | null
+  late_cancel_fee: number | null
+  travel_expenses: Record<string, unknown> | null
+  additional_terms: string | null
 }
 
 interface Props {
@@ -36,7 +83,8 @@ interface Props {
   pendingResponses: number
   recentBookings: RecentBooking[]
   recentRecipients?: RecentRecipient[]
-  recentInterpreterMap?: Record<string, string>
+  recentInterpreterMap?: Record<string, InterpreterInfo>
+  recentRateProfileMap?: Record<string, RateProfileTerms>
 }
 
 /* ── Helpers ── */
@@ -55,6 +103,147 @@ function formatTime(start: string | null, end: string | null): string {
     return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
   }
   return `${fmt(start)} – ${fmt(end)}`
+}
+
+const RECIPIENT_STATUS_ORDER: Record<string, number> = {
+  confirmed: 0, responded: 1, proposed: 1, viewed: 2, sent: 3, declined: 4, withdrawn: 5,
+}
+
+function sortRecipients(recipients: RecentRecipient[]): RecentRecipient[] {
+  return [...recipients].sort((a, b) =>
+    (RECIPIENT_STATUS_ORDER[a.status] ?? 3) - (RECIPIENT_STATUS_ORDER[b.status] ?? 3)
+  )
+}
+
+/* ── SVG Icons (thin-line, matching Deaf portal) ── */
+
+function CalendarIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  )
+}
+
+function ClockIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  )
+}
+
+function PinIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  )
+}
+
+function ChevronIcon({ expanded }: { expanded: boolean }) {
+  return (
+    <svg
+      width="18" height="18" viewBox="0 0 24 24" fill="none"
+      stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+      style={{
+        transition: 'transform 0.2s',
+        transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)',
+        flexShrink: 0,
+      }}
+    >
+      <path d="M6 9l6 6 6-6" />
+    </svg>
+  )
+}
+
+/* ── Interpreter Mini Card (matching Deaf portal style) ── */
+
+function InterpreterMiniCard({ recipient, interp, showRate }: {
+  recipient: RecentRecipient
+  interp: InterpreterInfo | undefined
+  showRate?: boolean
+}) {
+  const name = interp?.first_name
+    ? `${interp.first_name} ${interp.last_name?.[0] || ''}.`
+    : interp?.name || 'Interpreter'
+  const initials = interp?.first_name
+    ? `${interp.first_name[0]}${interp.last_name?.[0] || ''}`.toUpperCase()
+    : (interp?.name?.[0] || 'I').toUpperCase()
+
+  const statusConfigs: Record<string, { bg: string; color: string; label: string }> = {
+    confirmed: { bg: 'rgba(52,211,153,0.1)', color: '#34d399', label: 'Confirmed' },
+    sent: { bg: 'rgba(184,191,207,0.08)', color: '#6b7280', label: 'Sent' },
+    viewed: { bg: 'rgba(96,165,250,0.1)', color: '#60a5fa', label: 'Viewed' },
+    responded: { bg: 'rgba(255,165,0,0.1)', color: '#ffa500', label: 'Rate received' },
+    proposed: { bg: 'rgba(139,92,246,0.1)', color: '#a78bfa', label: 'Alternative suggested' },
+    declined: { bg: 'rgba(255,107,133,0.08)', color: '#ff8099', label: 'Declined' },
+    withdrawn: { bg: 'rgba(184,191,207,0.06)', color: '#6b7280', label: 'Withdrawn' },
+  }
+  const sc = statusConfigs[recipient.status] || statusConfigs.sent
+
+  const rateLabel = showRate && recipient.response_rate != null && (recipient.status === 'responded' || recipient.status === 'confirmed' || recipient.status === 'proposed')
+    ? ` · $${recipient.response_rate}/hr`
+    : ''
+
+  return (
+    <div style={{
+      background: 'rgba(255,255,255,0.02)',
+      border: '1px solid var(--border)',
+      borderRadius: 10,
+      padding: '10px 12px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: 10,
+    }}>
+      <Link href={`/directory/${recipient.interpreter_id}`} onClick={e => e.stopPropagation()} style={{ flexShrink: 0, textDecoration: 'none' }}>
+        {interp?.photo_url ? (
+          <img src={interp.photo_url} alt="" style={{
+            width: 32, height: 32, borderRadius: '50%', objectFit: 'cover',
+          }} />
+        ) : (
+          <div style={{
+            width: 32, height: 32, borderRadius: '50%',
+            background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.6rem', color: '#fff',
+          }}>
+            {initials}
+          </div>
+        )}
+      </Link>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <Link
+          href={`/directory/${recipient.interpreter_id}`}
+          onClick={e => e.stopPropagation()}
+          style={{
+            fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.82rem',
+            color: 'var(--text)', textDecoration: 'none', display: 'block',
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}
+        >
+          {name}
+        </Link>
+        <span style={{
+          fontSize: '0.68rem', fontWeight: 600, color: sc.color,
+          background: sc.bg, borderRadius: 100, padding: '1px 7px',
+          display: 'inline-block', marginTop: 2,
+        }}>
+          {sc.label}{rateLabel}
+        </span>
+        {recipient.sent_at && (
+          <div style={{ fontSize: '11px', fontWeight: 400, color: '#96a0b8', marginTop: 4 }}>
+            Contacted {formatContactedAgo(recipient.sent_at)}
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }
 
 /* ── Stat Card ── */
@@ -85,32 +274,11 @@ function StatCard({ num, label, href }: { num: number; label: string; href: stri
 
 /* ── Main ── */
 
-function recipientStatusLabel(s: string): string {
-  switch (s) {
-    case 'sent': return 'Pending'
-    case 'viewed': return 'Viewed'
-    case 'responded': return 'Rate received'
-    case 'confirmed': return 'Confirmed'
-    case 'declined': return 'Declined'
-    case 'withdrawn': return 'Withdrawn'
-    default: return s
-  }
-}
-
-function recipientStatusColor(s: string): string {
-  switch (s) {
-    case 'sent': case 'viewed': return '#f97316'
-    case 'responded': return '#f59e0b'
-    case 'confirmed': return '#34d399'
-    case 'declined': case 'withdrawn': return '#666'
-    default: return '#96a0b8'
-  }
-}
-
 export default function RequesterOverviewClient({
   firstName, orgName, activeRequests, confirmedBookings, rosterCount, pendingResponses, recentBookings,
-  recentRecipients = [], recentInterpreterMap = {},
+  recentRecipients = [], recentInterpreterMap = {}, recentRateProfileMap = {},
 }: Props) {
+  void orgName
   const greeting = firstName ? `Good to see you, ${firstName}.` : 'Welcome to your dashboard.'
   const [expandedBookingId, setExpandedBookingId] = useState<string | null>(null)
   const bookingCardRefs = useRef<Record<string, HTMLDivElement | null>>({})
@@ -183,6 +351,10 @@ export default function RequesterOverviewClient({
           <>
             {recentBookings.map(booking => {
               const isExpanded = expandedBookingId === booking.id
+              const recs = recentRecipients.filter(r => r.booking_id === booking.id)
+              const confirmedRecs = recs.filter(r => r.status === 'confirmed')
+              const locationText = formatLocationShort(booking)
+
               return (
               <div
                 key={booking.id}
@@ -206,10 +378,10 @@ export default function RequesterOverviewClient({
                   }
                 }}
                 style={{
-                background: 'var(--card-bg)', border: '1px solid var(--border)',
+                background: '#111118', border: '1px solid #1e2433',
                 borderRadius: 'var(--radius)', padding: '20px 24px',
                 cursor: 'pointer', transition: 'border-color 0.15s',
-                marginBottom: 12,
+                marginBottom: 12, overflow: 'hidden',
               }}>
                 {/* Title */}
                 <div style={{ marginBottom: 8 }}>
@@ -227,15 +399,27 @@ export default function RequesterOverviewClient({
                   </div>
                 </div>
 
-                {/* Date, time, location */}
+                {/* Date, time, location with icons */}
                 <div style={{
-                  display: 'flex', gap: 16, flexWrap: 'wrap',
-                  fontSize: '0.8rem', color: 'var(--muted)',
-                  marginBottom: 4,
+                  display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap',
+                  fontFamily: "'Inter', sans-serif", fontSize: '0.84rem', color: 'var(--muted)',
+                  marginBottom: 8,
                 }}>
-                  <span>{formatDate(booking.date)}</span>
-                  <span>{formatTime(booking.time_start, booking.time_end)}</span>
-                  <span>{formatLocationShort(booking)}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                    <CalendarIcon />
+                    {formatDate(booking.date)}
+                  </span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                    <ClockIcon />
+                    {formatTime(booking.time_start, booking.time_end)}
+                  </span>
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 5,
+                    maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                  }}>
+                    <PinIcon />
+                    {locationText}
+                  </span>
                 </div>
 
                 {/* Tracker timeline */}
@@ -246,77 +430,265 @@ export default function RequesterOverviewClient({
                     date: booking.date,
                     interpreter_count: booking.interpreter_count,
                   }}
-                  recipients={recentRecipients
-                    .filter(r => r.booking_id === booking.id)
-                    .map(r => ({ id: r.id, interpreter_id: r.interpreter_id, status: r.status }))
-                  }
+                  recipients={recs.map(r => ({ id: r.id, interpreter_id: r.interpreter_id, status: r.status }))}
                   compact
                 />
-                {/* Per-interpreter status for multi-interpreter bookings */}
-                {(() => {
-                  const recs = recentRecipients.filter(r => r.booking_id === booking.id)
-                  if (recs.length <= 1) return null
-                  return (
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', paddingBottom: 4 }}>
-                      {recs.map(rec => (
-                        <span key={rec.id} style={{
-                          display: 'inline-flex', alignItems: 'center', gap: 5,
-                          fontSize: '0.72rem', padding: '3px 10px',
-                          borderRadius: 100, fontFamily: "'Inter', sans-serif",
-                          background: 'rgba(255,255,255,0.04)',
-                          border: '1px solid var(--border)',
-                        }}>
-                          <span style={{ color: 'var(--text)', fontWeight: 600 }}>
-                            {recentInterpreterMap[rec.interpreter_id] || 'Unknown'}
-                          </span>
-                          {rec.status === 'responded' ? (
-                            <span style={{
-                              display: 'inline-flex', alignItems: 'center', gap: 5,
-                              color: '#f59e0b', fontWeight: 600,
-                            }}>
-                              <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }} />
-                              Rate received
-                            </span>
-                          ) : (
-                            <span style={{ color: recipientStatusColor(rec.status), fontWeight: 600 }}>
-                              {recipientStatusLabel(rec.status)}
-                            </span>
-                          )}
-                        </span>
-                      ))}
-                    </div>
-                  )
-                })()}
-                {/* View details */}
-                <div style={{ marginTop: 4 }}>
-                  <span style={{
-                    fontFamily: "'Inter', sans-serif", fontWeight: 500,
-                    fontSize: '0.78rem', color: 'var(--accent)',
+
+                {/* Compact: confirmed interpreters with photos */}
+                {confirmedRecs.length > 0 && !isExpanded && (
+                  <div style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
+                    gap: 6, marginTop: 4,
                   }}>
-                    View details
-                  </span>
+                    {confirmedRecs.map(r => {
+                      const interp = recentInterpreterMap[r.interpreter_id]
+                      const name = interp?.first_name
+                        ? `${interp.first_name} ${interp.last_name?.[0] || ''}.`
+                        : interp?.name || 'Interpreter'
+                      const initials = interp?.first_name
+                        ? `${interp.first_name[0]}${interp.last_name?.[0] || ''}`.toUpperCase()
+                        : (interp?.name?.[0] || 'I').toUpperCase()
+
+                      return (
+                        <span key={r.id} style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 6,
+                          fontSize: '0.8rem', color: '#34d399', fontWeight: 500,
+                        }}>
+                          {interp?.photo_url ? (
+                            <img src={interp.photo_url} alt="" style={{
+                              width: 24, height: 24, borderRadius: '50%', objectFit: 'cover',
+                            }} />
+                          ) : (
+                            <div style={{
+                              width: 24, height: 24, borderRadius: '50%',
+                              background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.5rem', color: '#fff',
+                            }}>
+                              {initials}
+                            </div>
+                          )}
+                          Confirmed: {name}
+                          <span style={{
+                            width: 8, height: 8, borderRadius: '50%', background: '#34d399',
+                            display: 'inline-block',
+                          }} />
+                        </span>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {/* View details toggle */}
+                <div style={{ marginTop: 10 }}>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setExpandedBookingId(isExpanded ? null : booking.id) }}
+                    aria-expanded={isExpanded}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                      fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '0.82rem',
+                      color: '#00e5ff', display: 'inline-flex', alignItems: 'center', gap: 5,
+                      textDecoration: 'none',
+                    }}
+                    onMouseOver={e => (e.currentTarget.style.textDecoration = 'underline')}
+                    onMouseOut={e => (e.currentTarget.style.textDecoration = 'none')}
+                  >
+                    {isExpanded ? 'Hide details' : 'View details'}
+                    <ChevronIcon expanded={isExpanded} />
+                  </button>
                 </div>
+
+                {/* EXPANDED VIEW */}
                 {isExpanded && (
                   <div
                     onClick={e => e.stopPropagation()}
-                    style={{
-                      marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--border)',
-                      display: 'flex', flexDirection: 'column', gap: 8,
-                      fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6,
-                    }}
+                    style={{ paddingTop: 16, marginTop: 16, borderTop: '1px solid var(--border)' }}
                   >
-                    {booking.event_category && (
-                      <div><span style={{ color: 'var(--muted)' }}>Category: </span>{booking.event_category}</div>
-                    )}
-                    <Link
-                      href={`/request/dashboard/requests?expand=${booking.id}`}
-                      style={{
-                        marginTop: 4, color: 'var(--accent)', textDecoration: 'none',
-                        fontSize: '0.82rem', fontWeight: 600,
-                      }}
-                    >
-                      Open in full requests view
-                    </Link>
+                    <div className="req-overview-expanded-cols" style={{
+                      display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24,
+                    }}>
+                      {/* LEFT: Appointment Details */}
+                      <div>
+                        <div style={{
+                          fontWeight: 600, fontSize: '13px',
+                          letterSpacing: '0.08em', textTransform: 'uppercase',
+                          color: '#00e5ff', marginBottom: 12,
+                        }}>
+                          Appointment Details
+                        </div>
+
+                        {/* Location */}
+                        <div style={{ marginBottom: 10 }}>
+                          <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
+                            Location
+                          </div>
+                          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'var(--text)', whiteSpace: 'pre-line' }}>
+                            {booking.format === 'remote' ? (
+                              <>
+                                <span style={{ color: '#00e5ff' }}>Remote</span>
+                                {booking.meeting_link && (
+                                  <div style={{ marginTop: 4 }}>
+                                    <a
+                                      href={booking.meeting_link}
+                                      target="_blank" rel="noopener noreferrer"
+                                      style={{ color: '#00e5ff', textDecoration: 'underline', fontSize: '0.85rem' }}
+                                    >
+                                      {booking.meeting_link}
+                                    </a>
+                                  </div>
+                                )}
+                              </>
+                            ) : (booking.location || booking.location_city) ? (
+                              <a
+                                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(formatLocationFull(booking).replace(/\n/g, ', '))}`}
+                                target="_blank" rel="noopener noreferrer"
+                                style={{ color: '#00e5ff', textDecoration: 'none' }}
+                                onMouseOver={e => (e.currentTarget.style.textDecoration = 'underline')}
+                                onMouseOut={e => (e.currentTarget.style.textDecoration = 'none')}
+                              >
+                                {formatLocationFull(booking)}
+                              </a>
+                            ) : 'TBD'}
+                          </div>
+                        </div>
+
+                        {/* Format */}
+                        {booking.format && (
+                          <div style={{ marginBottom: 10 }}>
+                            <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
+                              Format
+                            </div>
+                            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
+                              {booking.format === 'remote' ? 'Remote' : booking.format === 'in_person' || booking.format === 'in-person' ? 'In Person' : booking.format.charAt(0).toUpperCase() + booking.format.slice(1)}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Event / Specialization */}
+                        {(booking.specialization || booking.event_category) && (
+                          <div style={{ marginBottom: 10 }}>
+                            <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
+                              Specialization
+                            </div>
+                            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
+                              {booking.specialization || booking.event_category}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Notes */}
+                        {(booking.description || booking.notes) && (
+                          <div style={{ marginBottom: 10 }}>
+                            <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.8rem', color: 'var(--muted)', marginBottom: 2 }}>
+                              Notes
+                            </div>
+                            <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.55 }}>
+                              {booking.description || booking.notes}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Preparation */}
+                        {(booking.onsite_contact_name || booking.prep_notes) && (
+                          <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+                            <div style={{
+                              fontWeight: 600, fontSize: '13px',
+                              letterSpacing: '0.08em', textTransform: 'uppercase',
+                              color: '#00e5ff', marginBottom: 10,
+                            }}>
+                              Preparation
+                            </div>
+                            {booking.onsite_contact_name && (
+                              <div style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.65, marginBottom: 8 }}>
+                                <div style={{ fontSize: '0.78rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, marginBottom: 4 }}>On-site Contact</div>
+                                <div>{booking.onsite_contact_name}</div>
+                                {booking.onsite_contact_phone && <div style={{ color: 'var(--muted)' }}>{booking.onsite_contact_phone}</div>}
+                                {booking.onsite_contact_email && <div style={{ color: 'var(--muted)' }}>{booking.onsite_contact_email}</div>}
+                              </div>
+                            )}
+                            {booking.prep_notes && (
+                              <div style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.65 }}>
+                                <div style={{ fontSize: '0.78rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500, marginBottom: 4 }}>Prep Notes</div>
+                                <div style={{ whiteSpace: 'pre-wrap', color: 'var(--muted)' }}>{booking.prep_notes}</div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* RIGHT: Interpreters Contacted */}
+                      <div>
+                        <div style={{
+                          fontWeight: 600, fontSize: '13px',
+                          letterSpacing: '0.08em', textTransform: 'uppercase',
+                          color: '#00e5ff', marginBottom: 12,
+                        }}>
+                          Interpreters Contacted
+                        </div>
+
+                        {recs.length > 0 ? (
+                          <div className="req-overview-interp-grid" style={{
+                            display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8,
+                          }}>
+                            {sortRecipients(recs).map(rec => (
+                              <InterpreterMiniCard
+                                key={rec.id}
+                                recipient={rec}
+                                interp={recentInterpreterMap[rec.interpreter_id]}
+                                showRate
+                              />
+                            ))}
+                          </div>
+                        ) : (
+                          <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
+                            No interpreters contacted yet.
+                          </div>
+                        )}
+
+                        {/* Action buttons for responded interpreters */}
+                        {recs.filter(r => r.status === 'responded' || r.status === 'proposed').length > 0 && (
+                          <div style={{ marginTop: 14 }}>
+                            {recs.filter(r => r.status === 'responded' || r.status === 'proposed').map(rec => {
+                              const interp = recentInterpreterMap[rec.interpreter_id]
+                              const interpName = interp?.first_name
+                                ? `${interp.first_name} ${interp.last_name?.[0] || ''}.`
+                                : interp?.name || 'Interpreter'
+                              return (
+                                <div key={rec.id} style={{
+                                  display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap',
+                                }}>
+                                  <span style={{ fontSize: '0.78rem', color: 'var(--muted)', fontWeight: 500 }}>{interpName}:</span>
+                                  <Link
+                                    href={`/request/dashboard/accept/${booking.id}/${rec.id}`}
+                                    style={{
+                                      background: 'var(--accent)', color: '#000',
+                                      padding: '6px 14px', borderRadius: 'var(--radius-sm)',
+                                      fontSize: '0.72rem', fontWeight: 700,
+                                      fontFamily: "'Inter', sans-serif",
+                                      textDecoration: 'none', whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    Review & Accept
+                                  </Link>
+                                  <Link
+                                    href="/request/dashboard/inbox"
+                                    style={{
+                                      background: 'none', border: '1px solid var(--border)',
+                                      color: 'var(--text)', padding: '6px 14px',
+                                      borderRadius: 'var(--radius-sm)', fontSize: '0.72rem',
+                                      fontFamily: "'Inter', sans-serif",
+                                      textDecoration: 'none', whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    Message
+                                  </Link>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -364,10 +736,12 @@ export default function RequesterOverviewClient({
       {/* Mobile styles */}
       <style>{`
         .recent-request-card:hover {
-          border-color: rgba(0,229,255,0.3) !important;
+          border-color: rgba(0,229,255,0.35) !important;
         }
         @media (max-width: 768px) {
           .dash-page-content { padding: 24px 20px !important; }
+          .req-overview-expanded-cols { grid-template-columns: 1fr !important; }
+          .req-overview-interp-grid { grid-template-columns: 1fr !important; }
         }
         @media (max-width: 480px) {
           .dash-page-content { padding: 20px 16px !important; }

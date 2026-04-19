@@ -8,6 +8,8 @@ import { sendNotification } from '@/lib/notifications'
 import Toast from '@/components/ui/Toast'
 import RequesterInterpreterPicker from '@/components/requester/RequesterInterpreterPicker'
 import BetaTryThis from '@/components/ui/BetaTryThis'
+import BookingFilterBar, { filterBySearch, filterByDateRange } from '@/components/dashboard/shared/BookingFilterBar'
+import { formatContactedAgo } from '@/lib/format-time'
 
 /* ── Types ── */
 
@@ -37,6 +39,7 @@ interface Booking {
   onsite_contact_phone: string | null
   onsite_contact_email: string | null
   created_at: string
+  request_type: string | null
 }
 
 interface Recipient {
@@ -54,12 +57,14 @@ interface Recipient {
   proposed_start_time: string | null
   proposed_end_time: string | null
   proposal_note: string | null
+  sent_at: string | null
 }
 
 interface InterpreterInfo {
   name: string
   first_name: string | null
   last_name: string | null
+  photo_url: string | null
 }
 
 interface DhhClient {
@@ -85,94 +90,8 @@ function formatTime(start: string | null, end: string | null): string {
   return `${fmt(start)} – ${fmt(end)}`
 }
 
-function statusLabel(s: string): string {
-  switch (s) {
-    case 'draft': return 'Draft'
-    case 'open': return 'Pending'
-    case 'filled': return 'Confirmed'
-    case 'completed': return 'Completed'
-    case 'cancelled': return 'Cancelled'
-    default: return s
-  }
-}
-
-function statusColor(s: string): { bg: string; color: string } {
-  switch (s) {
-    case 'draft': return { bg: 'rgba(255,255,255,0.06)', color: 'var(--muted)' }
-    case 'open': return { bg: 'rgba(255,165,0,0.12)', color: '#f97316' }
-    case 'filled': return { bg: 'rgba(52,211,153,0.12)', color: '#34d399' }
-    case 'completed': return { bg: 'rgba(157,135,255,0.12)', color: '#9d87ff' }
-    case 'cancelled': return { bg: 'rgba(255,255,255,0.04)', color: '#666' }
-    default: return { bg: 'rgba(0,229,255,0.1)', color: 'var(--accent)' }
-  }
-}
-
-function recipientStatusLabel(s: string): string {
-  switch (s) {
-    case 'sent': return 'Pending'
-    case 'viewed': return 'Viewed'
-    case 'responded': return 'Rate received'
-    case 'proposed': return 'Alternative suggested'
-    case 'confirmed': return 'Confirmed'
-    case 'declined': return 'Declined'
-    case 'withdrawn': return 'Withdrawn'
-    default: return s
-  }
-}
-
-function recipientStatusColor(s: string): string {
-  switch (s) {
-    case 'sent': case 'viewed': return '#f97316'
-    case 'responded': return '#f59e0b'
-    case 'proposed': return '#a78bfa'
-    case 'confirmed': return '#34d399'
-    case 'declined': case 'withdrawn': return '#666'
-    default: return 'var(--muted)'
-  }
-}
-
-function RecipientStatusPill({ status }: { status: string }) {
-  const isRate = status === 'responded'
-  const isProposed = status === 'proposed'
-  const color = recipientStatusColor(status)
-  if (isProposed) {
-    return (
-      <span style={{
-        display: 'inline-flex', alignItems: 'center', gap: 6,
-        fontSize: '0.7rem', fontWeight: 600, color,
-        fontFamily: "'Inter', sans-serif",
-        background: 'rgba(139, 92, 246, 0.15)',
-        border: '1px solid rgba(139, 92, 246, 0.4)',
-        padding: '3px 9px', borderRadius: 100,
-      }}>
-        <span style={{ width: 4, height: 4, borderRadius: '50%', background: color, display: 'inline-block' }} />
-        Alternative suggested
-      </span>
-    )
-  }
-  if (!isRate) {
-    return (
-      <span style={{
-        fontSize: '0.7rem', fontWeight: 600, color,
-        fontFamily: "'Inter', sans-serif",
-      }}>
-        {recipientStatusLabel(status)}
-      </span>
-    )
-  }
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 6,
-      fontSize: '0.7rem', fontWeight: 600, color,
-      fontFamily: "'Inter', sans-serif",
-      background: 'rgba(245, 158, 11, 0.15)',
-      border: '1px solid rgba(245, 158, 11, 0.4)',
-      padding: '3px 9px', borderRadius: 100,
-    }}>
-      <span style={{ width: 4, height: 4, borderRadius: '50%', background: color, display: 'inline-block' }} />
-      Rate received
-    </span>
-  )
+const RECIPIENT_STATUS_ORDER: Record<string, number> = {
+  confirmed: 0, responded: 1, proposed: 1, viewed: 2, sent: 3, declined: 4, withdrawn: 5,
 }
 
 function formatTimeRange(start: string | null, end: string | null): string {
@@ -273,6 +192,8 @@ export default function RequestsClient({
   const [activeTab, setActiveTab] = useState<TabKey>('all')
   const [search, setSearch] = useState('')
   const [localSearch, setLocalSearch] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(searchParams.get('expand'))
   const [cancelModalId, setCancelModalId] = useState<string | null>(null)
   const [cancelReason, setCancelReason] = useState('')
@@ -300,8 +221,11 @@ export default function RequestsClient({
     recipientsByBooking.set(r.booking_id, list)
   }
 
+  // Filter out personal bookings (those belong on the Deaf portal only)
+  const professionalBookings = bookings.filter(b => b.request_type !== 'personal')
+
   // Filter bookings
-  let filtered = bookings
+  let filtered = professionalBookings
   if (activeTab !== 'all') {
     filtered = filtered.filter(b => b.status === activeTab)
   }
@@ -317,11 +241,13 @@ export default function RequestsClient({
       )
     })
   }
+  // Apply date range filter
+  filtered = filterByDateRange(filtered, dateFrom, dateTo)
 
   // Count per tab
   const countForTab = (key: TabKey) => {
-    if (key === 'all') return bookings.length
-    return bookings.filter(b => b.status === key).length
+    if (key === 'all') return professionalBookings.length
+    return professionalBookings.filter(b => b.status === key).length
   }
 
   // Cancel handler
@@ -619,33 +545,12 @@ export default function RequestsClient({
         })}
       </div>
 
-      {/* Search */}
-      <div style={{ position: 'relative', maxWidth: 400, marginBottom: 24 }}>
-        <svg
-          width="16" height="16" viewBox="0 0 24 24" fill="none"
-          stroke="var(--muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-          style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
-        >
-          <circle cx="11" cy="11" r="8" />
-          <path d="M21 21l-4.35-4.35" />
-        </svg>
-        <input
-          type="text"
-          placeholder="Search by title, interpreter, or date..."
-          value={localSearch}
-          onChange={e => setLocalSearch(e.target.value)}
-          aria-label="Search requests"
-          style={{
-            width: '100%', boxSizing: 'border-box',
-            background: '#16161f', border: '1px solid #333',
-            borderRadius: 'var(--radius-sm)', padding: '9px 14px 9px 36px',
-            color: 'var(--text)', fontFamily: "'Inter', sans-serif", fontSize: '0.88rem',
-            outline: 'none', transition: 'border-color 0.15s',
-          }}
-          onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
-          onBlur={e => { e.target.style.borderColor = '#333' }}
-        />
-      </div>
+      {/* Search + date range */}
+      <BookingFilterBar
+        search={localSearch} onSearchChange={setLocalSearch}
+        dateFrom={dateFrom} onDateFromChange={setDateFrom}
+        dateTo={dateTo} onDateToChange={setDateTo}
+      />
 
       {/* Request list */}
       {filtered.length === 0 ? (
@@ -687,8 +592,6 @@ export default function RequestsClient({
               interpSummary = `${totalRequested} interpreter${totalRequested > 1 ? 's' : ''} requested`
             }
 
-            const sc = statusColor(booking.status)
-
             return (
               <div key={booking.id}>
                 {/* Card */}
@@ -722,14 +625,6 @@ export default function RequestsClient({
                         <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.95rem', color: 'var(--text)' }}>
                           {(booking.title || '').startsWith('[Sample] ') ? (booking.title || '').replace('[Sample] ', '') : (booking.title || 'Untitled Request')}
                         </span>
-                        <span style={{
-                          fontSize: '0.7rem', fontWeight: 700, padding: '2px 10px',
-                          borderRadius: 100, background: sc.bg, color: sc.color,
-                          fontFamily: "'Inter', sans-serif", letterSpacing: '0.04em',
-                          border: booking.status === 'draft' ? '1px solid #444' : 'none',
-                        }}>
-                          {statusLabel(booking.status)}
-                        </span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', color: 'var(--muted)', fontSize: '0.82rem' }}>
                         <span>{formatDate(booking.date)} &middot; {formatTime(booking.time_start, booking.time_end)}</span>
@@ -741,27 +636,53 @@ export default function RequestsClient({
                           <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>{interpSummary}</span>
                         )}
                       </div>
-                      {/* Per-interpreter status breakdown for multi-interpreter bookings */}
-                      {recs.length > 1 && (
-                        <div style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                          {recs.map(rec => {
-                            const interp = interpreterMap[rec.interpreter_id]
-                            const firstName = interp?.first_name || interp?.name?.split(' ')[0] || 'Unknown'
-                            return (
-                              <span key={rec.id} style={{
-                                display: 'inline-flex', alignItems: 'center', gap: 5,
-                                fontSize: '0.72rem', padding: '3px 10px',
-                                borderRadius: 100, fontFamily: "'Inter', sans-serif",
-                                background: 'rgba(255,255,255,0.04)',
-                                border: '1px solid var(--border)',
-                              }}>
-                                <span style={{ color: 'var(--text)', fontWeight: 600 }}>{firstName}</span>
-                                <RecipientStatusPill status={rec.status} />
-                              </span>
-                            )
-                          })}
-                        </div>
-                      )}
+                      {/* Confirmed interpreters with photos (compact view) */}
+                      {!isExpanded && (() => {
+                        const confirmed = recs.filter(r => r.status === 'confirmed')
+                        if (confirmed.length === 0) return null
+                        return (
+                          <div style={{
+                            display: 'flex', flexDirection: 'column', alignItems: 'flex-end',
+                            gap: 6, marginTop: 8,
+                          }}>
+                            {confirmed.map(rec => {
+                              const interp = interpreterMap[rec.interpreter_id]
+                              const name = interp?.first_name
+                                ? `${interp.first_name} ${interp.last_name?.[0] || ''}.`
+                                : interp?.name || 'Interpreter'
+                              const initials = interp?.first_name
+                                ? `${interp.first_name[0]}${interp.last_name?.[0] || ''}`.toUpperCase()
+                                : (interp?.name?.[0] || 'I').toUpperCase()
+                              return (
+                                <span key={rec.id} style={{
+                                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                                  fontSize: '0.8rem', color: '#34d399', fontWeight: 500,
+                                }}>
+                                  {interp?.photo_url ? (
+                                    <img src={interp.photo_url} alt="" style={{
+                                      width: 24, height: 24, borderRadius: '50%', objectFit: 'cover',
+                                    }} />
+                                  ) : (
+                                    <div style={{
+                                      width: 24, height: 24, borderRadius: '50%',
+                                      background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
+                                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                      fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.5rem', color: '#fff',
+                                    }}>
+                                      {initials}
+                                    </div>
+                                  )}
+                                  Confirmed: {name}
+                                  <span style={{
+                                    width: 8, height: 8, borderRadius: '50%', background: '#34d399',
+                                    display: 'inline-block',
+                                  }} />
+                                </span>
+                              )
+                            })}
+                          </div>
+                        )
+                      })()}
                     </div>
                     <svg
                       width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)"
@@ -799,75 +720,157 @@ export default function RequestsClient({
                     {/* Preparation: on-site contact, prep notes, attachments */}
                     <PreparationSection booking={booking} />
 
-                    {/* Interpreter responses */}
+                    {/* Interpreter photo card grid + actions */}
                     <div style={{ marginBottom: 20 }}>
                       <h3 style={{
                         fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.7rem',
                         letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)',
                         margin: '0 0 12px',
                       }}>
-                        Interpreter Responses
+                        Interpreters Contacted
                       </h3>
                       {recs.length === 0 ? (
                         <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>No interpreters assigned yet.</p>
                       ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                          {recs.map(rec => {
+                        <>
+                          {/* Photo card grid */}
+                          <div className="req-interp-grid" style={{
+                            display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 14,
+                          }}>
+                            {[...recs].sort((a, b) => (RECIPIENT_STATUS_ORDER[a.status] ?? 3) - (RECIPIENT_STATUS_ORDER[b.status] ?? 3)).map(rec => {
+                              const interp = interpreterMap[rec.interpreter_id]
+                              const name = interp?.first_name
+                                ? `${interp.first_name} ${interp.last_name?.[0] || ''}.`
+                                : interp?.name || 'Interpreter'
+                              const initials = interp?.first_name
+                                ? `${interp.first_name[0]}${interp.last_name?.[0] || ''}`.toUpperCase()
+                                : (interp?.name?.[0] || 'I').toUpperCase()
+                              const statusConfigs: Record<string, { bg: string; color: string; label: string }> = {
+                                confirmed: { bg: 'rgba(52,211,153,0.1)', color: '#34d399', label: 'Confirmed' },
+                                sent: { bg: 'rgba(184,191,207,0.08)', color: '#6b7280', label: 'Sent' },
+                                viewed: { bg: 'rgba(96,165,250,0.1)', color: '#60a5fa', label: 'Viewed' },
+                                responded: { bg: 'rgba(255,165,0,0.1)', color: '#ffa500', label: 'Rate received' },
+                                proposed: { bg: 'rgba(139,92,246,0.1)', color: '#a78bfa', label: 'Alternative suggested' },
+                                declined: { bg: 'rgba(255,107,133,0.08)', color: '#ff8099', label: 'Declined' },
+                                withdrawn: { bg: 'rgba(184,191,207,0.06)', color: '#6b7280', label: 'Withdrawn' },
+                              }
+                              const sc = statusConfigs[rec.status] || statusConfigs.sent
+                              const rateLabel = rec.response_rate != null && (rec.status === 'responded' || rec.status === 'confirmed' || rec.status === 'proposed')
+                                ? ` · $${rec.response_rate}/hr`
+                                : ''
+
+                              return (
+                                <div key={rec.id} style={{
+                                  background: 'rgba(255,255,255,0.02)',
+                                  border: '1px solid var(--border)',
+                                  borderRadius: 10,
+                                  padding: '10px 12px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 10,
+                                }}>
+                                  <Link href={`/directory/${rec.interpreter_id}`} onClick={e => e.stopPropagation()} style={{ flexShrink: 0, textDecoration: 'none' }}>
+                                    {interp?.photo_url ? (
+                                      <img src={interp.photo_url} alt="" style={{
+                                        width: 32, height: 32, borderRadius: '50%', objectFit: 'cover',
+                                      }} />
+                                    ) : (
+                                      <div style={{
+                                        width: 32, height: 32, borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.6rem', color: '#fff',
+                                      }}>
+                                        {initials}
+                                      </div>
+                                    )}
+                                  </Link>
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <Link
+                                      href={`/directory/${rec.interpreter_id}`}
+                                      onClick={e => e.stopPropagation()}
+                                      style={{
+                                        fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.82rem',
+                                        color: 'var(--text)', textDecoration: 'none', display: 'block',
+                                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                                      }}
+                                    >
+                                      {name}
+                                    </Link>
+                                    <span style={{
+                                      fontSize: '0.68rem', fontWeight: 600, color: sc.color,
+                                      background: sc.bg, borderRadius: 100, padding: '1px 7px',
+                                      display: 'inline-block', marginTop: 2,
+                                    }}>
+                                      {sc.label}{rateLabel}
+                                    </span>
+                                    {rec.sent_at && (
+                                      <div style={{ fontSize: '11px', fontWeight: 400, color: '#96a0b8', marginTop: 4 }}>
+                                        Contacted {formatContactedAgo(rec.sent_at)}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+
+                          {/* Action buttons for responded/proposed interpreters */}
+                          {recs.filter(r => r.status === 'responded' || r.status === 'proposed').map(rec => {
                             const interp = interpreterMap[rec.interpreter_id]
                             const interpName = interp?.name || 'Unknown Interpreter'
                             return (
-                              <div key={rec.id} className="req-resp-card" style={{
-                                background: 'var(--surface)', border: '1px solid var(--card-border)',
+                              <div key={`action-${rec.id}`} className="req-resp-card" style={{
+                                background: 'var(--surface)', border: '1px solid var(--border)',
                                 borderRadius: 'var(--radius-sm)', padding: '14px 18px',
-                                display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-                                gap: 12, flexWrap: 'wrap',
+                                marginBottom: 8,
                               }}>
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4, flexWrap: 'wrap' }}>
-                                    <Link
-                                      href={`/directory/${rec.interpreter_id}`}
-                                      style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)', textDecoration: 'none' }}
-                                      onMouseEnter={e => { e.currentTarget.style.textDecoration = 'underline' }}
-                                      onMouseLeave={e => { e.currentTarget.style.textDecoration = 'none' }}
-                                    >
-                                      {interpName}
-                                    </Link>
-                                    <RecipientStatusPill status={rec.status} />
-                                  </div>
-                                  {rec.status === 'responded' || rec.status === 'confirmed' ? (
-                                    <RateTermsList
-                                      rp={rec.rate_profile_id ? rateProfileMap[rec.rate_profile_id] : undefined}
-                                      fallbackRate={rec.response_rate}
-                                    />
-                                  ) : rec.status === 'proposed' ? (
-                                    <div style={{ marginTop: 8, fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
-                                      {rec.response_rate != null && (
-                                        <div style={{ color: 'var(--accent)', fontWeight: 600, marginBottom: 4 }}>
-                                          Rate: ${rec.response_rate}/hr
-                                        </div>
-                                      )}
-                                      {rec.proposed_date && (
-                                        <div>
-                                          <span style={{ color: 'var(--text)', fontWeight: 600 }}>Suggested time:</span>{' '}
-                                          {formatProposedDate(rec.proposed_date)} . {formatTimeRange(rec.proposed_start_time, rec.proposed_end_time)}
-                                        </div>
-                                      )}
-                                      <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
-                                        (Your scheduled time: {formatTimeRange(booking.time_start, booking.time_end)})
-                                      </div>
-                                      {rec.proposal_note && (
-                                        <div style={{ marginTop: 6, fontStyle: 'italic', color: 'var(--text)' }}>
-                                          &ldquo;{rec.proposal_note}&rdquo;
-                                        </div>
-                                      )}
-                                    </div>
-                                  ) : rec.response_rate != null ? (
-                                    <span style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600 }}>
-                                      Rate: ${rec.response_rate}/hr
-                                    </span>
-                                  ) : null}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
+                                  <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.85rem', color: 'var(--text)' }}>
+                                    {interpName}
+                                  </span>
+                                  <span style={{
+                                    fontSize: '0.68rem', fontWeight: 600,
+                                    color: rec.status === 'proposed' ? '#a78bfa' : '#ffa500',
+                                    background: rec.status === 'proposed' ? 'rgba(139,92,246,0.1)' : 'rgba(255,165,0,0.1)',
+                                    borderRadius: 100, padding: '1px 7px',
+                                  }}>
+                                    {rec.status === 'proposed' ? 'Alternative suggested' : 'Rate received'}
+                                  </span>
                                 </div>
-                                <div className="req-resp-actions" style={{ display: 'flex', gap: 10, flexShrink: 0, flexWrap: 'wrap' }}>
+
+                                {/* Rate details */}
+                                {rec.status === 'responded' || rec.status === 'confirmed' ? (
+                                  <RateTermsList
+                                    rp={rec.rate_profile_id ? rateProfileMap[rec.rate_profile_id] : undefined}
+                                    fallbackRate={rec.response_rate}
+                                  />
+                                ) : rec.status === 'proposed' ? (
+                                  <div style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6, marginBottom: 8 }}>
+                                    {rec.response_rate != null && (
+                                      <div style={{ color: 'var(--accent)', fontWeight: 600, marginBottom: 4 }}>
+                                        Rate: ${rec.response_rate}/hr
+                                      </div>
+                                    )}
+                                    {rec.proposed_date && (
+                                      <div>
+                                        <span style={{ color: 'var(--text)', fontWeight: 600 }}>Suggested time:</span>{' '}
+                                        {formatProposedDate(rec.proposed_date)} . {formatTimeRange(rec.proposed_start_time, rec.proposed_end_time)}
+                                      </div>
+                                    )}
+                                    <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
+                                      (Your scheduled time: {formatTimeRange(booking.time_start, booking.time_end)})
+                                    </div>
+                                    {rec.proposal_note && (
+                                      <div style={{ marginTop: 6, fontStyle: 'italic', color: 'var(--text)' }}>
+                                        &ldquo;{rec.proposal_note}&rdquo;
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : null}
+
+                                {/* Action buttons */}
+                                <div className="req-resp-actions" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 8 }}>
                                   {rec.status === 'proposed' && (
                                     <>
                                       <button
@@ -917,7 +920,7 @@ export default function RequestsClient({
                                   <Link
                                     href="/request/dashboard/inbox"
                                     style={{
-                                      background: 'none', border: '1px solid var(--card-border)',
+                                      background: 'none', border: '1px solid var(--border)',
                                       color: 'var(--text)', padding: '10px 20px',
                                       borderRadius: 'var(--radius-sm)', fontSize: '0.78rem',
                                       fontFamily: "'Inter', sans-serif",
@@ -932,7 +935,7 @@ export default function RequestsClient({
                               </div>
                             )
                           })}
-                        </div>
+                        </>
                       )}
                     </div>
 
@@ -1278,6 +1281,7 @@ export default function RequestsClient({
       <style>{`
         @media (max-width: 768px) {
           .dash-page-content { padding: 24px 20px !important; }
+          .req-interp-grid { grid-template-columns: 1fr !important; }
         }
         @media (max-width: 640px) {
           .req-detail-grid { grid-template-columns: 1fr !important; }

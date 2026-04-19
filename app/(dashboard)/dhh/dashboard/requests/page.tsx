@@ -1200,6 +1200,7 @@ export default function DhhRequestsListPage() {
   const [ratingModalId, setRatingModalId] = useState<string | null>(null)
   const [ratedInterpreters, setRatedInterpreters] = useState<Set<string>>(new Set())
   const [activeTab, setActiveTab] = useState<Tab>('professional')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
   const [search, setSearch] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
@@ -1246,10 +1247,26 @@ export default function DhhRequestsListPage() {
   const professionalBookings = bookings.filter(b => b.request_type === 'professional' || (!b.request_type && !b.recipients?.length))
   const personalBookings = bookings.filter(b => b.request_type === 'personal')
   const tabBookings = activeTab === 'professional' ? professionalBookings : personalBookings
+  // Apply status filter
+  const statusMap: Record<string, string[]> = {
+    all: [],
+    pending: ['open'],
+    confirmed: ['filled'],
+    completed: ['completed'],
+    cancelled: ['cancelled'],
+  }
+  const statusFiltered = statusFilter === 'all'
+    ? tabBookings
+    : tabBookings.filter(b => (statusMap[statusFilter] || []).includes(b.status))
   const filteredBookings = filterByDateRange(
-    filterBySearch(tabBookings, search, ['title', 'location', 'description', 'notes']),
+    filterBySearch(statusFiltered, search, ['title', 'location', 'description', 'notes']),
     dateFrom, dateTo
   )
+  // Count per status for filter pills
+  const statusCountForTab = (key: string) => {
+    if (key === 'all') return tabBookings.length
+    return tabBookings.filter(b => (statusMap[key] || []).includes(b.status)).length
+  }
 
   // Sort: needs rating → upcoming → past/rated
   const sortedBookings = [...filteredBookings].sort((a, b) => {
@@ -1279,12 +1296,57 @@ export default function DhhRequestsListPage() {
         display: 'flex', gap: 0, marginBottom: 20,
         borderBottom: '1px solid var(--border)',
       }}>
-        <button onClick={() => { setActiveTab('professional'); setExpandedId(null) }} style={tabStyle('professional')}>
+        <button onClick={() => { setActiveTab('professional'); setExpandedId(null); setStatusFilter('all') }} style={tabStyle('professional')}>
           Requests made on my behalf
         </button>
-        <button onClick={() => { setActiveTab('personal'); setExpandedId(null) }} style={tabStyle('personal')}>
+        <button onClick={() => { setActiveTab('personal'); setExpandedId(null); setStatusFilter('all') }} style={tabStyle('personal')}>
           My personal requests
         </button>
+      </div>
+
+      {/* Status filter pills */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 20, flexWrap: 'wrap' }}>
+        {[
+          { key: 'all', label: 'All' },
+          { key: 'pending', label: 'Pending' },
+          { key: 'confirmed', label: 'Confirmed' },
+          { key: 'completed', label: 'Completed' },
+          { key: 'cancelled', label: 'Cancelled' },
+        ].map(tab => {
+          const count = statusCountForTab(tab.key)
+          const active = statusFilter === tab.key
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setStatusFilter(tab.key)}
+              style={{
+                background: active ? 'rgba(0,229,255,0.12)' : 'rgba(255,255,255,0.04)',
+                border: active ? '1px solid rgba(0,229,255,0.3)' : '1px solid var(--border)',
+                borderRadius: 100,
+                padding: '7px 16px',
+                color: active ? 'var(--accent)' : 'var(--muted)',
+                fontSize: '0.82rem',
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: active ? 700 : 500,
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}
+            >
+              {tab.label}
+              {count > 0 && (
+                <span style={{
+                  fontSize: '0.7rem', fontWeight: 700,
+                  background: active ? 'rgba(0,229,255,0.2)' : 'rgba(255,255,255,0.06)',
+                  color: active ? 'var(--accent)' : 'var(--muted)',
+                  borderRadius: 8, padding: '1px 6px',
+                }}>
+                  {count}
+                </span>
+              )}
+            </button>
+          )
+        })}
       </div>
 
       <BookingFilterBar

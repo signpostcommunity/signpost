@@ -30,6 +30,23 @@ export default async function RequesterDashboardPage() {
     status: string
     interpreter_count: number
     event_category: string | null
+    request_type: string | null
+    location: string | null
+    format: string | null
+    specialization: string | null
+    description: string | null
+    notes: string | null
+    prep_notes: string | null
+    onsite_contact_name: string | null
+    onsite_contact_phone: string | null
+    onsite_contact_email: string | null
+    location_name: string | null
+    location_address: string | null
+    location_city: string | null
+    location_state: string | null
+    location_zip: string | null
+    location_country: string | null
+    meeting_link: string | null
   }[] = []
 
   // Recent booking recipients (for multi-interpreter status)
@@ -38,8 +55,21 @@ export default async function RequesterDashboardPage() {
     booking_id: string
     interpreter_id: string
     status: string
+    sent_at: string | null
+    response_rate: number | null
+    wave_number: number
+    response_notes: string | null
+    rate_profile_id: string | null
+    confirmed_at: string | null
+    declined_at: string | null
+    proposed_date: string | null
+    proposed_start_time: string | null
+    proposed_end_time: string | null
+    proposal_note: string | null
   }[] = []
-  let recentInterpreterMap: Record<string, string> = {}
+  let recentInterpreterMap: Record<string, { name: string; first_name: string | null; last_name: string | null; photo_url: string | null }> = {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let recentRateProfileMap: Record<string, any> = {}
 
   if (user) {
     // BUG 1 FIX: Auto-create requester_profiles row for multi-role users
@@ -82,11 +112,11 @@ export default async function RequesterDashboardPage() {
     // Fetch profile, stats, and recent bookings in parallel - allSettled so one failure doesn't crash the page
     const [profileRes, activeRes, filledRes, rosterRes, bookingsRes, recentRes] = await Promise.allSettled([
       supabase.from('requester_profiles').select('first_name, last_name, org_name').or(`user_id.eq.${user.id},id.eq.${user.id}`).maybeSingle(),
-      supabase.from('bookings').select('id', { count: 'exact' }).limit(1).eq('requester_id', user.id).eq('status', 'open'),
-      supabase.from('bookings').select('id', { count: 'exact' }).limit(1).eq('requester_id', user.id).eq('status', 'filled'),
+      supabase.from('bookings').select('id', { count: 'exact' }).limit(1).eq('requester_id', user.id).eq('status', 'open').neq('request_type', 'personal'),
+      supabase.from('bookings').select('id', { count: 'exact' }).limit(1).eq('requester_id', user.id).eq('status', 'filled').neq('request_type', 'personal'),
       supabase.from('requester_roster').select('id', { count: 'exact' }).limit(1).eq('requester_user_id', user.id),
-      supabase.from('bookings').select('id').eq('requester_id', user.id).in('status', ['open', 'filled']),
-      supabase.from('bookings').select('id, title, date, time_start, time_end, status, interpreter_count, event_category').eq('requester_id', user.id).neq('status', 'draft').order('date', { ascending: false }).limit(5),
+      supabase.from('bookings').select('id').eq('requester_id', user.id).in('status', ['open', 'filled']).neq('request_type', 'personal'),
+      supabase.from('bookings').select('id, title, date, time_start, time_end, status, interpreter_count, event_category, request_type, location, format, specialization, description, notes, prep_notes, onsite_contact_name, onsite_contact_phone, onsite_contact_email, location_name, location_address, location_city, location_state, location_zip, location_country, meeting_link').eq('requester_id', user.id).neq('status', 'draft').neq('request_type', 'personal').order('date', { ascending: false }).limit(5),
     ])
 
     const profile = profileRes.status === 'fulfilled' ? profileRes.value.data : null
@@ -116,24 +146,43 @@ export default async function RequesterDashboardPage() {
     if (recentIds.length > 0) {
       const { data: recs } = await supabase
         .from('booking_recipients')
-        .select('id, booking_id, interpreter_id, status')
+        .select('id, booking_id, interpreter_id, status, sent_at, response_rate, wave_number, response_notes, rate_profile_id, confirmed_at, declined_at, proposed_date, proposed_start_time, proposed_end_time, proposal_note')
         .in('booking_id', recentIds)
 
       if (recs) {
         recentRecipients = recs
 
-        // Fetch interpreter names
+        // Fetch interpreter names + photos
         const interpIds = [...new Set(recs.map(r => r.interpreter_id))]
         if (interpIds.length > 0) {
           const admin = (await import('@/lib/supabase/admin')).getSupabaseAdmin()
           const { data: interps } = await admin
             .from('interpreter_profiles')
-            .select('id, first_name, last_name, name')
+            .select('id, first_name, last_name, name, photo_url')
             .in('id', interpIds)
 
           if (interps) {
             for (const ip of interps) {
-              recentInterpreterMap[ip.id] = ip.first_name || ip.name?.split(' ')[0] || 'Unknown'
+              recentInterpreterMap[ip.id] = {
+                name: ip.first_name && ip.last_name ? `${ip.first_name} ${ip.last_name}` : ip.name || 'Unknown',
+                first_name: ip.first_name || null,
+                last_name: ip.last_name || null,
+                photo_url: ip.photo_url || null,
+              }
+            }
+          }
+
+          // Fetch rate profiles referenced by recipients
+          const rateProfileIds = [...new Set(recs.map(r => r.rate_profile_id).filter((x): x is string => !!x))]
+          if (rateProfileIds.length > 0) {
+            const { data: rps } = await admin
+              .from('interpreter_rate_profiles')
+              .select('id, hourly_rate, currency, min_booking, after_hours_diff, after_hours_description, cancellation_policy, late_cancel_fee, travel_expenses, additional_terms')
+              .in('id', rateProfileIds)
+            if (rps) {
+              for (const rp of rps) {
+                recentRateProfileMap[rp.id] = rp
+              }
             }
           }
         }
@@ -152,6 +201,7 @@ export default async function RequesterDashboardPage() {
       recentBookings={recentBookings}
       recentRecipients={recentRecipients}
       recentInterpreterMap={recentInterpreterMap}
+      recentRateProfileMap={recentRateProfileMap}
     />
   )
 }
