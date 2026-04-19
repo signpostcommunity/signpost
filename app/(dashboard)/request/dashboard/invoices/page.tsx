@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import Toast from '@/components/ui/Toast'
+import { useOrgName } from '@/lib/hooks/useOrgName'
 
 interface AdditionalCost {
   category: string
@@ -62,6 +63,7 @@ function isUnpaid(inv: InvoiceRow): boolean {
 }
 
 export default function RequesterInvoicesPage() {
+  const orgName = useOrgName()
   const [invoices, setInvoices] = useState<InvoiceRow[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -174,6 +176,11 @@ export default function RequesterInvoicesPage() {
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
+      {orgName && (
+        <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.85rem', color: 'var(--muted)', fontWeight: 500, marginBottom: 4 }}>
+          {orgName}
+        </div>
+      )}
       <h1 style={{
         fontFamily: "'Syne', sans-serif", fontWeight: 725, fontSize: 27,
         margin: '0 0 8px',

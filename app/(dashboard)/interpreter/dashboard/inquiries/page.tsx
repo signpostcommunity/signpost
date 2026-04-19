@@ -897,6 +897,25 @@ function DeclineModal({ booking, onConfirm, onClose }: {
 
 /* ── Main Page ── */
 
+/* ── Status tabs ── */
+
+const INTERP_TABS = [
+  { key: 'all', label: 'All' },
+  { key: 'pending', label: 'Pending' },
+  { key: 'responded', label: 'Rate Sent' },
+  { key: 'proposed', label: 'Proposed' },
+  { key: 'declined', label: 'Declined' },
+] as const
+
+type InterpTabKey = (typeof INTERP_TABS)[number]['key']
+
+const TAB_STATUS_MAP: Record<string, string[]> = {
+  pending: ['sent', 'viewed'],
+  responded: ['responded'],
+  proposed: ['proposed'],
+  declined: ['declined'],
+}
+
 export default function InquiriesPage() {
   const [bookings, setBookings] = useState<Booking[]>([])
   const [loading, setLoading] = useState(true)
@@ -908,6 +927,7 @@ export default function InquiriesPage() {
   const [search, setSearch] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
+  const [activeTab, setActiveTab] = useState<InterpTabKey>('all')
 
   const fetchBookings = useCallback(async () => {
     const supabase = createClient()
@@ -929,7 +949,7 @@ export default function InquiriesPage() {
       .from('booking_recipients')
       .select('id, status, sent_at, booking_id')
       .eq('interpreter_id', profile.id)
-      .in('status', ['sent', 'viewed', 'responded', 'proposed'])
+      .in('status', ['sent', 'viewed', 'responded', 'proposed', 'declined'])
       .order('sent_at', { ascending: false })
 
     if (recipientErr) {
@@ -1028,9 +1048,9 @@ export default function InquiriesPage() {
   }
 
   function handleDeclined(id: string, reason: string) {
-    setBookings(prev => prev.filter(b => b.id !== id))
     setDeclining(null)
     showToast(`Declined - ${reason}`)
+    fetchBookings()
   }
 
   function handleAccepted() {
@@ -1041,8 +1061,22 @@ export default function InquiriesPage() {
 
   const hasSeedData = bookings.some(b => b.is_seed)
 
+  // Tab count (against all bookings, not filtered by search/date)
+  const countForTab = (key: InterpTabKey) => {
+    if (key === 'all') return bookings.length
+    const statuses = TAB_STATUS_MAP[key] || []
+    return bookings.filter(b => statuses.includes(b.recipient_status)).length
+  }
+
+  // Filter by status tab first
+  let tabFiltered = bookings
+  if (activeTab !== 'all') {
+    const statuses = TAB_STATUS_MAP[activeTab] || []
+    tabFiltered = tabFiltered.filter(b => statuses.includes(b.recipient_status))
+  }
+
   const filteredBookings = filterByDateRange(
-    filterBySearch(bookings, search, ['title', 'requester_name', 'specialization', 'location', 'notes']),
+    filterBySearch(tabFiltered, search, ['title', 'requester_name', 'specialization', 'location', 'notes']),
     dateFrom, dateTo
   )
   const groupedBookings = groupByTimeCategory(filteredBookings)
@@ -1050,6 +1084,45 @@ export default function InquiriesPage() {
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       <PageHeader title="Inquiries" subtitle="Booking requests awaiting your response." />
+
+      {/* Status tabs */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 20, flexWrap: 'wrap' }}>
+        {INTERP_TABS.map(tab => {
+          const count = countForTab(tab.key)
+          const active = activeTab === tab.key
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              style={{
+                background: active ? 'rgba(0,229,255,0.12)' : 'rgba(255,255,255,0.04)',
+                border: active ? '1px solid rgba(0,229,255,0.3)' : '1px solid var(--border)',
+                borderRadius: 100,
+                padding: '7px 16px',
+                color: active ? 'var(--accent)' : 'var(--muted)',
+                fontSize: '0.82rem',
+                fontFamily: "'Inter', sans-serif",
+                fontWeight: active ? 700 : 500,
+                cursor: 'pointer',
+                transition: 'all 0.15s',
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}
+            >
+              {tab.label}
+              {count > 0 && (
+                <span style={{
+                  fontSize: '0.7rem', fontWeight: 700,
+                  background: active ? 'rgba(0,229,255,0.2)' : 'rgba(255,255,255,0.06)',
+                  color: active ? 'var(--accent)' : 'var(--muted)',
+                  borderRadius: 8, padding: '1px 6px',
+                }}>
+                  {count}
+                </span>
+              )}
+            </button>
+          )
+        })}
+      </div>
 
       <BookingFilterBar
         search={search} onSearchChange={setSearch}

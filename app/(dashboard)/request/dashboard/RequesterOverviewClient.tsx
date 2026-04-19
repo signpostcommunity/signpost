@@ -2,10 +2,12 @@
 
 import { useState, useRef } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import BetaTryThis from '@/components/ui/BetaTryThis'
 import { formatLocationShort, formatLocationFull } from '@/lib/location-display'
 import { formatContactedAgo } from '@/lib/format-time'
 import RequestTracker from '@/components/dashboard/dhh/RequestTracker'
+import { RECIPIENT_STATUS_ORDER } from '@/lib/booking-status'
 
 /* ── Types ── */
 
@@ -103,10 +105,6 @@ function formatTime(start: string | null, end: string | null): string {
     return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
   }
   return `${fmt(start)} – ${fmt(end)}`
-}
-
-const RECIPIENT_STATUS_ORDER: Record<string, number> = {
-  confirmed: 0, responded: 1, proposed: 1, viewed: 2, sent: 3, declined: 4, withdrawn: 5,
 }
 
 function sortRecipients(recipients: RecentRecipient[]): RecentRecipient[] {
@@ -278,21 +276,33 @@ export default function RequesterOverviewClient({
   firstName, orgName, activeRequests, confirmedBookings, rosterCount, pendingResponses, recentBookings,
   recentRecipients = [], recentInterpreterMap = {}, recentRateProfileMap = {},
 }: Props) {
-  void orgName
-  const greeting = firstName ? `Good to see you, ${firstName}.` : 'Welcome to your dashboard.'
+  const router = useRouter()
   const [expandedBookingId, setExpandedBookingId] = useState<string | null>(null)
   const bookingCardRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
-      {/* Greeting */}
+      {/* Greeting / Org Header */}
       <div style={{ marginBottom: 30 }}>
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 725, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
-          {greeting}
-        </h1>
-        <p style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', margin: 0 }}>
-          Here&apos;s a snapshot of your activity on signpost.
-        </p>
+        {orgName ? (
+          <>
+            <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 725, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
+              {orgName}
+            </h1>
+            <p style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', margin: 0 }}>
+              Here&apos;s a snapshot of your activity on signpost.
+            </p>
+          </>
+        ) : (
+          <>
+            <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 725, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>
+              {firstName ? `Good to see you, ${firstName}.` : 'Welcome to your dashboard.'}
+            </h1>
+            <p style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', margin: 0 }}>
+              Here&apos;s a snapshot of your activity on signpost.
+            </p>
+          </>
+        )}
       </div>
 
       {/* Stat Cards */}
@@ -504,6 +514,31 @@ export default function RequesterOverviewClient({
                     onClick={e => e.stopPropagation()}
                     style={{ paddingTop: 16, marginTop: 16, borderTop: '1px solid var(--border)' }}
                   >
+                    {/* View full request link */}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+                      <button
+                        onClick={() => {
+                          setExpandedBookingId(null)
+                          router.push(`/request/dashboard/requests?expand=${booking.id}`)
+                        }}
+                        style={{
+                          background: 'rgba(0,229,255,0.08)',
+                          border: '1px solid rgba(0,229,255,0.25)',
+                          borderRadius: 'var(--radius-sm)',
+                          padding: '8px 16px',
+                          color: 'var(--accent)',
+                          fontSize: '0.82rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          fontFamily: "'Inter', sans-serif",
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                        }}
+                      >
+                        View full request &#8594;
+                      </button>
+                    </div>
                     <div className="req-overview-expanded-cols" style={{
                       display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24,
                     }}>

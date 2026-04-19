@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { PageHeader, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import ConversationList from '@/components/messaging/ConversationList'
 import Toast from '@/components/ui/Toast'
+import { useOrgName } from '@/lib/hooks/useOrgName'
 
 /* ── Types ── */
 
@@ -64,6 +65,7 @@ function NotificationIcon({ size = 18 }: { size?: number }) {
 /* ── Main Page ── */
 
 export default function RequesterInboxPage() {
+  const orgName = useOrgName()
   const [activeTab, setActiveTab] = useState<'messages' | 'notifications'>('messages')
   const [rateResponses, setRateResponses] = useState<RateResponse[]>([])
   const [notifications, setNotifications] = useState<Notification[]>([])
@@ -229,6 +231,11 @@ export default function RequesterInboxPage() {
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960, display: 'flex', flexDirection: 'column', height: 'calc(100vh - 80px)' }}>
+      {orgName && (
+        <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.85rem', color: 'var(--muted)', fontWeight: 500, marginBottom: 4 }}>
+          {orgName}
+        </div>
+      )}
       <PageHeader title="Inbox" subtitle="Messages, notifications, and interpreter responses." />
 
       {/* Tab bar */}

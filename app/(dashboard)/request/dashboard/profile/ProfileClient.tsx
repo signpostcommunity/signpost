@@ -204,6 +204,11 @@ export default function ProfileClient({ profile, userEmail }: Props) {
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       <div style={{ maxWidth: 680, margin: '0 auto' }}>
         {/* Header */}
+        {orgName && (
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.85rem', color: 'var(--muted)', fontWeight: 500, marginBottom: 4 }}>
+            {orgName}
+          </div>
+        )}
         <h1 style={{
           fontFamily: "'Syne', sans-serif", fontWeight: 725, fontSize: '27px',
           color: '#f0f2f8', margin: '0 0 6px',

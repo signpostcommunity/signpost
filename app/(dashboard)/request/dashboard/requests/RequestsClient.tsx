@@ -9,7 +9,10 @@ import Toast from '@/components/ui/Toast'
 import RequesterInterpreterPicker from '@/components/requester/RequesterInterpreterPicker'
 import BetaTryThis from '@/components/ui/BetaTryThis'
 import BookingFilterBar, { filterBySearch, filterByDateRange } from '@/components/dashboard/shared/BookingFilterBar'
+import RequestTracker from '@/components/dashboard/dhh/RequestTracker'
 import { formatContactedAgo } from '@/lib/format-time'
+import { RECIPIENT_STATUS_ORDER } from '@/lib/booking-status'
+import { useOrgName } from '@/lib/hooks/useOrgName'
 
 /* ── Types ── */
 
@@ -88,10 +91,6 @@ function formatTime(start: string | null, end: string | null): string {
     return `${h12}:${String(m).padStart(2, '0')} ${ampm}`
   }
   return `${fmt(start)} – ${fmt(end)}`
-}
-
-const RECIPIENT_STATUS_ORDER: Record<string, number> = {
-  confirmed: 0, responded: 1, proposed: 1, viewed: 2, sent: 3, declined: 4, withdrawn: 5,
 }
 
 function formatTimeRange(start: string | null, end: string | null): string {
@@ -189,8 +188,8 @@ export default function RequestsClient({
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const orgName = useOrgName()
   const [activeTab, setActiveTab] = useState<TabKey>('all')
-  const [search, setSearch] = useState('')
   const [localSearch, setLocalSearch] = useState('')
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
@@ -204,14 +203,17 @@ export default function RequestsClient({
   const [sendMoreStep, setSendMoreStep] = useState<'confirm' | 'pick'>('confirm')
   const [sendMoreIds, setSendMoreIds] = useState<string[]>([])
   const [sendMoreSubmitting, setSendMoreSubmitting] = useState(false)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const bookingCardRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
-  // Debounced search
+  // Scroll to expanded card on mount (from ?expand= URL param)
   useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => setSearch(localSearch), 300)
-    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
-  }, [localSearch])
+    const expandParam = searchParams.get('expand')
+    if (expandParam) {
+      requestAnimationFrame(() => {
+        bookingCardRefs.current[expandParam]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      })
+    }
+  }, [searchParams])
 
   // Build recipient map per booking
   const recipientsByBooking = new Map<string, Recipient[]>()
@@ -229,8 +231,8 @@ export default function RequestsClient({
   if (activeTab !== 'all') {
     filtered = filtered.filter(b => b.status === activeTab)
   }
-  if (search.trim()) {
-    const q = search.toLowerCase()
+  if (localSearch.trim()) {
+    const q = localSearch.toLowerCase()
     filtered = filtered.filter(b => {
       const recs = recipientsByBooking.get(b.id) || []
       const interpNames = recs.map(r => interpreterMap[r.interpreter_id]?.name || '').join(' ')
@@ -494,6 +496,11 @@ export default function RequestsClient({
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
+        {orgName && (
+          <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.85rem', color: 'var(--muted)', fontWeight: 500, marginBottom: 4 }}>
+            {orgName}
+          </div>
+        )}
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 725, fontSize: '1.6rem', margin: '0 0 6px' }}>
           All Requests
         </h1>
@@ -593,7 +600,7 @@ export default function RequestsClient({
             }
 
             return (
-              <div key={booking.id}>
+              <div key={booking.id} ref={el => { bookingCardRefs.current[booking.id] = el }}>
                 {/* Card */}
                 <div
                   role="button"
@@ -631,6 +638,17 @@ export default function RequestsClient({
                         <span>&middot;</span>
                         <span>{booking.location || 'Remote'}</span>
                       </div>
+                      {/* Status tracker */}
+                      <RequestTracker
+                        booking={{
+                          id: booking.id,
+                          status: booking.status,
+                          date: booking.date,
+                          interpreter_count: booking.interpreter_count,
+                        }}
+                        recipients={recs.map(r => ({ id: r.id, interpreter_id: r.interpreter_id, status: r.status }))}
+                        compact
+                      />
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8, flexWrap: 'wrap' }}>
                         {interpSummary && (
                           <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>{interpSummary}</span>
