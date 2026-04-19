@@ -77,7 +77,7 @@ const faqSections: FaqSection[] = [
               Browse the interpreter directory to find interpreters by language, specialization, location, and credentials. Deaf clients build preferred interpreter lists that travel with them. When someone needs an interpreter, they send a request directly to the interpreters they choose. Interpreters respond with their availability and rates. The requester confirms, and the interpreter and client work together directly from that point forward.
             </p>
             <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.75, margin: 0 }}>
-              signpost charges a flat $15 booking fee to the requester. That&apos;s it. No markup on interpreter rates. No commissions. No hidden fees.
+              signpost charges a flat $15 booking fee for each interpreter confirmed on a booking. That&apos;s it. No markup on interpreter rates. No commissions. No hidden fees.
             </p>
           </>
         ),
@@ -108,7 +108,7 @@ const faqSections: FaqSection[] = [
               Traditional agencies add their own fees on top of the interpreter&apos;s rate. Interpreters are typically not told what the agency charges the client, but the markup is often significant. Many agencies also cap what interpreters can charge, limiting their ability to set rates that reflect their experience and specialization.
             </p>
             <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.75, margin: 0 }}>
-              signpost works differently. Interpreters set their own rates and terms with no cap. The requester sees exactly what the interpreter charges and pays the interpreter directly. signpost&apos;s only fee is a flat $15 per confirmed booking, charged to the requester. There is no markup, no commission, and no percentage taken from either side.
+              signpost works differently. Interpreters set their own rates and terms with no cap. The requester sees exactly what the interpreter charges and pays the interpreter directly. signpost&apos;s only fee is a flat $15 for each interpreter confirmed on a booking, charged to the requester. There is no markup, no commission, and no percentage taken from either side.
             </p>
           </>
         ),
@@ -124,7 +124,7 @@ const faqSections: FaqSection[] = [
         rich: (
           <>
             <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.75, margin: '0 0 8px' }}>
-              For requesters and organizations: Agencies charge an <em>hourly</em> fee on top of the interpreter&apos;s rate. That fee can range from about $20 to $80+ per hour. signpost charges one flat $15 booking fee per confirmed booking. This covers the cost of building and running the platform: the booking system, encrypted messaging, notifications, and the interpreter directory. That is the only fee signpost collects, ever. The interpreter&apos;s rate is separate. Each interpreter communicates their rate directly to you during the request process and invoices you independently. signpost does not add any fees on top of interpreter rates.
+              For requesters and organizations: Agencies charge an <em>hourly</em> fee on top of the interpreter&apos;s rate. That fee can range from about $20 to $80+ per hour. signpost charges a flat $15 booking fee for each interpreter confirmed on a booking. This covers the cost of building and running the platform: the booking system, encrypted messaging, notifications, and the interpreter directory. That is the only fee signpost collects, ever. The interpreter&apos;s rate is separate. Each interpreter communicates their rate directly to you during the request process and invoices you independently. signpost does not add any fees on top of interpreter rates.
             </p>
             <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.75, margin: '0 0 8px' }}>
               For interpreters: signpost is completely free. No listing fees, no subscription, no commission. You set your own rates and are paid directly by the requester.
@@ -264,7 +264,7 @@ const faqSections: FaqSection[] = [
       },
       {
         q: 'How do I book multiple interpreters for one event?',
-        a: 'On the request form, select the number of interpreters required. This will create the corresponding number of booking instances, allowing you to confirm each interpreter individually. The $15 booking fee applies per interpreter, per booking.',
+        a: 'On the request form, select the number of interpreters required. This will create the corresponding number of booking instances, allowing you to confirm each interpreter individually. The $15 booking fee applies for each interpreter confirmed on a booking.',
       },
       {
         q: 'How quickly will interpreters respond?',
@@ -585,7 +585,7 @@ export default function AboutPage() {
               }}>
                 <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--accent)', marginBottom: 8 }}>$15</div>
                 <div style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                  per interpreter, per confirmed booking
+                  for each interpreter confirmed on a booking
                 </div>
                 <div style={{ color: '#96a0b8', fontSize: '0.82rem', lineHeight: 1.6, marginTop: 12 }}>
                   Charged to the requester only. Personal requests by Deaf/DB/HH individuals are always free.

@@ -288,7 +288,7 @@ const EDUCATION_CARDS: EducationCard[] = [
     body: [
       'You set your own rates and terms. You can create multiple rate profiles for different types of work (standard, community/nonprofit, multi-day, or custom rates for specific clients).',
       'When you receive a request, you respond with your rate and availability. The requester sees your rate and decides whether to confirm. You invoice the client directly. signpost never touches your pay.',
-      <>Agencies charge an <em>hourly</em> fee on top of your rate. That fee can range from about $20 to $80+ per hour, but you may never know what the client actually paid. signpost charges a flat $15 booking fee to the requester. This covers the cost of building and running the platform: the booking system, encrypted messaging, notifications, and the interpreter directory. That is the only fee signpost collects.</>,
+      <>Agencies charge an <em>hourly</em> fee on top of your rate. That fee can range from about $20 to $80+ per hour, but you may never know what the client actually paid. signpost charges a flat $15 booking fee for each interpreter confirmed on a booking. This covers the cost of building and running the platform: the booking system, encrypted messaging, notifications, and the interpreter directory. That is the only fee signpost collects.</>,
     ],
   },
   {

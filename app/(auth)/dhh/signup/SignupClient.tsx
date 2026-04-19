@@ -91,7 +91,7 @@ const EDUCATION_CARDS: EducationCard[] = [
     teaser: "Agencies charge an hourly fee on top of the interpreter's rate. That fee can range from...",
     body: [
       <>Agencies charge an <em>hourly</em> fee on top of the interpreter&apos;s rate. That fee can range from about $20 to $80+ per hour. This can become very expensive for requesters.</>,
-      'Instead, signpost charges one flat $15 booking fee per confirmed booking. This covers the cost of building and running the platform: the booking system, encrypted messaging, notifications, and the interpreter directory. That is the only fee signpost collects, ever.',
+      'Instead, signpost charges a flat $15 booking fee for each interpreter confirmed on a booking. This covers the cost of building and running the platform: the booking system, encrypted messaging, notifications, and the interpreter directory. That is the only fee signpost collects, ever.',
       'Interpreters set their own rates and are paid directly by the requester. signpost does not add any fees on top of interpreter rates.',
       'signpost never charges any booking fees for Deaf, DeafBlind, and Hard of Hearing individuals (or their family/friends) when booking interpreters for personal events.',
     ],

@@ -406,7 +406,7 @@ function BillingInfoCard() {
           fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.7,
         }}>
           <p style={{ margin: '0 0 12px' }}>
-            signpost charges a flat $15 platform fee per interpreter, per confirmed booking. This fee is charged when you accept an interpreter&apos;s rate and confirm the booking.
+            signpost charges a flat $15 platform fee for each interpreter confirmed on a booking. This fee is charged when you accept an interpreter&apos;s rate and confirm the booking.
           </p>
           <p style={{ margin: '0 0 12px' }}>
             This fee supports the signpost platform and is completely separate from the interpreter&apos;s rate. The interpreter will invoice you directly for their services using their preferred payment method.

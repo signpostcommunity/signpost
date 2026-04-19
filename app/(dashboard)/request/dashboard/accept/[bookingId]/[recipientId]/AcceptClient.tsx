@@ -212,7 +212,7 @@ export default function AcceptClient({
           <DetailRow label="Title" value={booking.title || 'Untitled Request'} />
           <DetailRow label="Date & Time" value={`${formatDate(booking.date)} · ${formatTime(booking.time_start, booking.time_end)}`} />
           <DetailRow label="Location" value={booking.location || 'Not specified'} />
-          <DetailRow label="Format" value={booking.format ? booking.format.replace('_', '-') : 'Not specified'} />
+          <DetailRow label="Format" value={booking.format ? (booking.format === 'remote' ? 'Remote' : booking.format === 'in_person' || booking.format === 'in-person' ? 'In Person' : booking.format.charAt(0).toUpperCase() + booking.format.slice(1)) : 'Not specified'} />
           {(booking.specialization || booking.event_category) && (
             <DetailRow label="Specialization" value={booking.specialization || booking.event_category || ''} />
           )}
@@ -318,7 +318,7 @@ export default function AcceptClient({
           borderRadius: 'var(--radius-sm)', padding: '20px 24px',
         }}>
           <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.95rem', color: 'var(--accent)', marginBottom: 12 }}>
-            $15.00 per interpreter, per confirmed booking
+            $15.00 for each interpreter confirmed on a booking
           </div>
           <p style={{ color: 'var(--muted)', fontSize: '0.82rem', lineHeight: 1.7, margin: '0 0 12px' }}>
             This fee supports signpost and is completely separate from the interpreter&apos;s rate.

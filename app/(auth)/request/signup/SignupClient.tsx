@@ -182,7 +182,7 @@ function BookingFeeBody() {
         signpost&apos;s fee model is very different from the typical agency model. Agencies charge an <em>hourly</em> fee on top of the interpreter&apos;s rate. This can add anywhere from $20 to hundreds of dollars per hour, per interpreter, to your total cost.
       </p>
       <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#96a0b8', lineHeight: 1.7, margin: '0 0 12px' }}>
-        signpost charges a flat $15 booking fee per interpreter, per confirmed event. Whether your appointment is one hour or eight hours, the fee is the same.
+        signpost charges a flat $15 booking fee for each interpreter confirmed on a booking. Whether your appointment is one hour or eight hours, the fee is the same.
       </p>
       <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 15, color: '#96a0b8', lineHeight: 1.7, margin: '0 0 12px' }}>
         This fee covers the cost of building and maintaining the platform: the booking system, encrypted messaging, real-time notifications, and the interpreter directory.

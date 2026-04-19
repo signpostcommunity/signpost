@@ -7,6 +7,7 @@ interface Props {
   onAddToList?: (interpreter: Interpreter) => void;
   userRole?: string | null;
   contextParam?: string | null;
+  isOnList?: boolean;
 }
 
 const CERT_ABBREVIATIONS: Record<string, string> = {
@@ -32,7 +33,7 @@ function abbreviateCert(cert: string): string {
   return cert;
 }
 
-export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddToList, userRole, contextParam }: Props) {
+export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddToList, userRole, contextParam, isOnList }: Props) {
   const profileHref = `/directory/${i.id}${contextParam ? `?context=${contextParam}` : ''}`;
   return (
     <Link
@@ -136,16 +137,27 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
           </div>
           {/* Add to list - own row */}
           <div style={{ marginTop: '6px' }}>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onAddToList?.(i);
-              }}
-              className="add-to-list-btn"
-            >
-              {userRole === 'interpreter' ? '+ Add to my team' : '+ Add to my list'}
-            </button>
+            {isOnList ? (
+              <span
+                className="on-list-label"
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                {userRole === 'interpreter' ? 'On your team' : 'On your list'}
+              </span>
+            ) : (
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onAddToList?.(i);
+                }}
+                className="add-to-list-btn"
+              >
+                {userRole === 'interpreter' ? '+ Add to my team' : '+ Add to my list'}
+              </button>
+            )}
           </div>
           {/* Location - full width below name */}
           <div
@@ -286,6 +298,19 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
           .add-to-list-btn:hover {
             background: rgba(0,229,255,0.1);
             border-color: var(--accent);
+          }
+          .on-list-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid rgba(200,207,224,0.25);
+            border-radius: 100px;
+            padding: 4px 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--muted);
+            white-space: nowrap;
+            font-family: 'DM Sans', sans-serif;
           }
           @media (max-width: 768px) {
             .add-to-list-btn {

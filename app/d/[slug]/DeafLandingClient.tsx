@@ -276,7 +276,7 @@ function PublicView({ profile }: { profile: PublicProfile }) {
                 lineHeight: 1.6,
                 margin: '0 0 24px',
               }}>
-                signpost never charges percentage-based commissions on top of interpreter rates. You pay a flat $15 per confirmed booking. 100% of the interpreter&apos;s rate goes directly to them. Simple, transparent, and affordable.
+                signpost never charges percentage-based commissions on top of interpreter rates. You pay a flat $15 for each interpreter confirmed on a booking. 100% of the interpreter&apos;s rate goes directly to them. Simple, transparent, and affordable.
               </p>
               <div style={{
                 display: 'flex',

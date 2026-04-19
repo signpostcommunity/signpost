@@ -115,7 +115,7 @@ I've been building something over the past few months and I'd love for you to ch
 
 It's called signpost. It's a directory and booking platform for freelance interpreters. Regina McGinnis and I co-founded it because we were frustrated with the same things you and I have talked about: agencies taking a huge cut, owning the client relationship, and deciding who shows up.
 
-signpost puts interpreters in control. You set your own rates and terms. 100% of your rate goes to you. signpost charges the requester a flat $15 booking fee, and that's it.
+signpost puts interpreters in control. You set your own rates and terms. 100% of your rate goes to you. signpost charges the requester a flat $15 booking fee for each interpreter confirmed on a booking, and that's it.
 
 A few things I'm really proud of:
 

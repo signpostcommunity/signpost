@@ -13,7 +13,7 @@ const features = [
   },
   {
     label: 'Skip the agency markup',
-    body: 'Agencies add <em>hourly</em> fees on top of what the interpreter charges. signpost doesn\'t. Interpreters set their own rates and clients pay them directly. signpost\'s only fee is a flat $15 per booking.',
+    body: 'Agencies add <em>hourly</em> fees on top of what the interpreter charges. signpost doesn\'t. Interpreters set their own rates and clients pay them directly. signpost\'s only fee is a flat $15 for each interpreter confirmed on a booking.',
   },
   {
     label: 'Track your request at every step',

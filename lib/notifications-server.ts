@@ -125,7 +125,7 @@ function getEmailContent(
 <p>When you receive a new request, you'll be notified via in-app notification, email, and/or SMS depending on your preferences. You can review the request details and respond with your rate, decline, or ask questions. <a href="https://signpost.community/interpreter/dashboard/profile?tab=account-settings" style="color: #00e5ff; text-decoration: none;">Manage your notification preferences</a></p>
 <p>You control your rates and terms. Set your standard rate, minimum hours, and cancellation policy from your dashboard. You can also create custom rates for specific jobs.</p>
 ${bookMeSection}
-<p>This is free for interpreters. When requesters book you via signpost, they pay a simple flat platform fee (currently $15 per booking) to help support this site. They never pay an additional percentage added to your rates, or any hidden fees. It's that simple.</p>
+<p>This is free for interpreters. When requesters book you via signpost, they pay a simple flat platform fee (currently $15 for each interpreter confirmed on a booking) to help support this site. They never pay an additional percentage added to your rates, or any hidden fees. It's that simple.</p>
 <p>Keep your profile up to date. The more complete your profile (photo, intro video, credentials, specializations, bio), the easier it is for the right clients to find you.</p>
 <p>Questions? Reach us anytime at hello@signpost.community.</p>`,
       ctaText: 'Go to My Dashboard',

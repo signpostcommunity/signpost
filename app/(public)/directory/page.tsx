@@ -23,7 +23,7 @@ export default async function DirectoryPage() {
 
   let query = supabase
     .from('interpreter_profiles')
-    .select('id, user_id, name, first_name, last_name, city, country, state, sign_languages, spoken_languages, specializations, specialized_skills, regions, rating, review_count, available, avatar_color, bio, video_url, interpreter_type, status, photo_url, draft_data, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, latitude, longitude, years_experience, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_types_offering, mentorship_types_seeking, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking, is_seed, interpreter_certifications(name, issuing_body, year, verification_url), interpreter_videos(video_url)')
+    .select('id, user_id, name, first_name, last_name, city, country, country_name, state, sign_languages, spoken_languages, specializations, specialized_skills, regions, rating, review_count, available, avatar_color, bio, video_url, interpreter_type, status, photo_url, draft_data, lgbtq, deaf_parented, bipoc, bipoc_details, religious_affiliation, religious_details, gender_identity, latitude, longitude, years_experience, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_types_offering, mentorship_types_seeking, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking, is_seed, interpreter_certifications(name, issuing_body, year, verification_url), interpreter_videos(video_url)')
     .eq('status', 'approved')
     .eq('directory_visible', true)
     .order('photo_url', { ascending: false, nullsFirst: false })
@@ -39,7 +39,7 @@ export default async function DirectoryPage() {
   const interpreters: Interpreter[] = (rows || []).map((r) => {
     const fullName = r.name || [r.first_name, r.last_name].filter(Boolean).join(' ') || 'Interpreter';
     const initials = fullName.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2);
-    const location = [r.city, r.state, r.country].filter(Boolean).join(', ');
+    const location = [r.city, r.state, r.country_name || (r.country ? r.country.toUpperCase() : null)].filter(Boolean).join(', ');
 
     // Extract certifications from interpreter_certifications table first, fall back to draft_data
     const tableCerts = (r as Record<string, unknown>).interpreter_certifications as Array<{ name: string; issuing_body?: string; year?: string; verification_url?: string }> | undefined;

@@ -17,9 +17,10 @@ interface Props {
   selectionMode?: boolean;
   selectedIds?: Set<string>;
   onToggleSelect?: (id: string) => void;
+  addedIds?: Set<string>;
 }
 
-export default function InterpreterGrid({ interpreters, onVideoPreview, onAddToList, userRole, contextParam, awayPeriods, selectionMode, selectedIds, onToggleSelect }: Props) {
+export default function InterpreterGrid({ interpreters, onVideoPreview, onAddToList, userRole, contextParam, awayPeriods, selectionMode, selectedIds, onToggleSelect, addedIds }: Props) {
   if (interpreters.length === 0) {
     return (
       <div
@@ -95,6 +96,7 @@ export default function InterpreterGrid({ interpreters, onVideoPreview, onAddToL
                 onAddToList={onAddToList}
                 userRole={userRole}
                 contextParam={contextParam}
+                isOnList={addedIds?.has(String(i.id))}
               />
               {shouldDim && (
                 <span style={{

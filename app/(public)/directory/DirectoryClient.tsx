@@ -79,6 +79,9 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
     } | null;
   }>({ isOpen: false, interpreter: null });
 
+  // Track interpreters already added to the user's list
+  const [addedIds, setAddedIds] = useState<Set<string>>(new Set())
+
   // Selection mode state
   const MAX_BATCH_SELECT = 15
   const [selectionMode, setSelectionMode] = useState(false)
@@ -642,6 +645,7 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
             selectionMode={selectionMode}
             selectedIds={selectedIds}
             onToggleSelect={toggleSelect}
+            addedIds={addedIds}
           />
         </div>
       </div>
@@ -750,8 +754,18 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
         onClose={() => setAddToListModal({ isOpen: false, interpreter: null })}
         interpreter={addToListModal.interpreter}
         userRole={userRole}
-        onSuccess={(name) => showToast(`${name} added to your list`)}
-        onDuplicate={(name) => showToast(`${name} is already on your list`)}
+        onSuccess={(name) => {
+          if (addToListModal.interpreter) {
+            setAddedIds(prev => new Set(prev).add(addToListModal.interpreter!.id))
+          }
+          showToast(`${name} added to your list`)
+        }}
+        onDuplicate={(name) => {
+          if (addToListModal.interpreter) {
+            setAddedIds(prev => new Set(prev).add(addToListModal.interpreter!.id))
+          }
+          showToast(`${name} is already on your list`)
+        }}
       />
 
       {/* Floating action bar for selection mode */}
@@ -823,6 +837,11 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
         }
         userRole={userRole}
         onSuccess={(count, dupeCount) => {
+          setAddedIds(prev => {
+            const next = new Set(prev)
+            selectedIds.forEach(id => next.add(id))
+            return next
+          })
           exitSelectionMode()
           let msg = `Added ${count} interpreter${count !== 1 ? 's' : ''} to your list.`
           if (dupeCount > 0) {

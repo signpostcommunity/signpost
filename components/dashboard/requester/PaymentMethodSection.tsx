@@ -285,7 +285,7 @@ export default function PaymentMethodSection({ onToast }: PaymentMethodSectionPr
             Add a payment method to start submitting requests. You&apos;ll only be charged when you confirm an interpreter&apos;s booking.
           </p>
           <p style={{ color: 'var(--accent)', fontSize: '14px', fontWeight: 600, margin: '0 0 20px' }}>
-            $15 per interpreter, per confirmed booking.
+            $15 for each interpreter confirmed on a booking.
           </p>
           <button
             onClick={() => setShowForm(true)}

@@ -356,7 +356,7 @@ function RequesterPortalTab() {
           <ul style={{ margin: 0, paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 8, listStyleType: 'disc' }}>
             {[
               'Client Interpreter Lists (receiving shared Deaf user preferences)',
-              '$15 flat fee per interpreter per confirmed booking',
+              '$15 flat fee for each interpreter confirmed on a booking',
               'Stripe payment integration (live)',
             ].map((item, i) => (
               <li key={i} style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.7 }}>{item}</li>
@@ -393,7 +393,7 @@ function CommitmentsTab() {
     {
       title: 'Transparency',
       items: [
-        'Transparent pricing: $15 flat fee per interpreter per confirmed booking for requesters',
+        'Transparent pricing: $15 flat fee for each interpreter confirmed on a booking for requesters',
         'signpost never touches interpreter money. Invoicing and payment is entirely between interpreter and requester',
         'Platform Booking Policy only applies to NEW organizational connections made via signpost, not existing relationships',
         'Open platform. No gatekeeping, no hidden fees',

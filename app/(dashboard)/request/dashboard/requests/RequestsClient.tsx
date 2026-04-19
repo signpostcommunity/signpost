@@ -679,8 +679,6 @@ export default function RequestsClient({
             const isExpanded = expandedId === booking.id
             const confirmedCount = recs.filter(r => r.status === 'confirmed').length
             const totalRequested = recs.length || booking.interpreter_count
-            const feeAmount = (booking.platform_fee_amount ?? 15) * Math.max(booking.interpreter_count, 1)
-
             // Interpreter summary
             let interpSummary = ''
             if (confirmedCount > 0) {
@@ -742,27 +740,6 @@ export default function RequestsClient({
                         {interpSummary && (
                           <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>{interpSummary}</span>
                         )}
-                        <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
-                          Platform fee: ${feeAmount.toFixed(2)}
-                        </span>
-                        {booking.platform_fee_status === 'failed' && (
-                          <span style={{
-                            fontSize: '0.72rem', fontWeight: 600, color: '#ef4444',
-                            background: 'rgba(239,68,68,0.1)', padding: '2px 8px',
-                            borderRadius: 6,
-                          }}>
-                            Fee unpaid
-                          </span>
-                        )}
-                        {booking.platform_fee_status === 'credited' && (
-                          <span style={{
-                            fontSize: '0.72rem', fontWeight: 600, color: '#22c55e',
-                            background: 'rgba(34,197,94,0.1)', padding: '2px 8px',
-                            borderRadius: 6,
-                          }}>
-                            Credit applied
-                          </span>
-                        )}
                       </div>
                       {/* Per-interpreter status breakdown for multi-interpreter bookings */}
                       {recs.length > 1 && (
@@ -807,7 +784,7 @@ export default function RequestsClient({
                     <div className="req-detail-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 32px', marginBottom: 24 }}>
                       <DetailRow label="Date & Time" value={`${formatDate(booking.date)} · ${formatTime(booking.time_start, booking.time_end)}`} />
                       <DetailRow label="Location" value={booking.location || 'Not specified'} />
-                      <DetailRow label="Format" value={booking.format ? booking.format.replace('_', '-') : 'Not specified'} />
+                      <DetailRow label="Format" value={booking.format ? (booking.format === 'remote' ? 'Remote' : booking.format === 'in_person' || booking.format === 'in-person' ? 'In Person' : booking.format.charAt(0).toUpperCase() + booking.format.slice(1)) : 'Not specified'} />
                       <DetailRow label="Specialization" value={booking.specialization || booking.event_category || 'Not specified'} />
                       {booking.recurrence && booking.recurrence !== 'one-time' && (
                         <DetailRow label="Recurrence" value={booking.recurrence} />
