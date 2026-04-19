@@ -19,6 +19,8 @@ interface NavGroup {
   items: NavItem[]
 }
 
+const INVITE_ICON = <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5.5" r="2.5" stroke="currentColor" strokeWidth="1.3"/><path d="M1.5 14c0-2.5 2-4.5 4.5-4.5s4.5 2 4.5 4.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><path d="M12.5 5v4M10.5 7h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+
 const NAV: NavGroup[] = [
   {
     section: 'Overview',
@@ -27,6 +29,11 @@ const NAV: NavGroup[] = [
         label: 'Dashboard',
         href: '/dhh/dashboard',
         icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8.5l6-5.5 6 5.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/><path d="M3.5 7.5V13a1 1 0 001 1h7a1 1 0 001-1V7.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+      },
+      {
+        label: 'Invite to Trusted Circle',
+        href: '/invite',
+        icon: INVITE_ICON,
       },
     ],
   },

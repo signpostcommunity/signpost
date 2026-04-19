@@ -1,5 +1,6 @@
 import RequesterDashboardSidebar from '@/components/layout/RequesterDashboardSidebar'
 import RequesterBetaPanel from '@/components/dashboard/requester/RequesterBetaPanel'
+import PrelaunchNotice from '@/components/prelaunch/PrelaunchNotice'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function RequesterDashboardLayout({ children }: { children: React.ReactNode }) {
@@ -9,11 +10,12 @@ export default async function RequesterDashboardLayout({ children }: { children:
   let userName = 'User'
   let userInitials = 'U'
   let userSubtitle = 'Requester'
+  let dismissedPrelaunchAt: string | null = null
 
   if (user) {
     const { data } = await supabase
       .from('requester_profiles')
-      .select('first_name, last_name, name, org_name, requester_type')
+      .select('first_name, last_name, name, org_name, requester_type, dismissed_prelaunch_notice_at')
       .or(`user_id.eq.${user.id},id.eq.${user.id}`)
       .maybeSingle()
     if (data?.first_name) {
@@ -31,6 +33,9 @@ export default async function RequesterDashboardLayout({ children }: { children:
     } else {
       userSubtitle = 'Requester'
     }
+    if (data) {
+      dismissedPrelaunchAt = data.dismissed_prelaunch_notice_at ?? null
+    }
   }
 
   return (
@@ -39,6 +44,9 @@ export default async function RequesterDashboardLayout({ children }: { children:
         <RequesterDashboardSidebar userName={userName} userInitials={userInitials} userSubtitle={userSubtitle} />
         <main className="dash-main" style={{ flex: 1, overflowY: 'auto', minWidth: 0, display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
           <div style={{ maxWidth: 960, margin: '0 auto', width: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '12px 32px 0' }}>
+              <PrelaunchNotice role="requester" dismissedAt={dismissedPrelaunchAt} />
+            </div>
             {children}
           </div>
         </main>

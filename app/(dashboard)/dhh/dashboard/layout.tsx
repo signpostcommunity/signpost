@@ -1,5 +1,6 @@
 import DhhDashboardSidebar from '@/components/layout/DhhDashboardSidebar'
 import AslGuidePopup from '@/components/dashboard/dhh/AslGuidePopup'
+import PrelaunchNotice from '@/components/prelaunch/PrelaunchNotice'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function DhhDashboardLayout({ children }: { children: React.ReactNode }) {
@@ -8,11 +9,12 @@ export default async function DhhDashboardLayout({ children }: { children: React
 
   let userName = 'User'
   let userInitials = 'U'
+  let dismissedPrelaunchAt: string | null = null
 
   if (user) {
     const { data } = await supabase
       .from('deaf_profiles')
-      .select('first_name, last_name, name')
+      .select('first_name, last_name, name, dismissed_prelaunch_notice_at')
       .or(`user_id.eq.${user.id},id.eq.${user.id}`)
       .maybeSingle()
     if (data?.first_name) {
@@ -23,6 +25,9 @@ export default async function DhhDashboardLayout({ children }: { children: React
       const parts = data.name.split(' ')
       userInitials = parts.map((p: string) => p[0]).join('').slice(0, 2).toUpperCase()
     }
+    if (data) {
+      dismissedPrelaunchAt = data.dismissed_prelaunch_notice_at ?? null
+    }
   }
 
   return (
@@ -31,6 +36,9 @@ export default async function DhhDashboardLayout({ children }: { children: React
         <DhhDashboardSidebar userName={userName} userInitials={userInitials} />
         <main className="dash-main" style={{ flex: 1, overflowY: 'auto', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
           <div style={{ maxWidth: 960, margin: '0 auto', width: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '12px 32px 0' }}>
+              <PrelaunchNotice role="dhh" dismissedAt={dismissedPrelaunchAt} />
+            </div>
             {children}
           </div>
         </main>

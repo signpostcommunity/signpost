@@ -1,4 +1,5 @@
 import DashboardSidebar from '@/components/layout/DashboardSidebar'
+import PrelaunchNotice from '@/components/prelaunch/PrelaunchNotice'
 import { createClient } from '@/lib/supabase/server'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -8,11 +9,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
   let userName = 'Interpreter'
   let userInitials = 'IN'
   let userPhotoUrl = ''
+  let dismissedPrelaunchAt: string | null = null
 
   if (user) {
     const { data } = await supabase
       .from('interpreter_profiles')
-      .select('first_name, last_name, photo_url')
+      .select('first_name, last_name, photo_url, dismissed_prelaunch_notice_at')
       .eq('user_id', user.id)
       .single()
     if (data?.first_name) {
@@ -31,6 +33,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
     if (data?.photo_url) {
       userPhotoUrl = data.photo_url
     }
+    if (data) {
+      dismissedPrelaunchAt = data.dismissed_prelaunch_notice_at ?? null
+    }
   }
 
   return (
@@ -38,6 +43,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <DashboardSidebar userName={userName} userInitials={userInitials} photoUrl={userPhotoUrl} />
       <main className="dash-main" style={{ flex: 1, overflowY: 'auto', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         <div className="dash-content-container" style={{ maxWidth: 1120, margin: '0 auto', width: '100%' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '12px 32px 0' }}>
+            <PrelaunchNotice role="interpreter" dismissedAt={dismissedPrelaunchAt} />
+          </div>
           {children}
         </div>
       </main>
