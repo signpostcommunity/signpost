@@ -46,13 +46,12 @@ const COPY: Record<Role, {
   },
   requester: {
     body: [
-      'Your account is in early access. You have full access to the platform and can start sending booking requests today.',
-      'Before our public launch, you can also help grow the interpreter directory:',
+      'You have early access to set up your account ahead of our public launch. While we finish testing, you can invite interpreters you work with, add the Deaf clients or patients you book for, and get your account ready.',
     ],
     primaryLabel: 'Invite interpreters you work with',
     primaryHref: '/invite',
-    secondaryLabel: 'Browse the directory',
-    secondaryHref: '/directory',
+    secondaryLabel: 'Complete your account',
+    secondaryHref: '/request/dashboard/profile',
     closer: 'Questions or feedback? Reach us at hello@signpost.community.',
   },
 }
