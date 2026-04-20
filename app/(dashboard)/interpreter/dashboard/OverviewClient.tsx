@@ -228,18 +228,24 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
   const [loading, setLoading] = useState(true)
   const [profileIncomplete, setProfileIncomplete] = useState(false)
   const [missingFields, setMissingFields] = useState<string[]>([])
-  const [bannerDismissed, setBannerDismissed] = useState(true)
   const [videoRequestCount, setVideoRequestCount] = useState(0)
   const [hasIntroVideo, setHasIntroVideo] = useState(false)
   const [calSyncDismissed, setCalSyncDismissed] = useState(true)
-  const [badgeNudgeDismissed, setBadgeNudgeDismissed] = useState(true)
   const [viewing, setViewing] = useState<string | null>(null)
+  const [bannerState, setBannerState] = useState<{
+    book_me_banner_dismissed_at: string | null
+    book_me_banner_snoozed_until: string | null
+    intro_video_banner_dismissed_at: string | null
+    intro_video_banner_snoozed_until: string | null
+  }>({
+    book_me_banner_dismissed_at: null,
+    book_me_banner_snoozed_until: null,
+    intro_video_banner_dismissed_at: null,
+    intro_video_banner_snoozed_until: null,
+  })
 
-  // Check sessionStorage for profile banner, localStorage for other banners
   useEffect(() => {
-    setBannerDismissed(!!sessionStorage.getItem('signpost_profile_banner_dismissed'))
     setCalSyncDismissed(!!localStorage.getItem('signpost_calendar_sync_dismissed'))
-    setBadgeNudgeDismissed(!!localStorage.getItem('signpost_bookme_badge_dismissed'))
   }, [])
 
   useEffect(() => {
@@ -263,7 +269,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         // Profile completeness
         supabase
           .from('interpreter_profiles')
-          .select('photo_url, bio, bio_specializations, first_name, last_name, city, state, interpreter_type, work_mode, years_experience, sign_languages, spoken_languages')
+          .select('photo_url, bio, bio_specializations, first_name, last_name, city, state, interpreter_type, work_mode, years_experience, sign_languages, spoken_languages, book_me_banner_dismissed_at, book_me_banner_snoozed_until, intro_video_banner_dismissed_at, intro_video_banner_snoozed_until')
           .eq('id', pid)
           .single(),
         // Cert, sign lang, spoken lang, specialization counts
@@ -330,6 +336,16 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       const missingList = required.filter(r => !r.ok).map(r => r.label)
       setMissingFields(missingList)
       setProfileIncomplete(missingList.length > 0 || missingBio || missingCerts || missingSpecs)
+
+      // Banner dismissal state from DB
+      if (profileData) {
+        setBannerState({
+          book_me_banner_dismissed_at: profileData.book_me_banner_dismissed_at ?? null,
+          book_me_banner_snoozed_until: profileData.book_me_banner_snoozed_until ?? null,
+          intro_video_banner_dismissed_at: profileData.intro_video_banner_dismissed_at ?? null,
+          intro_video_banner_snoozed_until: profileData.intro_video_banner_snoozed_until ?? null,
+        })
+      }
 
       // Video intro
       const videoCount = videoCountResult.count ?? 0
@@ -451,6 +467,53 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
 
   const hasSeedData = pendingBookings.some(b => b.is_seed) || confirmedBookings.some(b => b.is_seed)
 
+  // Banner visibility logic
+  const now = Date.now()
+
+  const profileComplete = completionProfile
+    ? isProfileComplete(getInterpreterCompletionItems(completionProfile, rateProfileCount))
+    : true
+  const profileIncompleteBannerVisible = !profileComplete
+
+  const bookMeBannerVisible =
+    !bannerState.book_me_banner_dismissed_at
+    && (!bannerState.book_me_banner_snoozed_until
+        || new Date(bannerState.book_me_banner_snoozed_until).getTime() < now)
+
+  const introVideoBannerVisible =
+    !bannerState.intro_video_banner_dismissed_at
+    && (!bannerState.intro_video_banner_snoozed_until
+        || new Date(bannerState.intro_video_banner_snoozed_until).getTime() < now)
+    && !profileIncompleteBannerVisible
+
+  async function handleBannerAction(banner: 'book_me' | 'intro_video', action: 'dismiss' | 'snooze') {
+    const prevState = { ...bannerState }
+
+    // Optimistic update
+    if (action === 'dismiss') {
+      setBannerState(s => ({ ...s, [`${banner}_banner_dismissed_at`]: new Date().toISOString() }))
+    } else {
+      setBannerState(s => ({ ...s, [`${banner}_banner_snoozed_until`]: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() }))
+    }
+
+    try {
+      const res = await fetch('/api/interpreter/banners', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ banner, action }),
+      })
+      if (!res.ok) {
+        setBannerState(prevState)
+        console.error('[banners] Failed to update:', await res.text())
+        showToast('Failed to update banner. Please try again.')
+      }
+    } catch (err) {
+      setBannerState(prevState)
+      console.error('[banners] Network error:', err)
+      showToast('Failed to update banner. Please try again.')
+    }
+  }
+
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       {activeAwayPeriod && (
@@ -554,28 +617,12 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
             </div>
           )}
 
-          {/* Profile completion banner */}
-          {completionProfile && !isProfileComplete(getInterpreterCompletionItems(completionProfile, rateProfileCount)) && !bannerDismissed && (
+          {/* Profile completion banner (no dismiss - disappears when profile is complete) */}
+          {completionProfile && !isProfileComplete(getInterpreterCompletionItems(completionProfile, rateProfileCount)) && (
             <div style={{
               background: '#111118', border: '1px solid #1e2433', borderLeft: '4px solid #f59e0b',
               borderRadius: 10, padding: '16px 20px', marginBottom: 12,
-              position: 'relative',
             }}>
-              <button
-                type="button"
-                onClick={() => {
-                  sessionStorage.setItem('signpost_profile_banner_dismissed', 'true')
-                  setBannerDismissed(true)
-                }}
-                aria-label="Dismiss"
-                style={{
-                  position: 'absolute', top: 12, right: 12,
-                  background: 'none', border: 'none', padding: 4,
-                  color: '#5a6070', cursor: 'pointer', fontSize: 16, lineHeight: 1,
-                }}
-              >
-                &#x2715;
-              </button>
               <div style={{
                 fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: 14,
                 color: '#f0f2f8', marginBottom: 4,
@@ -602,12 +649,25 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
           )}
 
           {/* Book Me badge banner with mini preview */}
-          {interpreterProfileId && !hasDraftProfile && (
+          {interpreterProfileId && !hasDraftProfile && bookMeBannerVisible && (
             <div className="book-me-banner" style={{
               background: '#111118', border: '1px solid #1e2433', borderLeft: '4px solid #00e5ff',
               borderRadius: 10, padding: '16px 20px', marginBottom: 12,
               display: 'flex', alignItems: 'center', gap: 16,
+              position: 'relative',
             }}>
+              <button
+                type="button"
+                onClick={() => handleBannerAction('book_me', 'dismiss')}
+                aria-label="Dismiss"
+                style={{
+                  position: 'absolute', top: 12, right: 12,
+                  background: 'none', border: 'none', padding: 4,
+                  color: '#5a6070', cursor: 'pointer', fontSize: 16, lineHeight: 1,
+                }}
+              >
+                &#x2715;
+              </button>
               {/* Mini badge preview */}
               <div className="book-me-preview" style={{
                 width: 270, height: 80, borderRadius: 8, overflow: 'hidden', flexShrink: 0,
@@ -624,11 +684,25 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                   Share your badge in your email signature, on your LinkedIn page, or anywhere your clients find you. Your custom link leads directly to a booking page specific to you.
                 </div>
               </div>
-              <div className="book-me-link" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, marginLeft: 'auto' }}>
+              <div className="book-me-link banner-actions" style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0, marginLeft: 'auto' }}>
+                <button
+                  type="button"
+                  onClick={() => handleBannerAction('book_me', 'snooze')}
+                  style={{
+                    background: 'none', border: 'none', padding: 0,
+                    color: '#00e5ff', fontFamily: "'Inter', sans-serif",
+                    fontWeight: 500, fontSize: '0.78rem', cursor: 'pointer',
+                    textDecoration: 'none', whiteSpace: 'nowrap',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.textDecoration = 'underline' }}
+                  onMouseLeave={e => { e.currentTarget.style.textDecoration = 'none' }}
+                >
+                  Remind me in 30 days
+                </button>
                 <Link
                   href="/interpreter/dashboard/profile"
                   style={{
-                    fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '13px',
+                    fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '0.85rem',
                     color: '#00e5ff', textDecoration: 'none', whiteSpace: 'nowrap',
                   }}
                 >
@@ -685,12 +759,25 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
           )}
 
           {/* No intro video CTA */}
-          {!hasIntroVideo && videoRequestCount === 0 && (
+          {!hasIntroVideo && videoRequestCount === 0 && introVideoBannerVisible && (
             <div style={{
               background: '#111118', border: '1px solid #1e2433', borderLeft: '4px solid #00e5ff',
               borderRadius: 10, padding: '16px 20px', marginBottom: 12,
               display: 'flex', alignItems: 'center', gap: 16,
+              position: 'relative',
             }}>
+              <button
+                type="button"
+                onClick={() => handleBannerAction('intro_video', 'dismiss')}
+                aria-label="Dismiss"
+                style={{
+                  position: 'absolute', top: 12, right: 12,
+                  background: 'none', border: 'none', padding: 4,
+                  color: '#5a6070', cursor: 'pointer', fontSize: 16, lineHeight: 1,
+                }}
+              >
+                &#x2715;
+              </button>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }} aria-hidden="true">
                 <path d="M23 7l-7 5 7 5V7z" stroke="#00e5ff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
                 <rect x="1" y="5" width="15" height="14" rx="2" ry="2" stroke="#00e5ff" strokeWidth="1.6" />
@@ -703,15 +790,31 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                   Deaf community members love seeing interpreter intro videos. Record one directly in your browser.
                 </div>
               </div>
-              <Link
-                href="/interpreter/dashboard/profile?tab=Bio+%26+Video"
-                style={{
-                  fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '13px',
-                  color: '#00e5ff', textDecoration: 'none', whiteSpace: 'nowrap', marginLeft: 'auto', flexShrink: 0,
-                }}
-              >
-                Record My Intro Video &rarr;
-              </Link>
+              <div className="banner-actions" style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0, marginLeft: 'auto' }}>
+                <button
+                  type="button"
+                  onClick={() => handleBannerAction('intro_video', 'snooze')}
+                  style={{
+                    background: 'none', border: 'none', padding: 0,
+                    color: '#00e5ff', fontFamily: "'Inter', sans-serif",
+                    fontWeight: 500, fontSize: '0.78rem', cursor: 'pointer',
+                    textDecoration: 'none', whiteSpace: 'nowrap',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.textDecoration = 'underline' }}
+                  onMouseLeave={e => { e.currentTarget.style.textDecoration = 'none' }}
+                >
+                  Remind me in 30 days
+                </button>
+                <Link
+                  href="/interpreter/dashboard/profile?tab=Bio+%26+Video"
+                  style={{
+                    fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: '0.85rem',
+                    color: '#00e5ff', textDecoration: 'none', whiteSpace: 'nowrap',
+                  }}
+                >
+                  Record My Intro Video &rarr;
+                </Link>
+              </div>
             </div>
           )}
 
@@ -1051,6 +1154,12 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
             max-width: 270px !important;
           }
           .book-me-link {
+            margin-left: 0 !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .banner-actions {
+            flex-wrap: wrap !important;
             margin-left: 0 !important;
           }
         }
