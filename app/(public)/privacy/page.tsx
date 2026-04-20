@@ -80,7 +80,7 @@ export default function PrivacyPolicyPage() {
         Privacy Policy
       </h1>
       <p style={{ ...body, marginBottom: 48 }}>
-        Last updated: March 18, 2026
+        Last updated: April 20, 2026
       </p>
 
       <Section number={1} title="Information We Collect">
@@ -97,12 +97,12 @@ export default function PrivacyPolicyPage() {
         <ul style={listStyle}>
           <li><strong style={{ color: 'var(--text)' }}>Usage data:</strong> pages visited, features used, and general interaction patterns</li>
           <li><strong style={{ color: 'var(--text)' }}>Device and browser information:</strong> browser type, operating system, and screen size</li>
-          <li><strong style={{ color: 'var(--text)' }}>Local storage:</strong> we use browser local storage for functional purposes such as remembering dismissed notices and session preferences. We do not use tracking cookies.</li>
+          <li><strong style={{ color: 'var(--text)' }}>Local storage and database preferences:</strong> signpost uses browser localStorage for UI preferences such as collapsed sidebar sections. Preference tracking like dismissed notices is stored in the database on your profile. We do not use tracking cookies.</li>
         </ul>
 
         <h3 style={subheading}>Information we do not collect</h3>
         <p style={body}>
-          signpost does not currently collect or store payment information, credit card numbers, bank account details, Social Security numbers, or biometric data. When payment processing is introduced in the future, it will be handled by a PCI-compliant third-party processor (Stripe). signpost will never directly handle your financial information.
+          Payment information (card details) is collected and processed by Stripe, a PCI-compliant payment processor. signpost does not store card numbers directly; we store only Stripe customer identifiers. See Stripe&apos;s privacy policy for details on how they handle your payment information. signpost does not collect or store Social Security numbers or biometric data.
         </p>
       </Section>
 
@@ -137,6 +137,7 @@ export default function PrivacyPolicyPage() {
           <li><strong style={{ color: 'var(--text)' }}>Supabase:</strong> authentication and database hosting</li>
           <li><strong style={{ color: 'var(--text)' }}>Vercel:</strong> website hosting</li>
           <li><strong style={{ color: 'var(--text)' }}>Google:</strong> authentication (Google sign-in)</li>
+          <li><strong style={{ color: 'var(--text)' }}>Stripe:</strong> payment processing (PCI-compliant; signpost stores only Stripe customer identifiers, not card numbers)</li>
           <li><strong style={{ color: 'var(--text)' }}>Resend:</strong> transactional email delivery</li>
           <li><strong style={{ color: 'var(--text)' }}>OpenCage:</strong> geocoding (converting locations to coordinates for distance-based search)</li>
         </ul>
@@ -150,7 +151,7 @@ export default function PrivacyPolicyPage() {
           We retain your account and profile data for as long as your account is active.
         </p>
         <p style={body}>
-          If you delete your account, your personal data will be removed from active systems within 30 days. Aggregated, non-identifiable usage data may be retained beyond this period for platform improvement.
+          After account deletion, your personal data is permanently removed within 30 days, except where retention is required by law (for example, financial records retained for 7 years per US tax law, or booking records retained for 3 years for dispute resolution). Aggregated, non-identifiable usage data may be retained for platform improvement.
         </p>
         <p style={body}>
           Interpreters can update or remove their profile information at any time from their dashboard. Deaf/DB/HH users and requesters can request account deletion by contacting{' '}
@@ -215,7 +216,7 @@ export default function PrivacyPolicyPage() {
           <a href="mailto:hello@signpost.community" style={{ color: 'var(--accent)', textDecoration: 'none' }}>hello@signpost.community</a>
         </p>
         <p style={{ ...body, fontSize: '0.78rem', fontStyle: 'italic', textAlign: 'center', marginBottom: 0 }}>
-          This document is a working draft and does not constitute legal advice.
+          This document does not constitute legal advice.
         </p>
       </div>
     </div>

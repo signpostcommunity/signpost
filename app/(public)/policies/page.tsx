@@ -55,7 +55,7 @@ export default function PoliciesPage() {
         Platform Policies &amp; Terms of Use
       </h1>
       <p style={{ ...body, marginBottom: 48 }}>
-        Last updated: March 2026. By creating an account or using signpost, you agree to the following terms.
+        Last updated: April 20, 2026. By creating an account or using signpost, you agree to the following terms.
       </p>
 
       <Section number={1} title="What signpost is - and is not">
@@ -79,7 +79,7 @@ export default function PoliciesPage() {
           <a href="/about?tab=pricing" style={{ color: 'var(--accent)', textDecoration: 'none' }}>About page</a>. signpost reserves the right to adjust platform fees with 30 days&apos; notice to active users.
         </p>
         <p style={body}>
-          <strong style={{ color: 'var(--text)' }}>Platform Booking Policy:</strong> When an organization or requester first connects with an interpreter through signpost, future bookings with that organization should continue through the platform. This is how signpost sustains itself as a free resource for the Deaf community and for interpreters. Routing bookings outside signpost to avoid the platform fee is a violation of these terms and may result in account suspension or removal. This policy does not apply to clients or organizations the interpreter worked with before joining signpost, or to Deaf/DB/HH individuals the interpreter already knows personally or professionally.
+          <strong style={{ color: 'var(--text)' }}>Platform Booking Policy:</strong> signpost&apos;s booking and invoicing tools are provided to support professional relationships between interpreters and requesters. We encourage users to continue using the platform for bookings they discovered through signpost, as this helps us maintain the service and supports both interpreters and the Deaf/DB/HH community. This policy does not apply to clients or organizations the interpreter worked with before joining signpost, or to Deaf/DB/HH individuals the interpreter already knows personally or professionally.
         </p>
         <p style={body}>
           signpost does not handle payroll, tax withholding, or benefits. Interpreters are responsible for their own tax obligations, insurance, and business expenses.
@@ -124,16 +124,13 @@ export default function PoliciesPage() {
           Interpreters may update, modify, or remove their profile information at any time through their dashboard. Account deletion requests can be submitted through the platform and will be processed within 30 days.
         </p>
         <p style={body}>
-          signpost retains booking records, messages, and transaction data for a minimum of 3 years for legal and operational purposes, even after account deletion. Anonymized and aggregated data may be used for platform improvement and analytics.
+          Account data is retained as long as your account is active. After account deletion, personal data is permanently removed within 30 days, except where retention is required by law (for example, financial records retained for 7 years per US tax law, or booking records retained for 3 years for dispute resolution). Anonymized and aggregated data may be used for platform improvement and analytics.
         </p>
       </Section>
 
-      <Section number={6} title="Platform Access and Subscriptions">
+      <Section number={6} title="Platform Access">
         <p style={body}>
-          signpost offers both free and premium tiers for interpreter accounts. Free accounts include core profile listing, booking management, and messaging features. Premium subscriptions may include enhanced visibility, analytics, priority support, and additional features as announced.
-        </p>
-        <p style={body}>
-          signpost reserves the right to modify features available at each tier with reasonable notice. Paid subscription fees are non-refundable except where required by applicable law.
+          signpost accounts include profile listing, booking management, and messaging features. signpost charges a $15 platform fee on bookings processed through the platform. This fee is waived for Deaf/DB/HH users booking interpreters for personal events.
         </p>
         <p style={body}>
           signpost may suspend or terminate accounts that violate these terms, engage in fraudulent activity, or are inactive for an extended period. Users will be notified before any account action is taken, except in cases of fraud or imminent harm.
@@ -152,6 +149,12 @@ export default function PoliciesPage() {
         </p>
         <p style={body}>
           Nothing in these terms excludes or limits liability that cannot be excluded or limited under applicable law, including liability for fraud or personal injury caused by negligence.
+        </p>
+      </Section>
+
+      <Section number={8} title="Governing Law">
+        <p style={body}>
+          These terms are governed by the laws of the State of Washington, United States. Any disputes arising from use of signpost will be resolved in the courts of King County, Washington.
         </p>
       </Section>
 
