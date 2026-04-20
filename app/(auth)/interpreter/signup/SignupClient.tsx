@@ -626,6 +626,22 @@ function InterpreterSignupForm() {
   const [addedDeafRole, setAddedDeafRole] = useState(false);
   const [addedRequesterRole, setAddedRequesterRole] = useState(false);
   const [termsError, setTermsError] = useState(false);
+  const [missingFieldsError, setMissingFieldsError] = useState('');
+
+  function getMissingRequiredFields(): string[] {
+    const missing: string[] = [];
+    if (!firstName?.trim()) missing.push('First name');
+    if (!lastName?.trim()) missing.push('Last name');
+    if (!city?.trim()) missing.push('City');
+    if (!state?.trim()) missing.push('State');
+    if (!country?.trim()) missing.push('Country');
+    if (!photoUrl?.trim()) missing.push('Profile photo');
+    if (!signLanguages?.length) missing.push('At least one sign language');
+    if (!spokenLanguages?.length) missing.push('At least one spoken language');
+    if (!yearsExperience) missing.push('Years of professional interpreting experience');
+    if (!specializations?.length) missing.push('At least one specialization');
+    return missing;
+  }
 
   // Add-role initialization
   useEffect(() => {
@@ -1207,7 +1223,7 @@ function InterpreterSignupForm() {
     const errors: string[] = [];
     if (!interpreterType) errors.push('Please select your interpreter type.');
     if (!workMode) errors.push('Please select your mode of work.');
-    if (!yearsExperience) errors.push('Please select your years of experience.');
+    if (!yearsExperience) errors.push('Please select your years of professional interpreting experience.');
     if (errors.length > 0) {
       setError(errors.join('\n'));
       return;
@@ -1285,10 +1301,10 @@ function InterpreterSignupForm() {
           ))}
         </div>
 
-        {/* Years of experience */}
+        {/* Years of professional interpreting experience */}
         <div style={{ marginBottom: 24 }}>
           <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#00e5ff', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>
-            Years of experience <span style={{ color: '#ff6b85' }}>*</span>
+            Years of professional interpreting experience <span style={{ color: '#ff6b85' }}>*</span>
           </label>
           <select
             className="signup-select"
@@ -1303,6 +1319,9 @@ function InterpreterSignupForm() {
             <option value="">Select...</option>
             {yearsOptions.map((o) => <option key={o} value={o}>{o}</option>)}
           </select>
+          <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#96a0b8', margin: '6px 0 0' }}>
+            Not including casual or pre-professional interpreting.
+          </p>
         </div>
 
         {/* Mode of work */}
@@ -2485,13 +2504,25 @@ function InterpreterSignupForm() {
         return;
       }
       setTermsError(false);
+      setMissingFieldsError('');
+
+      const missing = getMissingRequiredFields();
+      if (missing.length > 0) {
+        console.info('Signup blocked - missing required fields:', missing);
+        setMissingFieldsError(`To submit your profile, please complete the following: ${missing.join(', ')}.`);
+        return;
+      }
+
       const uid = userId || existingUserId;
       if (!uid) return;
       setLoading(true);
       const supabase = createClient();
       const { error: submitErr } = await supabase
         .from('interpreter_profiles')
-        .update({ submitted_at: new Date().toISOString() })
+        .update({
+          submitted_at: new Date().toISOString(),
+          status: 'approved',
+        })
         .eq('user_id', uid);
       if (submitErr) {
         console.error('Submit error:', submitErr);
@@ -2579,6 +2610,16 @@ function InterpreterSignupForm() {
               fontFamily: "'Inter', sans-serif", fontSize: 13, marginBottom: 20,
             }}>
               Please agree to the terms before continuing.
+            </div>
+          )}
+
+          {missingFieldsError && (
+            <div style={{
+              background: 'rgba(255,107,133,0.08)', border: '1px solid rgba(255,107,133,0.2)',
+              borderRadius: 10, padding: '12px 16px', color: '#ff6b85',
+              fontFamily: "'Inter', sans-serif", fontSize: 13, marginBottom: 16, lineHeight: 1.5,
+            }}>
+              {missingFieldsError}
             </div>
           )}
 
