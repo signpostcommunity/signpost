@@ -1036,10 +1036,12 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       <DashMobileStyles />
       <style>{`
         .interp-name-link:hover { text-decoration: underline !important; }
-        @media (max-width: 768px) {
+        @media (max-width: 640px) {
           .dashboard-grid {
             grid-template-columns: 1fr !important;
           }
+        }
+        @media (max-width: 768px) {
           .book-me-banner {
             flex-direction: column !important;
             align-items: flex-start !important;

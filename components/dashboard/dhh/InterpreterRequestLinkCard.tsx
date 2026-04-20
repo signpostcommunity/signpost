@@ -74,8 +74,8 @@ export default function InterpreterRequestLinkCard() {
     borderRadius: 'var(--radius)',
     padding: 20,
     display: 'flex',
-    alignItems: 'stretch',
-    gap: 16,
+    flexDirection: 'column',
+    gap: 0,
   }
 
   if (loading) {
@@ -92,37 +92,38 @@ export default function InterpreterRequestLinkCard() {
 
   return (
     <div className="irl-card" style={outerStyle} role="region" aria-label="My Interpreter Request Link">
-      {/* Left: QR code */}
-      <div style={{
-        flexShrink: 0,
-        alignSelf: 'stretch',
+      {/* Top row: QR code + title/description */}
+      <div className="irl-top-row" style={{
         display: 'flex',
+        gap: 16,
         alignItems: 'center',
-        justifyContent: 'center',
       }}>
         <div style={{
-          padding: 10,
-          background: '#111118',
-          borderRadius: 'var(--radius-sm)',
-          border: '1px solid var(--border)',
-          lineHeight: 0,
+          flexShrink: 0,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}>
-          <QRCodeSVG
-            value={`https://signpost.community/d/${vanitySlug}`}
-            size={120}
-            bgColor="#111118"
-            fgColor="#00e5ff"
-            level="M"
-          />
+          <div style={{
+            padding: 10,
+            background: '#111118',
+            borderRadius: 'var(--radius-sm)',
+            border: '1px solid var(--border)',
+            lineHeight: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+            <QRCodeSVG
+              value={`https://signpost.community/d/${vanitySlug}`}
+              size={120}
+              bgColor="#111118"
+              fgColor="#00e5ff"
+              level="M"
+            />
+          </div>
         </div>
-      </div>
-
-      {/* Right: text + actions */}
-      <div className="irl-text" style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6 }}>
-        <div>
+        <div className="irl-title-block" style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <div style={{
             fontSize: '0.82rem',
             fontWeight: 600,
@@ -140,62 +141,85 @@ export default function InterpreterRequestLinkCard() {
             Share with anyone who books interpreters for you
           </p>
         </div>
+      </div>
 
-        <code style={{
-          display: 'block',
-          fontSize: '0.72rem',
-          color: 'var(--accent)',
-          fontFamily: 'monospace',
-          wordBreak: 'break-all',
-          lineHeight: 1.4,
-        }}>
+      {/* Divider */}
+      <div style={{
+        height: 1,
+        background: 'var(--border)',
+        margin: '14px 0',
+      }} />
+
+      {/* URL row: full card width */}
+      <div>
+        <a
+          href={`https://signpost.community/d/${vanitySlug}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'block',
+            fontSize: '0.85rem',
+            color: 'var(--accent)',
+            fontFamily: 'monospace',
+            overflowWrap: 'anywhere',
+            lineHeight: 1.4,
+            textDecoration: 'none',
+          }}
+        >
           {fullUrl}
-        </code>
+        </a>
+      </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <button
-            type="button"
-            onClick={handleCopy}
-            aria-label={copied ? 'Link copied' : 'Copy interpreter request link'}
-            style={{
-              padding: '5px 16px',
-              background: copied ? 'rgba(52,211,153,0.15)' : 'transparent',
-              border: `1px solid ${copied ? 'rgba(52,211,153,0.3)' : 'rgba(0,229,255,0.3)'}`,
-              borderRadius: 'var(--radius-sm)',
-              fontSize: '0.76rem',
-              fontWeight: 600,
-              color: copied ? '#34d399' : 'var(--accent)',
-              cursor: 'pointer',
-              fontFamily: "'Inter', sans-serif",
-              transition: 'all 0.15s',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {copied ? 'Copied!' : 'Copy Link'}
-          </button>
-          <Link
-            href="/dhh/dashboard/preferences"
-            style={{
-              fontSize: '0.72rem',
-              color: 'var(--muted)',
-              textDecoration: 'none',
-              fontFamily: "'Inter', sans-serif",
-            }}
-          >
-            Edit
-          </Link>
-        </div>
+      {/* Actions row */}
+      <div className="irl-actions" style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12 }}>
+        <button
+          type="button"
+          onClick={handleCopy}
+          aria-label={copied ? 'Link copied' : 'Copy interpreter request link'}
+          style={{
+            padding: '5px 16px',
+            background: copied ? 'rgba(52,211,153,0.15)' : 'transparent',
+            border: `1px solid ${copied ? 'rgba(52,211,153,0.3)' : 'rgba(0,229,255,0.3)'}`,
+            borderRadius: 'var(--radius-sm)',
+            fontSize: '0.76rem',
+            fontWeight: 600,
+            color: copied ? '#34d399' : 'var(--accent)',
+            cursor: 'pointer',
+            fontFamily: "'Inter', sans-serif",
+            transition: 'all 0.15s',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {copied ? 'Copied!' : 'Copy Link'}
+        </button>
+        <Link
+          href="/dhh/dashboard/preferences"
+          style={{
+            fontSize: '0.72rem',
+            color: 'var(--muted)',
+            textDecoration: 'none',
+            fontFamily: "'Inter', sans-serif",
+          }}
+        >
+          Edit
+        </Link>
       </div>
 
       <style>{`
         @media (max-width: 480px) {
           .irl-card {
+            align-items: center !important;
+          }
+          .irl-top-row {
             flex-direction: column !important;
             align-items: center !important;
           }
-          .irl-text {
+          .irl-title-block {
             align-items: center !important;
             text-align: center !important;
+          }
+          .irl-actions {
+            justify-content: center !important;
           }
         }
       `}</style>
