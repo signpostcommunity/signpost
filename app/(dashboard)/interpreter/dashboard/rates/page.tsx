@@ -450,7 +450,7 @@ export default function RatesPage() {
                   />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+                <div className="rates-pair-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
                   <div>
                     <label style={{ display: 'block', color: '#c8cdd8', fontSize: '13px', fontWeight: 500, marginBottom: 6 }}>Hourly Rate</label>
                     <div style={{ position: 'relative' }}>
@@ -496,7 +496,7 @@ export default function RatesPage() {
                       <div style={{ fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 12 }}>
                         After-Hours Differential
                       </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: 12 }}>
+                      <div className="rates-afterhours-grid" style={{ display: 'grid', gridTemplateColumns: '180px 1fr', gap: 12 }}>
                         <div>
                           <label style={{ display: 'block', color: '#96a0b8', fontSize: '12px', fontWeight: 500, marginBottom: 6 }}>Additional charge</label>
                           <div style={{ position: 'relative' }}>
@@ -530,7 +530,7 @@ export default function RatesPage() {
                   )}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+                <div className="rates-pair-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
                   <div>
                     <label style={{ display: 'block', color: '#c8cdd8', fontSize: '13px', fontWeight: 500, marginBottom: 6 }}>Minimum Booking</label>
                     <select value={profile.minBooking} onChange={e => updateProfile(profile.id, { minBooking: e.target.value })} style={inputStyle}
@@ -813,6 +813,17 @@ export default function RatesPage() {
       )}
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
+      <style>{`
+        @media (max-width: 640px) {
+          .rates-pair-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .rates-afterhours-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }

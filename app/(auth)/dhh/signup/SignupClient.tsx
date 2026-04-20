@@ -856,7 +856,7 @@ function DeafSignupForm() {
                   {error}
                 </div>
               )}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="dhh-signup-name-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <AuthInput label="First Name" value={firstName} onChange={setFirstName} placeholder="First name" required />
                 <AuthInput label="Last Name" value={lastName} onChange={setLastName} placeholder="Last name" required />
               </div>
@@ -1397,6 +1397,12 @@ function DeafSignupForm() {
         @media (max-width: 640px) {
           .dhh-signup-form-card {
             padding: 20px;
+          }
+          .dhh-signup-name-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .checkbox-grid-responsive {
+            grid-template-columns: 1fr !important;
           }
         }
         @media (max-width: 480px) {

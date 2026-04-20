@@ -277,7 +277,7 @@ function AcceptModal({ booking, onClose, onAccepted }: {
 
         {rateProfile === 'custom' && (
           <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '18px 20px', marginBottom: 18 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+            <div className="inq-rate-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
               <div>
                 <label style={fieldLabelStyle}>Hourly Rate ($)</label>
                 <div style={{ position: 'relative' }}>
@@ -526,7 +526,7 @@ function DetailModal({ booking, onClose }: {
 
           <div style={sectionStyle}>
             <div style={sectionLabelStyle}>Job Details</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', fontSize: '0.85rem' }}>
+            <div className="inq-detail-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', fontSize: '0.85rem' }}>
               <div><span style={{ color: 'var(--muted)' }}>Format:</span> {booking.format ? booking.format.replace('_', '-') : 'Not specified'}</div>
               <div><span style={{ color: 'var(--muted)' }}>Specialization:</span> {booking.specialization || 'Not specified'}</div>
               <div><span style={{ color: 'var(--muted)' }}>Interpreters requested:</span> {booking.interpreter_count ?? 1}</div>
@@ -750,7 +750,7 @@ function SuggestModal({ booking, onClose, onSent }: {
           <input type="date" value={proposedDate} onChange={e => setProposedDate(e.target.value)} style={fieldInputStyle} onFocus={focusBorder} onBlur={blurBorder} />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
+        <div className="inq-suggest-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
           <div>
             <label style={fieldLabelStyle}>Start Time</label>
             <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} style={fieldInputStyle} onFocus={focusBorder} onBlur={blurBorder} />
@@ -1253,6 +1253,19 @@ export default function InquiriesPage() {
       )}
 
       <DashMobileStyles />
+      <style>{`
+        @media (max-width: 640px) {
+          .inq-rate-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .inq-detail-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .inq-suggest-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }

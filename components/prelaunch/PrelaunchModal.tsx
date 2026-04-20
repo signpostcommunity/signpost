@@ -152,6 +152,7 @@ export default function PrelaunchModal({ role, open, onClose }: PrelaunchModalPr
         role="dialog"
         aria-modal="true"
         aria-labelledby="prelaunch-modal-title"
+        className="prelaunch-modal-inner"
         style={{
           background: '#111118',
           border: '1px solid var(--border)',
@@ -273,6 +274,14 @@ export default function PrelaunchModal({ role, open, onClose }: PrelaunchModalPr
             {dismissing ? 'Saving...' : 'Got it'}
           </button>
         </div>
+
+        <style>{`
+          @media (max-width: 480px) {
+            .prelaunch-modal-inner {
+              padding: 20px !important;
+            }
+          }
+        `}</style>
       </div>
     </div>
   )

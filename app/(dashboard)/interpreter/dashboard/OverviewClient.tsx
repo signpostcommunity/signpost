@@ -1037,6 +1037,9 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       <style>{`
         .interp-name-link:hover { text-decoration: underline !important; }
         @media (max-width: 768px) {
+          .dashboard-grid {
+            grid-template-columns: 1fr !important;
+          }
           .book-me-banner {
             flex-direction: column !important;
             align-items: flex-start !important;

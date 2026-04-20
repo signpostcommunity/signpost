@@ -58,6 +58,7 @@ function InterpreterTierCard({
 
   return (
     <div
+      className="rec-interp-card"
       style={{
         background: 'var(--card-bg)',
         border: `1px solid ${isDnb ? 'rgba(200,207,224,0.08)' : 'var(--border)'}`,
@@ -355,7 +356,7 @@ export default function RecommendedInterpreters({ dhhUserId }: { dhhUserId: stri
     <div style={{ marginBottom: 24 }}>
       {/* Recommended section */}
       {hasPreferences && (
-        <div style={{
+        <div className="rec-interp-section" style={{
           background: 'rgba(0,229,255,0.02)',
           border: '1px solid rgba(0,229,255,0.12)',
           borderRadius: 'var(--radius)',
@@ -414,6 +415,15 @@ export default function RecommendedInterpreters({ dhhUserId }: { dhhUserId: stri
 
       <style>{`
         .interp-name-link:hover { text-decoration: underline !important; }
+        @media (max-width: 640px) {
+          .rec-interp-section {
+            padding: 16px !important;
+          }
+          .rec-interp-card {
+            padding: 12px 14px !important;
+            gap: 10px !important;
+          }
+        }
       `}</style>
     </div>
   )

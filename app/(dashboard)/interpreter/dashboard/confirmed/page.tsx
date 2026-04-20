@@ -1382,7 +1382,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
           {/* Billing recipient */}
           <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
             <div style={{ fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 14 }}>Bill To</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="confirmed-billing-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
               <div>
                 <label style={labelSt}>Requester Name</label>
                 <input type="text" value={billingName} onChange={e => setBillingName(e.target.value)} style={inputSt}
@@ -1401,7 +1401,7 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
           {/* Time & Rate */}
           <div style={{ padding: '16px 0', borderBottom: '1px solid var(--border)' }}>
             <div style={{ fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 14 }}>Time &amp; Rate</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
+            <div className="confirmed-time-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
               <div>
                 <label style={labelSt}>Start Time</label>
                 <input type="time" value={actualStart} onChange={e => setActualStart(e.target.value)} style={inputSt}
@@ -2046,6 +2046,16 @@ export default function ConfirmedPage() {
       )}
 
       <DashMobileStyles />
+      <style>{`
+        @media (max-width: 640px) {
+          .confirmed-billing-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .confirmed-time-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }

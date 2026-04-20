@@ -91,7 +91,7 @@ export default function InterpreterRequestLinkCard() {
   const fullUrl = `signpost.community/d/${vanitySlug}`
 
   return (
-    <div style={outerStyle} role="region" aria-label="My Interpreter Request Link">
+    <div className="irl-card" style={outerStyle} role="region" aria-label="My Interpreter Request Link">
       {/* Left: QR code */}
       <div style={{
         flexShrink: 0,
@@ -121,7 +121,7 @@ export default function InterpreterRequestLinkCard() {
       </div>
 
       {/* Right: text + actions */}
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6 }}>
+      <div className="irl-text" style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6 }}>
         <div>
           <div style={{
             fontSize: '0.82rem',
@@ -186,6 +186,19 @@ export default function InterpreterRequestLinkCard() {
           </Link>
         </div>
       </div>
+
+      <style>{`
+        @media (max-width: 480px) {
+          .irl-card {
+            flex-direction: column !important;
+            align-items: center !important;
+          }
+          .irl-text {
+            align-items: center !important;
+            text-align: center !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }

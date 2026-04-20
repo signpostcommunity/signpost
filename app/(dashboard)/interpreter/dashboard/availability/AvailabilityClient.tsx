@@ -606,6 +606,11 @@ export default function AvailabilityClient({
           .avail-day-name { min-width: auto !important; }
           .avail-time-row { width: 100%; }
         }
+        @media (max-width: 640px) {
+          .avail-date-range-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
       `}</style>
     </div>
   )
@@ -733,7 +738,7 @@ function AwayModal({
         </div>
 
         {/* Date range */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 20 }}>
+        <div className="avail-date-range-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 20 }}>
           <div>
             <label style={{ display: 'block', color: 'var(--muted)', fontSize: '0.75rem', marginBottom: 6 }}>Start date</label>
             <input
