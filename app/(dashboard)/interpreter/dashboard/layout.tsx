@@ -1,10 +1,11 @@
 import DashboardSidebar from '@/components/layout/DashboardSidebar'
 import PrelaunchNotice from '@/components/prelaunch/PrelaunchNotice'
 import { createClient } from '@/lib/supabase/server'
+import { getCachedUser } from '@/lib/supabase/cached-user'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCachedUser()
 
   let userName = 'Interpreter'
   let userInitials = 'IN'

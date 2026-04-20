@@ -2,10 +2,11 @@ import Link from 'next/link';
 import DashboardHeaderNav from '@/components/layout/DashboardHeaderNav';
 import Footer from '@/components/layout/Footer';
 import { createClient } from '@/lib/supabase/server';
+import { getCachedUser } from '@/lib/supabase/cached-user';
 
 export default async function DashboardRootLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getCachedUser();
 
   // Query user_profiles for reliable role (user_metadata may not be set)
   let role = user?.user_metadata?.role || 'interpreter';

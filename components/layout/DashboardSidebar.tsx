@@ -242,50 +242,51 @@ export default function DashboardSidebar({ userName = 'Interpreter', userInitial
 
       if (!profile) return
 
-      // Pending inquiries count (via booking_recipients)
-      const { count: inquiriesCount, error: inqErr } = await supabase
-        .from('booking_recipients')
-        .select('id', { count: 'exact' }).limit(1)
-        .eq('interpreter_id', profile.id)
-        .in('status', ['sent', 'viewed', 'responded'])
+      // All 5 badge queries in parallel
+      const [
+        { count: inquiriesCount, error: inqErr },
+        { count: confirmedCount, error: confErr },
+        { count: inboxCount, error: inboxErr },
+        { count: invoiceDraftsCount, error: invErr },
+        { count: notifCount, error: notifErr },
+      ] = await Promise.all([
+        // Pending inquiries count
+        supabase
+          .from('booking_recipients')
+          .select('id', { count: 'exact' }).limit(1)
+          .eq('interpreter_id', profile.id)
+          .in('status', ['sent', 'viewed', 'responded']),
+        // Confirmed bookings count
+        supabase
+          .from('booking_recipients')
+          .select('id', { count: 'exact' }).limit(1)
+          .eq('interpreter_id', profile.id)
+          .eq('status', 'confirmed'),
+        // Unread messages count
+        supabase
+          .from('messages')
+          .select('id', { count: 'exact' }).limit(1)
+          .eq('interpreter_id', profile.id)
+          .eq('is_read', false),
+        // Draft invoices count
+        supabase
+          .from('invoices')
+          .select('id', { count: 'exact' }).limit(1)
+          .eq('interpreter_id', profile.id)
+          .eq('status', 'draft'),
+        // Unread notifications count (in_app only)
+        supabase
+          .from('notifications')
+          .select('id', { count: 'exact' }).limit(1)
+          .eq('recipient_user_id', user.id)
+          .eq('channel', 'in_app')
+          .neq('status', 'read'),
+      ])
 
       if (inqErr) console.error('[sidebar] inquiries count failed:', inqErr.message)
-
-      // Confirmed bookings count (via booking_recipients)
-      const { count: confirmedCount, error: confErr } = await supabase
-        .from('booking_recipients')
-        .select('id', { count: 'exact' }).limit(1)
-        .eq('interpreter_id', profile.id)
-        .eq('status', 'confirmed')
-
       if (confErr) console.error('[sidebar] confirmed count failed:', confErr.message)
-
-      // Unread messages count
-      const { count: inboxCount, error: inboxErr } = await supabase
-        .from('messages')
-        .select('id', { count: 'exact' }).limit(1)
-        .eq('interpreter_id', profile.id)
-        .eq('is_read', false)
-
       if (inboxErr) console.error('[sidebar] inbox count failed:', inboxErr.message)
-
-      // Draft invoices count
-      const { count: invoiceDraftsCount, error: invErr } = await supabase
-        .from('invoices')
-        .select('id', { count: 'exact' }).limit(1)
-        .eq('interpreter_id', profile.id)
-        .eq('status', 'draft')
-
       if (invErr) console.error('[sidebar] invoice drafts count failed:', invErr.message)
-
-      // Unread notifications count (in_app only, exclude failed/pending email rows)
-      const { count: notifCount, error: notifErr } = await supabase
-        .from('notifications')
-        .select('id', { count: 'exact' }).limit(1)
-        .eq('recipient_user_id', user.id)
-        .eq('channel', 'in_app')
-        .neq('status', 'read')
-
       if (notifErr) console.error('[sidebar] notifications count failed:', notifErr.message)
 
       setBadges({

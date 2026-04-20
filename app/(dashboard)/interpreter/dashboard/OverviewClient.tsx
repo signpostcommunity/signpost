@@ -247,24 +247,67 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
 
     async function fetchData() {
       const supabase = createClient()
+      const pid = interpreterProfileId!
 
-      // Check profile completeness (required fields per signup spec)
-      const { data: profileData } = await supabase
-        .from('interpreter_profiles')
-        .select('photo_url, bio, bio_specializations, first_name, last_name, city, state, interpreter_type, work_mode, years_experience, sign_languages, spoken_languages')
-        .eq('id', interpreterProfileId!)
-        .single()
-
-      const [{ count: certCount }, { count: signLangCount }, { count: spokenLangCount }, { count: specCount }] = await Promise.all([
-        supabase.from('interpreter_certifications').select('id', { count: 'exact' }).limit(1).eq('interpreter_id', interpreterProfileId!),
-        supabase.from('interpreter_sign_languages').select('id', { count: 'exact' }).limit(1).eq('interpreter_id', interpreterProfileId!),
-        supabase.from('interpreter_spoken_languages').select('id', { count: 'exact' }).limit(1).eq('interpreter_id', interpreterProfileId!),
-        supabase.from('interpreter_specializations').select('id', { count: 'exact' }).limit(1).eq('interpreter_id', interpreterProfileId!),
+      // ── Batch 1: All independent queries in parallel ──
+      const [
+        profileResult,
+        relatedCounts,
+        videoCountResult,
+        pendingRecipientsResult,
+        confirmedRecipientsResult,
+        teamCountResult,
+        availabilityResult,
+        teamDataResult,
+      ] = await Promise.all([
+        // Profile completeness
+        supabase
+          .from('interpreter_profiles')
+          .select('photo_url, bio, bio_specializations, first_name, last_name, city, state, interpreter_type, work_mode, years_experience, sign_languages, spoken_languages')
+          .eq('id', pid)
+          .single(),
+        // Cert, sign lang, spoken lang, specialization counts
+        Promise.all([
+          supabase.from('interpreter_certifications').select('id', { count: 'exact' }).limit(1).eq('interpreter_id', pid),
+          supabase.from('interpreter_sign_languages').select('id', { count: 'exact' }).limit(1).eq('interpreter_id', pid),
+          supabase.from('interpreter_spoken_languages').select('id', { count: 'exact' }).limit(1).eq('interpreter_id', pid),
+          supabase.from('interpreter_specializations').select('id', { count: 'exact' }).limit(1).eq('interpreter_id', pid),
+        ]),
+        // Video count
+        supabase.from('interpreter_videos').select('id', { count: 'exact', head: true }).eq('interpreter_id', pid),
+        // Pending recipients (combined count + data via { count: 'exact' })
+        supabase
+          .from('booking_recipients')
+          .select('id, status, booking_id', { count: 'exact' })
+          .eq('interpreter_id', pid)
+          .in('status', ['sent', 'viewed', 'responded'])
+          .order('sent_at', { ascending: true }),
+        // Confirmed recipients (combined count + data)
+        supabase
+          .from('booking_recipients')
+          .select('id, booking_id', { count: 'exact' })
+          .eq('interpreter_id', pid)
+          .eq('status', 'confirmed'),
+        // Team count
+        supabase.from('interpreter_preferred_team').select('id', { count: 'exact', head: true }).eq('interpreter_id', pid),
+        // Availability
+        supabase.from('interpreter_availability').select('day_of_week').eq('interpreter_id', pid),
+        // Team members with FK join (max 5)
+        supabase
+          .from('interpreter_preferred_team')
+          .select('id, first_name, last_name, tier, interpreter_profiles:member_interpreter_id(photo_url, avatar_color)')
+          .eq('interpreter_id', pid)
+          .order('id', { ascending: false })
+          .limit(5),
       ])
 
+      // ── Process Batch 1 results ──
+
+      // Profile completeness
+      const profileData = profileResult.data
+      const [{ count: certCount }, { count: signLangCount }, { count: spokenLangCount }, { count: specCount }] = relatedCounts
+
       const missingPhoto = !profileData?.photo_url || profileData.photo_url.trim() === ''
-      // Bio stored as separate columns: bio (background), bio_specializations, bio_extra (optional).
-      // Required fields must be non-empty and at least 20 chars to catch junk input like "test" or "asdf".
       const missingBio = !profileData?.bio || profileData.bio.trim().length < 20
         || !profileData?.bio_specializations || profileData.bio_specializations.trim().length < 20
       const missingCerts = !certCount || certCount === 0
@@ -288,143 +331,39 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       setMissingFields(missingList)
       setProfileIncomplete(missingList.length > 0 || missingBio || missingCerts || missingSpecs)
 
-      // Check if interpreter has any intro videos
-      const { count: videoCount } = await supabase
-        .from('interpreter_videos')
-        .select('id', { count: 'exact' }).limit(1)
-        .eq('interpreter_id', interpreterProfileId!)
-      setHasIntroVideo((videoCount ?? 0) > 0)
+      // Video intro
+      const videoCount = videoCountResult.count ?? 0
+      setHasIntroVideo(videoCount > 0)
 
-      // Check unfulfilled video request count
-      if (!videoCount || videoCount === 0) {
+      // Video request count (conditional, only if no intro video)
+      if (videoCount === 0) {
         const { count: vrCount } = await supabase
           .from('video_requests')
-          .select('id', { count: 'exact' }).limit(1)
-          .eq('interpreter_id', interpreterProfileId!)
+          .select('id', { count: 'exact', head: true })
+          .eq('interpreter_id', pid)
           .is('fulfilled_at', null)
         setVideoRequestCount(vrCount ?? 0)
       }
 
-      // Pending bookings count (via booking_recipients)
-      const { count: pendingCount, error: pendingCountErr } = await supabase
-        .from('booking_recipients')
-        .select('id', { count: 'exact' }).limit(1)
-        .eq('interpreter_id', interpreterProfileId!)
-        .in('status', ['sent', 'viewed', 'responded'])
-
-      if (pendingCountErr) {
-        console.error('[overview] pending count failed:', pendingCountErr.message)
+      // Pending inquiries count (from combined query)
+      if (pendingRecipientsResult.error) {
+        console.error('[overview] pending recipients failed:', pendingRecipientsResult.error.message)
       } else {
-        setNewInquiries(pendingCount ?? 0)
+        setNewInquiries(pendingRecipientsResult.count ?? 0)
       }
 
-      // Pending bookings data (for display, limit 2, via booking_recipients)
-      // Two-step fetch to avoid RLS nested embed bug
-      const { data: pendingRecipients, error: pendingErr } = await supabase
-        .from('booking_recipients')
-        .select('id, status, booking_id')
-        .eq('interpreter_id', interpreterProfileId!)
-        .in('status', ['sent', 'viewed', 'responded'])
-        .order('sent_at', { ascending: true })
-        .limit(2)
+      // Team count
+      if (!teamCountResult.error) setTeamCount(teamCountResult.count ?? 0)
 
-      if (!pendingErr && pendingRecipients) {
-        const pendingBookingIds = pendingRecipients.map(r => r.booking_id).filter(Boolean)
-        if (pendingBookingIds.length > 0) {
-          const { data: pendingBookingsData, error: pendingBookingsErr } = await supabase
-            .from('bookings')
-            .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed')
-            .in('id', pendingBookingIds)
-          if (pendingBookingsErr) {
-            console.error('[overview] pending bookings fetch error:', pendingBookingsErr.message, pendingBookingsErr.details)
-          }
-          if (pendingBookingsData) {
-            setPendingBookings(pendingBookingsData as Booking[])
-          }
-        }
-      }
-
-      // Confirmed this month count (via booking_recipients + bookings)
-      const now = new Date()
-      const startOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
-      const endOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()}`
-
-      // Two-step fetch to avoid RLS nested embed bug
-      const { data: confirmedRecipients, error: confirmedErr } = await supabase
-        .from('booking_recipients')
-        .select('id, booking_id')
-        .eq('interpreter_id', interpreterProfileId!)
-        .eq('status', 'confirmed')
-
-      if (!confirmedErr && confirmedRecipients) {
-        const confBookingIds = confirmedRecipients.map(r => r.booking_id).filter(Boolean)
-        let confBookingsData: { id: string; date: string }[] = []
-        if (confBookingIds.length > 0) {
-          const { data: bData, error: confBookingsErr } = await supabase
-            .from('bookings')
-            .select('id, date')
-            .in('id', confBookingIds)
-          if (confBookingsErr) {
-            console.error('[overview] confirmed bookings fetch error:', confBookingsErr.message, confBookingsErr.details)
-          }
-          confBookingsData = (bData || []) as { id: string; date: string }[]
-        }
-        const thisMonthCount = confBookingsData.filter(b => b.date >= startOfMonth && b.date <= endOfMonth).length
-        setConfirmedThisMonth(thisMonthCount)
-      }
-
-      // Upcoming confirmed bookings for display (reuse confirmedRecipients from above)
-      const today = now.toISOString().slice(0, 10)
-      if (!confirmedErr && confirmedRecipients) {
-        const upcomingBookingIds = confirmedRecipients.map(r => r.booking_id).filter(Boolean)
-        if (upcomingBookingIds.length > 0) {
-          const { data: upcomingData, error: upcomingErr } = await supabase
-            .from('bookings')
-            .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed')
-            .in('id', upcomingBookingIds)
-            .gte('date', today)
-            .order('date', { ascending: true })
-            .limit(2)
-          if (upcomingErr) {
-            console.error('[overview] upcoming bookings fetch error:', upcomingErr.message, upcomingErr.details)
-          }
-          if (upcomingData) {
-            const decrypted = await decryptBatchClient(upcomingData as Booking[], ['title', 'notes'])
-            setConfirmedBookings(decrypted)
-          }
-        }
-      }
-
-      // Preferred team count - table may not exist
-      const { count: teamC, error: teamErr } = await supabase
-        .from('interpreter_preferred_team')
-        .select('id', { count: 'exact' }).limit(1)
-        .eq('interpreter_id', interpreterProfileId!)
-
-      if (!teamErr) setTeamCount(teamC ?? 0)
-
-      // Days available this week - count distinct days from interpreter_availability
-      const { data: availRows, error: availErr } = await supabase
-        .from('interpreter_availability')
-        .select('day_of_week')
-        .eq('interpreter_id', interpreterProfileId!)
-
-      if (!availErr && availRows) {
-        const uniqueDays = new Set(availRows.map(r => r.day_of_week))
+      // Days available
+      if (!availabilityResult.error && availabilityResult.data) {
+        const uniqueDays = new Set(availabilityResult.data.map((r: { day_of_week: string }) => r.day_of_week))
         setDaysAvailable(uniqueDays.size)
       }
 
-      // Preferred team members (compact list for right column, max 5)
-      const { data: teamData, error: teamDataErr } = await supabase
-        .from('interpreter_preferred_team')
-        .select('id, first_name, last_name, tier, interpreter_profiles:member_interpreter_id(photo_url, avatar_color)')
-        .eq('interpreter_id', interpreterProfileId!)
-        .order('id', { ascending: false })
-        .limit(5)
-
-      if (!teamDataErr && teamData) {
-        // Normalize nested join (Supabase returns array for FK joins)
-        const normalized: TeamMember[] = teamData.map((m: Record<string, unknown>) => {
+      // Team members
+      if (!teamDataResult.error && teamDataResult.data) {
+        const normalized: TeamMember[] = teamDataResult.data.map((m: Record<string, unknown>) => {
           const profile = Array.isArray(m.interpreter_profiles) ? m.interpreter_profiles[0] : m.interpreter_profiles
           return {
             id: m.id as string,
@@ -436,6 +375,68 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
           }
         })
         setTeamMembers(normalized)
+      }
+
+      // ── Batch 2: Conditional booking detail fetches (parallel) ──
+      const pendingRecipients = pendingRecipientsResult.data
+      const confirmedRecipients = confirmedRecipientsResult.data
+      const pendingBookingIds = pendingRecipients?.map(r => r.booking_id).filter(Boolean) ?? []
+      const confirmedBookingIds = confirmedRecipients?.map(r => r.booking_id).filter(Boolean) ?? []
+
+      const now = new Date()
+      const startOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
+      const endOfMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()}`
+      const today = now.toISOString().slice(0, 10)
+
+      const [pendingBookingsResult, confirmedDateResult, upcomingResult] = await Promise.all([
+        // Pending booking details (display, limit 2)
+        pendingBookingIds.length > 0
+          ? supabase
+              .from('bookings')
+              .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed')
+              .in('id', pendingBookingIds)
+          : Promise.resolve({ data: [] as Booking[], error: null }),
+        // Confirmed booking dates (for this-month count)
+        confirmedBookingIds.length > 0
+          ? supabase
+              .from('bookings')
+              .select('id, date')
+              .in('id', confirmedBookingIds)
+          : Promise.resolve({ data: [] as { id: string; date: string }[], error: null }),
+        // Upcoming confirmed bookings (for display, limit 2)
+        confirmedBookingIds.length > 0
+          ? supabase
+              .from('bookings')
+              .select('id, title, requester_name, specialization, date, time_start, time_end, location, format, recurrence, notes, status, is_seed')
+              .in('id', confirmedBookingIds)
+              .gte('date', today)
+              .order('date', { ascending: true })
+              .limit(2)
+          : Promise.resolve({ data: [] as Booking[], error: null }),
+      ])
+
+      // Process pending bookings
+      if (pendingBookingsResult.error) {
+        console.error('[overview] pending bookings fetch error:', pendingBookingsResult.error.message, (pendingBookingsResult.error as Record<string, unknown>).details)
+      } else if (pendingBookingsResult.data) {
+        setPendingBookings(pendingBookingsResult.data as Booking[])
+      }
+
+      // Process confirmed this month
+      if (confirmedDateResult.error) {
+        console.error('[overview] confirmed bookings fetch error:', confirmedDateResult.error.message, (confirmedDateResult.error as Record<string, unknown>).details)
+      } else {
+        const confBookingsData = (confirmedDateResult.data || []) as { id: string; date: string }[]
+        const thisMonthCount = confBookingsData.filter(b => b.date >= startOfMonth && b.date <= endOfMonth).length
+        setConfirmedThisMonth(thisMonthCount)
+      }
+
+      // ── Batch 3: Decrypt upcoming bookings (sequential, needs data from Batch 2) ──
+      if (upcomingResult.error) {
+        console.error('[overview] upcoming bookings fetch error:', upcomingResult.error.message, (upcomingResult.error as Record<string, unknown>).details)
+      } else if (upcomingResult.data && upcomingResult.data.length > 0) {
+        const decrypted = await decryptBatchClient(upcomingResult.data as Booking[], ['title', 'notes'])
+        setConfirmedBookings(decrypted)
       }
 
       setLoading(false)

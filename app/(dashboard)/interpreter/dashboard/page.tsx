@@ -1,11 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
+import { getCachedUser } from '@/lib/supabase/cached-user'
 import OverviewClient from './OverviewClient'
 
 export const dynamic = 'force-dynamic'
 
 export default async function OverviewPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const user = await getCachedUser()
 
   let profile: { id: string; first_name: string; last_name: string; status: string; vanity_slug: string | null; calendar_token: string | null; directory_visible: boolean; photo_url: string | null; bio: string | null; bio_specializations: string | null; video_url: string | null; sign_languages: string[] | null; spoken_languages: string[] | null; specializations: string[] | null } | null = null
   let activeAwayPeriod: { end_date: string; message: string } | null = null
