@@ -417,14 +417,14 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
 
       // Process pending bookings
       if (pendingBookingsResult.error) {
-        console.error('[overview] pending bookings fetch error:', pendingBookingsResult.error.message, (pendingBookingsResult.error as Record<string, unknown>).details)
+        console.error('[overview] pending bookings fetch error:', pendingBookingsResult.error.message, pendingBookingsResult.error.details)
       } else if (pendingBookingsResult.data) {
         setPendingBookings(pendingBookingsResult.data as Booking[])
       }
 
       // Process confirmed this month
       if (confirmedDateResult.error) {
-        console.error('[overview] confirmed bookings fetch error:', confirmedDateResult.error.message, (confirmedDateResult.error as Record<string, unknown>).details)
+        console.error('[overview] confirmed bookings fetch error:', confirmedDateResult.error.message, confirmedDateResult.error.details)
       } else {
         const confBookingsData = (confirmedDateResult.data || []) as { id: string; date: string }[]
         const thisMonthCount = confBookingsData.filter(b => b.date >= startOfMonth && b.date <= endOfMonth).length
@@ -433,7 +433,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
 
       // ── Batch 3: Decrypt upcoming bookings (sequential, needs data from Batch 2) ──
       if (upcomingResult.error) {
-        console.error('[overview] upcoming bookings fetch error:', upcomingResult.error.message, (upcomingResult.error as Record<string, unknown>).details)
+        console.error('[overview] upcoming bookings fetch error:', upcomingResult.error.message, upcomingResult.error.details)
       } else if (upcomingResult.data && upcomingResult.data.length > 0) {
         const decrypted = await decryptBatchClient(upcomingResult.data as Booking[], ['title', 'notes'])
         setConfirmedBookings(decrypted)
