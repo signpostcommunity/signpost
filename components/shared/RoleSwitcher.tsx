@@ -217,30 +217,32 @@ export default function RoleSwitcher({ currentRole }: { currentRole: string }) {
       </div>
 
       {/* Dropdown trigger */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+      <div style={{ marginBottom: 8 }}>
         <button
           onClick={() => setOpen(!open)}
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            flex: 1, padding: '8px 12px',
+            width: '100%', padding: '8px 12px',
             background: 'var(--surface2)', border: '1px solid var(--border)',
             borderRadius: 'var(--radius-sm)', cursor: 'pointer',
             fontFamily: "'DM Sans', sans-serif",
           }}
         >
-          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text)' }}>
-            {currentRoleInfo?.label || currentRole}
+          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text)' }}>
+              {currentRoleInfo?.label || currentRole}
+            </span>
+            <StarIcon
+              filled={effectivePreferred === currentRole}
+              onClick={(e) => { e.stopPropagation(); handleStarClick(currentRole) }}
+              label={effectivePreferred === currentRole ? 'Primary dashboard' : 'Make this my primary dashboard'}
+            />
           </span>
           <svg width="10" height="14" viewBox="0 0 10 14" fill="none" style={{ flexShrink: 0 }}>
             <path d="M2 5.5L5 3L8 5.5" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M2 8.5L5 11L8 8.5" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </button>
-        <StarIcon
-          filled={effectivePreferred === currentRole}
-          onClick={(e) => { e.stopPropagation(); handleStarClick(currentRole) }}
-          label={effectivePreferred === currentRole ? 'Primary dashboard' : 'Make this my primary dashboard'}
-        />
       </div>
 
       {/* Dropdown menu */}
