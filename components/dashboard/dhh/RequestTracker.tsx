@@ -121,8 +121,8 @@ function getSteps(booking: TrackerBooking, recipients: Recipient[], hasRating: b
     return {
       steps: [
         { label: 'Sent', circleState: 'completed' },
-        { label: 'Still looking', circleState: hadConfirmed ? 'completed' : 'cancelled', sublabel: hadConfirmed ? null : (booking.cancellation_reason || null) },
-        { label: 'Confirmed', circleState: hadConfirmed ? 'cancelled' : 'muted', sublabel: hadConfirmed ? (booking.cancellation_reason || null) : null },
+        { label: hadConfirmed ? 'Still looking' : 'Cancelled', circleState: hadConfirmed ? 'completed' : 'cancelled', sublabel: hadConfirmed ? null : (booking.cancellation_reason || null) },
+        { label: hadConfirmed ? 'Cancelled' : 'Confirmed', circleState: hadConfirmed ? 'cancelled' : 'muted', sublabel: hadConfirmed ? (booking.cancellation_reason || null) : null },
         { label: 'Rate', circleState: 'muted' },
       ],
       terminal: 'cancelled',
