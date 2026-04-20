@@ -424,6 +424,7 @@ function DeafSignupForm() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [initFailed, setInitFailed] = useState(false);
   const [existingUserId, setExistingUserId] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
 
@@ -468,15 +469,72 @@ function DeafSignupForm() {
         }
         if (user.email) setEmail(user.email);
 
+        // Fetch shared profile data from existing roles
+        let defaults: Record<string, string> = {};
         try {
           const res = await fetch('/api/profile-defaults');
           if (res.ok) {
-            const defaults = await res.json();
+            defaults = await res.json();
             if (defaults.first_name) setFirstName(defaults.first_name);
             if (defaults.last_name) setLastName(defaults.last_name);
           }
         } catch (prefillErr) {
           console.warn('Failed to fetch profile defaults:', prefillErr);
+        }
+
+        // Ensure deaf_profiles row exists so subsequent UPDATE steps work
+        const { data: existingProfile } = await supabase
+          .from('deaf_profiles')
+          .select('id')
+          .or(`id.eq.${user.id},user_id.eq.${user.id}`)
+          .maybeSingle();
+
+        if (!existingProfile) {
+          const fn = defaults.first_name || '';
+          const ln = defaults.last_name || '';
+          const fullN = [fn, ln].filter(Boolean).join(' ');
+          const { error: insertErr } = await supabase
+            .from('deaf_profiles')
+            .insert(syncNameFields({
+              id: user.id,
+              user_id: user.id,
+              first_name: fn,
+              last_name: ln,
+              name: fullN,
+              email: user.email || defaults.email || '',
+              city: defaults.city || '',
+              state: defaults.state || '',
+              country: defaults.country || '',
+              country_name: defaults.country_name || '',
+              photo_url: defaults.photo_url || null,
+            }));
+          if (insertErr) {
+            console.error('[addRole] Failed to create deaf profile:', insertErr);
+            setError('We could not set up your new profile. Please try again or contact hello@signpost.community.');
+            setInitFailed(true);
+            return;
+          } else {
+            // Generate vanity slug
+            const baseSlug = generateSlug(fn, ln).slice(0, 50);
+            if (baseSlug && baseSlug.length >= 3) {
+              let slug = baseSlug;
+              let attempt = 1;
+              while (attempt <= 20) {
+                const { data: slugCheck } = await supabase
+                  .from('deaf_profiles')
+                  .select('vanity_slug')
+                  .ilike('vanity_slug', slug)
+                  .maybeSingle();
+                if (!slugCheck) break;
+                attempt++;
+                slug = `${baseSlug}-${attempt}`;
+              }
+              await supabase
+                .from('deaf_profiles')
+                .update({ vanity_slug: slug })
+                .eq('id', user.id);
+            }
+          }
         }
       } catch (e) {
         console.error('Add role init failed:', e);
@@ -722,10 +780,24 @@ function DeafSignupForm() {
         notes: commNotes.trim(),
       };
 
-      await supabase
+      const { error: commErr, data: commData } = await supabase
         .from('deaf_profiles')
         .update({ comm_prefs: commPrefs })
-        .eq('user_id', uid);
+        .eq('user_id', uid)
+        .select();
+
+      if (commErr) {
+        console.error('[addRole/dhh/step-2] update failed:', commErr.message, commErr.details);
+        setError('Something went wrong saving your progress. Please try again.');
+        setLoading(false);
+        return;
+      }
+      if (!commData || commData.length === 0) {
+        console.error('[addRole/dhh/step-2] update matched zero rows (profile row missing?)');
+        setError('We lost track of your profile. Please refresh and try again.');
+        setLoading(false);
+        return;
+      }
 
       setLoading(false);
       goToStep(3);
@@ -753,10 +825,24 @@ function DeafSignupForm() {
         updated_at: new Date().toISOString(),
       };
 
-      await supabase
+      const { error: introErr, data: introData } = await supabase
         .from('deaf_profiles')
         .update(updates)
-        .eq('user_id', uid);
+        .eq('user_id', uid)
+        .select();
+
+      if (introErr) {
+        console.error('[addRole/dhh/step-3] update failed:', introErr.message, introErr.details);
+        setError('Something went wrong saving your progress. Please try again.');
+        setLoading(false);
+        return;
+      }
+      if (!introData || introData.length === 0) {
+        console.error('[addRole/dhh/step-3] update matched zero rows (profile row missing?)');
+        setError('We lost track of your profile. Please refresh and try again.');
+        setLoading(false);
+        return;
+      }
 
       setLoading(false);
       goToStep(4);
@@ -800,6 +886,62 @@ function DeafSignupForm() {
     }
   }
 
+  /* ─── Add-role finalize: validate, clean pending_roles, go to done ─── */
+
+  async function handleAddRoleFinalize() {
+    const uid = userId || existingUserId;
+    if (!uid) return;
+
+    // Validate required fields (DHH: first, last, email)
+    const missing: string[] = [];
+    if (!firstName?.trim()) missing.push('First name');
+    if (!lastName?.trim()) missing.push('Last name');
+    if (!email?.trim()) missing.push('Email');
+    if (missing.length > 0) {
+      setError(`Please complete the following: ${missing.join(', ')}.`);
+      return;
+    }
+
+    setLoading(true);
+    const supabase = createClient();
+
+    // Mark profile as up-to-date
+    const { error: finalErr, data: finalData } = await supabase.from('deaf_profiles').update({
+      updated_at: new Date().toISOString(),
+    }).or(`id.eq.${uid},user_id.eq.${uid}`).select();
+
+    if (finalErr) {
+      console.error('[addRole/dhh/finalize] update failed:', finalErr.message, finalErr.details);
+      setError('Something went wrong saving your progress. Please try again.');
+      setLoading(false);
+      return;
+    }
+    if (!finalData || finalData.length === 0) {
+      console.error('[addRole/dhh/finalize] update matched zero rows (profile row missing?)');
+      setError('We lost track of your profile. Please refresh and try again.');
+      setLoading(false);
+      return;
+    }
+
+    // Clean pending_roles on confirmed success
+    try {
+      const { data: upProfile } = await supabase
+        .from('user_profiles')
+        .select('pending_roles')
+        .eq('id', uid)
+        .single();
+      if (upProfile?.pending_roles?.includes('deaf')) {
+        const updated = (upProfile.pending_roles as string[]).filter((r: string) => r !== 'deaf');
+        await supabase.from('user_profiles').update({ pending_roles: updated }).eq('id', uid);
+      }
+    } catch (e) {
+      console.error('Failed to clean pending_roles:', e);
+    }
+
+    setLoading(false);
+    goToStep(6);
+  }
+
   /* ─── Resuming check ─── */
 
   if (resuming) {
@@ -818,6 +960,29 @@ function DeafSignupForm() {
   }
 
   const isAuthenticated = !!(userId || existingUserId);
+
+  if (initFailed) {
+    return (
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        justifyContent: 'center', minHeight: 'calc(100vh - 73px)',
+        padding: '100px 24px 80px', position: 'relative' as const, zIndex: 1,
+      }}>
+        <div style={{ maxWidth: 480, width: '100%', textAlign: 'center' }}>
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 775, fontSize: 27, color: '#f0f2f8', marginBottom: 12 }}>
+            Something went wrong
+          </h1>
+          <div style={{
+            background: 'rgba(255,107,133,0.1)', border: '1px solid rgba(255,107,133,0.3)',
+            borderRadius: 10, padding: '16px 20px', color: 'var(--accent3)', fontSize: 15, marginBottom: 20,
+          }}>
+            {error || 'We could not set up your new profile. Please try again or contact hello@signpost.community.'}
+          </div>
+          <PrimaryButton onClick={() => window.location.reload()}>Try again</PrimaryButton>
+        </div>
+      </div>
+    );
+  }
 
   /* ─── Render ─── */
 
@@ -1235,12 +1400,20 @@ function DeafSignupForm() {
             </FormCard>
 
             <div style={{ marginTop: 28 }}>
-            <PrimaryButton onClick={() => goToStep(6)}>
-              Continue to finish
+            <PrimaryButton onClick={isAddRole ? handleAddRoleFinalize : () => goToStep(6)} disabled={loading}>
+              {loading ? 'Finishing...' : 'Continue to finish'}
             </PrimaryButton>
             <div style={{ marginTop: 10 }}>
               <OutlineButton onClick={() => goToStep(4)}>Back</OutlineButton>
             </div>
+            {error && (
+              <div style={{
+                background: 'rgba(255,107,133,0.1)', border: '1px solid rgba(255,107,133,0.3)',
+                borderRadius: 10, padding: '12px 16px', color: 'var(--accent3)', fontSize: 14, marginTop: 10,
+              }}>
+                {error}
+              </div>
+            )}
             </div>
           </>
         )}

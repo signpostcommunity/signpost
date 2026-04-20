@@ -13,6 +13,7 @@ export interface SharedProfileFields {
   country_name: string
   phone: string
   email: string
+  photo_url: string
 }
 
 const EMPTY: SharedProfileFields = {
@@ -24,18 +25,13 @@ const EMPTY: SharedProfileFields = {
   country_name: '',
   phone: '',
   email: '',
+  photo_url: '',
 }
 
-const SOURCE_TABLES = [
-  'interpreter_profiles',
-  'deaf_profiles',
-  'requester_profiles',
-] as const
-
 /**
- * Fetches shared profile fields from an existing profile for the given user.
- * Tries each profile table in order and returns the first one that has a
- * first_name populated. Falls back to auth email if no profile has one.
+ * Fetches shared profile fields from all existing profiles for the given user.
+ * Queries all three tables in parallel, sorts by updated_at desc, and picks
+ * the most-recent non-null value for each field.
  *
  * Uses the admin client to bypass RLS (cross-table read).
  */
@@ -44,32 +40,60 @@ export async function getExistingProfileData(
 ): Promise<SharedProfileFields> {
   const admin = getSupabaseAdmin()
 
-  for (const table of SOURCE_TABLES) {
-    const { data } = await admin
-      .from(table)
-      .select('first_name, last_name, city, state, country, country_name, phone, email')
-      .eq('user_id', userId)
-      .maybeSingle()
+  const BASE_COLS = 'first_name, last_name, city, state, country, country_name, phone, email, updated_at'
 
-    if (data?.first_name) {
-      return {
-        first_name: data.first_name || '',
-        last_name: data.last_name || '',
-        city: data.city || '',
-        state: data.state || '',
-        country: data.country || '',
-        country_name: data.country_name || '',
-        phone: data.phone || '',
-        email: data.email || '',
-      }
-    }
+  // Query all three tables in parallel (requester_profiles has no photo_url)
+  const [interpResult, deafResult, reqResult] = await Promise.all([
+    admin.from('interpreter_profiles')
+      .select(`${BASE_COLS}, photo_url`)
+      .eq('user_id', userId)
+      .maybeSingle(),
+    admin.from('deaf_profiles')
+      .select(`${BASE_COLS}, photo_url`)
+      .eq('user_id', userId)
+      .maybeSingle(),
+    admin.from('requester_profiles')
+      .select(BASE_COLS)
+      .eq('user_id', userId)
+      .maybeSingle(),
+  ])
+
+  type Row = Record<string, string | null>
+
+  // Filter to rows that exist and have first_name, sort by updated_at desc
+  const rows: Row[] = (
+    [interpResult.data, deafResult.data, reqResult.data] as (Row | null)[]
+  )
+    .filter((r): r is Row => !!r && !!r.first_name)
+    .sort((a, b) => {
+      const ta = a.updated_at ? new Date(a.updated_at).getTime() : 0
+      const tb = b.updated_at ? new Date(b.updated_at).getTime() : 0
+      return tb - ta
+    })
+
+  if (rows.length === 0) {
+    // No existing profile with a name -- try to get email from auth
+    const { data: authUser } = await admin.auth.admin.getUserById(userId)
+    return { ...EMPTY, email: authUser?.user?.email || '' }
   }
 
-  // No existing profile with a name — try to get email from auth
-  const { data: authUser } = await admin.auth.admin.getUserById(userId)
+  // Pick first non-null value per field across sorted rows
+  function pick(field: string): string {
+    for (const row of rows) {
+      if (row[field]) return row[field] as string
+    }
+    return ''
+  }
 
   return {
-    ...EMPTY,
-    email: authUser?.user?.email || '',
+    first_name: pick('first_name'),
+    last_name: pick('last_name'),
+    city: pick('city'),
+    state: pick('state'),
+    country: pick('country'),
+    country_name: pick('country_name'),
+    phone: pick('phone'),
+    email: pick('email'),
+    photo_url: pick('photo_url'),
   }
 }

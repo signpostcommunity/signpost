@@ -625,6 +625,7 @@ export default function RequestSignupClient() {
   const [form, setForm] = useState<FormData>(defaultForm);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [initFailed, setInitFailed] = useState(false);
   const [existingUserId, setExistingUserId] = useState<string | null>(null);
   const [openCard, setOpenCard] = useState<number | null>(null);
 
@@ -651,7 +652,7 @@ export default function RequestSignupClient() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Pre-fill from existing profile when adding a role
+  // Pre-fill from existing profile when adding a role and create minimal row
   useEffect(() => {
     if (!isAddRole) return;
     (async () => {
@@ -672,6 +673,58 @@ export default function RequestSignupClient() {
           lastName: prev.lastName || parts.slice(1).join(' ') || '',
           email: prev.email || user.email || '',
         }));
+      }
+
+      // Fetch shared profile data from existing roles
+      let defaults: Record<string, string> = {};
+      try {
+        const res = await fetch('/api/profile-defaults');
+        if (res.ok) {
+          defaults = await res.json();
+          setForm(prev => ({
+            ...prev,
+            firstName: prev.firstName || defaults.first_name || '',
+            lastName: prev.lastName || defaults.last_name || '',
+            email: prev.email || defaults.email || '',
+            city: prev.city || defaults.city || '',
+            state: prev.state || defaults.state || '',
+            country: prev.country || defaults.country || '',
+            phone: prev.phone || defaults.phone || '',
+          }));
+        }
+      } catch (prefillErr) {
+        console.warn('Failed to fetch profile defaults:', prefillErr);
+      }
+
+      // Ensure requester_profiles row exists so submit UPSERT works cleanly
+      const { data: existingProfile } = await supabase
+        .from('requester_profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!existingProfile) {
+        const fn = defaults.first_name || '';
+        const ln = defaults.last_name || '';
+        const { error: insertErr } = await supabase
+          .from('requester_profiles')
+          .insert(syncNameFields({
+            id: user.id,
+            user_id: user.id,
+            first_name: fn,
+            last_name: ln,
+            email: user.email || defaults.email || '',
+            city: defaults.city || '',
+            state: defaults.state || '',
+            country: defaults.country || '',
+            country_name: defaults.country_name || getCountryName(defaults.country) || '',
+          }));
+        if (insertErr) {
+          console.error('[addRole] Failed to create requester profile:', insertErr);
+          setError('We could not set up your new profile. Please try again or contact hello@signpost.community.');
+          setInitFailed(true);
+          return;
+        }
       }
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -704,6 +757,19 @@ export default function RequestSignupClient() {
 
   async function handleSubmit() {
     setError('');
+
+    // Validate required fields for add-role (requester: first, last, email)
+    if (isAddRole) {
+      const missing: string[] = [];
+      if (!form.firstName?.trim()) missing.push('First name');
+      if (!form.lastName?.trim()) missing.push('Last name');
+      if (!form.email?.trim()) missing.push('Email');
+      if (missing.length > 0) {
+        setError(`Please complete the following: ${missing.join(', ')}.`);
+        return;
+      }
+    }
+
     setLoading(true);
 
     const supabase = createClient();
@@ -742,7 +808,7 @@ export default function RequestSignupClient() {
     const normFirst = (norm.first_name as string) || form.firstName;
     const normLast = (norm.last_name as string) || form.lastName;
     const normDisplayName = `${normFirst} ${normLast}`.trim() || form.email;
-    const { error: rpError } = await supabase.from('requester_profiles').insert(syncNameFields({
+    const { error: rpError } = await supabase.from('requester_profiles').upsert(syncNameFields({
       id: userId,
       user_id: userId,
       first_name: normFirst,
@@ -760,7 +826,7 @@ export default function RequestSignupClient() {
       org_type: form.requesterType === 'organization' ? form.orgType : null,
       requester_type: form.requesterType,
       comm_prefs: JSON.stringify(form.commPrefs),
-    }));
+    }), { onConflict: 'id' });
     if (rpError) {
       setError('Failed to create requester profile: ' + rpError.message);
       setLoading(false);
@@ -795,6 +861,38 @@ export default function RequestSignupClient() {
 
     setStep(4);
     setLoading(false);
+  }
+
+  if (initFailed) {
+    return (
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        justifyContent: 'center', minHeight: 'calc(100vh - 73px)',
+        padding: '100px 24px 80px', position: 'relative' as const, zIndex: 1,
+      }}>
+        <div style={{ maxWidth: 480, width: '100%', textAlign: 'center' }}>
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 775, fontSize: 27, color: '#f0f2f8', marginBottom: 12 }}>
+            Something went wrong
+          </h1>
+          <div style={{
+            background: 'rgba(255,107,133,0.1)', border: '1px solid rgba(255,107,133,0.3)',
+            borderRadius: 10, padding: '16px 20px', color: 'var(--accent3)', fontSize: 15, marginBottom: 20,
+          }}>
+            {error || 'We could not set up your new profile. Please try again or contact hello@signpost.community.'}
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              width: '100%', padding: '14px 24px', background: '#00e5ff', color: '#0a0a0f',
+              border: 'none', borderRadius: 10, fontFamily: "'Inter', sans-serif",
+              fontWeight: 600, fontSize: 14.5, cursor: 'pointer',
+            }}
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (

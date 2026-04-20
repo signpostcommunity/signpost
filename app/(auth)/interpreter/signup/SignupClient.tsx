@@ -577,6 +577,7 @@ function InterpreterSignupForm() {
   const [zip, setZip] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [initFailed, setInitFailed] = useState(false);
   const [existingUserId, setExistingUserId] = useState<string | null>(null);
 
   // Section 3: Professional
@@ -664,18 +665,78 @@ function InterpreterSignupForm() {
         }
         if (user.email) setEmail(user.email);
 
+        // Fetch shared profile data from existing roles
+        let defaults: Record<string, string> = {};
         try {
           const res = await fetch('/api/profile-defaults');
           if (res.ok) {
-            const defaults = await res.json();
+            defaults = await res.json();
             if (defaults.first_name) setFirstName(defaults.first_name);
             if (defaults.last_name) setLastName(defaults.last_name);
             if (defaults.country) setCountry(defaults.country);
             if (defaults.state) setState(defaults.state);
             if (defaults.city) setCity(defaults.city);
+            if (defaults.photo_url) setPhotoUrl(defaults.photo_url);
           }
         } catch (prefillErr) {
           console.warn('Failed to fetch profile defaults:', prefillErr);
+        }
+
+        // Ensure interpreter_profiles row exists so subsequent UPDATE steps work
+        const { data: existingProfile } = await supabase
+          .from('interpreter_profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (existingProfile) {
+          setProfileId(existingProfile.id);
+        } else {
+          const fn = defaults.first_name || '';
+          const ln = defaults.last_name || '';
+          const { data: newProfile, error: insertErr } = await supabase
+            .from('interpreter_profiles')
+            .insert(syncNameFields({
+              user_id: user.id,
+              first_name: fn,
+              last_name: ln,
+              email: user.email || defaults.email || '',
+              city: defaults.city || '',
+              state: defaults.state || '',
+              country: defaults.country || '',
+              country_name: defaults.country_name || '',
+              photo_url: defaults.photo_url || null,
+            }))
+            .select('id')
+            .single();
+          if (insertErr) {
+            console.error('[addRole] Failed to create interpreter profile:', insertErr);
+            setError('We could not set up your new profile. Please try again or contact hello@signpost.community.');
+            setInitFailed(true);
+            return;
+          } else if (newProfile) {
+            setProfileId(newProfile.id);
+            // Generate vanity slug
+            const baseSlug = generateSlug(fn, ln).slice(0, 50);
+            if (baseSlug && baseSlug.length >= 3) {
+              let slug = baseSlug;
+              let attempt = 1;
+              while (attempt <= 20) {
+                const { data: slugCheck } = await supabase
+                  .from('interpreter_profiles')
+                  .select('vanity_slug')
+                  .ilike('vanity_slug', slug)
+                  .maybeSingle();
+                if (!slugCheck) break;
+                attempt++;
+                slug = `${baseSlug}-${attempt}`;
+              }
+              await supabase
+                .from('interpreter_profiles')
+                .update({ vanity_slug: slug })
+                .eq('user_id', user.id);
+            }
+          }
         }
       } catch (e) {
         console.error('Add role init failed:', e);
@@ -1049,6 +1110,29 @@ function InterpreterSignupForm() {
 
   const isAuthenticated = !!(userId || existingUserId);
 
+  if (initFailed) {
+    return (
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        justifyContent: 'center', minHeight: 'calc(100vh - 73px)',
+        padding: '100px 24px 80px', position: 'relative' as const, zIndex: 1,
+      }}>
+        <div style={{ maxWidth: 480, width: '100%', textAlign: 'center' }}>
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 775, fontSize: 27, color: '#f0f2f8', marginBottom: 12 }}>
+            Something went wrong
+          </h1>
+          <div style={{
+            background: 'rgba(255,107,133,0.1)', border: '1px solid rgba(255,107,133,0.3)',
+            borderRadius: 10, padding: '16px 20px', color: 'var(--accent3)', fontSize: 15, marginBottom: 20,
+          }}>
+            {error || 'We could not set up your new profile. Please try again or contact hello@signpost.community.'}
+          </div>
+          <PrimaryButton onClick={() => window.location.reload()}>Try again</PrimaryButton>
+        </div>
+      </div>
+    );
+  }
+
   /* ─── Section 1: Account ─── */
 
   if (section === 1) {
@@ -1232,7 +1316,7 @@ function InterpreterSignupForm() {
     setLoading(true);
     try {
       const supabase = createClient();
-      const { error: updateError } = await supabase
+      const { error: updateError, data: updateData } = await supabase
         .from('interpreter_profiles')
         .update({
           interpreter_type: interpreterType,
@@ -1244,9 +1328,17 @@ function InterpreterSignupForm() {
           phone_type: phoneType || null,
           event_coordination: eventCoordination,
         })
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .select();
       if (updateError) {
+        console.error('[addRole/interpreter/step-3] update failed:', updateError.message, updateError.details);
         setError(updateError.message);
+        setLoading(false);
+        return;
+      }
+      if (!updateData || updateData.length === 0) {
+        console.error('[addRole/interpreter/step-3] update matched zero rows (profile row missing?)');
+        setError('We lost track of your profile. Please refresh and try again.');
         setLoading(false);
         return;
       }
@@ -1533,15 +1625,23 @@ function InterpreterSignupForm() {
       }
 
       const supabase = createClient();
-      const { error: updateError } = await supabase
+      const { error: updateError, data: updateData } = await supabase
         .from('interpreter_profiles')
         .update({
           sign_languages: finalSign,
           spoken_languages: finalSpoken,
         })
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .select();
       if (updateError) {
+        console.error('[addRole/interpreter/step-4] update failed:', updateError.message, updateError.details);
         setError(updateError.message);
+        setLoading(false);
+        return;
+      }
+      if (!updateData || updateData.length === 0) {
+        console.error('[addRole/interpreter/step-4] update matched zero rows (profile row missing?)');
+        setError('We lost track of your profile. Please refresh and try again.');
         setLoading(false);
         return;
       }
@@ -2107,12 +2207,20 @@ function InterpreterSignupForm() {
       if (videoUrl) {
         updateData.video_url = videoUrl;
       }
-      const { error: updateError } = await supabase
+      const { error: updateError, data: savedData } = await supabase
         .from('interpreter_profiles')
         .update(updateData)
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .select();
       if (updateError) {
+        console.error('[addRole/interpreter/step-6] update failed:', updateError.message, updateError.details);
         setError(updateError.message);
+        setLoading(false);
+        return;
+      }
+      if (!savedData || savedData.length === 0) {
+        console.error('[addRole/interpreter/step-6] update matched zero rows (profile row missing?)');
+        setError('We lost track of your profile. Please refresh and try again.');
         setLoading(false);
         return;
       }
@@ -2350,7 +2458,7 @@ function InterpreterSignupForm() {
       if (!uid) return;
       setLoading(true);
       const supabase = createClient();
-      const { error: saveErr } = await supabase
+      const { error: saveErr, data: saveData } = await supabase
         .from('interpreter_profiles')
         .update({
           specializations,
@@ -2364,8 +2472,20 @@ function InterpreterSignupForm() {
           mentorship_offering: mentorshipOffering,
           mentorship_seeking: mentorshipSeeking,
         })
-        .eq('user_id', uid);
-      if (saveErr) console.error('Section 7 save error:', saveErr);
+        .eq('user_id', uid)
+        .select();
+      if (saveErr) {
+        console.error('[addRole/interpreter/step-7] update failed:', saveErr.message, saveErr.details);
+        setError('Something went wrong saving your progress. Please try again.');
+        setLoading(false);
+        return;
+      }
+      if (!saveData || saveData.length === 0) {
+        console.error('[addRole/interpreter/step-7] update matched zero rows (profile row missing?)');
+        setError('We lost track of your profile. Please refresh and try again.');
+        setLoading(false);
+        return;
+      }
       setLoading(false);
       goToSection(8);
     };
@@ -2530,6 +2650,28 @@ function InterpreterSignupForm() {
         setLoading(false);
         return;
       }
+
+      // Clean up pending_roles on confirmed successful completion
+      if (isAddRole) {
+        try {
+          const { data: upProfile } = await supabase
+            .from('user_profiles')
+            .select('pending_roles')
+            .eq('id', uid)
+            .single();
+          if (upProfile?.pending_roles?.includes('interpreter')) {
+            const updated = (upProfile.pending_roles as string[]).filter((r: string) => r !== 'interpreter');
+            await supabase.from('user_profiles').update({ pending_roles: updated }).eq('id', uid);
+          }
+        } catch (e) {
+          console.error('Failed to clean pending_roles:', e);
+        }
+        setLoading(false);
+        router.refresh();
+        router.push('/interpreter/dashboard');
+        return;
+      }
+
       setLoading(false);
       goToSection(9);
     };
