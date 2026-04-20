@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
   // Check if user_profiles row exists
   const { data: profile } = await supabase
     .from('user_profiles')
-    .select('role')
+    .select('role, preferred_role')
     .eq('id', user.id)
     .single();
 
@@ -49,8 +49,9 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(`${origin}/interpreter/signup`);
       }
     }
-    // Existing user with completed profile - redirect to their dashboard
-    return redirectToDashboard(origin, profile.role);
+    // Existing user with completed profile - redirect to preferred dashboard
+    const effectiveRole = await resolveEffectiveRole(supabase, user.id, profile.preferred_role, profile.role);
+    return redirectToDashboard(origin, effectiveRole);
   }
 
   // New OAuth user - create user_profiles row with role, then route to signup wizard
@@ -180,6 +181,44 @@ export async function GET(request: NextRequest) {
 
 function redirectToDashboard(origin: string, role: string) {
   if (role === 'interpreter') return NextResponse.redirect(`${origin}/interpreter/dashboard`);
-  if (role === 'deaf') return NextResponse.redirect(`${origin}/dhh/dashboard`);
+  if (role === 'deaf' || role === 'dhh') return NextResponse.redirect(`${origin}/dhh/dashboard`);
+  if (role === 'admin') return NextResponse.redirect(`${origin}/admin/dashboard`);
   return NextResponse.redirect(`${origin}/request/dashboard`);
+}
+
+// Resolve which role to redirect to: preferred_role if valid, else fall back to primary role
+async function resolveEffectiveRole(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  preferredRole: string | null,
+  fallbackRole: string,
+): Promise<string> {
+  if (!preferredRole) return fallbackRole;
+
+  // Verify the preferred role's profile exists
+  const profileCheck: Record<string, { table: string; keyColumn: string }> = {
+    interpreter: { table: 'interpreter_profiles', keyColumn: 'user_id' },
+    dhh: { table: 'deaf_profiles', keyColumn: 'user_id' },
+    requester: { table: 'requester_profiles', keyColumn: 'id' },
+  };
+
+  if (preferredRole === 'admin') {
+    const { data: up } = await supabase
+      .from('user_profiles')
+      .select('is_admin')
+      .eq('id', userId)
+      .single();
+    return up?.is_admin ? 'admin' : fallbackRole;
+  }
+
+  const check = profileCheck[preferredRole];
+  if (!check) return fallbackRole;
+
+  const { count } = await supabase
+    .from(check.table)
+    .select('id', { count: 'exact' })
+    .limit(1)
+    .eq(check.keyColumn, userId);
+
+  return (count ?? 0) > 0 ? preferredRole : fallbackRole;
 }

@@ -27,10 +27,11 @@ interface UserRoles {
   active: string[]
   pending: string[]
   isAdmin: boolean
+  preferredRole: string | null
 }
 
 export function useUserRoles() {
-  const [roles, setRoles] = useState<UserRoles>({ active: [], pending: [], isAdmin: false })
+  const [roles, setRoles] = useState<UserRoles>({ active: [], pending: [], isAdmin: false, preferredRole: null })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -39,10 +40,10 @@ export function useUserRoles() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { setLoading(false); return }
 
-      // Fetch user_profiles for is_admin and pending_roles
+      // Fetch user_profiles for is_admin, pending_roles, and preferred_role
       const { data: up } = await supabase
         .from('user_profiles')
-        .select('is_admin, pending_roles')
+        .select('is_admin, pending_roles, preferred_role, role')
         .eq('id', user.id)
         .single()
 
@@ -88,19 +89,69 @@ export function useUserRoles() {
 
       const pending = (up?.pending_roles || []) as string[]
 
-      setRoles({ active, pending, isAdmin })
+      // preferred_role is stored as 'dhh' in DB but we use 'deaf' internally
+      const rawPref = up?.preferred_role as string | null
+      const preferredRole = rawPref === 'dhh' ? 'deaf' : rawPref
+
+      setRoles({ active, pending, isAdmin, preferredRole })
       setLoading(false)
     }
     fetch()
   }, [])
 
-  return { roles, loading }
+  function setPreferredRole(role: string) {
+    setRoles(prev => ({ ...prev, preferredRole: role }))
+  }
+
+  return { roles, loading, setPreferredRole }
+}
+
+function StarIcon({ filled, onClick, label }: { filled: boolean; onClick: (e: React.MouseEvent) => void; label: string }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      style={{
+        background: 'none', border: 'none', cursor: 'pointer',
+        padding: 2, display: 'flex', alignItems: 'center', flexShrink: 0,
+      }}
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill={filled ? '#00e5ff' : 'none'} stroke={filled ? '#00e5ff' : '#96a0b8'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+      </svg>
+    </button>
+  )
 }
 
 export default function RoleSwitcher({ currentRole }: { currentRole: string }) {
-  const { roles, loading } = useUserRoles()
+  const { roles, loading, setPreferredRole } = useUserRoles()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+
+  // Effective preferred role: explicit preference or fall back to primary role
+  const effectivePreferred = roles.preferredRole || currentRole
+
+  async function handleStarClick(roleKey: string) {
+    if (roleKey === effectivePreferred) return
+    setPreferredRole(roleKey)
+    try {
+      const res = await fetch('/api/user/preferred-role', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: roleKey }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        console.error('Failed to set preferred role:', data.error || res.statusText)
+        // Revert on failure
+        setPreferredRole(effectivePreferred)
+      }
+    } catch (err) {
+      console.error('Failed to set preferred role:', err)
+      setPreferredRole(effectivePreferred)
+    }
+  }
 
   // Close on click outside
   useEffect(() => {
@@ -166,25 +217,31 @@ export default function RoleSwitcher({ currentRole }: { currentRole: string }) {
       </div>
 
       {/* Dropdown trigger */}
-      <button
-        onClick={() => setOpen(!open)}
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          width: '100%', padding: '8px 12px',
-          background: 'var(--surface2)', border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-sm)', cursor: 'pointer',
-          fontFamily: "'DM Sans', sans-serif",
-          marginBottom: 8,
-        }}
-      >
-        <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text)' }}>
-          {currentRoleInfo?.label || currentRole}
-        </span>
-        <svg width="10" height="14" viewBox="0 0 10 14" fill="none" style={{ flexShrink: 0 }}>
-          <path d="M2 5.5L5 3L8 5.5" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <path d="M2 8.5L5 11L8 8.5" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 }}>
+        <button
+          onClick={() => setOpen(!open)}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            flex: 1, padding: '8px 12px',
+            background: 'var(--surface2)', border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)', cursor: 'pointer',
+            fontFamily: "'DM Sans', sans-serif",
+          }}
+        >
+          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text)' }}>
+            {currentRoleInfo?.label || currentRole}
+          </span>
+          <svg width="10" height="14" viewBox="0 0 10 14" fill="none" style={{ flexShrink: 0 }}>
+            <path d="M2 5.5L5 3L8 5.5" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M2 8.5L5 11L8 8.5" stroke="#00e5ff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+        <StarIcon
+          filled={effectivePreferred === currentRole}
+          onClick={(e) => { e.stopPropagation(); handleStarClick(currentRole) }}
+          label={effectivePreferred === currentRole ? 'Primary dashboard' : 'Make this my primary dashboard'}
+        />
+      </div>
 
       {/* Dropdown menu */}
       {open && (
@@ -197,22 +254,35 @@ export default function RoleSwitcher({ currentRole }: { currentRole: string }) {
           {otherRoles.map(roleKey => {
             const role = ROLES.find(r => r.key === roleKey)
             if (!role) return null
+            const isPreferred = effectivePreferred === roleKey
             return (
-              <Link
+              <div
                 key={role.key}
-                href={role.href}
-                onClick={() => setOpen(false)}
                 style={{
-                  display: 'block', padding: '8px 14px',
-                  fontSize: '0.85rem', color: 'var(--text)',
-                  textDecoration: 'none', transition: 'background 0.1s',
-                  fontFamily: "'DM Sans', sans-serif",
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '0 10px 0 0', transition: 'background 0.1s',
                 }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--surface2)' }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}
               >
-                {role.label}
-              </Link>
+                <Link
+                  href={role.href}
+                  onClick={() => setOpen(false)}
+                  style={{
+                    display: 'block', padding: '8px 14px', flex: 1,
+                    fontSize: '0.85rem', color: 'var(--text)',
+                    textDecoration: 'none',
+                    fontFamily: "'DM Sans', sans-serif",
+                  }}
+                >
+                  {role.label}
+                </Link>
+                <StarIcon
+                  filled={isPreferred}
+                  onClick={(e) => { e.stopPropagation(); handleStarClick(roleKey) }}
+                  label={isPreferred ? 'Primary dashboard' : 'Make this my primary dashboard'}
+                />
+              </div>
             )
           })}
 
