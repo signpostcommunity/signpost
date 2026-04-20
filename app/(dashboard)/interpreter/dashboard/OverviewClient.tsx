@@ -602,13 +602,13 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
 
           {/* Book Me badge banner with mini preview */}
           {interpreterProfileId && !hasDraftProfile && (
-            <div style={{
+            <div className="book-me-banner" style={{
               background: '#111118', border: '1px solid #1e2433', borderLeft: '4px solid #00e5ff',
               borderRadius: 10, padding: '16px 20px', marginBottom: 12,
               display: 'flex', alignItems: 'center', gap: 16,
             }}>
               {/* Mini badge preview */}
-              <div style={{
+              <div className="book-me-preview" style={{
                 width: 270, height: 80, borderRadius: 8, overflow: 'hidden', flexShrink: 0,
               }}>
                 <div style={{ transform: 'scale(0.50)', transformOrigin: 'top left', width: 540, height: 240 }}>
@@ -623,7 +623,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                   Share your badge in your email signature, on your LinkedIn page, or anywhere your clients find you. Your custom link leads directly to a booking page specific to you.
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0, marginLeft: 'auto' }}>
+              <div className="book-me-link" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, marginLeft: 'auto' }}>
                 <Link
                   href="/interpreter/dashboard/profile"
                   style={{
@@ -1035,6 +1035,19 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       <DashMobileStyles />
       <style>{`
         .interp-name-link:hover { text-decoration: underline !important; }
+        @media (max-width: 768px) {
+          .book-me-banner {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+          }
+          .book-me-preview {
+            width: 100% !important;
+            max-width: 270px !important;
+          }
+          .book-me-link {
+            margin-left: 0 !important;
+          }
+        }
       `}</style>
     </div>
   )
