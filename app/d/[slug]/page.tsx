@@ -28,7 +28,7 @@ async function getFullProfile(slug: string) {
     const admin = getSupabaseAdmin()
     const { data, error } = await admin
       .from('deaf_profiles')
-      .select('id, name, first_name, pronouns, comm_prefs, profile_video_url, vanity_slug')
+      .select('id, name, first_name, last_name, city, state, photo_url, pronouns, comm_prefs, profile_video_url, vanity_slug')
       .ilike('vanity_slug', slug)
       .maybeSingle()
     if (error) { console.error('[d/slug] Profile fetch error:', error); return null }
@@ -134,6 +134,10 @@ export default async function DeafSlugPage({ params }: Props) {
         id: data.id,
         name: data.name,
         firstName: data.first_name,
+        lastName: data.last_name,
+        city: data.city,
+        state: data.state,
+        photoUrl: data.photo_url,
         pronouns: data.pronouns,
         commPrefs: data.comm_prefs,
         profileVideoUrl: data.profile_video_url,

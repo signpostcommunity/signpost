@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Toast from '@/components/ui/Toast'
 import RequesterInterpreterPicker from '@/components/requester/RequesterInterpreterPicker'
@@ -93,6 +93,7 @@ const errorStyle: React.CSSProperties = {
 
 export default function NewRequestPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [submitting, setSubmitting] = useState(false)
   const [hasPaymentMethod, setHasPaymentMethod] = useState<boolean | null>(null)
   const paymentNoticeRef = useRef<HTMLDivElement>(null)
@@ -112,6 +113,60 @@ export default function NewRequestPage() {
     }
     checkPaymentMethod()
   }, [])
+
+  // Pre-fill from ?deaf_id= query param (from /d/[slug] share page flow)
+  const [prefillError, setPrefillError] = useState<string | null>(null)
+  const prefillRan = useRef(false)
+  useEffect(() => {
+    const deafId = searchParams.get('deaf_id')
+    if (!deafId || prefillRan.current) return
+    prefillRan.current = true
+
+    async function prefillDeafUser() {
+      const newPerson: TaggedDeafPerson = {
+        identifier: deafId!,
+        userId: null,
+        displayName: '',
+        status: 'loading',
+        interpreters: [],
+      }
+      setTaggedDeafPersons([newPerson])
+
+      try {
+        const res = await fetch('/api/request/deaf-list-check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deafUserIdentifier: deafId }),
+        })
+        const data = await res.json()
+
+        if (data.status === 'list_available') {
+          setTaggedDeafPersons([{
+            identifier: deafId!,
+            userId: data.userId,
+            displayName: data.displayName || 'this person',
+            status: 'list_available',
+            interpreters: data.interpreters || [],
+          }])
+        } else if (data.status === 'approval_pending') {
+          setTaggedDeafPersons([{
+            identifier: deafId!,
+            userId: data.userId,
+            displayName: data.displayName || 'this person',
+            status: 'approval_pending',
+            interpreters: [],
+          }])
+        } else {
+          setPrefillError('Could not find the linked Deaf/DB/HH user. Please go back and try again.')
+          setTaggedDeafPersons([])
+        }
+      } catch {
+        setPrefillError('Failed to load the linked profile. Please try again.')
+        setTaggedDeafPersons([])
+      }
+    }
+    prefillDeafUser()
+  }, [searchParams])
 
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
@@ -879,6 +934,18 @@ export default function NewRequestPage() {
         </BetaTryThis>
 
         <h3 style={sectionLabelStyle}>Who is this for?</h3>
+        {prefillError && (
+          <div style={{
+            padding: '14px 18px', marginBottom: 16,
+            background: 'rgba(255,107,133,0.06)', border: '1px solid rgba(255,107,133,0.25)',
+            borderRadius: 'var(--radius-sm)', fontSize: '0.85rem', color: 'var(--accent3)', lineHeight: 1.5,
+          }}>
+            {prefillError}{' '}
+            <Link href={`/d/${searchParams.get('deaf_id') || ''}`} style={{ color: 'var(--accent)', fontWeight: 600 }}>
+              Go back
+            </Link>
+          </div>
+        )}
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, lineHeight: 1.6 }}>
           Enter the email or phone number of the Deaf, DeafBlind, or Hard of Hearing person this interpreter is for. Their preferred interpreter list will help you find the best match.
         </p>

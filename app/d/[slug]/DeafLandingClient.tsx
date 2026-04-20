@@ -18,6 +18,10 @@ interface AuthenticatedProfile {
   id: string
   name: string
   firstName: string | null
+  lastName: string | null
+  city: string | null
+  state: string | null
+  photoUrl: string | null
   pronouns: string | null
   commPrefs: CommPrefs | null
   profileVideoUrl: string | null
@@ -341,11 +345,18 @@ function PublicView({ profile }: { profile: PublicProfile }) {
 /* ─── Authenticated view (unchanged from original) ─── */
 
 function AuthenticatedView({ deafProfile }: { deafProfile: AuthenticatedProfile }) {
-  const [authState, setAuthState] = useState<'loading' | 'anon' | 'requester' | 'no_requester'>('loading')
+  const [authState, setAuthState] = useState<'loading' | 'anon' | 'self' | 'requester' | 'no_requester'>('loading')
   const [connecting, setConnecting] = useState(false)
   const [error, setError] = useState('')
+  const [copied, setCopied] = useState(false)
 
   const displayName = deafProfile.firstName || deafProfile.name || 'this person'
+  const fullName = [deafProfile.firstName, deafProfile.lastName].filter(Boolean).join(' ') || deafProfile.name || 'User'
+  const location = [deafProfile.city, deafProfile.state].filter(Boolean).join(', ')
+  const initials = [deafProfile.firstName, deafProfile.lastName]
+    .filter(Boolean)
+    .map(n => n!.charAt(0).toUpperCase())
+    .join('') || '?'
   const cp = deafProfile.commPrefs
 
   useEffect(() => {
@@ -355,6 +366,12 @@ function AuthenticatedView({ deafProfile }: { deafProfile: AuthenticatedProfile 
 
       if (!user) {
         setAuthState('anon')
+        return
+      }
+
+      // Self-view: user is viewing their own share page
+      if (user.id === deafProfile.id) {
+        setAuthState('self')
         return
       }
 
@@ -383,7 +400,7 @@ function AuthenticatedView({ deafProfile }: { deafProfile: AuthenticatedProfile 
       }
     }
     checkAuth()
-  }, [])
+  }, [deafProfile.id])
 
   async function handleConnect() {
     setConnecting(true)
@@ -395,7 +412,7 @@ function AuthenticatedView({ deafProfile }: { deafProfile: AuthenticatedProfile 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           dhh_user_id: deafProfile.id,
-          initiated_by: 'dhh',
+          initiated_by: 'requester',
         }),
       })
 
@@ -411,8 +428,8 @@ function AuthenticatedView({ deafProfile }: { deafProfile: AuthenticatedProfile 
         return
       }
 
-      // Redirect to booking form with the deaf user's ID
-      window.location.href = `/request/dashboard?for=${deafProfile.id}`
+      // Redirect to new-request form pre-filled with this DHH person
+      window.location.href = `/request/dashboard/new-request?deaf_id=${deafProfile.id}`
     } catch {
       setError('Connection failed. Please try again.')
       setConnecting(false)
@@ -442,29 +459,80 @@ function AuthenticatedView({ deafProfile }: { deafProfile: AuthenticatedProfile 
         padding: '40px 24px 60px',
         display: 'flex', flexDirection: 'column', gap: 32,
       }}>
-        {/* Name + Pronouns */}
-        <div>
-          <h1 style={{
-            fontFamily: "'Syne', sans-serif",
-            fontSize: '2rem',
-            fontWeight: 775,
-            letterSpacing: '-0.03em',
-            color: 'var(--text)',
-            marginBottom: 8,
-            lineHeight: 1.2,
-          }}>
-            {deafProfile.name}
-          </h1>
-          {deafProfile.pronouns && (
-            <p style={{
-              fontSize: '0.92rem',
-              color: 'var(--accent2)',
-              fontWeight: 500,
-              margin: 0,
+        {/* Identity card */}
+        <div className="auth-id-card" style={{
+          background: '#111118',
+          border: '1px solid var(--border)',
+          borderRadius: 12,
+          padding: 24,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+        }}>
+          {deafProfile.photoUrl ? (
+            <img
+              src={deafProfile.photoUrl}
+              alt={fullName}
+              style={{
+                width: 64, height: 64,
+                borderRadius: '50%',
+                objectFit: 'cover',
+                flexShrink: 0,
+              }}
+              className="auth-id-photo"
+            />
+          ) : (
+            <div className="auth-id-photo" style={{
+              width: 64, height: 64,
+              borderRadius: '50%',
+              background: 'rgba(167, 139, 250, 0.15)',
+              border: '1px solid rgba(167, 139, 250, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontFamily: "'Syne', sans-serif",
+              fontSize: 20,
+              fontWeight: 700,
+              color: '#a78bfa',
+              flexShrink: 0,
             }}>
-              {deafProfile.pronouns}
-            </p>
+              {initials}
+            </div>
           )}
+          <div>
+            <div style={{
+              fontFamily: "'Syne', sans-serif",
+              fontSize: 20,
+              fontWeight: 700,
+              color: '#f0f2f8',
+              letterSpacing: '-0.01em',
+              lineHeight: 1.3,
+            }}>
+              {fullName}
+            </div>
+            {deafProfile.pronouns && (
+              <div style={{
+                fontSize: '0.88rem',
+                color: 'var(--accent2)',
+                fontWeight: 500,
+                marginTop: 2,
+              }}>
+                {deafProfile.pronouns}
+              </div>
+            )}
+            {location && (
+              <div style={{
+                fontSize: 12,
+                fontWeight: 500,
+                color: '#96a0b8',
+                marginTop: 4,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+              }}>
+                {location}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Communication preferences */}
@@ -570,6 +638,70 @@ function AuthenticatedView({ deafProfile }: { deafProfile: AuthenticatedProfile 
             }}>
               Loading...
             </div>
+          ) : authState === 'self' ? (
+            <div style={{
+              background: '#111118',
+              border: '1px solid rgba(167, 139, 250, 0.2)',
+              borderRadius: 12,
+              padding: '28px 24px',
+              textAlign: 'left',
+            }}>
+              <div style={{
+                fontFamily: "'Syne', sans-serif",
+                fontSize: 15,
+                fontWeight: 600,
+                color: '#f0f2f8',
+                marginBottom: 8,
+              }}>
+                This is your share page
+              </div>
+              <p style={{
+                fontSize: '0.88rem',
+                color: '#96a0b8',
+                lineHeight: 1.6,
+                margin: '0 0 20px',
+              }}>
+                Anyone with this link can request an interpreter on your behalf. Share it with entities that book interpreters for you.
+              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const url = `https://signpost.community/d/${deafProfile.vanitySlug}`
+                    navigator.clipboard.writeText(url).then(() => {
+                      setCopied(true)
+                      setTimeout(() => setCopied(false), 2000)
+                    })
+                  }}
+                  style={{
+                    padding: '10px 20px',
+                    background: copied ? 'rgba(52,211,153,0.15)' : 'rgba(167, 139, 250, 0.1)',
+                    border: `1px solid ${copied ? 'rgba(52,211,153,0.3)' : 'rgba(167, 139, 250, 0.3)'}`,
+                    borderRadius: 10,
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    color: copied ? '#34d399' : '#a78bfa',
+                    cursor: 'pointer',
+                    fontFamily: "'Inter', sans-serif",
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {copied ? 'Copied!' : 'Copy Link'}
+                </button>
+                <Link
+                  href="/dhh/dashboard/preferences"
+                  style={{
+                    fontSize: '0.85rem',
+                    color: 'var(--muted)',
+                    textDecoration: 'none',
+                    fontFamily: "'Inter', sans-serif",
+                    fontWeight: 500,
+                  }}
+                >
+                  Edit in Preferences
+                </Link>
+              </div>
+            </div>
           ) : authState === 'anon' ? (
             <Link
               href={`/request?return=/d/${deafProfile.vanitySlug}&connect=${deafProfile.id}`}
@@ -645,17 +777,32 @@ function AuthenticatedView({ deafProfile }: { deafProfile: AuthenticatedProfile 
         </div>
 
         {/* Subtitle text */}
-        <p style={{
-          textAlign: 'center',
-          fontSize: '0.88rem',
-          color: 'var(--muted)',
-          lineHeight: 1.6,
-          maxWidth: 400,
-          margin: '0 auto',
-        }}>
-          signpost connects you with qualified sign language interpreters based on {displayName}&apos;s preferences.
-        </p>
+        {authState !== 'self' && (
+          <p style={{
+            textAlign: 'center',
+            fontSize: '0.88rem',
+            color: 'var(--muted)',
+            lineHeight: 1.6,
+            maxWidth: 400,
+            margin: '0 auto',
+          }}>
+            signpost connects you with qualified sign language interpreters based on {displayName}&apos;s preferences.
+          </p>
+        )}
       </div>
+
+      <style>{`
+        @media (max-width: 767px) {
+          .auth-id-card {
+            margin-left: -8px;
+            margin-right: -8px;
+          }
+          .auth-id-photo {
+            width: 48px !important;
+            height: 48px !important;
+          }
+        }
+      `}</style>
     </div>
   )
 }

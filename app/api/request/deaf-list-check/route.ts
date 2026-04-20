@@ -40,8 +40,23 @@ export async function POST(request: NextRequest) {
     let deafAuthUser: { id: string; email?: string } | null = null
     let deafProfile: { id: string; user_id: string; first_name: string | null; auto_share_pref_list: boolean } | null = null
 
+    // UUID lookup: direct deaf_profiles lookup by id/user_id (used by /d/[slug] pre-fill)
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(identifier)
+    if (isUuid) {
+      const { data: dp } = await admin
+        .from('deaf_profiles')
+        .select('id, user_id, first_name, auto_share_pref_list')
+        .or(`id.eq.${identifier},user_id.eq.${identifier}`)
+        .maybeSingle()
+
+      if (dp) {
+        deafProfile = dp
+        deafAuthUser = { id: dp.user_id }
+      }
+    }
+
     // Try email lookup via auth.users
-    if (identifier.includes('@')) {
+    if (!deafProfile && identifier.includes('@')) {
       const { data: { users }, error: listErr } = await admin.auth.admin.listUsers()
       if (!listErr && users) {
         const matched = users.find(u => u.email?.toLowerCase() === identifier)
