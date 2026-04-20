@@ -404,6 +404,70 @@ Every prompt that modifies UI must include this verification step:
 
 ---
 
+## Verification & Commit Discipline
+
+*Added after the 4/20 deploy cascade (commits 861f049 → e2bf31d). Three rules to prevent cascading Vercel failures, orphan file accumulation, and scope drift.*
+
+### Rule 1 — Use `npx next build` for verification, not `npx tsc --noEmit`
+
+For any commit that will deploy to Vercel, run `npx next build` as the final verification step. Do NOT rely on `npx tsc --noEmit` alone.
+
+If `next build` is infeasible in the current environment (e.g., Chromebook OOM with exit code 135 bus error), fall back to `npx tsc --noEmit` but EXPLICITLY note the limitation in the final report with the exact phrase: "next build was not run locally due to [reason]; tsc passed clean; Vercel build is the authoritative verification."
+
+**Why:** On 4/20, commit 861f049 passed `tsc --noEmit` but failed on Vercel with three TS2352 errors in OverviewClient.tsx. Every subsequent commit inherited the broken tree. Vercel uses `next build` which enforces stricter type checks than bare `tsc`, including stricter narrowing rules for cast expressions.
+
+**When `next build` is required:**
+- Commit touches a new file that deploys
+- Commit touches configuration (next.config.ts, tsconfig.json)
+- Commit adds dependencies
+
+**When `tsc` alone is sufficient:**
+- Docs-only changes (README, markdown)
+
+### Rule 2 — Final report must surface orphan files
+
+Before any commit, run these two commands and include output in the final report:
+
+```bash
+git status --short
+git diff --stat
+```
+
+In the final report, under a **"Working tree state"** heading, list:
+- Every file that was modified, staged or not
+- Every untracked file
+- For any file NOT included in the commit, explain why in one sentence
+
+If the working tree is clean after the commit, say explicitly: **"Working tree clean — no orphan files."**
+
+**Why:** Between 4/20 commits 861f049 and e2bf31d, three consecutive sessions left uncommitted work in the tree (policies pages unstaged, lib/populateNewProfile.ts unstaged, 247 lines of multirole WIP across signup files). None flagged the orphan files prominently. Three separate orphan sets accumulated silently.
+
+**If orphan files from a prior session are found:**
+1. Report them explicitly at the start of the session
+2. Ask for guidance rather than auto-committing them
+3. If user confirms they should be ignored, stash them with `git stash push -m "descriptive-label" <paths>` before starting work
+
+### Rule 3 — Investigation-only prompts must not write code
+
+If a prompt's scope is labeled "investigation only," "analysis only," "no code," "report only," or similar:
+
+1. Do NOT make any file-editing tool calls
+2. If you find yourself wanting to edit code to complete the analysis, STOP before the first edit
+3. Report the scope mismatch in a final report labeled **"SCOPE ESCALATION REQUIRED"**
+4. Wait for explicit user authorization before proceeding
+
+The final report should include: what you found, why code changes seem necessary, and a proposed scope for a follow-up prompt.
+
+**Why:** On 4/20, an investigation-only prompt drifted into writing code across three signup files and a shared helper. The session crashed, leaving 247 lines of WIP that required 90 minutes of manual recovery. The failure was scope drift without mid-task flagging.
+
+**Scope indicators — no code:** "investigate," "analyze" (without "and fix"), "report only," "produce a report," "do not modify files," "diagnostic" / "diagnose without fixing"
+
+**Scope indicators — code authorized:** "fix," "implement," "refactor," "update," "add," "remove," or explicit file-editing instructions in the body
+
+If scope is genuinely ambiguous, default to investigation-only and ask: "Should I proceed with code changes in a follow-up prompt, or is this expected within current scope?"
+
+---
+
 ## Known Issues / Gotchas
 
 - **`proxy.ts` not `middleware.ts`**: Next.js 16 changed the auth middleware filename convention.
