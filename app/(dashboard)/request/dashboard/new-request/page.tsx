@@ -796,7 +796,7 @@ export default function NewRequestPage() {
   const platformFee = 15.0 * interpreterCount
 
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
         {/* Header */}
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 775, fontSize: '27px', letterSpacing: '-0.02em', margin: '0 0 6px', color: '#f0f2f8' }}>
           New Interpreter Request
