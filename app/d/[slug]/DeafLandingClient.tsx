@@ -412,7 +412,11 @@ function AuthenticatedView({ deafProfile }: { deafProfile: AuthenticatedProfile 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           dhh_user_id: deafProfile.id,
-          initiated_by: 'requester',
+          // 'dhh' triggers auto-approval in /api/connections/create.
+          // The DHH user pre-consented by creating and publishing this share link,
+          // so the connection lands active rather than pending. This is not a
+          // click-attribution value; it is a source-of-trust signal.
+          initiated_by: 'dhh',
         }),
       })
 
