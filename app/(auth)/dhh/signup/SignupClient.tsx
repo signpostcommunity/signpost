@@ -477,9 +477,17 @@ function DeafSignupForm() {
             defaults = await res.json();
             if (defaults.first_name) setFirstName(defaults.first_name);
             if (defaults.last_name) setLastName(defaults.last_name);
+          } else {
+            console.error('[addRole init] profile defaults fetch returned', res.status);
+            setError('Could not load your existing profile data. Please refresh the page and try again. If the problem persists, contact support.');
+            setInitFailed(true);
+            return;
           }
         } catch (prefillErr) {
-          console.warn('Failed to fetch profile defaults:', prefillErr);
+          console.error('[addRole init] profile defaults fetch failed:', prefillErr);
+          setError('Could not load your existing profile data. Please refresh the page and try again. If the problem persists, contact support.');
+          setInitFailed(true);
+          return;
         }
 
         // Ensure deaf_profiles row exists so subsequent UPDATE steps work
@@ -782,8 +790,7 @@ function DeafSignupForm() {
 
       const { error: commErr, data: commData } = await supabase
         .from('deaf_profiles')
-        .update({ comm_prefs: commPrefs })
-        .eq('user_id', uid)
+        .upsert({ id: uid, user_id: uid, comm_prefs: commPrefs }, { onConflict: 'id' })
         .select();
 
       if (commErr) {
@@ -793,7 +800,7 @@ function DeafSignupForm() {
         return;
       }
       if (!commData || commData.length === 0) {
-        console.error('[addRole/dhh/step-2] update matched zero rows (profile row missing?)');
+        console.error('[addRole/dhh/step-2] upsert returned zero rows');
         setError('We lost track of your profile. Please refresh and try again.');
         setLoading(false);
         return;
@@ -827,8 +834,7 @@ function DeafSignupForm() {
 
       const { error: introErr, data: introData } = await supabase
         .from('deaf_profiles')
-        .update(updates)
-        .eq('user_id', uid)
+        .upsert({ id: uid, user_id: uid, ...updates }, { onConflict: 'id' })
         .select();
 
       if (introErr) {
@@ -838,7 +844,7 @@ function DeafSignupForm() {
         return;
       }
       if (!introData || introData.length === 0) {
-        console.error('[addRole/dhh/step-3] update matched zero rows (profile row missing?)');
+        console.error('[addRole/dhh/step-3] upsert returned zero rows');
         setError('We lost track of your profile. Please refresh and try again.');
         setLoading(false);
         return;
@@ -906,9 +912,9 @@ function DeafSignupForm() {
     const supabase = createClient();
 
     // Mark profile as up-to-date
-    const { error: finalErr, data: finalData } = await supabase.from('deaf_profiles').update({
-      updated_at: new Date().toISOString(),
-    }).or(`id.eq.${uid},user_id.eq.${uid}`).select();
+    const { error: finalErr, data: finalData } = await supabase.from('deaf_profiles').upsert({
+      id: uid, user_id: uid, updated_at: new Date().toISOString(),
+    }, { onConflict: 'id' }).select();
 
     if (finalErr) {
       console.error('[addRole/dhh/finalize] update failed:', finalErr.message, finalErr.details);
@@ -917,7 +923,7 @@ function DeafSignupForm() {
       return;
     }
     if (!finalData || finalData.length === 0) {
-      console.error('[addRole/dhh/finalize] update matched zero rows (profile row missing?)');
+      console.error('[addRole/dhh/finalize] upsert returned zero rows');
       setError('We lost track of your profile. Please refresh and try again.');
       setLoading(false);
       return;
