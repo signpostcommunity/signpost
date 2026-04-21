@@ -521,7 +521,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
   }
 
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
       {activeAwayPeriod && (
         <div style={{
           background: 'rgba(0,229,255,0.06)', border: '1px solid rgba(0,229,255,0.15)',

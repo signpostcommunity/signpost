@@ -9,16 +9,18 @@ interface ToastProps {
   duration?: number;
 }
 
-export default function Toast({ message, type = 'success', onClose, duration = 3000 }: ToastProps) {
+export default function Toast({ message, type = 'success', onClose, duration }: ToastProps) {
   const [visible, setVisible] = useState(true);
+  const resolvedDuration = duration ?? (type === 'error' ? null : 3000);
 
   useEffect(() => {
+    if (resolvedDuration === null) return;
     const timer = setTimeout(() => {
       setVisible(false);
       setTimeout(onClose, 300);
-    }, duration);
+    }, resolvedDuration);
     return () => clearTimeout(timer);
-  }, [duration, onClose]);
+  }, [resolvedDuration, onClose]);
 
   const colors = {
     success: { bg: 'rgba(52,211,153,0.1)', border: 'rgba(52,211,153,0.3)', color: '#34d399' },
