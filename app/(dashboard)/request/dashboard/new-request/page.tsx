@@ -89,11 +89,124 @@ const errorStyle: React.CSSProperties = {
   fontSize: '0.78rem', color: 'var(--accent3)', marginTop: 4,
 }
 
+/* -- Tabs -- */
+
+const TABS = ['Event Details', 'Participants', 'Interpreters', 'Preparation', 'Review & Submit'] as const
+type Tab = typeof TABS[number]
+
+function RequestSidebarNav({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
+  return (
+    <>
+      {/* Desktop: vertical left sidebar */}
+      <nav aria-label="Request sections" className="req-sidebar-desktop" style={{
+        width: 220, flexShrink: 0,
+        borderRight: '1px solid var(--border)',
+        paddingTop: 8,
+      }}>
+        {TABS.map(tab => {
+          const isActive = active === tab
+          return (
+            <button
+              key={tab}
+              role="tab"
+              aria-selected={isActive}
+              onClick={() => onChange(tab)}
+              style={{
+                display: 'block', width: '100%', textAlign: 'left',
+                padding: '10px 16px',
+                background: isActive ? 'rgba(0,229,255,0.04)' : 'transparent',
+                border: 'none', borderLeftStyle: 'solid', borderLeftWidth: 2,
+                borderLeftColor: isActive ? '#00e5ff' : 'transparent',
+                cursor: 'pointer',
+                fontSize: '14px', fontWeight: 500,
+                fontFamily: "'Inter', sans-serif",
+                color: isActive ? '#f0f2f8' : '#96a0b8',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => {
+                if (!isActive) {
+                  e.currentTarget.style.color = '#f0f2f8'
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.02)'
+                }
+              }}
+              onMouseLeave={e => {
+                if (!isActive) {
+                  e.currentTarget.style.color = '#96a0b8'
+                  e.currentTarget.style.background = 'transparent'
+                }
+              }}
+            >
+              {tab}
+            </button>
+          )
+        })}
+      </nav>
+
+      {/* Mobile: dropdown selector */}
+      <div className="req-sidebar-mobile" style={{ display: 'none', marginBottom: 24 }}>
+        <select
+          value={active}
+          onChange={e => onChange(e.target.value as Tab)}
+          aria-label="Request section"
+          style={{
+            width: '100%',
+            background: 'var(--surface)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-sm)',
+            padding: '11px 14px',
+            color: 'var(--text)',
+            fontSize: '0.9rem',
+            fontFamily: "'Inter', sans-serif",
+            outline: 'none',
+            cursor: 'pointer',
+            appearance: 'none',
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2396a0b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'right 14px center',
+            paddingRight: 36,
+          }}
+        >
+          {TABS.map(tab => (
+            <option key={tab} value={tab}>{tab}</option>
+          ))}
+        </select>
+      </div>
+
+      <style>{`
+        @media (min-width: 769px) {
+          .req-sidebar-desktop { display: block !important; }
+          .req-sidebar-mobile { display: none !important; }
+        }
+        @media (max-width: 768px) {
+          .req-sidebar-desktop { display: none !important; }
+          .req-sidebar-mobile { display: block !important; }
+        }
+      `}</style>
+    </>
+  )
+}
+
 /* -- Component -- */
 
 export default function NewRequestPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+
+  const initialTab = (() => {
+    const tabParam = searchParams.get('tab')
+    if (tabParam) {
+      const match = TABS.find(t => t.toLowerCase().replace(/\s+/g, '-') === tabParam)
+      if (match) return match
+    }
+    return 'Event Details' as Tab
+  })()
+  const [activeTab, setActiveTabRaw] = useState<Tab>(initialTab)
+  function setActiveTab(tab: Tab) {
+    setActiveTabRaw(tab)
+    window.scrollTo({ top: 0, behavior: 'instant' })
+    document.querySelector('.dash-main')?.scrollTo({ top: 0, behavior: 'instant' })
+  }
+
   const [submitting, setSubmitting] = useState(false)
   const [hasPaymentMethod, setHasPaymentMethod] = useState<boolean | null>(null)
   const paymentNoticeRef = useRef<HTMLDivElement>(null)
@@ -653,19 +766,32 @@ export default function NewRequestPage() {
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
-      <div style={{ maxWidth: 680, margin: '0 auto' }}>
         {/* Header */}
-        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 725, fontSize: '27px', letterSpacing: '-0.02em', margin: '0 0 6px', color: '#f0f2f8' }}>
+        <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 775, fontSize: '27px', letterSpacing: '-0.02em', margin: '0 0 6px', color: '#f0f2f8' }}>
           New Interpreter Request
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: '0 0 26px' }}>
           Fill out the details below to request an interpreter for your event.
         </p>
 
+      {/* Sidebar + Content layout */}
+      <div className="req-editor-layout" style={{ display: 'flex', gap: 0, minHeight: '60vh' }}>
+        <RequestSidebarNav active={activeTab} onChange={setActiveTab} />
+
+        <div className="req-editor-content" style={{ flex: 1, padding: '0 0 0 32px', minWidth: 0, maxWidth: 720 }}>
+          {/* Active section label */}
+          <div style={{
+            fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em',
+            textTransform: 'uppercase', color: '#00e5ff', marginBottom: 20,
+          }}>
+            {activeTab}
+          </div>
+
         {/* ================================================================ */}
-        {/* SECTION 1: EVENT DETAILS                                         */}
+        {/* TAB 1: EVENT DETAILS                                             */}
         {/* ================================================================ */}
-        <h3 style={sectionLabelStyle}>Event Details</h3>
+        {activeTab === 'Event Details' && (
+        <>
 
         <div style={{ marginBottom: 20 }}>
           <label style={labelStyle}>What is this event? *</label>
@@ -791,10 +917,14 @@ export default function NewRequestPage() {
           </select>
         </div>
 
+        </>
+        )}
+
         {/* ================================================================ */}
-        {/* PREPARATION DETAILS (optional)                                   */}
+        {/* TAB 4: PREPARATION                                               */}
         {/* ================================================================ */}
-        <h3 style={sectionLabelStyle}>Preparation Details (optional)</h3>
+        {activeTab === 'Preparation' && (
+        <>
 
         <div style={{ marginBottom: 20 }}>
           <label style={labelStyle}>On-site Contact</label>
@@ -927,13 +1057,33 @@ export default function NewRequestPage() {
         </div>
 
         {/* ================================================================ */}
-        {/* SECTION 2: WHO IS THIS FOR?                                      */}
+        {/* SECTION 4 (cont): ADDITIONAL CONTEXT (merged into Preparation)   */}
         {/* ================================================================ */}
+        <h3 style={sectionLabelStyle}>Additional Notes</h3>
+
+        <div style={{ marginBottom: 20 }}>
+          <label style={labelStyle}>Additional Notes for Interpreters</label>
+          <textarea
+            value={notes}
+            onChange={e => setNotes(e.target.value)}
+            placeholder="Any additional context, preparation materials, or special requirements"
+            rows={4}
+            style={{ ...inputStyle, resize: 'vertical' as const }}
+          />
+        </div>
+
+        </>
+        )}
+
+        {/* ================================================================ */}
+        {/* TAB 2: PARTICIPANTS                                              */}
+        {/* ================================================================ */}
+        {activeTab === 'Participants' && (
+        <>
         <BetaTryThis storageKey="beta_try_new_request_deaf">
           Try entering jordan.rivera.test@signpost.community in the field below to see how a Deaf client&apos;s preferred interpreter list works. Then click &apos;+ Add another person&apos; and enter maria.chen.test@signpost.community. Notice which interpreters are recommended because they appear on both lists.
         </BetaTryThis>
 
-        <h3 style={sectionLabelStyle}>Who is this for?</h3>
         {prefillError && (
           <div style={{
             padding: '14px 18px', marginBottom: 16,
@@ -1214,16 +1364,20 @@ export default function NewRequestPage() {
           </div>
         )}
 
+        </>
+        )}
+
         {/* ================================================================ */}
-        {/* SECTION 3: CHOOSE INTERPRETERS                                   */}
+        {/* TAB 3: INTERPRETERS                                              */}
         {/* ================================================================ */}
+        {activeTab === 'Interpreters' && (
+        <>
         {hasDeafLists && (
           <BetaTryThis storageKey="beta_try_new_request_interp">
             The interpreters below come from your tagged client&apos;s preferred list. These are interpreters the Deaf client trusts. Notice how they appear above your own roster, giving priority to the client&apos;s preferences.
           </BetaTryThis>
         )}
 
-        <h3 style={sectionLabelStyle}>Choose Interpreters</h3>
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, lineHeight: 1.6 }}>
           Select up to 10 interpreters for this request. Each one will receive a personalized notification with your booking details and can respond with their availability and rates.
         </p>
@@ -1290,26 +1444,14 @@ export default function NewRequestPage() {
           )}
         </div>
 
-        {/* ================================================================ */}
-        {/* SECTION 4: ADDITIONAL CONTEXT                                    */}
-        {/* ================================================================ */}
-        <h3 style={sectionLabelStyle}>Additional Context</h3>
-
-        <div style={{ marginBottom: 20 }}>
-          <label style={labelStyle}>Additional Notes for Interpreters</label>
-          <textarea
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            placeholder="Any additional context, preparation materials, or special requirements"
-            rows={4}
-            style={{ ...inputStyle, resize: 'vertical' as const }}
-          />
-        </div>
+        </>
+        )}
 
         {/* ================================================================ */}
-        {/* SECTION 5: PAYMENT + SUBMIT                                     */}
+        {/* TAB 5: REVIEW & SUBMIT                                           */}
         {/* ================================================================ */}
-        <h3 style={sectionLabelStyle}>Review &amp; Platform Fee</h3>
+        {activeTab === 'Review & Submit' && (
+        <>
 
         <div style={{
           background: 'var(--card-bg)', border: '1px solid var(--border)',
@@ -1469,7 +1611,12 @@ export default function NewRequestPage() {
             {{ idle: 'Save as Draft', saving: 'Saving...', saved: 'Saved', error: 'Save failed' }[saveState]}
           </button>
         </div>
-      </div>
+
+        </>
+        )}
+
+        </div>{/* end req-editor-content */}
+      </div>{/* end req-editor-layout */}
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
@@ -1484,6 +1631,8 @@ export default function NewRequestPage() {
         }
         @media (max-width: 768px) {
           .dash-page-content { padding: 24px 20px !important; }
+          .req-editor-layout { flex-direction: column !important; }
+          .req-editor-content { padding: 0 !important; }
         }
         @media (max-width: 640px) {
           .req-date-time-grid { grid-template-columns: 1fr !important; }
