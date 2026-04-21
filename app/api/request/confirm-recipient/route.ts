@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { createNotification } from '@/lib/notifications-server'
+import { chargePlatformFee } from '@/lib/charge-platform-fee'
 
 export const dynamic = 'force-dynamic'
 
@@ -89,11 +90,23 @@ export async function POST(request: NextRequest) {
     }
 
     if (recipient.status === 'confirmed') {
-      // Already confirmed — idempotent return, no re-sending notifications
+      // Already confirmed -- idempotent return, no re-sending notifications
       return NextResponse.json({ success: true, bookingFilled: false })
     }
 
-    // 4. Update recipient to confirmed
+    // 4. Charge platform fee (blocks confirmation on failure)
+    const chargeResult = await chargePlatformFee(bookingId)
+
+    if (chargeResult.status === 'failed') {
+      return NextResponse.json(
+        { success: false, error: chargeResult.userMessage, code: chargeResult.code },
+        { status: 402 },
+      )
+    }
+
+    // If charged, already_charged, or waived -- proceed with confirmation
+
+    // 5. Update recipient to confirmed
     const { error: recUpdateErr } = await admin
       .from('booking_recipients')
       .update({ status: 'confirmed', confirmed_at: new Date().toISOString() })

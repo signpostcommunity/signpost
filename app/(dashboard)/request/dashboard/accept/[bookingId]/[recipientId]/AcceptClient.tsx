@@ -104,25 +104,21 @@ export default function AcceptClient({
       const result = await res.json()
 
       if (!res.ok || !result.success) {
+        const isPaymentError = res.status === 402
+        const code = result.code
+        const needsPaymentUpdate = isPaymentError && (
+          code === 'card_declined' || code === 'expired_card' ||
+          code === 'insufficient_funds' || code === 'no_payment_method'
+        )
         console.error('[accept] confirm error:', result.error || res.statusText)
-        setToast({ message: result.error || 'Failed to confirm booking. Please try again.', type: 'error' })
+        setToast({
+          message: needsPaymentUpdate
+            ? `${result.error || 'Payment failed.'} Go to Settings to update your card.`
+            : (result.error || 'Failed to confirm booking. Please try again.'),
+          type: 'error',
+        })
         setConfirming(false)
         return
-      }
-
-      // 2. Charge $15 platform fee (non-blocking - booking still confirms on failure)
-      try {
-        const chargeRes = await fetch('/api/stripe/charge-platform-fee', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ bookingId: booking.id }),
-        })
-        const chargeData = await chargeRes.json()
-        if (chargeData.status === 'failed') {
-          console.warn('[accept] Platform fee charge failed - requester notified')
-        }
-      } catch (chargeErr) {
-        console.error('[accept] Platform fee charge error:', chargeErr)
       }
 
       const toastMessage = result.bookingFilled

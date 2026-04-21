@@ -1,3 +1,7 @@
+// TODO: Request detail view needs UI to add contact info later for named_unreachable bookings
+// (bookings where client_specification='named_unreachable' have display name but no dhh_user_id).
+// See Monday followup from Issue 3.
+
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
@@ -391,8 +395,19 @@ export default function RequestsClient({
       const result = await res.json()
 
       if (!res.ok || !result.success) {
+        const isPaymentError = res.status === 402
+        const code = result.code
+        const needsPaymentUpdate = isPaymentError && (
+          code === 'card_declined' || code === 'expired_card' ||
+          code === 'insufficient_funds' || code === 'no_payment_method'
+        )
         console.error('[accept-suggested] error:', result.error || res.statusText)
-        setToast({ message: result.error || 'Failed to confirm. Please try again.', type: 'error' })
+        setToast({
+          message: needsPaymentUpdate
+            ? `${result.error || 'Payment failed.'} Go to Settings to update your card.`
+            : (result.error || 'Failed to confirm. Please try again.'),
+          type: 'error',
+        })
         return
       }
 
