@@ -1289,7 +1289,7 @@ export default function NewRequestPage() {
                       }}>&times;</button>
                     </div>
                     <p style={{ fontSize: '0.82rem', color: 'var(--muted)', margin: '6px 0 0', lineHeight: 1.5 }}>
-                      These are interpreters {person.displayName} trusts and has worked with.
+                      These are interpreters {person.displayName} trusts and prefers to work with. You&apos;ll see them at the top of the Interpreters tab where you can select who to send the request to.
                     </p>
                   </div>
                 )}
@@ -1463,7 +1463,7 @@ export default function NewRequestPage() {
                   background: 'none', border: 'none', padding: '4px 0',
                   color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600,
                   cursor: 'pointer', fontFamily: "'Inter', sans-serif",
-                  marginBottom: 8,
+                  marginBottom: 0,
                 }}
               >
                 + Add another person
@@ -1481,7 +1481,8 @@ export default function NewRequestPage() {
               background: 'none', border: 'none', padding: '4px 0',
               color: 'var(--muted)', fontSize: '0.82rem',
               cursor: 'pointer', fontFamily: "'Inter', sans-serif",
-              textDecoration: 'underline', marginTop: 4,
+              textDecoration: 'underline', marginTop: 16,
+              display: 'block',
             }}
           >
             I don&apos;t have their contact info yet

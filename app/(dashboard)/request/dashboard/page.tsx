@@ -113,7 +113,7 @@ export default async function RequesterDashboardPage() {
     const [profileRes, activeRes, filledRes, rosterRes, bookingsRes, recentRes] = await Promise.allSettled([
       supabase.from('requester_profiles').select('first_name, last_name, org_name').or(`user_id.eq.${user.id},id.eq.${user.id}`).maybeSingle(),
       supabase.from('bookings').select('id', { count: 'exact' }).limit(1).eq('requester_id', user.id).eq('status', 'open').neq('request_type', 'personal'),
-      supabase.from('bookings').select('id', { count: 'exact' }).limit(1).eq('requester_id', user.id).eq('status', 'filled').neq('request_type', 'personal'),
+      supabase.from('bookings').select('id', { count: 'exact' }).limit(1).eq('requester_id', user.id).eq('status', 'filled').neq('request_type', 'personal').gte('date', new Date().toISOString().split('T')[0]),
       supabase.from('requester_roster').select('id', { count: 'exact' }).limit(1).eq('requester_user_id', user.id),
       supabase.from('bookings').select('id').eq('requester_id', user.id).in('status', ['open', 'filled']).neq('request_type', 'personal'),
       supabase.from('bookings').select('id, title, date, time_start, time_end, status, interpreter_count, event_category, request_type, location, format, specialization, description, notes, prep_notes, onsite_contact_name, onsite_contact_phone, onsite_contact_email, location_name, location_address, location_city, location_state, location_zip, location_country, meeting_link').eq('requester_id', user.id).neq('status', 'draft').neq('request_type', 'personal').order('date', { ascending: false }).limit(5),

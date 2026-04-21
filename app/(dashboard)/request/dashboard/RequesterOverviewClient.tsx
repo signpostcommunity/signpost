@@ -307,10 +307,10 @@ export default function RequesterOverviewClient({
 
       {/* Stat Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16, marginBottom: 38, alignItems: 'stretch' }}>
-        <StatCard num={activeRequests} label="Active Requests" href="/request/dashboard/requests" />
+        <StatCard num={activeRequests} label="Open Requests" href="/request/dashboard/requests" />
         <StatCard num={confirmedBookings} label="Confirmed Bookings" href="/request/dashboard/requests" />
         <StatCard num={rosterCount} label="Interpreters on Roster" href="/request/dashboard/interpreters" />
-        <StatCard num={pendingResponses} label="Pending Responses" href="/request/dashboard/inbox" />
+        <StatCard num={pendingResponses} label="Awaiting Responses" href="/request/dashboard/inbox" />
       </div>
 
       {/* New Request Button */}
