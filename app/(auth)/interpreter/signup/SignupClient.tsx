@@ -578,6 +578,7 @@ function InterpreterSignupForm() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [initFailed, setInitFailed] = useState(false);
+  const [needsLocationCollection, setNeedsLocationCollection] = useState(false);
   const [existingUserId, setExistingUserId] = useState<string | null>(null);
 
   // Section 3: Professional
@@ -677,9 +678,22 @@ function InterpreterSignupForm() {
             if (defaults.state) setState(defaults.state);
             if (defaults.city) setCity(defaults.city);
             if (defaults.photo_url) setPhotoUrl(defaults.photo_url);
+          } else {
+            console.error('[addRole init] profile defaults fetch returned', res.status);
+            setError('Could not load your existing profile data. Please refresh the page and try again. If the problem persists, contact support.');
+            setInitFailed(true);
+            return;
           }
         } catch (prefillErr) {
-          console.warn('Failed to fetch profile defaults:', prefillErr);
+          console.error('[addRole init] profile defaults fetch failed:', prefillErr);
+          setError('Could not load your existing profile data. Please refresh the page and try again. If the problem persists, contact support.');
+          setInitFailed(true);
+          return;
+        }
+
+        // Detect if location needs to be collected in Section 3
+        if (!defaults.city || !defaults.state || !defaults.country) {
+          setNeedsLocationCollection(true);
         }
 
         // Ensure interpreter_profiles row exists so subsequent UPDATE steps work
@@ -731,10 +745,11 @@ function InterpreterSignupForm() {
                 attempt++;
                 slug = `${baseSlug}-${attempt}`;
               }
-              await supabase
+              const { error: slugErr } = await supabase
                 .from('interpreter_profiles')
                 .update({ vanity_slug: slug })
                 .eq('user_id', user.id);
+              if (slugErr) console.error('[addRole init] vanity slug update failed:', slugErr);
             }
           }
         }
@@ -1305,6 +1320,11 @@ function InterpreterSignupForm() {
 
   async function handleSaveProfessional() {
     const errors: string[] = [];
+    if (needsLocationCollection) {
+      if (!city?.trim()) errors.push('City is required.');
+      if (!state?.trim()) errors.push('State is required.');
+      if (!country?.trim()) errors.push('Country is required.');
+    }
     if (!interpreterType) errors.push('Please select your interpreter type.');
     if (!workMode) errors.push('Please select your mode of work.');
     if (!yearsExperience) errors.push('Please select your years of professional interpreting experience.');
@@ -1316,29 +1336,36 @@ function InterpreterSignupForm() {
     setLoading(true);
     try {
       const supabase = createClient();
+      const upsertPayload: Record<string, unknown> = {
+        user_id: userId,
+        interpreter_type: interpreterType,
+        years_experience: yearsExperience || null,
+        work_mode: workMode || null,
+        gender_identity: genderIdentity || null,
+        pronouns: [...selectedPronouns, ...(otherPronouns.trim() ? [otherPronouns.trim()] : [])].join(', ') || null,
+        phone: phone ? (normalizePhone(phone) || phone) : null,
+        phone_type: phoneType || null,
+        event_coordination: eventCoordination,
+      };
+      if (needsLocationCollection) {
+        upsertPayload.city = city || null;
+        upsertPayload.state = state || null;
+        upsertPayload.country = country || null;
+        upsertPayload.country_name = getCountryName(country) || country || null;
+      }
       const { error: updateError, data: updateData } = await supabase
         .from('interpreter_profiles')
-        .update({
-          interpreter_type: interpreterType,
-          years_experience: yearsExperience || null,
-          work_mode: workMode || null,
-          gender_identity: genderIdentity || null,
-          pronouns: [...selectedPronouns, ...(otherPronouns.trim() ? [otherPronouns.trim()] : [])].join(', ') || null,
-          phone: phone ? (normalizePhone(phone) || phone) : null,
-          phone_type: phoneType || null,
-          event_coordination: eventCoordination,
-        })
-        .eq('user_id', userId)
+        .upsert(upsertPayload, { onConflict: 'user_id' })
         .select();
       if (updateError) {
-        console.error('[addRole/interpreter/step-3] update failed:', updateError.message, updateError.details);
+        console.error('[addRole/interpreter/step-3] save failed:', updateError.message, updateError.details);
         setError(updateError.message);
         setLoading(false);
         return;
       }
       if (!updateData || updateData.length === 0) {
-        console.error('[addRole/interpreter/step-3] update matched zero rows (profile row missing?)');
-        setError('We lost track of your profile. Please refresh and try again.');
+        console.error('[addRole/interpreter/step-3] save returned no data');
+        setError('Save failed. Please try again or reload the page.');
         setLoading(false);
         return;
       }
@@ -1373,6 +1400,30 @@ function InterpreterSignupForm() {
         <StepSubtext>Tell us about your interpreting practice.</StepSubtext>
 
         <FormCard>
+        {/* Location collection for addRole users without location data */}
+        {needsLocationCollection && (
+          <div style={{ marginBottom: 32, paddingBottom: 24, borderBottom: '1px solid var(--border)' }}>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#00e5ff', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>
+              Your location <span style={{ color: '#ff6b85' }}>*</span>
+            </label>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#c8cfe0', marginBottom: 12 }}>
+              We need your general location so clients can find you in their area.
+            </p>
+            <LocationInput
+              address={address}
+              city={city}
+              state={state}
+              zip={zip}
+              country={country}
+              onChange={(loc: LocationFields) => { setAddress(loc.address); setCity(loc.city); setState(loc.state); setZip(loc.zip); setCountry(loc.country); }}
+              showLocationName={false}
+              showMeetingLink={false}
+              defaultCountry="US"
+              accent="cyan"
+            />
+          </div>
+        )}
+
         {/* Interpreter type */}
         <div style={{ marginBottom: 24 }}>
           <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#00e5ff', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: "'Inter', sans-serif" }}>
@@ -1627,21 +1678,20 @@ function InterpreterSignupForm() {
       const supabase = createClient();
       const { error: updateError, data: updateData } = await supabase
         .from('interpreter_profiles')
-        .update({
-          sign_languages: finalSign,
-          spoken_languages: finalSpoken,
-        })
-        .eq('user_id', userId)
+        .upsert(
+          { user_id: userId, sign_languages: finalSign, spoken_languages: finalSpoken },
+          { onConflict: 'user_id' }
+        )
         .select();
       if (updateError) {
-        console.error('[addRole/interpreter/step-4] update failed:', updateError.message, updateError.details);
+        console.error('[addRole/interpreter/step-4] save failed:', updateError.message, updateError.details);
         setError(updateError.message);
         setLoading(false);
         return;
       }
       if (!updateData || updateData.length === 0) {
-        console.error('[addRole/interpreter/step-4] update matched zero rows (profile row missing?)');
-        setError('We lost track of your profile. Please refresh and try again.');
+        console.error('[addRole/interpreter/step-4] save returned no data');
+        setError('Save failed. Please try again or reload the page.');
         setLoading(false);
         return;
       }
@@ -2209,18 +2259,20 @@ function InterpreterSignupForm() {
       }
       const { error: updateError, data: savedData } = await supabase
         .from('interpreter_profiles')
-        .update(updateData)
-        .eq('user_id', userId)
+        .upsert(
+          { user_id: userId, ...updateData },
+          { onConflict: 'user_id' }
+        )
         .select();
       if (updateError) {
-        console.error('[addRole/interpreter/step-6] update failed:', updateError.message, updateError.details);
+        console.error('[addRole/interpreter/step-6] save failed:', updateError.message, updateError.details);
         setError(updateError.message);
         setLoading(false);
         return;
       }
       if (!savedData || savedData.length === 0) {
-        console.error('[addRole/interpreter/step-6] update matched zero rows (profile row missing?)');
-        setError('We lost track of your profile. Please refresh and try again.');
+        console.error('[addRole/interpreter/step-6] save returned no data');
+        setError('Save failed. Please try again or reload the page.');
         setLoading(false);
         return;
       }
@@ -2460,29 +2512,32 @@ function InterpreterSignupForm() {
       const supabase = createClient();
       const { error: saveErr, data: saveData } = await supabase
         .from('interpreter_profiles')
-        .update({
-          specializations,
-          specialized_skills: specializedSkills,
-          lgbtq,
-          deaf_parented: deafParented,
-          bipoc,
-          bipoc_details: bipocDetails,
-          religious_affiliation: religiousAffiliation,
-          religious_details: religiousDetails,
-          mentorship_offering: mentorshipOffering,
-          mentorship_seeking: mentorshipSeeking,
-        })
-        .eq('user_id', uid)
+        .upsert(
+          {
+            user_id: uid,
+            specializations,
+            specialized_skills: specializedSkills,
+            lgbtq,
+            deaf_parented: deafParented,
+            bipoc,
+            bipoc_details: bipocDetails,
+            religious_affiliation: religiousAffiliation,
+            religious_details: religiousDetails,
+            mentorship_offering: mentorshipOffering,
+            mentorship_seeking: mentorshipSeeking,
+          },
+          { onConflict: 'user_id' }
+        )
         .select();
       if (saveErr) {
-        console.error('[addRole/interpreter/step-7] update failed:', saveErr.message, saveErr.details);
+        console.error('[addRole/interpreter/step-7] save failed:', saveErr.message, saveErr.details);
         setError('Something went wrong saving your progress. Please try again.');
         setLoading(false);
         return;
       }
       if (!saveData || saveData.length === 0) {
-        console.error('[addRole/interpreter/step-7] update matched zero rows (profile row missing?)');
-        setError('We lost track of your profile. Please refresh and try again.');
+        console.error('[addRole/interpreter/step-7] save returned no data');
+        setError('Save failed. Please try again or reload the page.');
         setLoading(false);
         return;
       }
@@ -2637,16 +2692,21 @@ function InterpreterSignupForm() {
       if (!uid) return;
       setLoading(true);
       const supabase = createClient();
-      const { error: submitErr } = await supabase
+      const { data: submitData, error: submitErr } = await supabase
         .from('interpreter_profiles')
-        .update({
-          submitted_at: new Date().toISOString(),
-          status: 'approved',
-        })
-        .eq('user_id', uid);
+        .upsert(
+          { user_id: uid, submitted_at: new Date().toISOString(), status: 'approved' },
+          { onConflict: 'user_id' }
+        )
+        .select();
       if (submitErr) {
         console.error('Submit error:', submitErr);
         setError('Failed to submit profile. Please try again.');
+        setLoading(false);
+        return;
+      }
+      if (!submitData || submitData.length === 0) {
+        setError('Could not finalize your profile. Please try again or contact support.');
         setLoading(false);
         return;
       }
