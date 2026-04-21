@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 
-const VALID_BANNERS = ['book_me', 'intro_video'] as const
+// LOAD-BEARING: This whitelist is the only thing that prevents column-name
+// injection. The API constructs column names dynamically from the banner
+// value using template literals (e.g. `${banner}_banner_dismissed_at`).
+// Any new banner name added here MUST be a safe column-name fragment:
+// lowercase letters, digits, and underscores only, matching an existing
+// column on interpreter_profiles. Loosening validation on the banner param,
+// or accepting banner values that bypass this check, is a SQL injection
+// vector. Do not remove this check.
+const VALID_BANNERS = ['book_me', 'intro_video', 'calendar_sync'] as const
 const VALID_ACTIONS = ['dismiss', 'snooze'] as const
 
 type BannerName = (typeof VALID_BANNERS)[number]
@@ -53,6 +61,10 @@ export async function POST(req: NextRequest) {
     intro_video: {
       dismiss: { column: 'intro_video_banner_dismissed_at', value: new Date().toISOString() },
       snooze: { column: 'intro_video_banner_snoozed_until', value: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() },
+    },
+    calendar_sync: {
+      dismiss: { column: 'calendar_sync_banner_dismissed_at', value: new Date().toISOString() },
+      snooze: { column: 'calendar_sync_banner_snoozed_until', value: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() },
     },
   }
 

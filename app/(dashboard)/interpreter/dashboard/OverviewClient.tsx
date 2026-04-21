@@ -230,23 +230,22 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
   const [missingFields, setMissingFields] = useState<string[]>([])
   const [videoRequestCount, setVideoRequestCount] = useState(0)
   const [hasIntroVideo, setHasIntroVideo] = useState(false)
-  const [calSyncDismissed, setCalSyncDismissed] = useState(true)
   const [viewing, setViewing] = useState<string | null>(null)
   const [bannerState, setBannerState] = useState<{
     book_me_banner_dismissed_at: string | null
     book_me_banner_snoozed_until: string | null
     intro_video_banner_dismissed_at: string | null
     intro_video_banner_snoozed_until: string | null
+    calendar_sync_banner_dismissed_at: string | null
+    calendar_sync_banner_snoozed_until: string | null
   }>({
     book_me_banner_dismissed_at: null,
     book_me_banner_snoozed_until: null,
     intro_video_banner_dismissed_at: null,
     intro_video_banner_snoozed_until: null,
+    calendar_sync_banner_dismissed_at: null,
+    calendar_sync_banner_snoozed_until: null,
   })
-
-  useEffect(() => {
-    setCalSyncDismissed(!!localStorage.getItem('signpost_calendar_sync_dismissed'))
-  }, [])
 
   useEffect(() => {
     if (!interpreterProfileId) { setLoading(false); return }
@@ -269,7 +268,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         // Profile completeness
         supabase
           .from('interpreter_profiles')
-          .select('photo_url, bio, bio_specializations, first_name, last_name, city, state, interpreter_type, work_mode, years_experience, sign_languages, spoken_languages, book_me_banner_dismissed_at, book_me_banner_snoozed_until, intro_video_banner_dismissed_at, intro_video_banner_snoozed_until')
+          .select('photo_url, bio, bio_specializations, first_name, last_name, city, state, interpreter_type, work_mode, years_experience, sign_languages, spoken_languages, book_me_banner_dismissed_at, book_me_banner_snoozed_until, intro_video_banner_dismissed_at, intro_video_banner_snoozed_until, calendar_sync_banner_dismissed_at, calendar_sync_banner_snoozed_until')
           .eq('id', pid)
           .single(),
         // Cert, sign lang, spoken lang, specialization counts
@@ -344,6 +343,8 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
           book_me_banner_snoozed_until: profileData.book_me_banner_snoozed_until ?? null,
           intro_video_banner_dismissed_at: profileData.intro_video_banner_dismissed_at ?? null,
           intro_video_banner_snoozed_until: profileData.intro_video_banner_snoozed_until ?? null,
+          calendar_sync_banner_dismissed_at: profileData.calendar_sync_banner_dismissed_at ?? null,
+          calendar_sync_banner_snoozed_until: profileData.calendar_sync_banner_snoozed_until ?? null,
         })
       }
 
@@ -486,7 +487,12 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
         || new Date(bannerState.intro_video_banner_snoozed_until).getTime() < now)
     && !profileIncompleteBannerVisible
 
-  async function handleBannerAction(banner: 'book_me' | 'intro_video', action: 'dismiss' | 'snooze') {
+  const calendarSyncBannerVisible =
+    !bannerState.calendar_sync_banner_dismissed_at
+    && (!bannerState.calendar_sync_banner_snoozed_until
+        || new Date(bannerState.calendar_sync_banner_snoozed_until).getTime() < now)
+
+  async function handleBannerAction(banner: 'book_me' | 'intro_video' | 'calendar_sync', action: 'dismiss' | 'snooze') {
     const prevState = { ...bannerState }
 
     // Optimistic update
@@ -618,7 +624,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
           )}
 
           {/* Profile completion banner (no dismiss - disappears when profile is complete) */}
-          {completionProfile && !isProfileComplete(getInterpreterCompletionItems(completionProfile, rateProfileCount)) && (
+          {profileIncompleteBannerVisible && (
             <div style={{
               background: '#111118', border: '1px solid #1e2433', borderLeft: '4px solid #f59e0b',
               borderRadius: 10, padding: '16px 20px', marginBottom: 12,
@@ -713,7 +719,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
           )}
 
           {/* Calendar Sync banner */}
-          {!calendarToken && !calSyncDismissed && (
+          {!calendarToken && calendarSyncBannerVisible && (
             <div style={{
               background: '#111118', border: '1px solid #1e2433', borderLeft: '4px solid #96a0b8',
               borderRadius: 10, padding: '16px 20px', marginBottom: 12,
@@ -732,6 +738,17 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0, marginLeft: 'auto' }}>
+                <button
+                  type="button"
+                  onClick={() => handleBannerAction('calendar_sync', 'snooze')}
+                  style={{
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: '#96a0b8', fontSize: '13px', fontFamily: "'Inter', sans-serif",
+                    fontWeight: 500, padding: '2px 4px', flexShrink: 0,
+                  }}
+                >
+                  Remind me in 30 days
+                </button>
                 <Link
                   href="/interpreter/dashboard/availability"
                   style={{
@@ -742,10 +759,8 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
                   Set Up &rarr;
                 </Link>
                 <button
-                  onClick={() => {
-                    localStorage.setItem('signpost_calendar_sync_dismissed', '1')
-                    setCalSyncDismissed(true)
-                  }}
+                  type="button"
+                  onClick={() => handleBannerAction('calendar_sync', 'dismiss')}
                   style={{
                     background: 'none', border: 'none', cursor: 'pointer',
                     color: '#96a0b8', fontSize: '13px', fontFamily: "'Inter', sans-serif",
