@@ -635,13 +635,16 @@ export default function NewRequestPage() {
 
   async function handleSendInvite(idx: number, identifier: string) {
     setInviteSending(prev => ({ ...prev, [idx]: 'sending' }))
+    const isPhone = /^\+?\d[\d\s()-]{6,}$/.test(identifier.trim())
     try {
-      const res = await fetch('/api/notifications/send', {
+      const res = await fetch('/api/invites', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          to: identifier,
-          template: 'dhh-invite',
+          recipientName: identifier,
+          recipientEmail: isPhone ? undefined : identifier,
+          recipientPhone: isPhone ? identifier : undefined,
+          channel: isPhone ? 'sms' : 'email',
         }),
       })
       if (!res.ok) throw new Error('Failed to send')
