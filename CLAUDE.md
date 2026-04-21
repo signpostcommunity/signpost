@@ -10,6 +10,20 @@ organizations, and requesters with certified sign language interpreters worldwid
 
 ---
 
+## Product Principle: Tool, Not Service Provider
+
+signpost is a tool, not a service provider. We provide infrastructure that connects Deaf/DB/HH individuals with interpreters directly. We do not book interpreters, coordinate assignments, or arbitrate payment disputes. Customer support scope is limited to technical and bug issues. This reflects existing policies.
+
+Affects:
+- Feature decisions (what is in scope vs. deferred)
+- Admin tooling scope
+- Support responses
+- Copy positioning
+
+Example: payment tracking supports marking paid and adding notes. It does not include dispute resolution workflows.
+
+---
+
 ## Tech Stack
 
 | Concern | Technology |
