@@ -5,6 +5,8 @@ import { sanitizeText } from '@/lib/sanitize'
 import { encryptFields, BOOKING_ENCRYPTED_FIELDS } from '@/lib/encryption'
 import { logAudit } from '@/lib/audit'
 import { createNotification } from '@/lib/notifications-server'
+import { sendEmail } from '@/lib/email'
+import { taggedWithSparsePrefListEmail } from '@/lib/emails/tagged-with-sparse-pref-list'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,6 +28,10 @@ export async function POST(request: NextRequest) {
       saveAsDraft, // Optional: save as draft instead of submitting
       bookingId, // Optional: existing draft ID to update in-place
       tagged_deaf_user_ids, // Optional: Deaf user IDs tagged on this request
+      client_specification, // 'tagged' | 'named_unreachable' | 'general'
+      search_radius_miles, // integer, only when format=in_person
+      client_display_first_name, // for named_unreachable
+      client_display_last_name, // for named_unreachable
     } = body
     // Sanitize user-provided text fields
     const title = body.title ? sanitizeText(body.title) : null
@@ -103,6 +109,8 @@ export async function POST(request: NextRequest) {
       platform_fee_status: 'pending',
       is_seed: false,
       tagged_deaf_user_ids: Array.isArray(tagged_deaf_user_ids) ? tagged_deaf_user_ids : [],
+      client_specification: client_specification || 'tagged',
+      search_radius_miles: (dbFormat === 'in_person' && search_radius_miles) ? search_radius_miles : null,
       prep_notes: prepNotes,
       onsite_contact_name: onsiteContactName,
       onsite_contact_phone: onsiteContactPhone,
@@ -183,6 +191,80 @@ export async function POST(request: NextRequest) {
         }
       }
     }
+
+    // Handle tagged deaf user IDs from the new scenario flow
+    const spec = client_specification || 'tagged'
+    if (!saveAsDraft && spec === 'tagged' && Array.isArray(tagged_deaf_user_ids) && tagged_deaf_user_ids.length > 0) {
+      for (const dhhUserId of tagged_deaf_user_ids) {
+        if (!dhhUserId) continue
+        const { data: deafProfile } = await admin
+          .from('deaf_profiles')
+          .select('id, comm_prefs, email, first_name')
+          .or(`id.eq.${dhhUserId},user_id.eq.${dhhUserId}`)
+          .maybeSingle()
+
+        if (!deafProfile) continue
+
+        // Insert booking_dhh_clients row (skip if forDhhUserId already handled it)
+        if (deafProfile.id !== forDhhUserId) {
+          await admin.from('booking_dhh_clients').insert({
+            booking_id: booking.id,
+            dhh_user_id: deafProfile.id,
+            comm_prefs_snapshot: deafProfile.comm_prefs || {},
+            added_at: new Date().toISOString(),
+          })
+        }
+
+        // Check sparse pref list and send email if < 5 interpreters
+        const { count: prefCount } = await admin
+          .from('deaf_roster')
+          .select('id', { count: 'exact', head: true })
+          .eq('deaf_user_id', deafProfile.id)
+          .eq('do_not_book', false)
+
+        if (prefCount !== null && prefCount < 5 && deafProfile.email) {
+          try {
+            const { subject, html } = taggedWithSparsePrefListEmail({
+              orgName: requesterName,
+              eventTitle: title || 'Untitled event',
+              date: date || '',
+              timeStart: timeStart || '',
+              timeEnd: timeEnd || '',
+              timezone: timezone || undefined,
+              format: dbFormat as 'in_person' | 'remote' | 'hybrid',
+              locationCity: locationCity,
+              locationState: locationState,
+              prefListUrl: 'https://signpost.community/dhh/dashboard/interpreters',
+            })
+            await sendEmail({ to: deafProfile.email, subject, html })
+          } catch (emailErr) {
+            console.error('[request/booking] sparse pref list email failed:', emailErr)
+          }
+        }
+      }
+    }
+
+    // Handle named_unreachable: insert booking_dhh_clients with display name, no dhh_user_id
+    if (!saveAsDraft && spec === 'named_unreachable' && client_display_first_name) {
+      const sanitizedFirst = sanitizeText(client_display_first_name)
+      const sanitizedLast = client_display_last_name ? sanitizeText(client_display_last_name) : null
+
+      const { error: namedClientErr } = await admin
+        .from('booking_dhh_clients')
+        .insert({
+          booking_id: booking.id,
+          dhh_user_id: null,
+          client_display_first_name: sanitizedFirst,
+          client_display_last_name: sanitizedLast,
+          comm_prefs_snapshot: {},
+          added_at: new Date().toISOString(),
+        })
+
+      if (namedClientErr) {
+        console.error('[request/booking] named_unreachable client insert failed:', namedClientErr.message)
+      }
+    }
+    // General: no booking_dhh_clients rows needed
 
     // Create booking_recipients for each interpreter (if provided)
     if (interpreterIds?.length && !saveAsDraft) {

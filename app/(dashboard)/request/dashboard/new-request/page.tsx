@@ -307,6 +307,10 @@ export default function NewRequestPage() {
   const [specialization, setSpecialization] = useState('')
 
   // Section 2: Who is this for?
+  const [clientSpecification, setClientSpecification] = useState<'tagged' | 'general'>('tagged')
+  const [useNamedUnreachable, setUseNamedUnreachable] = useState(false)
+  const [namedFirstName, setNamedFirstName] = useState('')
+  const [namedLastName, setNamedLastName] = useState('')
   const [taggedDeafPersons, setTaggedDeafPersons] = useState<TaggedDeafPerson[]>([])
   const [currentLookupInput, setCurrentLookupInput] = useState('')
   const [lookupError, setLookupError] = useState<string | null>(null)
@@ -316,6 +320,10 @@ export default function NewRequestPage() {
 
   // Section 3: Interpreter selection
   const [selectedInterpreters, setSelectedInterpreters] = useState<string[]>([])
+  const [includeWiderPool, setIncludeWiderPool] = useState(true)
+
+  // Distance filter (Phase 4)
+  const [searchRadiusMiles, setSearchRadiusMiles] = useState(60)
 
   // Section 4: Notes
   const [notes, setNotes] = useState('')
@@ -447,6 +455,9 @@ export default function NewRequestPage() {
     if (!timeEnd) errs.timeEnd = 'End time is required'
     if (!signLanguage) errs.signLanguage = 'Sign language is required'
     if (format === 'in_person' && !locationFields.city.trim()) errs.location = 'City is required for in-person events'
+    if (clientSpecification === 'tagged' && useNamedUnreachable && !namedFirstName.trim()) {
+      errs.namedFirstName = 'First name is required'
+    }
     if (date) {
       const today = new Date().toISOString().split('T')[0]
       if (date < today) errs.date = 'Date must be today or in the future'
@@ -462,6 +473,9 @@ export default function NewRequestPage() {
     const taggedIds = taggedDeafPersons
       .filter(p => p.userId)
       .map(p => p.userId)
+
+    const spec = clientSpecification === 'general' ? 'general'
+      : (useNamedUnreachable ? 'named_unreachable' : 'tagged')
 
     return {
       title: title || null,
@@ -487,6 +501,10 @@ export default function NewRequestPage() {
       description: `Sign language: ${signLanguage}. Spoken language: ${spokenLanguage}.`,
       notes: notes || null,
       tagged_deaf_user_ids: taggedIds.length > 0 ? taggedIds : undefined,
+      client_specification: spec,
+      search_radius_miles: format === 'in_person' ? searchRadiusMiles : null,
+      client_display_first_name: spec === 'named_unreachable' ? namedFirstName.trim() : null,
+      client_display_last_name: spec === 'named_unreachable' ? (namedLastName.trim() || null) : null,
       prep_notes: prepNotes || null,
       onsite_contact_name: onsiteContactName || null,
       onsite_contact_phone: onsiteContactPhone || null,
@@ -765,6 +783,16 @@ export default function NewRequestPage() {
   const showRosterOnly = skipDeafTag || continuedWithoutList ||
     (taggedDeafPersons.length > 0 && taggedDeafPersons.every(p => p.status === 'not_on_signpost'))
 
+  // Sparse pref list detection: tagged user has < 5 interpreters
+  const sparseListPersons = taggedDeafPersons.filter(
+    p => p.status === 'list_available' && p.interpreters.filter(i => !i.is_dnb).length < 5
+  )
+  const isSparse = sparseListPersons.length > 0 && clientSpecification === 'tagged' && !useNamedUnreachable
+  const sparseCount = sparseListPersons.length > 0
+    ? sparseListPersons[0].interpreters.filter(i => !i.is_dnb).length
+    : 0
+  const sparsePersonName = sparseListPersons.length > 0 ? sparseListPersons[0].displayName : ''
+
   const platformFee = 15.0 * interpreterCount
 
   return (
@@ -884,6 +912,47 @@ export default function NewRequestPage() {
           />
           {errors.location && <div style={errorStyle}>{errors.location}</div>}
         </div>
+
+        {/* Distance filter (Phase 4): visible when format=in_person */}
+        {format === 'in_person' && (
+        <div style={{ marginBottom: 20 }}>
+          <label style={labelStyle}>Search radius for interpreters</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <input
+              type="range"
+              min={5}
+              max={200}
+              step={5}
+              value={searchRadiusMiles}
+              onChange={e => setSearchRadiusMiles(parseInt(e.target.value))}
+              style={{ flex: 1, accentColor: '#00e5ff' }}
+            />
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              minWidth: 90,
+            }}>
+              <input
+                type="number"
+                min={5}
+                max={200}
+                value={searchRadiusMiles}
+                onChange={e => {
+                  const v = parseInt(e.target.value) || 5
+                  setSearchRadiusMiles(Math.max(5, Math.min(200, v)))
+                }}
+                style={{
+                  ...inputStyle,
+                  width: 64, textAlign: 'center', padding: '8px 6px',
+                }}
+              />
+              <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>miles</span>
+            </div>
+          </div>
+          <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 6, lineHeight: 1.5 }}>
+            Interpreters within this distance of your event location will be matched. Rural areas may need a wider radius. Urban areas can narrow.
+          </p>
+        </div>
+        )}
 
         <div style={{ marginBottom: 20 }}>
           <label style={labelStyle}>Sign Language Needed *</label>
@@ -1082,6 +1151,81 @@ export default function NewRequestPage() {
         {/* TAB 2: PARTICIPANTS                                              */}
         {/* ================================================================ */}
         {activeTab === 'Participants' && (
+        <>
+
+        {/* Scenario picker: radio-card pattern */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
+          {/* Option 1: Specific person */}
+          <button
+            type="button"
+            onClick={() => setClientSpecification('tagged')}
+            style={{
+              textAlign: 'left',
+              padding: '16px 20px',
+              background: clientSpecification === 'tagged' ? 'rgba(0,229,255,0.04)' : 'var(--surface)',
+              border: `1px solid ${clientSpecification === 'tagged' ? 'rgba(0,229,255,0.4)' : 'var(--border)'}`,
+              borderRadius: 'var(--radius-sm)',
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+              <div style={{
+                width: 18, height: 18, borderRadius: '50%',
+                border: `2px solid ${clientSpecification === 'tagged' ? '#00e5ff' : '#96a0b8'}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                {clientSpecification === 'tagged' && (
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#00e5ff' }} />
+                )}
+              </div>
+              <span style={{ fontSize: '0.92rem', fontWeight: 600, color: '#f0f2f8', fontFamily: "'Inter', sans-serif" }}>
+                I&apos;m booking for a specific person
+              </span>
+            </div>
+            <p style={{ fontSize: '0.82rem', color: '#96a0b8', margin: '0 0 0 28px', lineHeight: 1.5 }}>
+              Tag them to use their preferred interpreter list and keep their communication preferences with this request.
+            </p>
+          </button>
+
+          {/* Option 2: General accessibility request */}
+          <button
+            type="button"
+            onClick={() => { setClientSpecification('general'); setUseNamedUnreachable(false) }}
+            style={{
+              textAlign: 'left',
+              padding: '16px 20px',
+              background: clientSpecification === 'general' ? 'rgba(0,229,255,0.04)' : 'var(--surface)',
+              border: `1px solid ${clientSpecification === 'general' ? 'rgba(0,229,255,0.4)' : 'var(--border)'}`,
+              borderRadius: 'var(--radius-sm)',
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+              <div style={{
+                width: 18, height: 18, borderRadius: '50%',
+                border: `2px solid ${clientSpecification === 'general' ? '#00e5ff' : '#96a0b8'}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                {clientSpecification === 'general' && (
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#00e5ff' }} />
+                )}
+              </div>
+              <span style={{ fontSize: '0.92rem', fontWeight: 600, color: '#f0f2f8', fontFamily: "'Inter', sans-serif" }}>
+                This is a general accessibility request
+              </span>
+            </div>
+            <p style={{ fontSize: '0.82rem', color: '#96a0b8', margin: '0 0 0 28px', lineHeight: 1.5 }}>
+              Use this when the event is open to the public or when there&apos;s no specific Deaf/DB/HH person who will attend. Interpreters will be matched based on your event type, location, and language needs.
+            </p>
+          </button>
+        </div>
+
+        {/* Specific person flow */}
+        {clientSpecification === 'tagged' && (
+        <>
+        {!useNamedUnreachable ? (
         <>
         <BetaTryThis storageKey="beta_try_new_request_deaf">
           Try entering jordan.rivera.test@signpost.community in the field below to see how a Deaf client&apos;s preferred interpreter list works. Then click &apos;+ Add another person&apos; and enter maria.chen.test@signpost.community. Notice which interpreters are recommended because they appear on both lists.
@@ -1328,11 +1472,11 @@ export default function NewRequestPage() {
           </>
         )}
 
-        {/* State D: Skip */}
-        {!skipDeafTag && taggedDeafPersons.length === 0 && (
+        {/* "I don't have their contact info yet" link */}
+        {!skipDeafTag && (
           <button
             type="button"
-            onClick={() => setSkipDeafTag(true)}
+            onClick={() => setUseNamedUnreachable(true)}
             style={{
               background: 'none', border: 'none', padding: '4px 0',
               color: 'var(--muted)', fontSize: '0.82rem',
@@ -1340,30 +1484,63 @@ export default function NewRequestPage() {
               textDecoration: 'underline', marginTop: 4,
             }}
           >
-            I don&apos;t have a specific person to tag (conference, event with unknown attendees, etc.)
+            I don&apos;t have their contact info yet
           </button>
         )}
+        </>
+        ) : (
+        /* Named unreachable form (Phase 2) */
+        <>
+        <button
+          type="button"
+          onClick={() => setUseNamedUnreachable(false)}
+          style={{
+            background: 'none', border: 'none', padding: '0 0 12px',
+            color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600,
+            cursor: 'pointer', fontFamily: "'Inter', sans-serif",
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+          }}
+        >
+          &#8592; Use email or phone instead
+        </button>
 
-        {skipDeafTag && (
+        <div style={{ marginBottom: 16 }}>
+          <label style={labelStyle}>First name *</label>
+          <input
+            type="text"
+            value={namedFirstName}
+            onChange={e => setNamedFirstName(e.target.value)}
+            placeholder="First name of the Deaf/DB/HH person"
+            style={inputStyle}
+          />
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <label style={labelStyle}>Last name</label>
+          <input
+            type="text"
+            value={namedLastName}
+            onChange={e => setNamedLastName(e.target.value)}
+            placeholder="Optional"
+            style={inputStyle}
+          />
+        </div>
+        <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6, marginBottom: 0 }}>
+          By not providing contact info, your request will still be sent to interpreters based on your event details. You can add {namedFirstName.trim() || 'their'}{namedFirstName.trim() ? '\'s' : ''} contact info later from the request detail page.
+        </p>
+        </>
+        )}
+        </>
+        )}
+
+        {/* General accessibility request: no tagging UI */}
+        {clientSpecification === 'general' && (
           <div style={{
-            padding: '12px 16px', background: 'var(--surface)',
+            padding: '16px 20px', background: 'var(--surface)',
             border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
-            <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>
-              No specific Deaf/DB/HH person tagged. Showing your roster.
-            </span>
-            <button
-              type="button"
-              onClick={() => setSkipDeafTag(false)}
-              style={{
-                background: 'none', border: 'none', color: 'var(--accent)',
-                fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
-                fontFamily: "'Inter', sans-serif",
-              }}
-            >
-              Undo
-            </button>
+            <p style={{ fontSize: '0.85rem', color: 'var(--muted)', margin: 0, lineHeight: 1.6 }}>
+              No specific Deaf/DB/HH person will be tagged on this request. Interpreters will be matched based on your event type, location, and language needs. You can go to the Interpreters tab to select interpreters.
+            </p>
           </div>
         )}
 
@@ -1375,10 +1552,86 @@ export default function NewRequestPage() {
         {/* ================================================================ */}
         {activeTab === 'Interpreters' && (
         <>
-        {hasDeafLists && (
+        {hasDeafLists && !isSparse && (
           <BetaTryThis storageKey="beta_try_new_request_interp">
             The interpreters below come from your tagged client&apos;s preferred list. These are interpreters the Deaf client trusts. Notice how they appear above your own roster, giving priority to the client&apos;s preferences.
           </BetaTryThis>
+        )}
+
+        {/* Sparse pref list wider pool banner (Phase 3) */}
+        {isSparse && (
+          <div style={{
+            padding: '16px 20px', marginBottom: 20,
+            background: 'rgba(0,229,255,0.04)',
+            border: '1px solid rgba(0,229,255,0.2)',
+            borderRadius: 'var(--radius-sm)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}>
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '0.88rem', fontWeight: 600, color: '#f0f2f8', marginBottom: 6 }}>
+                  Wider pool included
+                </div>
+                <p style={{ fontSize: '0.82rem', color: '#96a0b8', margin: '0 0 12px', lineHeight: 1.6 }}>
+                  {sparsePersonName}&apos;s preferred list is small ({sparseCount} interpreter{sparseCount !== 1 ? 's' : ''}). We&apos;re also showing interpreters from our wider pool so your request isn&apos;t delayed. We&apos;ve let {sparsePersonName} know they can add more interpreters to their list.
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span style={{ fontSize: '0.82rem', color: '#96a0b8' }}>Include wider pool</span>
+                  <button
+                    type="button"
+                    onClick={() => setIncludeWiderPool(v => !v)}
+                    aria-label={includeWiderPool ? 'Disable wider pool' : 'Enable wider pool'}
+                    style={{
+                      width: 44, height: 24, borderRadius: 12,
+                      background: includeWiderPool ? 'rgba(0,229,255,0.3)' : 'var(--border)',
+                      border: 'none', cursor: 'pointer',
+                      position: 'relative', transition: 'background 0.2s',
+                    }}
+                  >
+                    <div style={{
+                      width: 18, height: 18, borderRadius: '50%',
+                      background: includeWiderPool ? '#00e5ff' : '#96a0b8',
+                      position: 'absolute', top: 3,
+                      left: includeWiderPool ? 23 : 3,
+                      transition: 'left 0.2s, background 0.2s',
+                    }} />
+                  </button>
+                  <span style={{ fontSize: '0.82rem', fontWeight: 600, color: includeWiderPool ? '#00e5ff' : '#96a0b8' }}>
+                    {includeWiderPool ? 'ON' : 'OFF'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Distance indicator for in-person events */}
+        {format === 'in_person' && locationFields.city && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            marginBottom: 16, fontSize: '0.82rem', color: '#96a0b8',
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#96a0b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            Showing interpreters within {searchRadiusMiles} miles of {locationFields.city}{locationFields.state ? `, ${locationFields.state}` : ''}.{' '}
+            <button
+              type="button"
+              onClick={() => setActiveTab('Event Details')}
+              style={{
+                background: 'none', border: 'none', padding: 0,
+                color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600,
+                cursor: 'pointer', fontFamily: "'Inter', sans-serif",
+              }}
+            >
+              Adjust &#8594;
+            </button>
+          </div>
         )}
 
         <p style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: 16, lineHeight: 1.6 }}>
@@ -1422,9 +1675,25 @@ export default function NewRequestPage() {
           <RequesterInterpreterPicker
             selectedIds={selectedInterpreters}
             onChange={setSelectedInterpreters}
-            interpreterGroups={hasDeafLists && !showRosterOnly ? interpreterGroups : []}
+            interpreterGroups={
+              clientSpecification === 'general' || useNamedUnreachable
+                ? []
+                : (isSparse && !includeWiderPool)
+                  ? interpreterGroups
+                  : hasDeafLists && !showRosterOnly
+                    ? interpreterGroups
+                    : []
+            }
             showRosterFallback={true}
-            rosterLabel={hasDeafLists && !showRosterOnly ? 'Your roster' : undefined}
+            rosterLabel={
+              clientSpecification === 'general' || useNamedUnreachable
+                ? 'Interpreters matching your event'
+                : isSparse && includeWiderPool
+                  ? 'Other interpreters matching your event'
+                  : hasDeafLists && !showRosterOnly
+                    ? 'Your roster'
+                    : undefined
+            }
           />
 
           {/* DNB conflict note */}
