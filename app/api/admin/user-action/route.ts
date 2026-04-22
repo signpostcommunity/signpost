@@ -47,11 +47,80 @@ export async function POST(request: NextRequest) {
     }
 
     case 'unsuspend': {
-      const { data: ip } = await admin.from('interpreter_profiles').select('id').eq('user_id', userId).maybeSingle()
+      const { data: ip } = await admin.from('interpreter_profiles').select('id, email').eq('user_id', userId).maybeSingle()
       if (ip) {
         await admin.from('interpreter_profiles').update({ status: 'approved' }).eq('id', ip.id)
       }
       await admin.from('user_profiles').update({ suspended: false }).eq('id', userId)
+
+      // Auto-add: fulfill pending invites for this newly-approved interpreter
+      if (ip?.email) {
+        try {
+          const { data: pendingInvites } = await admin
+            .from('invite_tracking')
+            .select('id, sender_user_id, target_list_role')
+            .eq('recipient_email', ip.email.toLowerCase())
+            .eq('status', 'sent')
+
+          for (const invite of pendingInvites || []) {
+            try {
+              const role = invite.target_list_role || 'interpreter_team'
+
+              if (role === 'interpreter_team') {
+                // Look up sender's interpreter_profiles row
+                const { data: senderIp } = await admin
+                  .from('interpreter_profiles')
+                  .select('id')
+                  .eq('user_id', invite.sender_user_id)
+                  .maybeSingle()
+                if (senderIp) {
+                  await admin.from('interpreter_preferred_team').insert({
+                    interpreter_id: senderIp.id,
+                    member_interpreter_id: ip.id,
+                    first_name: '',
+                    last_name: '',
+                    email: ip.email,
+                    tier: 'preferred',
+                    status: 'accepted',
+                  })
+                }
+              } else if (role === 'dhh_pref_list') {
+                await admin.from('deaf_roster').insert({
+                  deaf_user_id: invite.sender_user_id,
+                  interpreter_id: ip.id,
+                  tier: 'preferred',
+                })
+              } else if (role === 'requester_pref_list') {
+                await admin.from('requester_roster').insert({
+                  requester_user_id: invite.sender_user_id,
+                  interpreter_id: ip.id,
+                  tier: 'preferred',
+                })
+              }
+
+              // Mark invite as fulfilled
+              await admin.from('invite_tracking').update({
+                status: 'accepted',
+                signed_up_user_id: userId,
+                signed_up_at: new Date().toISOString(),
+              }).eq('id', invite.id)
+            } catch (inviteErr) {
+              console.error(`[unsuspend] Auto-add failed for invite ${invite.id}:`, inviteErr)
+              logAudit({
+                user_id: user.id,
+                action: 'admin_action',
+                resource_type: 'invite_tracking',
+                resource_id: invite.id,
+                metadata: { action_type: 'auto_add_failed', error: inviteErr instanceof Error ? inviteErr.message : 'Unknown' },
+              })
+            }
+          }
+        } catch (err) {
+          console.error('[unsuspend] Invite fulfillment block failed:', err)
+          // Do not block the unsuspend
+        }
+      }
+
       logAudit({
         user_id: user.id,
         action: 'admin_action',

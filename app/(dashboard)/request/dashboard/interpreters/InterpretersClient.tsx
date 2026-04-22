@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import AddToListModal from '@/components/directory/AddToListModal'
+import InviteModal from '@/components/invite/InviteModal'
+import PendingInvites from '@/components/invite/PendingInvites'
 import Toast from '@/components/ui/Toast'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
 import BetaTryThis from '@/components/ui/BetaTryThis'
@@ -502,6 +504,9 @@ export default function InterpretersClient() {
   // DNB section collapse state (collapsed by default)
   const [dnbCollapsed, setDnbCollapsed] = useState(true)
 
+  // Invite modal
+  const [showInvite, setShowInvite] = useState(false)
+
   const fetchRoster = useCallback(async () => {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -748,6 +753,19 @@ export default function InterpretersClient() {
         Browse the interpreter directory and add a few interpreters to your preferred list. Try moving one to your secondary tier.
       </BetaTryThis>
 
+      <PendingInvites targetListRole="requester_pref_list" accentColor="#00e5ff" />
+
+      <InviteModal
+        isOpen={showInvite}
+        onClose={() => setShowInvite(false)}
+        title="Invite an interpreter to signpost"
+        subtitle="I want to add you to my preferred interpreter list on signpost."
+        targetListRole="requester_pref_list"
+        senderRole="requester"
+        accentColor="#00e5ff"
+        onSuccess={() => { fetchRoster(); setShowInvite(false) }}
+      />
+
       {/* ── Preferred Section ── */}
       <div style={{ marginBottom: 36 }}>
         <div className="req-section-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -766,22 +784,37 @@ export default function InterpretersClient() {
               Your first call. These interpreters are contacted first when you submit a request.
             </div>
           </div>
-          <Link
-            href="/directory?context=requester"
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 7,
-              background: 'transparent', border: '1.5px dashed var(--border)',
-              borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
-              fontFamily: "'Inter', sans-serif", fontSize: '0.82rem',
-              padding: '8px 16px', cursor: 'pointer', textDecoration: 'none',
-              transition: 'all 0.2s', whiteSpace: 'nowrap',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
-          >
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
-            Add Interpreter
-          </Link>
+          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+            <Link
+              href="/directory?context=requester"
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 7,
+                background: 'transparent', border: '1.5px dashed var(--border)',
+                borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
+                fontFamily: "'Inter', sans-serif", fontSize: '0.82rem',
+                padding: '8px 16px', cursor: 'pointer', textDecoration: 'none',
+                transition: 'all 0.2s', whiteSpace: 'nowrap',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
+            >
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+              Add Interpreter
+            </Link>
+            <button
+              onClick={() => setShowInvite(true)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 7,
+                background: 'transparent', border: '1.5px dashed rgba(0,229,255,0.3)',
+                borderRadius: 'var(--radius-sm)', color: 'var(--accent)',
+                fontFamily: "'Inter', sans-serif", fontSize: '0.82rem',
+                padding: '8px 16px', cursor: 'pointer',
+                transition: 'all 0.2s', whiteSpace: 'nowrap',
+              }}
+            >
+              Invite
+            </button>
+          </div>
         </div>
 
         {preferred.length === 0 ? (

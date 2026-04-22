@@ -5,6 +5,8 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import InviteModal from '@/components/invite/InviteModal';
+import PendingInvites from '@/components/invite/PendingInvites';
 
 type Tier = 'preferred' | 'approved' | 'dnb';
 
@@ -35,6 +37,7 @@ export default function DeafDashboardPage() {
   const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
   const [editNoteText, setEditNoteText] = useState('');
   const [toast, setToast] = useState<string | null>(null);
+  const [showInvite, setShowInvite] = useState(false);
   const [confirmModal, setConfirmModal] = useState<{
     rosterId: string; name: string; currentTier: Tier; newTier: Tier;
   } | null>(null);
@@ -294,10 +297,35 @@ export default function DeafDashboardPage() {
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: 20, maxWidth: 400, margin: '0 auto 20px' }}>
             Browse the directory to find interpreters and add them to your list.
           </p>
-          <Link href="/directory" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-block', padding: '11px 24px' }}>
-            Browse Directory &#8594;
-          </Link>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/directory" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-block', padding: '11px 24px' }}>
+              Browse Directory &#8594;
+            </Link>
+            <button
+              onClick={() => setShowInvite(true)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 7,
+                background: 'transparent', border: '1px solid rgba(167,139,250,0.3)',
+                borderRadius: 10, color: '#a78bfa',
+                fontFamily: "'Inter', sans-serif", fontSize: '14.5px',
+                fontWeight: 600, padding: '11px 24px', cursor: 'pointer',
+              }}
+            >
+              Invite an interpreter
+            </button>
+          </div>
         </div>
+
+        <InviteModal
+          isOpen={showInvite}
+          onClose={() => setShowInvite(false)}
+          title="Invite an interpreter to signpost"
+          subtitle="I want to add you to my preferred interpreter list on signpost."
+          targetListRole="dhh_pref_list"
+          senderRole="deaf"
+          accentColor="#a78bfa"
+          onSuccess={() => { fetchRoster(); setShowInvite(false) }}
+        />
       </div>
     );
   }
@@ -503,26 +531,41 @@ export default function DeafDashboardPage() {
             Your preferred, secondary tier, and do-not-book interpreters. Share your list with requesters so they always know who to contact.
           </p>
         </div>
-        <button
-          onClick={() => showToast('Share link copied!')}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 7,
-            flexShrink: 0, marginTop: 6,
-            background: 'transparent', border: '1.5px solid rgba(0,229,255,0.3)',
-            borderRadius: 8, color: 'var(--accent)',
-            fontFamily: "'Inter', sans-serif", fontSize: '0.82rem',
-            fontWeight: 700, padding: '7px 14px', cursor: 'pointer',
-            transition: 'all 0.15s',
-          }}
-        >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
-            <circle cx="18" cy="5" r="3" stroke="currentColor" strokeWidth="1.7"/>
-            <circle cx="6" cy="12" r="3" stroke="currentColor" strokeWidth="1.7"/>
-            <circle cx="18" cy="19" r="3" stroke="currentColor" strokeWidth="1.7"/>
-            <path d="M8.7 10.7l6.6-3.4M8.7 13.3l6.6 3.4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/>
-          </svg>
-          Share my list
-        </button>
+        <div style={{ display: 'flex', gap: 10, flexShrink: 0, marginTop: 6 }}>
+          <button
+            onClick={() => setShowInvite(true)}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 7,
+              background: 'transparent', border: '1.5px solid rgba(167,139,250,0.3)',
+              borderRadius: 8, color: '#a78bfa',
+              fontFamily: "'Inter', sans-serif", fontSize: '0.82rem',
+              fontWeight: 700, padding: '7px 14px', cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+            Invite
+          </button>
+          <button
+            onClick={() => showToast('Share link copied!')}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 7,
+              background: 'transparent', border: '1.5px solid rgba(0,229,255,0.3)',
+              borderRadius: 8, color: 'var(--accent)',
+              fontFamily: "'Inter', sans-serif", fontSize: '0.82rem',
+              fontWeight: 700, padding: '7px 14px', cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+              <circle cx="18" cy="5" r="3" stroke="currentColor" strokeWidth="1.7"/>
+              <circle cx="6" cy="12" r="3" stroke="currentColor" strokeWidth="1.7"/>
+              <circle cx="18" cy="19" r="3" stroke="currentColor" strokeWidth="1.7"/>
+              <path d="M8.7 10.7l6.6-3.4M8.7 13.3l6.6 3.4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"/>
+            </svg>
+            Share my list
+          </button>
+        </div>
       </div>
 
       {/* Add from directory CTA */}
@@ -540,6 +583,19 @@ export default function DeafDashboardPage() {
           Browse Directory &#8594;
         </Link>
       </div>
+
+      <PendingInvites targetListRole="dhh_pref_list" accentColor="#a78bfa" />
+
+      <InviteModal
+        isOpen={showInvite}
+        onClose={() => setShowInvite(false)}
+        title="Invite an interpreter to signpost"
+        subtitle="I want to add you to my preferred interpreter list on signpost."
+        targetListRole="dhh_pref_list"
+        senderRole="deaf"
+        accentColor="#a78bfa"
+        onSuccess={() => { fetchRoster(); setShowInvite(false) }}
+      />
 
       {/* Preferred section */}
       <div style={{ marginBottom: 36 }}>

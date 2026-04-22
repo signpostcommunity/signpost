@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
     senderEmail,
     senderRole,
     channel, // 'email' | 'sms' | 'clipboard'
+    targetListRole, // 'interpreter_team' | 'dhh_pref_list' | 'requester_pref_list'
   } = body
 
   if (!recipientName) {
@@ -103,6 +104,7 @@ export async function POST(req: NextRequest) {
       recipient_email: recipientEmail || null,
       recipient_phone: recipientPhone || null,
       channel,
+      target_list_role: targetListRole || 'interpreter_team',
       status: channel === 'clipboard' ? 'sent' : 'sent',
       sent_at: new Date().toISOString(),
     })

@@ -8,33 +8,10 @@ import Link from 'next/link'
 import { PageHeader, Avatar, GhostButton } from '@/components/dashboard/interpreter/shared'
 import AddToListModal from '@/components/directory/AddToListModal'
 import SendMessageModal from '@/components/messaging/SendMessageModal'
+import InviteModal from '@/components/invite/InviteModal'
+import PendingInvites from '@/components/invite/PendingInvites'
 import Toast from '@/components/ui/Toast'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
-
-const overlayStyle: React.CSSProperties = {
-  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
-  display: 'flex', alignItems: 'center', justifyContent: 'center',
-  zIndex: 1000, padding: 20,
-}
-
-const modalStyle: React.CSSProperties = {
-  background: 'var(--surface)', border: '1px solid var(--border)',
-  borderRadius: 'var(--radius)', padding: '28px 32px',
-  width: '100%', maxWidth: 520,
-}
-
-const fieldInputStyle: React.CSSProperties = {
-  width: '100%', boxSizing: 'border-box',
-  background: 'var(--surface2)', border: '1px solid var(--border)',
-  borderRadius: 'var(--radius-sm)', padding: '10px 14px',
-  color: 'var(--text)', fontFamily: "'Inter', sans-serif", fontSize: '0.88rem',
-  outline: 'none',
-}
-
-const fieldLabelStyle: React.CSSProperties = {
-  display: 'block', fontSize: '13px', color: '#c8cdd8',
-  fontWeight: 500, marginBottom: 6,
-}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -50,134 +27,6 @@ type TeamMember = {
   photo_url: string | null
   avatar_color: string | null
   user_id: string | null
-}
-
-// ── Invite Modal ──────────────────────────────────────────────────────────────
-
-function InviteModal({ onClose, onSaved, interpreterId, interpreterFullName }: {
-  onClose: () => void
-  onSaved: () => void
-  interpreterId: string
-  interpreterFullName: string
-}) {
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [email, setEmail] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
-
-  const defaultMessage = `Hey ${firstName || '[First Name]'}!\n\nI would love to add you to my preferred interpreter team on signpost, but I don't believe you have created a profile yet. Once you create a profile I can add you as a preferred team member for upcoming jobs.\n\nIf you would like to create a profile, click here: https://signpost.community/signup\n\n${interpreterFullName}`
-
-  const [message, setMessage] = useState('')
-  const currentMessage = message || defaultMessage
-
-  function handleFirstNameChange(val: string) {
-    setFirstName(val)
-    setMessage(`Hey ${val || '[First Name]'}!\n\nI would love to add you to my preferred interpreter team on signpost, but I don't believe you have created a profile yet. Once you create a profile I can add you as a preferred team member for upcoming jobs.\n\nIf you would like to create a profile, click here: https://signpost.community/signup\n\n${interpreterFullName}`)
-  }
-
-  async function handleSave() {
-    if (!firstName.trim() || !lastName.trim() || !email.trim()) {
-      setError('All fields are required.')
-      return
-    }
-    setSaving(true)
-    setError(null)
-    const supabase = createClient()
-    const { error: insertErr } = await supabase.from('interpreter_preferred_team').insert({
-      interpreter_id: interpreterId,
-      first_name: firstName.trim(),
-      last_name: lastName.trim(),
-      email: email.trim(),
-    })
-    setSaving(false)
-    if (insertErr) {
-      console.error('Invite insert error:', insertErr)
-      if (insertErr.code === '23503') {
-        setError('This interpreter is no longer available.')
-        return
-      }
-      setError(`Failed to save: ${insertErr.message}`)
-      return
-    }
-    setSuccess(true)
-    onSaved()
-  }
-
-  if (success) return (
-    <div style={overlayStyle}>
-      <div className="modal-dialog" style={modalStyle}>
-        <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
-          <div style={{ fontSize: '2rem', marginBottom: 12 }}>✓</div>
-          <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent)', marginBottom: 8 }}>
-            {firstName} has been added to your Preferred Team!
-          </div>
-          <button className="btn-primary" onClick={onClose} style={{ padding: '10px 28px' }}>Done</button>
-        </div>
-      </div>
-    </div>
-  )
-
-  return (
-    <div style={overlayStyle}>
-      <div className="modal-dialog" style={modalStyle}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Invite to your preferred team</div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
-          <div>
-            <label style={fieldLabelStyle}>First Name</label>
-            <input type="text" value={firstName} onChange={e => handleFirstNameChange(e.target.value)}
-              placeholder="First name" style={fieldInputStyle}
-              onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
-              onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
-            />
-          </div>
-          <div>
-            <label style={fieldLabelStyle}>Last Name</label>
-            <input type="text" value={lastName} onChange={e => setLastName(e.target.value)}
-              placeholder="Last name" style={fieldInputStyle}
-              onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
-              onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
-            />
-          </div>
-        </div>
-
-        <div style={{ marginBottom: 14 }}>
-          <label style={fieldLabelStyle}>Email Address</label>
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-            placeholder="colleague@example.com" style={fieldInputStyle}
-            onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
-            onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
-          />
-        </div>
-
-        <div style={{ marginBottom: 14 }}>
-          <label style={fieldLabelStyle}>Message</label>
-          <textarea value={currentMessage} onChange={e => setMessage(e.target.value)}
-            style={{ ...fieldInputStyle, resize: 'vertical', minHeight: 160 }}
-            onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
-            onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
-          />
-        </div>
-
-        {error && (
-          <p style={{ fontSize: '0.82rem', color: '#f87171', marginBottom: 12 }}>{error}</p>
-        )}
-
-        <div className="dash-card-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-          <GhostButton onClick={onClose}>Cancel</GhostButton>
-          <button className="btn-primary" onClick={handleSave} disabled={saving}
-            style={{ padding: '9px 22px', opacity: saving ? 0.6 : 1 }}>
-            {saving ? 'Saving...' : 'Send'}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
 }
 
 // ── Section Header ────────────────────────────────────────────────────────────
@@ -369,6 +218,8 @@ export default function TeamPage() {
         </button>
       </p>
 
+      <PendingInvites targetListRole="interpreter_team" accentColor="#00e5ff" />
+
       {loading ? (
         <div style={{ padding: 32, textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem' }}>
           Loading...
@@ -423,14 +274,17 @@ export default function TeamPage() {
         </button>
       </Link>
 
-      {showInvite && interpreterId && (
-        <InviteModal
-          onClose={() => setShowInvite(false)}
-          onSaved={() => fetchTeam()}
-          interpreterId={interpreterId}
-          interpreterFullName={interpreterName || 'Your Name'}
-        />
-      )}
+      <InviteModal
+        isOpen={showInvite}
+        onClose={() => setShowInvite(false)}
+        title="Invite an interpreter to signpost"
+        subtitle="Know an interpreter you love working with? Invite them to create a signpost profile. Once they sign up and are approved, they will be automatically added to your preferred team."
+        targetListRole="interpreter_team"
+        senderName={interpreterName}
+        senderRole="interpreter"
+        accentColor="#00e5ff"
+        onSuccess={() => fetchTeam()}
+      />
 
       {/* Edit modal - reuses AddToListModal in edit mode */}
       <AddToListModal

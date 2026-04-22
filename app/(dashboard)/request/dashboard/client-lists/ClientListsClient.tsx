@@ -392,7 +392,33 @@ function RequestListSection({ onListUpdated }: { onListUpdated: () => void }) {
   }
 
   async function handleSendInvite() {
-    setToast({ message: 'Invite feature coming soon.', type: 'success' })
+    if (!identifier.trim()) return
+    setLookupLoading(true)
+    try {
+      const isPhone = /^\+?\d[\d\s()-]{6,}$/.test(identifier.trim())
+      const res = await fetch('/api/invites', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientName: identifier.trim(),
+          recipientEmail: isPhone ? undefined : identifier.trim(),
+          recipientPhone: isPhone ? identifier.trim() : undefined,
+          channel: isPhone ? 'sms' : 'email',
+          targetListRole: 'requester_pref_list',
+        }),
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        setToast({ message: data.error || 'Failed to send invite.', type: 'error' })
+      } else {
+        setToast({ message: 'Invite sent.', type: 'success' })
+        setLookupResult(null)
+        setIdentifier('')
+      }
+    } catch {
+      setToast({ message: 'Something went wrong.', type: 'error' })
+    }
+    setLookupLoading(false)
   }
 
   return (
