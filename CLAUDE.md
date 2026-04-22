@@ -386,6 +386,17 @@ Users can hold multiple roles simultaneously. The sidebar includes a "Change Hat
 
 ---
 
+## Platform Fee Charge Timing
+
+- Requester submits a booking request with one or more interpreters selected.
+- Each selected interpreter receives the request in their inbox.
+- Interpreter clicks "Accept and Send Rate" to propose their rate to the requester.
+- Requester sees the proposed rate and clicks "Confirm Booking" to accept.
+- The $15 per-interpreter platform fee charges on that requester confirmation click, not on interpreter acceptance.
+- For multi-interpreter bookings, the fee is $15 times the number of interpreters requested, charged once on the first requester confirmation for the booking, not per interpreter confirmation event.
+
+---
+
 ## Safety Rules
 
 ### Pre-flight: Design System Compliance
