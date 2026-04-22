@@ -61,7 +61,7 @@ export default async function ProfilePage({ params }: Props) {
     notFound();
   }
 
-  if (data.directory_visible === false) {
+  if (data.directory_visible === false || (data as Record<string, unknown>).is_test_account === true) {
     return <ProfileUnavailable />;
   }
 

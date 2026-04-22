@@ -52,7 +52,7 @@ export default async function BookPage({ params }: Props) {
   const { slug } = await params
   const data = await getInterpreterBySlug(slug)
 
-  const hidden = !!data && data.directory_visible === false
+  const hidden = !!data && (data.directory_visible === false || (data as Record<string, unknown>).is_test_account === true)
   if (!data || hidden) {
     const heading = hidden
       ? "This profile is not currently available"

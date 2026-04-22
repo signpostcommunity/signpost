@@ -505,6 +505,32 @@ If scope is genuinely ambiguous, default to investigation-only and ask: "Should 
 
 ---
 
+## Test Account Isolation
+
+`is_test_account` boolean column on `interpreter_profiles`, `deaf_profiles`, and `requester_profiles`. Default false.
+
+**Auto-flagging:** The `flag_test_account_by_email` trigger (and `flag_test_account_by_email_deaf` for deaf_profiles) fires BEFORE INSERT. It checks the associated `auth.users.email` against known test patterns and sets `is_test_account = true` automatically. The deaf variant uses `NEW.id` (not `NEW.user_id`) per the deaf_profiles dual-ID pattern.
+
+**Directory filtering:** Public directory queries filter `is_test_account = false` so test accounts never appear in:
+- Main directory grid (`app/(public)/directory/page.tsx`)
+- Individual profile page (`app/(public)/directory/[id]/page.tsx`)
+- Vanity slug booking page (`app/(public)/book/[slug]/page.tsx`)
+- Mentorship suggestions (`app/api/interpreter/mentorship/suggestions/route.ts`)
+
+**Picker bypass preserved:** The interpreter picker surfaces (InterpreterPicker, RequesterInterpreterPicker, deaf-list-check API, preferences API) do NOT filter on `is_test_account`. Test accounts on each other's pref lists can still book each other for testing.
+
+**Email patterns that trigger auto-flag:**
+- `desi-%@gmail.com`, `desi-%+%@gmail.com`
+- `%+desi@gmail.com`, `%+desi%@gmail.com`
+- `%+test%`, `%+qa%`, `%+fee%`, `%+regression%`
+- `desi-regression%`, `test-%@%`, `qa-%@%`
+
+**Seed profiles are NOT test accounts.** Betty White, Keanu Reeves, Idris Elba are intentional seed data and remain visible in the directory. Do not flag them.
+
+**Manual toggle:** For accounts that do not match the auto-flag patterns, admins can set `is_test_account = true` via direct SQL.
+
+---
+
 ## Known Issues / Gotchas
 
 - **`proxy.ts` not `middleware.ts`**: Next.js 16 changed the auth middleware filename convention.

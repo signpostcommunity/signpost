@@ -95,6 +95,7 @@ export async function GET() {
     .select('id, user_id, first_name, last_name, photo_url, avatar_color, years_experience, city, state, specializations, mentorship_offering, mentorship_seeking, mentorship_types, mentorship_types_offering, mentorship_types_seeking, mentorship_paid, mentorship_bio_offering, mentorship_bio_seeking')
     .eq('mentorship_offering', true)
     .eq('status', 'approved')
+    .eq('is_test_account', false)
     .neq('user_id', user.id)
 
   if (!mentors || mentors.length === 0) {
