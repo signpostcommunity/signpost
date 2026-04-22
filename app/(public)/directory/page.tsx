@@ -7,18 +7,63 @@ import DirectoryClient from './DirectoryClient';
 export default async function DirectoryPage() {
   const supabase = await createClient();
 
-  // Check if current user is a requester (for seed-only filter)
+  // Check auth + fetch profile data for portal sidebar
   const { data: { user } } = await supabase.auth.getUser()
   let isRequester = false
+  let userData: { id: string; primaryRole: string; name: string; initials: string; photoUrl: string | null } | null = null
+
   if (user) {
     const { data: profile } = await supabase
       .from('user_profiles')
       .select('role')
       .eq('id', user.id)
       .maybeSingle()
-    if (profile?.role === 'requester' || profile?.role === 'org') {
-      isRequester = true
+
+    const role = profile?.role || 'interpreter'
+    isRequester = role === 'requester' || role === 'org'
+
+    let name = 'User'
+    let initials = 'U'
+    let photoUrl: string | null = null
+
+    if (role === 'interpreter') {
+      const { data: ip } = await supabase
+        .from('interpreter_profiles')
+        .select('first_name, last_name, photo_url')
+        .eq('user_id', user.id)
+        .maybeSingle()
+      if (ip?.first_name) {
+        name = `${ip.first_name} ${ip.last_name || ''}`.trim()
+        initials = `${ip.first_name[0]}${ip.last_name?.[0] || ''}`.toUpperCase()
+        photoUrl = ip.photo_url || null
+      }
+    } else if (role === 'deaf') {
+      const { data: dp } = await supabase
+        .from('deaf_profiles')
+        .select('first_name, last_name')
+        .or(`id.eq.${user.id},user_id.eq.${user.id}`)
+        .maybeSingle()
+      if (dp?.first_name) {
+        name = `${dp.first_name} ${dp.last_name || ''}`.trim()
+        initials = `${dp.first_name[0]}${dp.last_name?.[0] || ''}`.toUpperCase()
+      }
+    } else if (role === 'requester' || role === 'org') {
+      const { data: rp } = await supabase
+        .from('requester_profiles')
+        .select('first_name, last_name, name')
+        .or(`id.eq.${user.id},user_id.eq.${user.id}`)
+        .maybeSingle()
+      if (rp?.first_name) {
+        name = `${rp.first_name} ${rp.last_name || ''}`.trim()
+        initials = `${rp.first_name[0]}${rp.last_name?.[0] || ''}`.toUpperCase()
+      } else if (rp?.name) {
+        name = rp.name
+        const parts = rp.name.split(' ')
+        initials = `${parts[0]?.[0] || ''}${parts[parts.length - 1]?.[0] || ''}`.toUpperCase()
+      }
     }
+
+    userData = { id: user.id, primaryRole: role, name, initials, photoUrl }
   }
 
   let query = supabase
@@ -132,5 +177,5 @@ export default async function DirectoryPage() {
     }
   }
 
-  return <DirectoryClient interpreters={interpreters} awayPeriods={awayMap} />;
+  return <DirectoryClient interpreters={interpreters} awayPeriods={awayMap} userData={userData} />;
 }

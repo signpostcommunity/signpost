@@ -9,6 +9,56 @@ import VideoPreviewModal from '@/components/directory/VideoPreviewModal';
 import AddToListModal from '@/components/directory/AddToListModal';
 import BatchAddToListModal from '@/components/directory/BatchAddToListModal';
 import { createClient } from '@/lib/supabase/client';
+import DirectoryPortalSidebar from '@/components/directory/DirectoryPortalSidebar';
+
+interface UserData {
+  id: string
+  primaryRole: string
+  name: string
+  initials: string
+  photoUrl: string | null
+}
+
+async function fetchAddedIdsForRole(role: string, userId: string): Promise<Set<string>> {
+  const supabase = createClient()
+
+  if (role === 'interpreter') {
+    const { data: profile } = await supabase
+      .from('interpreter_profiles')
+      .select('id')
+      .eq('user_id', userId)
+      .single()
+    if (!profile) return new Set()
+
+    const { data: rows } = await supabase
+      .from('interpreter_preferred_team')
+      .select('member_interpreter_id')
+      .eq('interpreter_id', profile.id)
+      .not('member_interpreter_id', 'is', null)
+
+    return new Set((rows || []).map(r => r.member_interpreter_id as string))
+  }
+
+  if (role === 'deaf') {
+    const { data: rows } = await supabase
+      .from('deaf_roster')
+      .select('interpreter_id')
+      .eq('deaf_user_id', userId)
+
+    return new Set((rows || []).map(r => r.interpreter_id as string))
+  }
+
+  if (role === 'requester') {
+    const { data: rows } = await supabase
+      .from('requester_roster')
+      .select('interpreter_id')
+      .eq('requester_user_id', userId)
+
+    return new Set((rows || []).map(r => r.interpreter_id as string))
+  }
+
+  return new Set()
+}
 
 function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 3959 // Earth radius in miles
@@ -42,18 +92,24 @@ const defaultFilters: FilterState = {
   mentorshipSeeking: false,
 };
 
-export default function DirectoryClient({ interpreters, awayPeriods }: { interpreters: Interpreter[]; awayPeriods?: Record<string, { end_date: string; message: string; dim_profile: boolean }> }) {
+export default function DirectoryClient({ interpreters, awayPeriods, userData }: { interpreters: Interpreter[]; awayPeriods?: Record<string, { end_date: string; message: string; dim_profile: boolean }>; userData?: UserData | null }) {
   const [filters, setFilters] = useState<FilterState>(defaultFilters);
   const [filterOpen, setFilterOpen] = useState(false);
   const [autoFilterLabels, setAutoFilterLabels] = useState<string[]>([]);
 
-  // Auth state - starts null (loading), then true/false
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
+  // Auth state - starts null (loading), then true/false. Pre-set from server userData.
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(userData ? true : null);
 
-  // User role for AddToListModal
-  const [userRole, setUserRole] = useState<'deaf' | 'requester' | 'interpreter' | null>(null);
+  // User role for AddToListModal. Initialized from server userData if available.
+  const [userRole, setUserRole] = useState<'deaf' | 'requester' | 'interpreter' | null>(
+    (userData?.primaryRole as 'deaf' | 'requester' | 'interpreter') || null
+  );
   // URL context param for multi-role users (e.g. ?context=interpreter)
   const [contextParam, setContextParam] = useState<string | null>(null);
+  // User ID for list membership queries
+  const [userId, setUserId] = useState<string | null>(userData?.id || null);
+  // Portal view: logged-in users see sidebar
+  const isPortalView = !!userData;
 
   // Video preview modal state
   const [videoModal, setVideoModal] = useState<{
@@ -134,6 +190,7 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
         return;
       }
       setIsLoggedIn(true);
+      setUserId(user.id);
       supabase
         .from('user_profiles')
         .select('role')
@@ -196,6 +253,33 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
       setAutoFilterLabels(labels);
     }
   }, []);
+
+  // Fetch existing list membership on mount and when role changes (Part C: button persistence)
+  useEffect(() => {
+    if (!userId || !userRole) return
+    let cancelled = false
+
+    fetchAddedIdsForRole(userRole, userId).then(ids => {
+      if (!cancelled) setAddedIds(ids)
+    })
+
+    return () => { cancelled = true }
+  }, [userId, userRole])
+
+  // Role change handler for portal sidebar (Part B: role-aware button)
+  function handleRoleChange(newRole: string) {
+    const validRole = newRole as 'deaf' | 'requester' | 'interpreter'
+    setUserRole(validRole)
+    setContextParam(newRole)
+
+    try {
+      localStorage.setItem('signpost:lastRole', newRole)
+    } catch { /* private browsing */ }
+
+    const url = new URL(window.location.href)
+    url.searchParams.set('context', newRole)
+    window.history.replaceState({}, '', url.toString())
+  }
 
   function clearAutoFilters() {
     setFilters(defaultFilters);
@@ -361,17 +445,32 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
 
   return (
     <div style={{ minHeight: '100vh', position: 'relative' }}>
+      {/* Portal layout wrapper (logged-in users get sidebar) */}
+      <div
+        className={isPortalView ? 'dir-portal-layout' : undefined}
+        style={isPortalView ? { display: 'flex' } : undefined}
+      >
+      {isPortalView && (
+        <DirectoryPortalSidebar
+          userName={userData!.name}
+          userInitials={userData!.initials}
+          photoUrl={userData!.photoUrl}
+          activeRole={userRole || userData!.primaryRole}
+          onRoleChange={handleRoleChange}
+        />
+      )}
+      <div style={isPortalView ? { flex: 1, minWidth: 0 } : undefined}>
       {/* Body - full width */}
       <div
-        className="directory-body"
+        className={`directory-body${isPortalView ? ' directory-body-portal' : ''}`}
         style={{
-          padding: '100px 32px 32px',
+          padding: isPortalView ? '32px' : '100px 32px 32px',
           display: 'flex',
           gap: '32px',
           alignItems: 'flex-start',
-          filter: isLoggedIn === false ? 'blur(8px)' : 'none',
-          pointerEvents: isLoggedIn === false ? 'none' : 'auto',
-          userSelect: isLoggedIn === false ? 'none' : 'auto',
+          filter: !isPortalView && isLoggedIn === false ? 'blur(8px)' : 'none',
+          pointerEvents: !isPortalView && isLoggedIn === false ? 'none' : 'auto',
+          userSelect: !isPortalView && isLoggedIn === false ? 'none' : 'auto',
           transition: 'filter 0.3s',
         }}
       >
@@ -649,9 +748,11 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
           />
         </div>
       </div>
+      </div>{/* portal content wrapper */}
+      </div>{/* portal layout wrapper */}
 
       {/* ── Login overlay (shown when logged out) ── */}
-      {isLoggedIn === false && (
+      {!isPortalView && isLoggedIn === false && (
         <div
           style={{
             position: 'fixed',
@@ -880,10 +981,13 @@ export default function DirectoryClient({ interpreters, awayPeriods }: { interpr
           .filter-mobile-toggle { display: block !important; }
           .filter-mobile-panel { display: flex !important; }
           .filter-mobile-panel .filter-sidebar { width: 100% !important; position: static !important; max-height: none !important; }
-          .directory-body { padding: 80px 16px 24px !important; flex-direction: column !important; gap: 16px !important; }
+          .directory-body:not(.directory-body-portal) { padding: 80px 16px 24px !important; flex-direction: column !important; gap: 16px !important; }
+          .directory-body-portal { padding: 24px 16px !important; flex-direction: column !important; gap: 16px !important; }
+          .dir-portal-layout { flex-direction: column !important; }
         }
         @media (max-width: 480px) {
-          .directory-body { padding: 72px 12px 16px !important; }
+          .directory-body:not(.directory-body-portal) { padding: 72px 12px 16px !important; }
+          .directory-body-portal { padding: 20px 12px 16px !important; }
         }
       `}</style>
     </div>
