@@ -75,11 +75,6 @@ export default async function DirectoryPage() {
     .order('photo_url', { ascending: false, nullsFirst: false })
     .order('last_name', { ascending: true, nullsFirst: false })
 
-  // BETA ONLY: Remove this filter at launch
-  if (isRequester) {
-    query = query.eq('is_seed', true)
-  }
-
   const { data: rows } = await query;
 
   const interpreters: Interpreter[] = (rows || []).map((r) => {
