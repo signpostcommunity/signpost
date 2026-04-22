@@ -2212,13 +2212,23 @@ function InterpreterSignupForm() {
       const { data: urlData } = supabase.storage.from('profile-photos').getPublicUrl(path);
       const publicUrl = `${urlData.publicUrl}?t=${Date.now()}`;
 
-      const { error: dbError } = await supabase
+      const { error: dbError, data: dbData } = await supabase
         .from('interpreter_profiles')
-        .update({ photo_url: publicUrl })
-        .eq('user_id', userId);
+        .upsert(
+          { user_id: userId, photo_url: publicUrl },
+          { onConflict: 'user_id' }
+        )
+        .select();
 
       if (dbError) {
+        console.error('[interpreter/signup/photo] save failed:', dbError.message, dbError.details);
         setError(dbError.message);
+        setPhotoUploading(false);
+        return;
+      }
+      if (!dbData || dbData.length === 0) {
+        console.error('[interpreter/signup/photo] save returned no data');
+        setError('Photo save failed. Please try again or reload the page.');
         setPhotoUploading(false);
         return;
       }

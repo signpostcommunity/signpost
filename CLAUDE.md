@@ -275,6 +275,18 @@ Full schema in `supabase/migrations/001_initial_schema.sql`
 
 **RLS:** All tables have RLS enabled. Interpreters can read/write own rows; directory only shows `status='approved'` interpreters; rosters/bookings/messages scoped to owner. The `is_booking_dhh_client()` helper function allows Deaf users to see bookings where they're a participant.
 
+### Profile Table Upsert Keys
+
+Each profile table uses a different column as its unique/conflict key for upserts. Using the wrong key will fail silently under RLS or throw a constraint error.
+
+| Table | onConflict key | Why |
+|---|---|---|
+| `interpreter_profiles` | `user_id` | `user_id` is unique; `id` is an auto-generated uuid |
+| `deaf_profiles` | `id` | `id` is set to `user.id` at creation; `user_id` is a nullable non-unique column |
+| `requester_profiles` | Verify via `information_schema.columns` before use | Not yet audited |
+
+When applying the b96b957 upsert pattern to any profile-table write, always confirm the correct onConflict key for that specific table before writing the prompt or code.
+
 ---
 
 ## Design System
