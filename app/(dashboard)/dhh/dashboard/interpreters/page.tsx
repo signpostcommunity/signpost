@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import InviteModal from '@/components/invite/InviteModal';
 import PendingInvitesList from '@/components/invite/PendingInvitesList';
+import CollapsibleSection from '@/components/ui/CollapsibleSection';
 
 type Tier = 'preferred' | 'approved' | 'dnb';
 
@@ -598,15 +599,20 @@ export default function DeafDashboardPage() {
       />
 
       {/* Preferred section */}
-      <div style={{ marginBottom: 36 }}>
-        <div style={{ marginBottom: 14 }}>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#f0f2f8', marginBottom: 2 }}>
-            &#9733; Preferred Interpreters
+      <CollapsibleSection
+        storageKey="signpost_collapse_dhh_preferred_preferred"
+        accentColor="#a78bfa"
+        header={
+          <div>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#f0f2f8', marginBottom: 2 }}>
+              &#9733; Preferred Interpreters
+            </div>
+            <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8' }}>
+              Contact these first. Strong fit based on my communication style and history.
+            </div>
           </div>
-          <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8' }}>
-            Contact these first. Strong fit based on my communication style and history.
-          </div>
-        </div>
+        }
+      >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {preferred.length > 0
             ? preferred.map(renderCard)
@@ -615,18 +621,23 @@ export default function DeafDashboardPage() {
               </div>
           }
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* Secondary Tier section */}
-      <div style={{ marginBottom: 36 }}>
-        <div style={{ marginBottom: 14 }}>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#f0f2f8', marginBottom: 2 }}>
-            &#10003; Secondary Tier Interpreters
+      <CollapsibleSection
+        storageKey="signpost_collapse_dhh_preferred_secondary"
+        accentColor="#a78bfa"
+        header={
+          <div>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#f0f2f8', marginBottom: 2 }}>
+              &#10003; Secondary Tier Interpreters
+            </div>
+            <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8' }}>
+              Good alternatives. Use when preferred interpreters are unavailable.
+            </div>
           </div>
-          <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8' }}>
-            Good alternatives. Use when preferred interpreters are unavailable.
-          </div>
-        </div>
+        }
+      >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {approved.length > 0
             ? approved.map(renderCard)
@@ -635,18 +646,23 @@ export default function DeafDashboardPage() {
               </div>
           }
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* DNB section */}
-      <div style={{ marginBottom: 36 }}>
-        <div style={{ marginBottom: 14 }}>
-          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#ff8099', marginBottom: 2 }}>
-            &#10005; Do Not Book
+      <CollapsibleSection
+        storageKey="signpost_collapse_dhh_preferred_dnb"
+        accentColor="#ff8099"
+        header={
+          <div>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '15px', color: '#ff8099', marginBottom: 2 }}>
+              &#10005; Do Not Book
+            </div>
+            <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8' }}>
+              Visible to your requesters. Reason notes help them understand without requiring explanation.
+            </div>
           </div>
-          <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8' }}>
-            Visible to your requesters. Reason notes help them understand without requiring explanation.
-          </div>
-        </div>
+        }
+      >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {dnb.length > 0
             ? dnb.map(renderCard)
@@ -655,7 +671,7 @@ export default function DeafDashboardPage() {
               </div>
           }
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* Toast - top center */}
       {toast && (

@@ -10,6 +10,7 @@ import AddToListModal from '@/components/directory/AddToListModal'
 import SendMessageModal from '@/components/messaging/SendMessageModal'
 import InviteModal from '@/components/invite/InviteModal'
 import PendingInvitesList from '@/components/invite/PendingInvitesList'
+import CollapsibleSection from '@/components/ui/CollapsibleSection'
 import Toast from '@/components/ui/Toast'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
 
@@ -31,7 +32,7 @@ type TeamMember = {
 
 // ── Section Header ────────────────────────────────────────────────────────────
 
-function TierSection({ title, accentColor, members, onMoveTier, onRemove, onEdit, onMessage, targetTierLabel }: {
+function TierSection({ title, accentColor, members, onMoveTier, onRemove, onEdit, onMessage, targetTierLabel, storageKey }: {
   title: string
   accentColor: string
   members: TeamMember[]
@@ -40,18 +41,22 @@ function TierSection({ title, accentColor, members, onMoveTier, onRemove, onEdit
   onEdit: (member: TeamMember) => void
   onMessage: (member: TeamMember) => void
   targetTierLabel: string
+  storageKey: string
 }) {
   return (
-    <div style={{ marginBottom: 32 }}>
-      <div style={{
-        fontWeight: 600,
-        fontSize: '13px', letterSpacing: '0.08em',
-        textTransform: 'uppercase', color: accentColor,
-        marginBottom: 12, paddingBottom: 8,
-        borderBottom: `1px solid ${accentColor}22`,
-      }}>
-        {title}
-      </div>
+    <CollapsibleSection
+      storageKey={storageKey}
+      accentColor={accentColor}
+      header={
+        <span style={{
+          fontFamily: "'Inter', sans-serif", fontWeight: 600,
+          fontSize: '13px', letterSpacing: '0.08em',
+          textTransform: 'uppercase', color: accentColor,
+        }}>
+          {title}
+        </span>
+      }
+    >
       {members.length === 0 ? (
         <div style={{
           padding: '24px 20px', textAlign: 'center', color: 'var(--muted)',
@@ -76,7 +81,7 @@ function TierSection({ title, accentColor, members, onMoveTier, onRemove, onEdit
           ))}
         </div>
       )}
-    </div>
+    </CollapsibleSection>
   )
 }
 
@@ -243,6 +248,7 @@ export default function TeamPage() {
             onEdit={openEdit}
             onMessage={setMessagingMember}
             targetTierLabel="Move to Secondary Tier"
+            storageKey="signpost_collapse_interpreter_team_top_tier"
           />
           <TierSection
             title="Secondary Tier Team Interpreters"
@@ -253,6 +259,7 @@ export default function TeamPage() {
             onEdit={openEdit}
             onMessage={setMessagingMember}
             targetTierLabel="Move to Top Tier"
+            storageKey="signpost_collapse_interpreter_team_secondary"
           />
         </>
       )}

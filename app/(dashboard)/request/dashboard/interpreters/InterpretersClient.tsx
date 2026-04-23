@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import AddToListModal from '@/components/directory/AddToListModal'
 import InviteModal from '@/components/invite/InviteModal'
 import PendingInvitesList from '@/components/invite/PendingInvitesList'
+import CollapsibleSection from '@/components/ui/CollapsibleSection'
 import Toast from '@/components/ui/Toast'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
 import BetaTryThis from '@/components/ui/BetaTryThis'
@@ -502,7 +503,7 @@ export default function InterpretersClient() {
   const [editNoteText, setEditNoteText] = useState('')
 
   // DNB section collapse state (collapsed by default)
-  const [dnbCollapsed, setDnbCollapsed] = useState(true)
+
 
   // Invite modal
   const [showInvite, setShowInvite] = useState(false)
@@ -695,7 +696,6 @@ export default function InterpretersClient() {
       return
     }
     setToast({ message: 'Added to Do Not Book.', type: 'success' })
-    setDnbCollapsed(false)
     fetchRoster()
   }
 
@@ -767,56 +767,60 @@ export default function InterpretersClient() {
       />
 
       {/* ── Preferred Section ── */}
-      <div style={{ marginBottom: 36 }}>
-        <div className="req-section-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <div>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px', color: '#f0f2f8', marginBottom: 2 }}>
-              Preferred Interpreters
-              <span style={{
-                marginLeft: 10, fontSize: '0.75rem', fontWeight: 600,
-                padding: '2px 8px', borderRadius: 12,
-                background: 'rgba(0,229,255,0.12)', color: 'var(--accent)',
-              }}>
-                {preferred.length}
-              </span>
+      <CollapsibleSection
+        storageKey="signpost_collapse_requester_preferred_preferred"
+        accentColor="#00e5ff"
+        header={
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <div>
+              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px', color: '#f0f2f8', marginBottom: 2 }}>
+                Preferred Interpreters
+                <span style={{
+                  marginLeft: 10, fontSize: '0.75rem', fontWeight: 600,
+                  padding: '2px 8px', borderRadius: 12,
+                  background: 'rgba(0,229,255,0.12)', color: 'var(--accent)',
+                }}>
+                  {preferred.length}
+                </span>
+              </div>
+              <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8' }}>
+                Your first call. These interpreters are contacted first when you submit a request.
+              </div>
             </div>
-            <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8' }}>
-              Your first call. These interpreters are contacted first when you submit a request.
+            <div style={{ display: 'flex', gap: 8, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+              <Link
+                href="/directory?context=requester"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 7,
+                  background: 'transparent', border: '1.5px dashed var(--border)',
+                  borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
+                  fontFamily: "'Inter', sans-serif", fontSize: '0.82rem',
+                  padding: '8px 16px', cursor: 'pointer', textDecoration: 'none',
+                  transition: 'all 0.2s', whiteSpace: 'nowrap',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
+              >
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+                Add Interpreter
+              </Link>
+              <button
+                onClick={() => setShowInvite(true)}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 7,
+                  background: 'transparent', border: '1.5px dashed rgba(0,229,255,0.3)',
+                  borderRadius: 'var(--radius-sm)', color: 'var(--accent)',
+                  fontFamily: "'Inter', sans-serif", fontSize: '0.82rem',
+                  padding: '8px 16px', cursor: 'pointer',
+                  transition: 'all 0.2s', whiteSpace: 'nowrap',
+                }}
+              >
+                Invite
+              </button>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-            <Link
-              href="/directory?context=requester"
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 7,
-                background: 'transparent', border: '1.5px dashed var(--border)',
-                borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
-                fontFamily: "'Inter', sans-serif", fontSize: '0.82rem',
-                padding: '8px 16px', cursor: 'pointer', textDecoration: 'none',
-                transition: 'all 0.2s', whiteSpace: 'nowrap',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
-            >
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
-              Add Interpreter
-            </Link>
-            <button
-              onClick={() => setShowInvite(true)}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 7,
-                background: 'transparent', border: '1.5px dashed rgba(0,229,255,0.3)',
-                borderRadius: 'var(--radius-sm)', color: 'var(--accent)',
-                fontFamily: "'Inter', sans-serif", fontSize: '0.82rem',
-                padding: '8px 16px', cursor: 'pointer',
-                transition: 'all 0.2s', whiteSpace: 'nowrap',
-              }}
-            >
-              Invite
-            </button>
-          </div>
-        </div>
-
+        }
+      >
         {preferred.length === 0 ? (
           <div style={{
             textAlign: 'center', padding: '40px 24px',
@@ -884,44 +888,50 @@ export default function InterpretersClient() {
             ))}
           </div>
         )}
-      </div>
+      </CollapsibleSection>
 
       {/* ── Secondary Tier Section ── */}
-      <div style={{ marginBottom: 36 }}>
-        <div className="req-section-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <div>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px', color: '#f0f2f8', marginBottom: 2 }}>
-              Secondary Tier
-              <span style={{
-                marginLeft: 10, fontSize: '0.75rem', fontWeight: 600,
-                padding: '2px 8px', borderRadius: 12,
-                background: 'rgba(157,135,255,0.12)', color: '#a78bfa',
-              }}>
-                {secondary.length}
-              </span>
+      <CollapsibleSection
+        storageKey="signpost_collapse_requester_preferred_secondary"
+        accentColor="#00e5ff"
+        header={
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <div>
+              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px', color: '#f0f2f8', marginBottom: 2 }}>
+                Secondary Tier
+                <span style={{
+                  marginLeft: 10, fontSize: '0.75rem', fontWeight: 600,
+                  padding: '2px 8px', borderRadius: 12,
+                  background: 'rgba(157,135,255,0.12)', color: '#a78bfa',
+                }}>
+                  {secondary.length}
+                </span>
+              </div>
+              <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8' }}>
+                Good alternatives. Contacted if your preferred interpreters aren&apos;t available.
+              </div>
             </div>
-            <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8' }}>
-              Good alternatives. Contacted if your preferred interpreters aren&apos;t available.
+            <div onClick={e => e.stopPropagation()}>
+              <Link
+                href="/directory?context=requester"
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 7,
+                  background: 'transparent', border: '1.5px dashed var(--border)',
+                  borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
+                  fontFamily: "'Inter', sans-serif", fontSize: '0.82rem',
+                  padding: '8px 16px', cursor: 'pointer', textDecoration: 'none',
+                  transition: 'all 0.2s', whiteSpace: 'nowrap',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
+              >
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+                Add Interpreter
+              </Link>
             </div>
           </div>
-          <Link
-            href="/directory?context=requester"
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 7,
-              background: 'transparent', border: '1.5px dashed var(--border)',
-              borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
-              fontFamily: "'Inter', sans-serif", fontSize: '0.82rem',
-              padding: '8px 16px', cursor: 'pointer', textDecoration: 'none',
-              transition: 'all 0.2s', whiteSpace: 'nowrap',
-            }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
-          >
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
-            Add Interpreter
-          </Link>
-        </div>
-
+        }
+      >
         {secondary.length === 0 ? (
           <div style={{
             textAlign: 'center', padding: '32px 24px',
@@ -983,77 +993,52 @@ export default function InterpretersClient() {
             ))}
           </div>
         )}
-      </div>
+      </CollapsibleSection>
 
       {/* ── Do Not Book Section ── */}
-      <div style={{ marginBottom: 36 }}>
-        <button
-          type="button"
-          onClick={() => setDnbCollapsed(prev => !prev)}
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            width: '100%', padding: '16px 20px', marginBottom: dnbCollapsed ? 0 : 12,
-            background: 'rgba(248,113,113,0.1)',
-            border: '1px solid rgba(248,113,113,0.25)',
-            borderRadius: dnbCollapsed ? 'var(--radius)' : 'var(--radius) var(--radius) 0 0',
-            cursor: 'pointer', textAlign: 'left',
-            transition: 'all 0.2s',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ transform: dnbCollapsed ? 'rotate(0deg)' : 'rotate(90deg)', transition: 'transform 0.2s', flexShrink: 0 }}>
-              <path d="M6 4l4 4-4 4" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px', color: '#f87171' }}>
+      <CollapsibleSection
+        storageKey="signpost_collapse_requester_preferred_dnb"
+        accentColor="#f87171"
+        header={
+          <div>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px', color: '#f87171', marginBottom: 2 }}>
               Do Not Book
-            </span>
-            <span style={{
-              fontSize: '0.75rem', fontWeight: 600,
-              padding: '2px 8px', borderRadius: 12,
-              background: 'rgba(248,113,113,0.15)', color: '#f87171',
-            }}>
-              {dnb.length}
-            </span>
-          </div>
-        </button>
-
-        {!dnbCollapsed && (
-          <div style={{
-            borderLeft: '1px solid rgba(248,113,113,0.25)',
-            borderRight: '1px solid rgba(248,113,113,0.25)',
-            borderBottom: '1px solid rgba(248,113,113,0.25)',
-            borderRadius: '0 0 var(--radius) var(--radius)',
-            padding: '16px 20px',
-            background: 'rgba(248,113,113,0.02)',
-          }}>
-            <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8', marginBottom: 16 }}>
+              <span style={{
+                marginLeft: 10, fontSize: '0.75rem', fontWeight: 600,
+                padding: '2px 8px', borderRadius: 12,
+                background: 'rgba(248,113,113,0.15)', color: '#f87171',
+              }}>
+                {dnb.length}
+              </span>
+            </div>
+            <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8' }}>
               These interpreters will not appear in your booking requests. This list is private to your organization.
             </div>
-
-            {dnb.length === 0 ? (
-              <div style={{
-                textAlign: 'center', padding: '28px 24px',
-                background: 'var(--surface)', border: '1px dashed rgba(248,113,113,0.15)',
-                borderRadius: 'var(--radius)',
-              }}>
-                <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>
-                  No interpreters on your Do Not Book list.
-                </p>
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {dnb.map(interp => (
-                  <DnbInterpreterCard
-                    key={interp.roster_id}
-                    interp={interp}
-                    onRemoveFromDnb={() => requestRemoveFromDnb(interp.roster_id)}
-                  />
-                ))}
-              </div>
-            )}
+          </div>
+        }
+      >
+        {dnb.length === 0 ? (
+          <div style={{
+            textAlign: 'center', padding: '28px 24px',
+            background: 'var(--surface)', border: '1px dashed rgba(248,113,113,0.15)',
+            borderRadius: 'var(--radius)',
+          }}>
+            <p style={{ color: 'var(--muted)', fontSize: '0.88rem', margin: 0 }}>
+              No interpreters on your Do Not Book list.
+            </p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {dnb.map(interp => (
+              <DnbInterpreterCard
+                key={interp.roster_id}
+                interp={interp}
+                onRemoveFromDnb={() => requestRemoveFromDnb(interp.roster_id)}
+              />
+            ))}
           </div>
         )}
-      </div>
+      </CollapsibleSection>
 
       {/* ── Confirm Modal (move tier / remove / remove from DNB) ── */}
       {confirmModal && (() => {
