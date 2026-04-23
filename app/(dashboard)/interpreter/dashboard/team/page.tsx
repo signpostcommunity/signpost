@@ -8,7 +8,6 @@ import Link from 'next/link'
 import { PageHeader, Avatar, GhostButton } from '@/components/dashboard/interpreter/shared'
 import AddToListModal from '@/components/directory/AddToListModal'
 import SendMessageModal from '@/components/messaging/SendMessageModal'
-import InviteModal from '@/components/invite/InviteModal'
 import PendingInvitesList from '@/components/invite/PendingInvitesList'
 import CollapsibleSection from '@/components/ui/CollapsibleSection'
 import Toast from '@/components/ui/Toast'
@@ -90,9 +89,7 @@ function TierSection({ title, accentColor, members, onMoveTier, onRemove, onEdit
 export default function TeamPage() {
   const [team, setTeam] = useState<TeamMember[]>([])
   const [loading, setLoading] = useState(true)
-  const [showInvite, setShowInvite] = useState(false)
   const [interpreterId, setInterpreterId] = useState<string | null>(null)
-  const [interpreterName, setInterpreterName] = useState('')
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null)
   const [messagingMember, setMessagingMember] = useState<TeamMember | null>(null)
@@ -114,7 +111,6 @@ export default function TeamPage() {
 
     if (!profile) { setLoading(false); return }
     setInterpreterId(profile.id)
-    setInterpreterName(`${profile.first_name || ''} ${profile.last_name || ''}`.trim())
 
     const { data: members, error } = await supabase
       .from('interpreter_preferred_team')
@@ -211,16 +207,15 @@ export default function TeamPage() {
       />
 
       <p style={{ color: 'var(--muted)', fontSize: '0.84rem', lineHeight: 1.6, marginBottom: 28 }}>
-        <button
-          onClick={() => setShowInvite(true)}
+        <Link
+          href="/invite"
           style={{
-            background: 'none', border: 'none', padding: 0, cursor: 'pointer',
             color: 'var(--accent)', fontSize: '0.84rem', textDecoration: 'underline',
             textDecorationColor: 'rgba(0,229,255,0.3)', fontFamily: "'Inter', sans-serif",
           }}
         >
           Don&apos;t see an interpreter here who you love working with? Click here to invite them to join the signpost community.
-        </button>
+        </Link>
       </p>
 
       <PendingInvitesList targetListRole="interpreter_team" accentColor="#00e5ff" onRefresh={fetchTeam} />
@@ -280,18 +275,6 @@ export default function TeamPage() {
           Browse directory to add interpreters
         </button>
       </Link>
-
-      <InviteModal
-        isOpen={showInvite}
-        onClose={() => setShowInvite(false)}
-        title="Invite an interpreter to signpost"
-        subtitle="Know an interpreter you love working with? Invite them to create a signpost profile. Once they sign up and are approved, they will be automatically added to your preferred team."
-        targetListRole="interpreter_team"
-        senderName={interpreterName}
-        senderRole="interpreter"
-        accentColor="#00e5ff"
-        onSuccess={() => fetchTeam()}
-      />
 
       {/* Edit modal - reuses AddToListModal in edit mode */}
       <AddToListModal
