@@ -559,6 +559,18 @@ function InterpreterSignupForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isAddRole = searchParams.get('addRole') === 'true';
+  const inviteToken = searchParams.get('invite');
+
+  // Capture invite token from URL and fire click tracking
+  useEffect(() => {
+    if (!inviteToken) return;
+    sessionStorage.setItem('signpost_invite_token', inviteToken);
+    fetch('/api/invites/click', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: inviteToken }),
+    }).catch(() => { /* non-fatal */ });
+  }, [inviteToken]);
 
   const [section, setSection] = useState(isAddRole ? 2 : 1);
   const [highestVisited, setHighestVisited] = useState(isAddRole ? 2 : 1);
