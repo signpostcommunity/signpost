@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { sanitizeText } from '@/lib/sanitize'
 import { encryptFields, decryptFields, BOOKING_ENCRYPTED_FIELDS } from '@/lib/encryption'
+import { displayBookingFormat } from '@/lib/bookingFormat'
 
 export const dynamic = 'force-dynamic'
 
@@ -84,10 +85,7 @@ export async function POST(request: NextRequest) {
     const dhhClientName = deafProfile?.first_name
       ? `${deafProfile.first_name} ${deafProfile.last_name || ''}`.trim()
       : deafProfile?.name || 'A Deaf user'
-
-    // Map format value for DB constraint (in_person, remote)
-    const dbFormat = format === 'in-person' ? 'in_person' : format
-
+    const dbFormat = format
     // Build booking data
     const bookingData = {
       requester_id: user.id,
@@ -224,7 +222,7 @@ export async function POST(request: NextRequest) {
       if (interpProfile?.user_id) {
         // Fire notification via the notifications API
         try {
-          const formatDisplay = dbFormat === 'in_person' ? 'In Person' : dbFormat === 'remote' ? 'Remote' : (dbFormat || '')
+          const formatDisplay = displayBookingFormat(dbFormat)
           const dateDisplay = date ? new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : ''
           const timeDisplay = timeStart && timeEnd ? `${timeStart} - ${timeEnd}` : (timeStart || '')
 

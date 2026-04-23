@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { PageHeader, StatusBadge, DemoBadge, GhostButton, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
+import { displayBookingFormat } from '@/lib/bookingFormat'
 import { sendNotification } from '@/lib/notifications'
 import BookingFilterBar, { filterBySearch, filterByDateRange, groupByTimeCategory, timeCategoryHeaderStyle } from '@/components/dashboard/shared/BookingFilterBar'
 import { decryptBatchClient } from '@/lib/decrypt-client'
@@ -172,7 +173,7 @@ function AcceptModal({ booking, onClose, onAccepted }: {
       const locationDisplay = booking.format === 'remote' ? 'Remote' : (booking.location?.split(',')[0] || 'TBD')
       const dateStr = booking.date ? new Date(booking.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'
       const timeDisplay = formatTime(booking.time_start, booking.time_end)
-      const formatDisplay = booking.format === 'in_person' ? 'In Person' : booking.format === 'remote' ? 'Remote' : (booking.format || '')
+      const formatDisplay = displayBookingFormat(booking.format)
 
       // Look up interpreter name for notifications
       const interpSupabase = createClient()

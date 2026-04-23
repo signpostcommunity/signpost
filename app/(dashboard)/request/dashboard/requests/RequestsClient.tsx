@@ -8,6 +8,7 @@ import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { displayBookingFormat } from '@/lib/bookingFormat'
 import { sendNotification } from '@/lib/notifications'
 import Toast from '@/components/ui/Toast'
 import RequesterInterpreterPicker from '@/components/requester/RequesterInterpreterPicker'
@@ -738,7 +739,7 @@ export default function RequestsClient({
                     <div className="req-detail-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 32px', marginBottom: 24 }}>
                       <DetailRow label="Date & Time" value={`${formatDate(booking.date)} · ${formatTime(booking.time_start, booking.time_end)}`} />
                       <DetailRow label="Location" value={booking.location || 'Not specified'} />
-                      <DetailRow label="Format" value={booking.format ? (booking.format === 'remote' ? 'Remote' : booking.format === 'in_person' || booking.format === 'in-person' ? 'In Person' : booking.format.charAt(0).toUpperCase() + booking.format.slice(1)) : 'Not specified'} />
+                      <DetailRow label="Format" value={booking.format ? displayBookingFormat(booking.format) : 'Not specified'} />
                       <DetailRow label="Specialization" value={booking.specialization || booking.event_category || 'Not specified'} />
                       {booking.recurrence && booking.recurrence !== 'one-time' && (
                         <DetailRow label="Recurrence" value={booking.recurrence} />

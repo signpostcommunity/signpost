@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import Toast from '@/components/ui/Toast'
+import { displayBookingFormat } from '@/lib/bookingFormat'
 
 /* ── Types ── */
 
@@ -208,7 +209,7 @@ export default function AcceptClient({
           <DetailRow label="Title" value={booking.title || 'Untitled Request'} />
           <DetailRow label="Date & Time" value={`${formatDate(booking.date)} · ${formatTime(booking.time_start, booking.time_end)}`} />
           <DetailRow label="Location" value={booking.location || 'Not specified'} />
-          <DetailRow label="Format" value={booking.format ? (booking.format === 'remote' ? 'Remote' : booking.format === 'in_person' || booking.format === 'in-person' ? 'In Person' : booking.format.charAt(0).toUpperCase() + booking.format.slice(1)) : 'Not specified'} />
+          <DetailRow label="Format" value={booking.format ? displayBookingFormat(booking.format) : 'Not specified'} />
           {(booking.specialization || booking.event_category) && (
             <DetailRow label="Specialization" value={booking.specialization || booking.event_category || ''} />
           )}

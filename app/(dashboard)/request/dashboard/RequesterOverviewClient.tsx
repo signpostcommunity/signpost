@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import BetaTryThis from '@/components/ui/BetaTryThis'
 import { formatLocationShort, formatLocationFull } from '@/lib/location-display'
+import { displayBookingFormat } from '@/lib/bookingFormat'
 import { formatContactedAgo } from '@/lib/format-time'
 import RequestTracker from '@/components/dashboard/dhh/RequestTracker'
 import { RECIPIENT_STATUS_ORDER } from '@/lib/booking-status'
@@ -594,7 +595,7 @@ export default function RequesterOverviewClient({
                               Format
                             </div>
                             <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', color: 'var(--text)' }}>
-                              {booking.format === 'remote' ? 'Remote' : booking.format === 'in_person' || booking.format === 'in-person' ? 'In Person' : booking.format.charAt(0).toUpperCase() + booking.format.slice(1)}
+                              {displayBookingFormat(booking.format)}
                             </div>
                           </div>
                         )}

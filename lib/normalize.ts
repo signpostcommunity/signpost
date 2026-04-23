@@ -19,7 +19,7 @@ export function titleCase(str: string): string {
 }
 
 export function normalizeProfileFields(data: Record<string, unknown>): Record<string, unknown> {
-  const fields = ['first_name', 'last_name', 'city', 'country'];
+  const fields = ['first_name', 'last_name', 'city'];
   const result = { ...data };
   for (const field of fields) {
     if (typeof result[field] === 'string' && (result[field] as string).trim()) {
@@ -31,7 +31,11 @@ export function normalizeProfileFields(data: Record<string, unknown>): Record<st
     const trimmed = (result.state as string).trim();
     result.state = trimmed.length <= 2 ? trimmed.toUpperCase() : titleCase(result.state as string);
   }
-  // country_name: same as country (used by some profile tables)
+  // Country: uppercase ISO code (e.g. "us" -> "US", "Us" -> "US")
+  if (typeof result.country === 'string' && (result.country as string).trim()) {
+    result.country = (result.country as string).trim().toUpperCase();
+  }
+  // country_name: title case the display name (e.g. "united states" -> "United States")
   if (typeof result.country_name === 'string' && (result.country_name as string).trim()) {
     result.country_name = titleCase(result.country_name as string);
   }

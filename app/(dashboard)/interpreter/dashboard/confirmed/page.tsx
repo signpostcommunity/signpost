@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 import { PageHeader, SectionLabel, StatusBadge, DemoBadge, GhostButton, Avatar, DashMobileStyles } from '@/components/dashboard/interpreter/shared'
 import { sendNotification } from '@/lib/notifications'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
+import { displayBookingFormat } from '@/lib/bookingFormat'
 import BookingFilterBar, { filterByDateRange, groupByTimeCategory, timeCategoryHeaderStyle } from '@/components/dashboard/shared/BookingFilterBar'
 import { decryptBatchClient } from '@/lib/decrypt-client'
 
@@ -215,7 +216,7 @@ function CancelModal({ booking, onClose, onCancelled }: {
     const timeDisplay = booking.time_start && booking.time_end
       ? `${booking.time_start} - ${booking.time_end}`
       : (booking.time_start || '')
-    const formatDisplay = booking.format === 'in_person' ? 'In Person' : booking.format === 'remote' ? 'Remote' : (booking.format || '')
+    const formatDisplay = displayBookingFormat(booking.format)
 
     const cancelMeta = {
       booking_id: booking.id,

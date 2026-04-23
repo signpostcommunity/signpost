@@ -12,6 +12,7 @@ import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
 import { formatLocationShort, formatLocationFull } from '@/lib/location-display'
 import { formatContactedAgo } from '@/lib/format-time'
+import { displayBookingFormat } from '@/lib/bookingFormat'
 
 interface Recipient {
   id: string
@@ -866,7 +867,7 @@ function RequestCard({ booking, onExpand, expanded, ratedInterpreters, onRated, 
   const completed = isBookingCompleted(booking)
   const confirmedRecipients = booking.recipients.filter(r => r.status === 'confirmed')
   const statusColors = getStatusColors(booking.status)
-  const formatLabel = booking.format === 'remote' ? 'Remote' : booking.format === 'in_person' ? 'In-person' : 'TBD'
+  const formatLabel = booking.format ? displayBookingFormat(booking.format) : 'TBD'
   const locationText = formatLocationShort(booking)
 
   // Check if ALL confirmed interpreters on this booking have been rated

@@ -148,7 +148,7 @@ export default function DhhRequestPage() {
   // Form state
   const [title, setTitle] = useState('')
   const [eventType, setEventType] = useState('')
-  const [format, setFormat] = useState('in-person')
+  const [format, setFormat] = useState('in_person')
   const [locationFields, setLocationFields] = useState<LocationFields>({
     locationName: '',
     address: '',
@@ -354,7 +354,7 @@ export default function DhhRequestPage() {
           <div style={fieldGroupStyle}>
             <label style={labelStyle}>Format *</label>
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              {(['in-person', 'remote'] as const).map(f => (
+              {(['in_person', 'remote'] as const).map(f => (
                 <label key={f} style={{
                   display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
                   padding: '8px 16px',
@@ -371,7 +371,7 @@ export default function DhhRequestPage() {
                     onChange={() => setFormat(f)}
                     style={{ accentColor: '#9d87ff' }}
                   />
-                  {f === 'in-person' ? 'In-person' : 'Remote'}
+                  {f === 'in_person' ? 'In-person' : 'Remote'}
                 </label>
               ))}
             </div>
