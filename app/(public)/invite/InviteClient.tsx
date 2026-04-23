@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { isValidPhone } from '@/lib/phone'
+import { InviteHeaderIcon } from '@/components/invite/InviteHeaderIcon'
 
 type Contact = {
   name: string
@@ -539,6 +540,7 @@ function InviteContent() {
     }}>
       <div className="invite-container" style={{ width: '100%', maxWidth: 560, padding: '48px 24px 80px' }}>
         {/* Page header */}
+        <InviteHeaderIcon portal="public" />
         <h1 style={{
           fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '24px',
           color: '#f0f2f8', letterSpacing: '-0.01em', margin: '0 0 8px',

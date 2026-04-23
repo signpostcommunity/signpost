@@ -8,6 +8,7 @@ import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
+import { InviteHeaderIcon } from '@/components/invite/InviteHeaderIcon'
 
 export const dynamic = 'force-dynamic'
 
@@ -560,6 +561,7 @@ function InviteModal({ email, setEmail, loading, error, onSubmit, onClose }: {
           padding: '28px 32px',
         }}
       >
+        <InviteHeaderIcon portal="deaf" />
         <h2 style={{
           fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px',
           margin: '0 0 8px', color: '#f0f2f8',

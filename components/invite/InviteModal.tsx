@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
 import InviteForm from './InviteForm'
+import { InviteHeaderIcon } from './InviteHeaderIcon'
 
 type TargetListRole = 'interpreter_team' | 'dhh_pref_list' | 'requester_pref_list'
 
@@ -67,6 +68,7 @@ export default function InviteModal({
           padding: '28px 32px',
         }}
       >
+        <InviteHeaderIcon portal={accentColor === '#a78bfa' ? 'deaf' : 'interpreter'} />
         <h2 style={{
           fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px',
           margin: '0 0 8px', color: '#f0f2f8',
