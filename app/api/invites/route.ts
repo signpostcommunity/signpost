@@ -51,6 +51,7 @@ export async function POST(req: NextRequest) {
   let resolvedSenderRole = senderRole || 'interpreter'
   let resolvedSenderName = senderName || ''
   let resolvedSenderEmail = senderEmail || ''
+  let resolvedOrgName = ''
 
   if (senderUserId) {
     const { data: userProfile } = await supabase
@@ -74,6 +75,16 @@ export async function POST(req: NextRequest) {
       if (deafProfile) {
         resolvedSenderName = resolvedSenderName || `${deafProfile.first_name || ''} ${deafProfile.last_name || ''}`.trim()
         resolvedSenderEmail = resolvedSenderEmail || deafProfile.email || ''
+      }
+    } else if (resolvedSenderRole === 'requester' || resolvedSenderRole === 'org') {
+      const { data: reqProfile } = await supabase
+        .from('requester_profiles')
+        .select('name, phone, org_name')
+        .eq('id', senderUserId)
+        .maybeSingle()
+      if (reqProfile) {
+        resolvedSenderName = resolvedSenderName || reqProfile.name || ''
+        resolvedOrgName = reqProfile.org_name || ''
       }
     } else {
       const { data: interpProfile } = await supabase
@@ -125,12 +136,15 @@ export async function POST(req: NextRequest) {
         InterpreterInviteEmail({
           recipientName,
           senderName: resolvedSenderName,
+          orgName: resolvedOrgName || undefined,
           inviteToken: token,
         })
       )
       await sendEmail({
         to: recipientEmail,
-        subject: `${resolvedSenderName || 'Someone'} wants to add you to their preferred interpreter team on signpost`,
+        subject: resolvedOrgName
+            ? `${resolvedOrgName} wants to add you to their preferred interpreter team on signpost`
+            : `${resolvedSenderName || 'Someone'} wants to add you to their preferred interpreter team on signpost`,
         html,
       })
     } catch (emailErr) {

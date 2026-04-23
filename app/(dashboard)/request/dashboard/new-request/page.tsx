@@ -1289,7 +1289,7 @@ export default function NewRequestPage() {
                       }}>&times;</button>
                     </div>
                     <p style={{ fontSize: '0.82rem', color: 'var(--muted)', margin: '6px 0 0', lineHeight: 1.5 }}>
-                      These are interpreters {person.displayName} trusts and prefers to work with. You&apos;ll see them at the top of the Interpreters tab where you can select who to send the request to.
+                      You&apos;ve added {person.displayName}. Their preferred interpreter list will show up in the Interpreters step so you can choose from people they already trust.
                     </p>
                   </div>
                 )}

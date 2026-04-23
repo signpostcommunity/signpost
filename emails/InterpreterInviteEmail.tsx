@@ -9,6 +9,7 @@ import {
 interface InterpreterInviteEmailProps {
   recipientName: string
   senderName: string
+  orgName?: string
   inviteToken: string
 }
 
@@ -57,20 +58,26 @@ const cardDesc: React.CSSProperties = {
 export function InterpreterInviteEmail({
   recipientName = 'there',
   senderName = 'Someone',
+  orgName,
   inviteToken = '',
 }: InterpreterInviteEmailProps) {
   const signupUrl = `https://signpost.community/interpreter/signup?invite=${inviteToken}`
   const senderFirstName = senderName.split(' ')[0]
+  const inviteLabel = orgName
+    ? `\${orgName} wants to add you to their preferred interpreter team`
+    : `\${senderName} wants to add you to their preferred interpreter team`
 
   return (
-    <SignpostEmail preview={`${senderName} wants to add you to their preferred interpreter team on signpost`}>
+    <SignpostEmail preview={`${inviteLabel} on signpost`}>
       {/* Personal hook */}
       <EmailParagraph>
         Hey {recipientName},
       </EmailParagraph>
 
       <EmailParagraph>
-        {senderName} wants to add you to their preferred interpreter team on signpost.
+        {orgName
+          ? `${senderName} from ${orgName} wants to add you to their preferred interpreter team on signpost.`
+          : `${senderName} wants to add you to their preferred interpreter team on signpost.`}
       </EmailParagraph>
 
       {/* Platform description */}

@@ -1310,7 +1310,7 @@ function SuggestedMentors({ interpreterProfileId }: { interpreterProfileId: stri
                     </Link>
                     {mentor.years_experience && (
                       <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
-                        {mentor.years_experience} years experience
+                        {mentor.years_experience} experience
                       </div>
                     )}
                   </div>

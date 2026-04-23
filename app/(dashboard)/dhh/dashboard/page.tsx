@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { DashMobileStyles } from '@/components/dashboard/interpreter/shared'
@@ -518,10 +518,6 @@ export default function DeafDashboardOverview() {
   const [loading, setLoading] = useState(true)
   const [modalBooking, setModalBooking] = useState<RecentBooking | null>(null)
 
-  // Friendly tip state
-  const [showTip, setShowTip] = useState(false)
-  const tipIncrementedRef = useRef(false)
-
   // Stat counts
   const [activeRequests, setActiveRequests] = useState(0)
   const [prefCount, setPrefCount] = useState(0)
@@ -539,43 +535,24 @@ export default function DeafDashboardOverview() {
 
     // Get Deaf profile
     let deafProfileId: string | null = null
-    let hasPhoto = false
-    let hasVideo = false
     const { data: byId } = await supabase
       .from('deaf_profiles')
-      .select('id, first_name, photo_url, profile_video_url')
+      .select('id, first_name')
       .eq('id', user.id)
       .maybeSingle()
 
     if (byId) {
       deafProfileId = byId.id
       setFirstName(byId.first_name)
-      hasPhoto = !!(byId.photo_url && byId.photo_url.trim())
-      hasVideo = !!(byId.profile_video_url && byId.profile_video_url.trim())
     } else {
       const { data: byUserId } = await supabase
         .from('deaf_profiles')
-        .select('id, first_name, photo_url, profile_video_url')
+        .select('id, first_name')
         .eq('user_id', user.id)
         .maybeSingle()
       if (byUserId) {
         deafProfileId = byUserId.id
         setFirstName(byUserId.first_name)
-        hasPhoto = !!(byUserId.photo_url && byUserId.photo_url.trim())
-        hasVideo = !!(byUserId.profile_video_url && byUserId.profile_video_url.trim())
-      }
-    }
-
-    // Friendly tip logic: show on first two logins if user lacks photo or video
-    // MIGRATION NEEDED: tip_shown_count integer DEFAULT 0 on deaf_profiles
-    const hasPhotoAndVideo = hasPhoto && hasVideo
-    const loginCount = parseInt(localStorage.getItem('signpost_deaf_tip_shown_count') || '0', 10)
-    const dismissedThisSession = sessionStorage.getItem('signpost_deaf_tip_dismissed')
-    if (loginCount < 2 && !dismissedThisSession && !hasPhotoAndVideo) {
-      setShowTip(true)
-      if (!tipIncrementedRef.current) {
-        tipIncrementedRef.current = true
-        localStorage.setItem('signpost_deaf_tip_shown_count', String(loginCount + 1))
       }
     }
 
@@ -758,11 +735,6 @@ export default function DeafDashboardOverview() {
     return () => document.removeEventListener('keydown', handleKey)
   }, [modalBooking])
 
-  const handleDismissTip = () => {
-    sessionStorage.setItem('signpost_deaf_tip_dismissed', 'true')
-    setShowTip(false)
-  }
-
   const displayName = firstName || 'there'
 
   if (loading) {
@@ -785,56 +757,6 @@ export default function DeafDashboardOverview() {
 
       <PendingRolesNudge accentColor="var(--accent2)" />
 
-      {/* Friendly tip: photo and intro video */}
-      {showTip && (
-        <div style={{
-          background: 'rgba(123, 97, 255, 0.06)',
-          border: '1px solid rgba(123, 97, 255, 0.15)',
-          borderRadius: 10,
-          padding: '18px 22px',
-          marginBottom: 24,
-          position: 'relative',
-        }}>
-          <button
-            onClick={handleDismissTip}
-            aria-label="Dismiss tip"
-            style={{
-              position: 'absolute', top: 10, right: 10,
-              background: 'none', border: 'none', cursor: 'pointer',
-              padding: 4, lineHeight: 0,
-            }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5a6070" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
-          </button>
-          <p style={{
-            fontFamily: "'Inter', sans-serif",
-            fontWeight: 400,
-            fontSize: '13.5px',
-            color: '#c8cdd8',
-            lineHeight: 1.65,
-            margin: 0,
-            paddingRight: 28,
-          }}>
-            Interpreters say they feel more comfortable accepting work with someone new if they have seen a video of their signing style first. You can add a photo and intro video anytime from your Preferences &amp; Profile page.
-          </p>
-          <div style={{ textAlign: 'right', marginTop: 10 }}>
-            <Link
-              href="/dhh/dashboard/preferences"
-              style={{
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 500,
-                fontSize: '13px',
-                color: '#a78bfa',
-                textDecoration: 'none',
-              }}
-            >
-              Go to profile
-            </Link>
-          </div>
-        </div>
-      )}
 
       {/* Stat cards + request link */}
       <div className="dhh-top-columns" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 24, marginBottom: 38, alignItems: 'stretch' }}>
