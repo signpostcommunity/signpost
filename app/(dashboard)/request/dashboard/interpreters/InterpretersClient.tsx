@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import AddToListModal from '@/components/directory/AddToListModal'
 import InviteModal from '@/components/invite/InviteModal'
-import PendingInvites from '@/components/invite/PendingInvites'
+import PendingInvitesList from '@/components/invite/PendingInvitesList'
 import Toast from '@/components/ui/Toast'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
 import BetaTryThis from '@/components/ui/BetaTryThis'
@@ -753,7 +753,7 @@ export default function InterpretersClient() {
         Browse the interpreter directory and add a few interpreters to your preferred list. Try moving one to your secondary tier.
       </BetaTryThis>
 
-      <PendingInvites targetListRole="requester_pref_list" accentColor="#00e5ff" />
+      <PendingInvitesList targetListRole="requester_pref_list" accentColor="#00e5ff" onRefresh={fetchRoster} />
 
       <InviteModal
         isOpen={showInvite}

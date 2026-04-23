@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import InviteModal from '@/components/invite/InviteModal';
-import PendingInvites from '@/components/invite/PendingInvites';
+import PendingInvitesList from '@/components/invite/PendingInvitesList';
 
 type Tier = 'preferred' | 'approved' | 'dnb';
 
@@ -584,7 +584,7 @@ export default function DeafDashboardPage() {
         </Link>
       </div>
 
-      <PendingInvites targetListRole="dhh_pref_list" accentColor="#a78bfa" />
+      <PendingInvitesList targetListRole="dhh_pref_list" accentColor="#a78bfa" onRefresh={fetchRoster} />
 
       <InviteModal
         isOpen={showInvite}

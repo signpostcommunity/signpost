@@ -9,7 +9,7 @@ import { PageHeader, Avatar, GhostButton } from '@/components/dashboard/interpre
 import AddToListModal from '@/components/directory/AddToListModal'
 import SendMessageModal from '@/components/messaging/SendMessageModal'
 import InviteModal from '@/components/invite/InviteModal'
-import PendingInvites from '@/components/invite/PendingInvites'
+import PendingInvitesList from '@/components/invite/PendingInvitesList'
 import Toast from '@/components/ui/Toast'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
 
@@ -218,7 +218,7 @@ export default function TeamPage() {
         </button>
       </p>
 
-      <PendingInvites targetListRole="interpreter_team" accentColor="#00e5ff" />
+      <PendingInvitesList targetListRole="interpreter_team" accentColor="#00e5ff" onRefresh={fetchTeam} />
 
       {loading ? (
         <div style={{ padding: 32, textAlign: 'center', color: 'var(--muted)', fontSize: '0.88rem' }}>
