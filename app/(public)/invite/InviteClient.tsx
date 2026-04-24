@@ -636,7 +636,7 @@ function InviteContent() {
               </div>
 
               <div style={{ marginBottom: 14 }}>
-                <label style={fieldLabelStyle}>Recipient's email (optional if phone provided)</label>
+                <label style={fieldLabelStyle}>Recipient's email *</label>
                 <input
                   type="email"
                   value={recipientEmail}
@@ -649,16 +649,17 @@ function InviteContent() {
               </div>
 
               <div style={{ marginBottom: 14 }}>
-                <label style={fieldLabelStyle}>Recipient's phone (optional if email provided)</label>
+                <label style={fieldLabelStyle}>Recipient's phone</label>
                 <input
                   type="tel"
-                  value={recipientPhone}
-                  onChange={e => setRecipientPhone(e.target.value)}
+                  disabled
+                  value=""
                   placeholder="+1 (555) 123-4567"
-                  style={fieldInputStyle}
-                  onFocus={e => { e.target.style.borderColor = '#00e5ff' }}
-                  onBlur={e => { e.target.style.borderColor = 'var(--border)' }}
+                  style={{ ...fieldInputStyle, opacity: 0.4, cursor: 'not-allowed', background: '#0d0d14' }}
                 />
+                <span style={{ display: 'block', fontSize: '12px', color: 'var(--muted)', marginTop: 4 }}>
+                  SMS invites coming soon, please use email for now
+                </span>
               </div>
 
               {/* Sender fields (only if not logged in) */}
