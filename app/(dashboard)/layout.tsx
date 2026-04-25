@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import DashboardHeaderNav from '@/components/layout/DashboardHeaderNav';
 import Footer from '@/components/layout/Footer';
+import { SessionRefreshProvider } from '@/components/providers/SessionRefreshProvider';
 import { createClient } from '@/lib/supabase/server';
 import { getCachedUser } from '@/lib/supabase/cached-user';
 
@@ -46,7 +47,9 @@ export default async function DashboardRootLayout({ children }: { children: Reac
         </Link>
         <DashboardHeaderNav portalPath={portalPath} />
       </header>
-      <main id="main-content">{children}</main>
+      <SessionRefreshProvider>
+        <main id="main-content">{children}</main>
+      </SessionRefreshProvider>
       <Footer />
     </div>
   );
