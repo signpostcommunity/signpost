@@ -152,173 +152,131 @@ function PublicView({ profile }: { profile: PublicProfile }) {
           </div>
         </div>
 
-        {/* Blurred placeholder content */}
-        <div style={{ position: 'relative', marginTop: 24 }}>
-          <div style={{
-            filter: 'blur(8px)',
-            pointerEvents: 'none',
-            userSelect: 'none',
-            opacity: 0.5,
+        {/* Hero copy */}
+        <div style={{
+          background: '#111118',
+          border: '1px solid var(--border)',
+          borderRadius: 12,
+          padding: '28px 24px',
+          marginTop: 24,
+        }}>
+          <h1 style={{
+            fontFamily: "'Syne', sans-serif",
+            fontSize: 20,
+            fontWeight: 700,
+            color: '#f0f2f8',
+            letterSpacing: '-0.01em',
+            lineHeight: 1.3,
+            margin: '0 0 8px',
           }}>
-            {/* Fake "Preferred Interpreters" section */}
-            <div style={{
-              background: '#111118',
-              border: '1px solid var(--border)',
-              borderRadius: 12,
-              padding: '20px 24px',
-              marginBottom: 16,
-            }}>
-              <div style={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontWeight: 700,
-                color: '#a78bfa',
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-                fontSize: 12,
-                marginBottom: 16,
-              }}>
-                Preferred Interpreters
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {[1, 2, 3].map(i => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{
-                      width: 40, height: 40, borderRadius: '50%',
-                      background: 'var(--surface)',
-                    }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{
-                        width: `${60 + i * 10}%`, height: 14, borderRadius: 6,
-                        background: 'var(--surface)', marginBottom: 6,
-                      }} />
-                      <div style={{
-                        width: '40%', height: 10, borderRadius: 6,
-                        background: 'var(--surface)',
-                      }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            Book an ASL interpreter for {fullName}
+          </h1>
+          <p style={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: 14,
+            fontWeight: 400,
+            color: '#96a0b8',
+            lineHeight: 1.6,
+            margin: 0,
+          }}>
+            {displayName} uses signpost to coordinate interpreting. Submit a request and their preferred interpreter team will be notified.
+          </p>
+        </div>
 
-            {/* Fake "Communication Preferences" section */}
-            <div style={{
-              background: '#111118',
-              border: '1px solid var(--border)',
-              borderRadius: 12,
-              padding: '20px 24px',
-            }}>
-              <div style={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontWeight: 700,
-                color: '#a78bfa',
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-                fontSize: 12,
-                marginBottom: 16,
-              }}>
-                Communication Preferences
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {[1, 2].map(i => (
-                  <div key={i}>
-                    <div style={{
-                      width: '30%', height: 10, borderRadius: 6,
-                      background: 'var(--surface)', marginBottom: 6,
-                    }} />
-                    <div style={{
-                      width: `${50 + i * 15}%`, height: 14, borderRadius: 6,
-                      background: 'var(--surface)',
-                    }} />
-                  </div>
-                ))}
-              </div>
-            </div>
+        {/* Who is this for */}
+        <div style={{
+          background: '#111118',
+          border: '1px solid var(--border)',
+          borderRadius: 12,
+          padding: '20px 24px',
+          marginTop: 16,
+        }}>
+          <div style={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontWeight: 700,
+            color: '#a78bfa',
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            fontSize: 12,
+            marginBottom: 12,
+          }}>
+            Who is this for?
           </div>
-
-          {/* Signup prompt overlay */}
-          <div style={{
-            position: 'absolute',
-            top: 32,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '100%',
-            maxWidth: 520,
-            zIndex: 2,
+          <p style={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: 14,
+            fontWeight: 400,
+            color: '#c8cdd8',
+            lineHeight: 1.6,
+            margin: '0 0 12px',
           }}>
-            <div className="signup-prompt" style={{
-              background: '#111118',
-              border: '1px solid var(--border)',
-              borderRadius: 16,
-              padding: 32,
-            }}>
-              <p style={{
-                fontFamily: "'Syne', sans-serif",
-                fontSize: 15,
+            This page is for anyone booking an interpreter on behalf of {displayName}: office coordinators, HR staff, event planners, medical receptionists, school administrators, or court coordinators.
+          </p>
+          <p style={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: 14,
+            fontWeight: 400,
+            color: '#96a0b8',
+            lineHeight: 1.6,
+            margin: 0,
+          }}>
+            signpost charges a flat $15 per interpreter confirmed on a booking. No percentage-based commissions. 100% of the interpreter&apos;s rate goes directly to them.
+          </p>
+        </div>
+
+        {/* Signup prompt */}
+        <div className="signup-prompt" style={{
+          background: '#111118',
+          border: '1px solid var(--border)',
+          borderRadius: 12,
+          padding: '28px 24px',
+          marginTop: 16,
+        }}>
+          <p style={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: 14,
+            fontWeight: 400,
+            color: '#c8cdd8',
+            lineHeight: 1.6,
+            margin: '0 0 20px',
+          }}>
+            Create a free account to submit an interpreter request. Nothing is charged until your interpreter is confirmed.
+          </p>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 20,
+            flexWrap: 'wrap',
+          }}>
+            <Link
+              href={`/request/signup?redirect=${encodeURIComponent(redirectUrl)}`}
+              style={{
+                display: 'inline-block',
+                padding: '14px 28px',
+                background: '#00e5ff',
+                color: '#0a0a0f',
+                fontWeight: 700,
+                fontSize: 14.5,
+                fontFamily: "'DM Sans', sans-serif",
+                borderRadius: 10,
+                textDecoration: 'none',
+                transition: 'opacity 0.15s',
+              }}
+            >
+              Create Account
+            </Link>
+            <Link
+              href={`/request/login?redirect=${encodeURIComponent(redirectUrl)}`}
+              style={{
+                color: '#00e5ff',
+                fontSize: 14.5,
                 fontWeight: 600,
-                color: '#f0f2f8',
-                lineHeight: 1.6,
-                margin: '0 0 16px',
-              }}>
-                Create an account to view {displayName}&apos;s preferred interpreter list and request an interpreter for them.
-              </p>
-              <p style={{
                 fontFamily: "'DM Sans', sans-serif",
-                fontSize: 14,
-                fontWeight: 400,
-                color: '#96a0b8',
-                lineHeight: 1.6,
-                margin: '0 0 16px',
-              }}>
-                Creating an account takes just a couple minutes, and nothing is charged until your interpreter is confirmed.
-              </p>
-              <p style={{
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: 14,
-                fontWeight: 400,
-                color: '#96a0b8',
-                lineHeight: 1.6,
-                margin: '0 0 24px',
-              }}>
-                signpost never charges percentage-based commissions on top of interpreter rates. You pay a flat $15 for each interpreter confirmed on a booking. 100% of the interpreter&apos;s rate goes directly to them. Simple, transparent, and affordable.
-              </p>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 20,
-                flexWrap: 'wrap',
-              }}>
-                <Link
-                  href={`/request/signup?redirect=${encodeURIComponent(redirectUrl)}`}
-                  style={{
-                    display: 'inline-block',
-                    padding: '14px 28px',
-                    background: '#00e5ff',
-                    color: '#0a0a0f',
-                    fontWeight: 700,
-                    fontSize: 14.5,
-                    fontFamily: "'DM Sans', sans-serif",
-                    borderRadius: 10,
-                    textDecoration: 'none',
-                    transition: 'opacity 0.15s',
-                  }}
-                >
-                  Create Account
-                </Link>
-                <Link
-                  href={`/request/login?redirect=${encodeURIComponent(redirectUrl)}`}
-                  style={{
-                    color: '#00e5ff',
-                    fontSize: 14.5,
-                    fontWeight: 600,
-                    fontFamily: "'DM Sans', sans-serif",
-                    textDecoration: 'none',
-                  }}
-                >
-                  Log In
-                </Link>
-              </div>
-            </div>
+                textDecoration: 'none',
+              }}
+            >
+              Log In
+            </Link>
           </div>
         </div>
       </div>
@@ -538,6 +496,80 @@ function AuthenticatedView({ deafProfile }: { deafProfile: AuthenticatedProfile 
             )}
           </div>
         </div>
+
+        {/* Hero copy */}
+        {authState !== 'self' && (
+          <div style={{
+            background: '#111118',
+            border: '1px solid var(--border)',
+            borderRadius: 12,
+            padding: '28px 24px',
+          }}>
+            <h1 style={{
+              fontFamily: "'Syne', sans-serif",
+              fontSize: 20,
+              fontWeight: 700,
+              color: '#f0f2f8',
+              letterSpacing: '-0.01em',
+              lineHeight: 1.3,
+              margin: '0 0 8px',
+            }}>
+              Book an ASL interpreter for {fullName}
+            </h1>
+            <p style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 14,
+              fontWeight: 400,
+              color: '#96a0b8',
+              lineHeight: 1.6,
+              margin: 0,
+            }}>
+              {displayName} uses signpost to coordinate interpreting. Submit a request and their preferred interpreter team will be notified.
+            </p>
+          </div>
+        )}
+
+        {/* Who is this for - shown to non-self authenticated users */}
+        {authState !== 'self' && authState !== 'loading' && (
+          <div style={{
+            background: '#111118',
+            border: '1px solid var(--border)',
+            borderRadius: 12,
+            padding: '20px 24px',
+          }}>
+            <div style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontWeight: 700,
+              color: '#a78bfa',
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              fontSize: 12,
+              marginBottom: 12,
+            }}>
+              Who is this for?
+            </div>
+            <p style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 14,
+              fontWeight: 400,
+              color: '#c8cdd8',
+              lineHeight: 1.6,
+              margin: '0 0 12px',
+            }}>
+              This page is for anyone booking an interpreter on behalf of {displayName}: office coordinators, HR staff, event planners, medical receptionists, school administrators, or court coordinators.
+            </p>
+            <p style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 14,
+              fontWeight: 400,
+              color: '#96a0b8',
+              lineHeight: 1.6,
+              margin: 0,
+            }}>
+              signpost charges a flat $15 per interpreter confirmed on a booking. No percentage-based commissions. 100% of the interpreter&apos;s rate goes directly to them.
+            </p>
+          </div>
+        )}
 
         {/* Communication preferences */}
         {cp && (cp.signing_style || cp.signing_styles?.length || cp.voice_preference || cp.cdi_preferred || cp.di_preferred || cp.notes) && (
@@ -770,27 +802,30 @@ function AuthenticatedView({ deafProfile }: { deafProfile: AuthenticatedProfile 
           )}
 
           {error && (
-            <p style={{
-              color: 'var(--accent3)',
-              fontSize: '0.85rem',
-              marginTop: 12,
-            }}>
+            <p
+              role="alert"
+              style={{
+                color: 'var(--accent3)',
+                fontSize: '0.85rem',
+                marginTop: 12,
+              }}
+            >
               {error}
             </p>
           )}
         </div>
 
         {/* Subtitle text */}
-        {authState !== 'self' && (
+        {authState !== 'self' && authState !== 'loading' && (
           <p style={{
             textAlign: 'center',
-            fontSize: '0.88rem',
+            fontSize: '0.85rem',
             color: 'var(--muted)',
             lineHeight: 1.6,
-            maxWidth: 400,
+            maxWidth: 440,
             margin: '0 auto',
           }}>
-            signpost connects you with qualified sign language interpreters based on {displayName}&apos;s preferences.
+            When you submit a request, {displayName}&apos;s preferred interpreters are notified first. Their communication preferences are shared with your interpreter automatically.
           </p>
         )}
       </div>

@@ -54,7 +54,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Profile Not Found - signpost' }
   }
 
-  const displayName = data.first_name || [data.first_name, data.last_name].filter(Boolean).join(' ') || 'User'
+  const displayName = [data.first_name, data.last_name].filter(Boolean).join(' ') || 'User'
 
   return {
     title: `Book an Interpreter for ${displayName} - signpost`,
@@ -70,7 +70,7 @@ function NotFoundPage() {
       background: 'var(--bg)',
     }}>
       <div style={{
-        background: 'var(--surface)', border: '1px solid var(--border)',
+        background: '#111118', border: '1px solid var(--border)',
         borderRadius: 'var(--radius)', padding: '48px 40px',
         textAlign: 'center', maxWidth: 480,
       }}>
@@ -82,18 +82,30 @@ function NotFoundPage() {
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: 24, lineHeight: 1.6 }}>
           The link may be outdated or the profile may no longer be available.
+          If you are looking for someone specific, try the interpreter directory.
         </p>
-        <Link
-          href="/"
-          className="btn-primary"
-          style={{
-            display: 'inline-block', padding: '12px 28px',
-            fontSize: '0.9rem', fontWeight: 600,
-            borderRadius: '100px', textDecoration: 'none',
-          }}
-        >
-          Go to signpost
-        </Link>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+          <Link
+            href="/"
+            className="btn-primary"
+            style={{
+              display: 'inline-block', padding: '12px 28px',
+              fontSize: '0.9rem', fontWeight: 600,
+              borderRadius: 10, textDecoration: 'none',
+            }}
+          >
+            Go to signpost
+          </Link>
+          <Link
+            href="/directory"
+            style={{
+              fontSize: '0.85rem', fontWeight: 600,
+              color: 'var(--accent)', textDecoration: 'none',
+            }}
+          >
+            Browse the directory
+          </Link>
+        </div>
       </div>
     </div>
   )
