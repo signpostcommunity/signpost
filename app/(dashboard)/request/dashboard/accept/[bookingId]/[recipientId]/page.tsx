@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
-import { decryptFields, BOOKING_ENCRYPTED_FIELDS } from '@/lib/encryption'
+import { decryptFields } from '@/lib/encryption'
 import AcceptClient from './AcceptClient'
 
 export const dynamic = 'force-dynamic'
@@ -25,8 +25,8 @@ export default async function AcceptPage({ params }: { params: Promise<{ booking
     redirect('/request/dashboard/requests')
   }
 
-  // Decrypt encrypted fields (title, description, notes)
-  const decryptedBooking = decryptFields(booking, [...BOOKING_ENCRYPTED_FIELDS])
+  // Decrypt encrypted fields (title, description are in the select; notes is not)
+  const decryptedBooking = decryptFields(booking, ['title', 'description'])
 
   // Fetch recipient
   const { data: recipient, error: recErr } = await supabase
@@ -40,11 +40,11 @@ export default async function AcceptPage({ params }: { params: Promise<{ booking
     redirect('/request/dashboard/requests')
   }
 
-  // Fetch interpreter name
+  // Fetch interpreter name, photo, and user_id
   const admin = getSupabaseAdmin()
   const { data: interp } = await admin
     .from('interpreter_profiles')
-    .select('id, name, first_name, last_name')
+    .select('id, name, first_name, last_name, photo_url, user_id')
     .eq('id', recipient.interpreter_id)
     .single()
 
@@ -121,6 +121,8 @@ export default async function AcceptPage({ params }: { params: Promise<{ booking
         response_notes: recipient.response_notes,
       }}
       interpreterName={interpreterName}
+      interpreterId={interp?.user_id || interp?.id || recipient.interpreter_id}
+      interpreterPhoto={interp?.photo_url || null}
       rateProfile={rateProfile}
       dhhClientName={dhhClientName}
     />

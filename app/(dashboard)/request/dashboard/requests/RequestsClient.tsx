@@ -966,51 +966,62 @@ export default function RequestsClient({
 
                                 {/* Action buttons */}
                                 <div className="req-resp-actions" style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 8 }}>
-                                  {rec.status === 'proposed' && (
+                                  {confirmedCount >= booking.interpreter_count ? (
+                                    <span style={{
+                                      fontSize: '0.78rem', fontWeight: 600, color: 'var(--muted)',
+                                      fontFamily: "'Inter', sans-serif", padding: '10px 0',
+                                    }}>
+                                      Booking filled
+                                    </span>
+                                  ) : (
                                     <>
-                                      <button
-                                        onClick={(e) => { e.stopPropagation(); acceptAtSuggested(booking.id, rec.id, interpName, rec.proposed_start_time, rec.proposed_end_time, rec.proposed_date) }}
-                                        style={{
-                                          background: '#a78bfa', color: '#000', border: 'none',
-                                          padding: '10px 18px', borderRadius: 'var(--radius-sm)',
-                                          fontSize: '0.78rem', fontWeight: 700,
-                                          fontFamily: "'Inter', sans-serif", cursor: 'pointer',
-                                          whiteSpace: 'nowrap', minHeight: 44,
-                                        }}
-                                      >
-                                        Accept at Suggested Time
-                                      </button>
-                                      <Link
-                                        href={`/request/dashboard/accept/${booking.id}/${rec.id}`}
-                                        style={{
-                                          background: 'var(--accent)', color: '#000',
-                                          padding: '10px 18px', borderRadius: 'var(--radius-sm)',
-                                          fontSize: '0.78rem', fontWeight: 700,
-                                          fontFamily: "'Inter', sans-serif",
-                                          textDecoration: 'none', whiteSpace: 'nowrap',
-                                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                          minHeight: 44,
-                                        }}
-                                      >
-                                        Accept at Original Time
-                                      </Link>
+                                      {rec.status === 'proposed' && (
+                                        <>
+                                          <button
+                                            onClick={(e) => { e.stopPropagation(); acceptAtSuggested(booking.id, rec.id, interpName, rec.proposed_start_time, rec.proposed_end_time, rec.proposed_date) }}
+                                            style={{
+                                              background: '#a78bfa', color: '#000', border: 'none',
+                                              padding: '10px 18px', borderRadius: 'var(--radius-sm)',
+                                              fontSize: '0.78rem', fontWeight: 700,
+                                              fontFamily: "'Inter', sans-serif", cursor: 'pointer',
+                                              whiteSpace: 'nowrap', minHeight: 44,
+                                            }}
+                                          >
+                                            Accept at Suggested Time
+                                          </button>
+                                          <Link
+                                            href={`/request/dashboard/accept/${booking.id}/${rec.id}`}
+                                            style={{
+                                              background: 'var(--accent)', color: '#000',
+                                              padding: '10px 18px', borderRadius: 'var(--radius-sm)',
+                                              fontSize: '0.78rem', fontWeight: 700,
+                                              fontFamily: "'Inter', sans-serif",
+                                              textDecoration: 'none', whiteSpace: 'nowrap',
+                                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                              minHeight: 44,
+                                            }}
+                                          >
+                                            Accept at Original Time
+                                          </Link>
+                                        </>
+                                      )}
+                                      {rec.status === 'responded' && (
+                                        <Link
+                                          href={`/request/dashboard/accept/${booking.id}/${rec.id}`}
+                                          style={{
+                                            background: 'var(--accent)', color: '#000',
+                                            padding: '10px 20px', borderRadius: 'var(--radius-sm)',
+                                            fontSize: '0.78rem', fontWeight: 700,
+                                            fontFamily: "'Inter', sans-serif",
+                                            textDecoration: 'none', whiteSpace: 'nowrap',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            minHeight: 44,
+                                          }}
+                                        >
+                                          Review & Accept
+                                        </Link>
+                                      )}
                                     </>
-                                  )}
-                                  {rec.status === 'responded' && (
-                                    <Link
-                                      href={`/request/dashboard/accept/${booking.id}/${rec.id}`}
-                                      style={{
-                                        background: 'var(--accent)', color: '#000',
-                                        padding: '10px 20px', borderRadius: 'var(--radius-sm)',
-                                        fontSize: '0.78rem', fontWeight: 700,
-                                        fontFamily: "'Inter', sans-serif",
-                                        textDecoration: 'none', whiteSpace: 'nowrap',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        minHeight: 44,
-                                      }}
-                                    >
-                                      Review & Accept
-                                    </Link>
                                   )}
                                   <Link
                                     href="/request/dashboard/inbox"

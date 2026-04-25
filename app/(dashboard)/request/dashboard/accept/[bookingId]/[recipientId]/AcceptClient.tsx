@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import Toast from '@/components/ui/Toast'
+import SendMessageModal from '@/components/messaging/SendMessageModal'
 import { displayBookingFormat } from '@/lib/bookingFormat'
 
 /* ── Types ── */
@@ -71,21 +72,25 @@ export default function AcceptClient({
   booking,
   recipient,
   interpreterName,
+  interpreterId,
+  interpreterPhoto,
   rateProfile,
   dhhClientName,
 }: {
   booking: BookingData
   recipient: RecipientData
   interpreterName: string
+  interpreterId: string
+  interpreterPhoto: string | null
   rateProfile: RateProfileData | null
   dhhClientName: string | null
 }) {
   const router = useRouter()
-  const [showConfirm, setShowConfirm] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [showDeclineForm, setShowDeclineForm] = useState(false)
   const [declineReason, setDeclineReason] = useState('')
   const [declining, setDeclining] = useState(false)
+  const [showAskQuestion, setShowAskQuestion] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   const rate = recipient.response_rate ?? rateProfile?.hourly_rate ?? 0
@@ -127,7 +132,6 @@ export default function AcceptClient({
         : `${interpreterName} confirmed. Still looking for more interpreters.`
 
       setToast({ message: toastMessage, type: 'success' })
-      setShowConfirm(false)
       setConfirming(false)
 
       // Notify sidebar
@@ -342,15 +346,18 @@ export default function AcceptClient({
       {/* Section 4 - Actions */}
       <div className="req-accept-actions" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 32, marginBottom: 40, alignItems: 'center' }}>
         <button
-          onClick={() => setShowConfirm(true)}
+          onClick={handleConfirm}
+          disabled={confirming}
           className="btn-primary"
           style={{
             padding: '14px 32px', fontSize: '0.92rem',
             fontFamily: "'Inter', sans-serif", fontWeight: 700,
-            cursor: 'pointer', border: 'none',
+            cursor: confirming ? 'not-allowed' : 'pointer',
+            opacity: confirming ? 0.6 : 1,
+            border: 'none',
           }}
         >
-          Confirm Booking
+          {confirming ? 'Confirming...' : 'Confirm and Charge $15'}
         </button>
         {!showDeclineForm ? (
           <button
@@ -413,9 +420,10 @@ export default function AcceptClient({
             </div>
           </div>
         )}
-        <Link
-          href="/request/dashboard/inbox"
+        <button
+          onClick={() => setShowAskQuestion(true)}
           style={{
+            background: 'none', border: 'none', cursor: 'pointer',
             color: 'var(--accent)', fontSize: '0.85rem',
             fontFamily: "'Inter', sans-serif",
             textDecoration: 'underline', textUnderlineOffset: '3px',
@@ -423,66 +431,21 @@ export default function AcceptClient({
           }}
         >
           Ask a Question
-        </Link>
+        </button>
       </div>
 
-      {/* Confirmation modal */}
-      {showConfirm && (
-        <div
-          style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 1000, padding: 20,
+      {showAskQuestion && (
+        <SendMessageModal
+          recipientId={interpreterId}
+          recipientName={interpreterName}
+          recipientPhoto={interpreterPhoto}
+          initialSubject={`Question about: ${booking.title || 'Booking'}`}
+          onClose={() => setShowAskQuestion(false)}
+          onSent={() => {
+            setShowAskQuestion(false)
+            setToast({ message: 'Message sent.', type: 'success' })
           }}
-          onClick={() => { if (!confirming) setShowConfirm(false) }}
-        >
-          <div
-            style={{
-              background: 'var(--surface)', border: '1px solid var(--border)',
-              borderRadius: 'var(--radius)', padding: '28px 32px',
-              width: '100%', maxWidth: 460,
-            }}
-            onClick={e => e.stopPropagation()}
-          >
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '1.1rem', margin: '0 0 12px' }}>
-              Confirm this booking?
-            </h2>
-            <p style={{ color: 'var(--muted)', fontSize: '0.85rem', lineHeight: 1.6, margin: '0 0 20px' }}>
-              Confirm this booking with <strong style={{ color: 'var(--text)' }}>{interpreterName}</strong> at{' '}
-              <strong style={{ color: 'var(--accent)' }}>${rate}/hr</strong>?
-              A <strong style={{ color: 'var(--text)' }}>$15 platform fee</strong> will apply.
-            </p>
-            <div className="req-modal-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-              <button
-                onClick={() => setShowConfirm(false)}
-                disabled={confirming}
-                style={{
-                  background: 'none', border: '1px solid var(--border)',
-                  color: 'var(--muted)', padding: '11px 20px',
-                  borderRadius: 'var(--radius-sm)', fontSize: '0.85rem',
-                  fontFamily: "'Inter', sans-serif", cursor: 'pointer',
-                  minHeight: 44,
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirm}
-                disabled={confirming}
-                className="btn-primary"
-                style={{
-                  padding: '11px 24px', fontSize: '0.85rem',
-                  fontFamily: "'Inter', sans-serif", fontWeight: 700,
-                  cursor: confirming ? 'not-allowed' : 'pointer',
-                  opacity: confirming ? 0.6 : 1, border: 'none',
-                  minHeight: 44,
-                }}
-              >
-                {confirming ? 'Confirming...' : 'Yes, Confirm Booking'}
-              </button>
-            </div>
-          </div>
-        </div>
+        />
       )}
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}

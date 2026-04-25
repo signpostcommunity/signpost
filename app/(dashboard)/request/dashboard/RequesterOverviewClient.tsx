@@ -748,18 +748,27 @@ export default function RequesterOverviewClient({
                                       background: 'rgba(150,160,184,0.12)', borderRadius: 100, padding: '1px 6px',
                                     }}>Approved</span>
                                   )}
-                                  <Link
-                                    href={`/request/dashboard/accept/${booking.id}/${rec.id}`}
-                                    style={{
-                                      background: 'var(--accent)', color: '#000',
-                                      padding: '6px 14px', borderRadius: 'var(--radius-sm)',
-                                      fontSize: '0.72rem', fontWeight: 700,
-                                      fontFamily: "'Inter', sans-serif",
-                                      textDecoration: 'none', whiteSpace: 'nowrap',
-                                    }}
-                                  >
-                                    Review & Accept
-                                  </Link>
+                                  {confirmedRecs.length >= booking.interpreter_count ? (
+                                    <span style={{
+                                      fontSize: '0.72rem', fontWeight: 600, color: 'var(--muted)',
+                                      fontFamily: "'Inter', sans-serif", padding: '6px 0',
+                                    }}>
+                                      Booking filled
+                                    </span>
+                                  ) : (
+                                    <Link
+                                      href={`/request/dashboard/accept/${booking.id}/${rec.id}`}
+                                      style={{
+                                        background: 'var(--accent)', color: '#000',
+                                        padding: '6px 14px', borderRadius: 'var(--radius-sm)',
+                                        fontSize: '0.72rem', fontWeight: 700,
+                                        fontFamily: "'Inter', sans-serif",
+                                        textDecoration: 'none', whiteSpace: 'nowrap',
+                                      }}
+                                    >
+                                      Review & Accept
+                                    </Link>
+                                  )}
                                   <Link
                                     href="/request/dashboard/inbox"
                                     style={{
