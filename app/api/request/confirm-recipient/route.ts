@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 })
     }
 
-    // 3. Fetch the recipient row, guard against double-confirmation
+    // 3. Fetch the recipient row
     const { data: recipient, error: recFetchErr } = await admin
       .from('booking_recipients')
       .select('id, booking_id, interpreter_id, status')
@@ -94,6 +94,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, bookingFilled: false })
     }
 
+    // 3b. Pre-check gate: reject early if booking already filled
+    if (booking.status === 'filled') {
+      return NextResponse.json(
+        { success: false, error: 'This booking is already filled by another interpreter.' },
+        { status: 409 },
+      )
+    }
+
+    const { count: preConfirmedCount } = await admin
+      .from('booking_recipients')
+      .select('id', { count: 'exact', head: true })
+      .eq('booking_id', bookingId)
+      .eq('status', 'confirmed')
+
+    if ((preConfirmedCount ?? 0) >= (booking.interpreter_count || 1)) {
+      return NextResponse.json(
+        { success: false, error: 'This booking is already filled.' },
+        { status: 409 },
+      )
+    }
+
     // 4. Charge platform fee (blocks confirmation on failure)
     const chargeResult = await chargePlatformFee(bookingId)
 
@@ -106,16 +127,23 @@ export async function POST(request: NextRequest) {
 
     // If charged, already_charged, or waived -- proceed with confirmation
 
-    // 5. Update recipient to confirmed
-    const { error: recUpdateErr } = await admin
-      .from('booking_recipients')
-      .update({ status: 'confirmed', confirmed_at: new Date().toISOString() })
-      .eq('id', recipientId)
-      .eq('booking_id', bookingId)
+    // 5. Atomic confirm: locks booking row, rechecks count, updates recipient
+    const { data: gateResult, error: gateErr } = await admin
+      .rpc('confirm_recipient_if_available', {
+        p_booking_id: bookingId,
+        p_recipient_id: recipientId,
+      })
 
-    if (recUpdateErr) {
-      console.error('[confirm-recipient] recipient update error:', recUpdateErr.message)
+    if (gateErr) {
+      console.error('[confirm-recipient] atomic gate error:', gateErr.message)
       return NextResponse.json({ success: false, error: 'Failed to confirm recipient' }, { status: 500 })
+    }
+
+    if (gateResult === false) {
+      return NextResponse.json(
+        { success: false, error: 'This booking was just filled by another interpreter.' },
+        { status: 409 },
+      )
     }
 
     // 5. Optionally update booking date/time (proposed alternative time)

@@ -110,6 +110,7 @@ export default function AcceptClient({
       const result = await res.json()
 
       if (!res.ok || !result.success) {
+        const isBookingFilled = res.status === 409
         const isPaymentError = res.status === 402
         const code = result.code
         const needsPaymentUpdate = isPaymentError && (
@@ -118,9 +119,11 @@ export default function AcceptClient({
         )
         console.error('[accept] confirm error:', result.error || res.statusText)
         setToast({
-          message: needsPaymentUpdate
-            ? `${result.error || 'Payment failed.'} Go to Settings to update your card.`
-            : (result.error || 'Failed to confirm booking. Please try again.'),
+          message: isBookingFilled
+            ? 'This booking was just confirmed with another interpreter. Refresh to see the latest status.'
+            : needsPaymentUpdate
+              ? `${result.error || 'Payment failed.'} Go to Settings to update your card.`
+              : (result.error || 'Failed to confirm booking. Please try again.'),
           type: 'error',
         })
         setConfirming(false)
