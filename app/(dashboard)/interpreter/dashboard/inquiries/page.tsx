@@ -108,50 +108,93 @@ function blurBorder(e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement |
 
 /* ── Accept & Send Rate Modal ── */
 
+interface FetchedRateProfile {
+  id: string
+  interpreter_id: string
+  label: string
+  is_default: boolean | null
+  hourly_rate: number | null
+  currency: string | null
+  min_booking: number | null
+  cancellation_policy: string | null
+  late_cancel_fee: number | null
+  additional_terms: string | null
+}
+
 function AcceptModal({ booking, onClose, onAccepted }: {
   booking: Booking
   onClose: () => void
   onAccepted: () => void
 }) {
   const [sent, setSent] = useState(false)
-  const [rateProfile, setRateProfile] = useState('standard')
+  const [profiles, setProfiles] = useState<FetchedRateProfile[]>([])
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null)
+  const [useCustom, setUseCustom] = useState(false)
   const [customHourly, setCustomHourly] = useState('')
   const [customMinHours, setCustomMinHours] = useState('')
   const [customCancellation, setCustomCancellation] = useState('48 hours notice required')
   const [customTerms, setCustomTerms] = useState('')
   const [note, setNote] = useState('')
   const [saving, setSaving] = useState(false)
-  const [hasRateProfile, setHasRateProfile] = useState<boolean | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
 
-  // Check if interpreter has at least one rate profile
+  // Fetch real rate profiles for the current interpreter
   useEffect(() => {
     (async () => {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const { data: interpProfile } = await supabase
-        .from('interpreter_profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle()
-      if (!interpProfile) return
-      const { data: rateProfiles } = await supabase
-        .from('interpreter_rate_profiles')
-        .select('id')
-        .eq('interpreter_id', interpProfile.id)
-        .limit(1)
-      setHasRateProfile(!!rateProfiles && rateProfiles.length > 0)
+      try {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) { setLoading(false); return }
+        const { data: interpProfile } = await supabase
+          .from('interpreter_profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle()
+        if (!interpProfile) { setLoading(false); return }
+        const { data: rateProfiles, error: rateErr } = await supabase
+          .from('interpreter_rate_profiles')
+          .select('id, interpreter_id, label, is_default, hourly_rate, currency, min_booking, cancellation_policy, late_cancel_fee, additional_terms')
+          .eq('interpreter_id', interpProfile.id)
+          .order('is_default', { ascending: false })
+        if (rateErr) {
+          console.error('[AcceptModal] rate profile fetch failed:', rateErr.message)
+          setFetchError('Could not load rate profiles. You can enter a rate manually below.')
+          setUseCustom(true)
+          setLoading(false)
+          return
+        }
+        if (rateProfiles && rateProfiles.length > 0) {
+          setProfiles(rateProfiles as FetchedRateProfile[])
+          const defaultP = rateProfiles.find(r => r.is_default === true) || rateProfiles[0]
+          setSelectedProfileId(defaultP.id)
+        }
+      } catch (err) {
+        console.error('[AcceptModal] unexpected error:', err)
+        setFetchError('Could not load rate profiles. You can enter a rate manually below.')
+        setUseCustom(true)
+      }
+      setLoading(false)
     })()
   }, [])
+
+  const activeProfile = profiles.find(p => p.id === selectedProfileId) || null
 
   async function handleSend() {
     setSaving(true)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
-    const rateAmounts: Record<string, number> = { standard: 95, community: 65, multiday: 750 }
-    const responseRate = rateProfile === 'custom'
-      ? (Number(customHourly) || null)
-      : (rateAmounts[rateProfile] ?? null)
+
+    let responseRate: number | null = null
+    let rateProfileId: string | null = null
+
+    if (useCustom) {
+      responseRate = Number(customHourly) || null
+    } else if (activeProfile) {
+      responseRate = activeProfile.hourly_rate != null ? Number(activeProfile.hourly_rate) : null
+      rateProfileId = activeProfile.id
+    }
+
     const { error } = await supabase
       .from('booking_recipients')
       .update({
@@ -159,6 +202,7 @@ function AcceptModal({ booking, onClose, onAccepted }: {
         responded_at: new Date().toISOString(),
         response_notes: note || null,
         response_rate: responseRate,
+        rate_profile_id: rateProfileId,
       })
       .eq('id', booking.recipient_id)
 
@@ -173,11 +217,9 @@ function AcceptModal({ booking, onClose, onAccepted }: {
       const locationDisplay = booking.format === 'remote' ? 'Remote' : (booking.location?.split(',')[0] || 'TBD')
       const dateStr = booking.date ? new Date(booking.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : 'TBD'
       const timeDisplay = formatTime(booking.time_start, booking.time_end)
-      const formatDisplay = displayBookingFormat(booking.format)
 
       // Look up interpreter name for notifications
-      const interpSupabase = createClient()
-      const { data: interpSelf } = await interpSupabase
+      const { data: interpSelf } = await supabase
         .from('interpreter_profiles')
         .select('first_name, last_name, name')
         .eq('user_id', user.id)
@@ -198,7 +240,7 @@ function AcceptModal({ booking, onClose, onAccepted }: {
       }
 
       // Notify requester that the interpreter has responded with a rate.
-      // Do NOT send booking_confirmed here — the booking is not confirmed on
+      // Do NOT send booking_confirmed here -- the booking is not confirmed on
       // response; it only becomes confirmed once the requester picks an
       // interpreter. That notification is wired from the requester-side pick.
       if (booking.requester_id) {
@@ -211,9 +253,9 @@ function AcceptModal({ booking, onClose, onAccepted }: {
             ...bookingMeta,
             recipient_role: 'requester',
             recipient_id: booking.recipient_id,
-            rate: customHourly || '',
-            min_hours: customMinHours || '',
-            cancellation_policy: customCancellation || '',
+            rate: String(responseRate ?? ''),
+            rate_profile_id: rateProfileId || '',
+            cancellation_policy: useCustom ? customCancellation : (activeProfile?.cancellation_policy || ''),
             interpreter_note: note || '',
           },
           ctaText: 'Review and Accept',
@@ -230,7 +272,7 @@ function AcceptModal({ booking, onClose, onAccepted }: {
     <div style={overlayStyle}>
       <div className="modal-dialog" style={modalStyle}>
         <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
-          <div style={{ fontSize: '2rem', marginBottom: 12 }}>✓</div>
+          <div style={{ fontSize: '2rem', marginBottom: 12 }}>&#10003;</div>
           <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1.1rem', color: 'var(--accent)', marginBottom: 8 }}>
             Rate sent!
           </div>
@@ -246,10 +288,17 @@ function AcceptModal({ booking, onClose, onAccepted }: {
     </div>
   )
 
-  const rateSummaries: Record<string, string> = {
-    standard: 'Standard Rate - $95/hr · 2hr minimum · 48hr cancellation · 100% late fee',
-    community: 'Community / Nonprofit Rate - $65/hr · 2hr minimum · 48hr cancellation',
-    multiday: 'Multi-Day Rate - $750/day · 2-day minimum · 2-week cancellation',
+  function formatMinBooking(minutes: number | null): string {
+    if (!minutes) return 'No minimum'
+    const hours = minutes / 60
+    return `${hours} hour${hours !== 1 ? 's' : ''} minimum`
+  }
+
+  function formatLateFee(fee: number | null): string {
+    if (fee == null) return 'No fee'
+    if (fee === 100) return '100% of booking fee'
+    if (fee === 50) return '50% of booking fee'
+    return `${fee}%`
   }
 
   return (
@@ -257,27 +306,105 @@ function AcceptModal({ booking, onClose, onAccepted }: {
       <div className="modal-dialog" style={{ ...modalStyle, maxHeight: '90vh', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
           <div style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '1rem' }}>Send Rate - {booking.title || 'Booking'}</div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>✕</button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.1rem' }}>&#10005;</button>
         </div>
 
-        <div style={{ marginBottom: 16 }}>
-          <label style={fieldLabelStyle}>Rate Profile</label>
-          <select value={rateProfile} onChange={e => setRateProfile(e.target.value)} style={fieldInputStyle} onFocus={focusBorder} onBlur={blurBorder}>
-            <option value="standard">Standard Rate</option>
-            <option value="community">Community / Nonprofit Rate</option>
-            <option value="multiday">Multi-Day Rate</option>
-            <option value="custom">Create a custom rate for this requester</option>
-          </select>
-        </div>
-
-        {rateProfile !== 'custom' && (
-          <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '14px 16px', marginBottom: 18, fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
-            <strong style={{ color: 'var(--text)' }}>Rate profile:</strong> {rateSummaries[rateProfile]}
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '20px 0', color: 'var(--muted)', fontSize: '0.85rem' }}>
+            Loading rate profiles...
           </div>
         )}
 
-        {rateProfile === 'custom' && (
+        {fetchError && (
+          <div style={{
+            background: 'rgba(255,126,69,0.08)',
+            border: '1px solid rgba(255,126,69,0.3)',
+            borderRadius: 10,
+            padding: '14px 18px',
+            marginBottom: 12,
+          }}>
+            <p style={{ color: '#ff7e45', fontSize: '0.85rem', fontWeight: 600, margin: 0 }}>
+              {fetchError}
+            </p>
+          </div>
+        )}
+
+        {!loading && profiles.length === 0 && !fetchError && (
+          <div style={{
+            background: 'rgba(255,126,69,0.08)',
+            border: '1px solid rgba(255,126,69,0.3)',
+            borderRadius: 10,
+            padding: '14px 18px',
+            marginBottom: 12,
+          }}>
+            <p style={{ color: '#ff7e45', fontSize: '0.85rem', fontWeight: 600, margin: '0 0 6px' }}>
+              No rate profiles found
+            </p>
+            <p style={{ color: 'var(--muted)', fontSize: '0.82rem', margin: '0 0 8px', lineHeight: 1.5 }}>
+              Set up a rate profile to respond faster. You can still enter a rate manually below.
+            </p>
+            <a
+              href="/interpreter/dashboard/rates"
+              style={{ color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none' }}
+            >
+              Set up rate profile &#8594;
+            </a>
+          </div>
+        )}
+
+        {!loading && profiles.length > 0 && !useCustom && (
+          <>
+            <div style={{ marginBottom: 16 }}>
+              <label style={fieldLabelStyle}>Rate Profile</label>
+              <select
+                value={selectedProfileId || ''}
+                onChange={e => setSelectedProfileId(e.target.value)}
+                style={fieldInputStyle}
+                onFocus={focusBorder}
+                onBlur={blurBorder}
+              >
+                {profiles.map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.label}{p.is_default ? ' (default)' : ''}{p.hourly_rate != null ? ` - $${p.hourly_rate}/hr` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {activeProfile && (
+              <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '14px 16px', marginBottom: 18, fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.8 }}>
+                <strong style={{ color: 'var(--text)' }}>{activeProfile.label}</strong>
+                <br />
+                {activeProfile.hourly_rate != null ? `$${activeProfile.hourly_rate}/hr` : 'Rate not set'}
+                {activeProfile.currency && activeProfile.currency !== 'USD' ? ` (${activeProfile.currency})` : ''}
+                {' \u00B7 '}{formatMinBooking(activeProfile.min_booking)}
+                {' \u00B7 '}{activeProfile.cancellation_policy || 'No cancellation policy'}
+                {activeProfile.late_cancel_fee != null && <>{' \u00B7 '}Late fee: {formatLateFee(activeProfile.late_cancel_fee)}</>}
+                {activeProfile.additional_terms && (
+                  <div style={{ marginTop: 6, fontStyle: 'italic' }}>{activeProfile.additional_terms}</div>
+                )}
+              </div>
+            )}
+
+            <button
+              onClick={() => { setUseCustom(true) }}
+              style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600, padding: 0, marginBottom: 14, display: 'block' }}
+            >
+              Use a custom rate for this request instead
+            </button>
+          </>
+        )}
+
+        {!loading && (useCustom || (profiles.length === 0 && !fetchError)) && (
           <div style={{ background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '18px 20px', marginBottom: 18 }}>
+            {profiles.length > 0 && (
+              <button
+                onClick={() => { setUseCustom(false) }}
+                style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600, padding: 0, marginBottom: 14, display: 'block' }}
+              >
+                Use a saved rate profile instead
+              </button>
+            )}
             <div className="inq-rate-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
               <div>
                 <label style={fieldLabelStyle}>Hourly Rate ($)</label>
@@ -307,45 +434,31 @@ function AcceptModal({ booking, onClose, onAccepted }: {
           </div>
         )}
 
-        <div style={{ marginBottom: 14 }}>
-          <label style={fieldLabelStyle}>Message to {booking.requester_name || 'requester'} (optional)</label>
-          <textarea
-            placeholder={`Hi ${booking.requester_name || 'there'}, I'd be happy to assist with this. Here are my rates and terms...`}
-            value={note} onChange={e => setNote(e.target.value)}
-            style={{ ...fieldInputStyle, resize: 'vertical', minHeight: 90 }}
-            onFocus={focusBorder} onBlur={blurBorder}
-          />
-        </div>
+        {!loading && (
+          <>
+            <div style={{ marginBottom: 14 }}>
+              <label style={fieldLabelStyle}>Message to {booking.requester_name || 'requester'} (optional)</label>
+              <textarea
+                placeholder={`Hi ${booking.requester_name || 'there'}, I'd be happy to assist with this. Here are my rates and terms...`}
+                value={note} onChange={e => setNote(e.target.value)}
+                style={{ ...fieldInputStyle, resize: 'vertical', minHeight: 90 }}
+                onFocus={focusBorder} onBlur={blurBorder}
+              />
+            </div>
 
-        {hasRateProfile === false && (
-          <div style={{
-            background: 'rgba(255,126,69,0.08)',
-            border: '1px solid rgba(255,126,69,0.3)',
-            borderRadius: 10,
-            padding: '14px 18px',
-            marginBottom: 12,
-          }}>
-            <p style={{ color: '#ff7e45', fontSize: '0.85rem', fontWeight: 600, margin: '0 0 6px' }}>
-              Rate profile required
-            </p>
-            <p style={{ color: 'var(--muted)', fontSize: '0.82rem', margin: '0 0 8px', lineHeight: 1.5 }}>
-              You need to set up at least one rate profile before you can respond to requests.
-            </p>
-            <a
-              href="/interpreter/dashboard/rates"
-              style={{ color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none' }}
-            >
-              Set up rate profile &#8594;
-            </a>
-          </div>
+            <div className="dash-card-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+              <GhostButton onClick={onClose}>Cancel</GhostButton>
+              <button
+                className="btn-primary"
+                onClick={handleSend}
+                disabled={saving || (!useCustom && !activeProfile) || (useCustom && !Number(customHourly))}
+                style={{ padding: '9px 22px', opacity: (saving || (!useCustom && !activeProfile) || (useCustom && !Number(customHourly))) ? 0.5 : 1 }}
+              >
+                {saving ? 'Sending...' : 'Send Rate & Accept'}
+              </button>
+            </div>
+          </>
         )}
-
-        <div className="dash-card-actions" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
-          <GhostButton onClick={onClose}>Cancel</GhostButton>
-          <button className="btn-primary" onClick={handleSend} disabled={saving || hasRateProfile === false} style={{ padding: '9px 22px', opacity: (saving || hasRateProfile === false) ? 0.5 : 1 }}>
-            {saving ? 'Sending...' : 'Send Rate & Accept'}
-          </button>
-        </div>
       </div>
     </div>
   )

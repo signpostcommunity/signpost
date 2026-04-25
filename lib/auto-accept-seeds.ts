@@ -73,6 +73,42 @@ function pickRandom(pool: string[]): string {
   return pool[Math.floor(Math.random() * pool.length)]
 }
 
+/* ── Rate resolution (shared with AcceptModal) ── */
+
+interface RateProfileRow {
+  id: string
+  interpreter_id: string
+  hourly_rate: number | string | null
+  is_default: boolean | null
+}
+
+/**
+ * Resolve which rate profile to use for a given interpreter.
+ *
+ * Priority: is_default = true profile, else lowest hourly_rate, else fallback.
+ * Returns the selected rate and profile ID (null if no profiles exist).
+ */
+export function resolveRateProfile(
+  interpreterId: string,
+  ratesByInterpreter: Record<string, RateProfileRow[]>
+): { selectedRate: number; selectedProfileId: string | null } {
+  const rates = ratesByInterpreter[interpreterId] || []
+  let selectedRate: number = 95.00
+  let selectedProfileId: string | null = null
+
+  const defaultProfile = rates.find(r => r.is_default === true)
+  if (defaultProfile) {
+    selectedRate = Number(defaultProfile.hourly_rate) || 95.00
+    selectedProfileId = defaultProfile.id
+  } else if (rates.length > 0) {
+    const sorted = [...rates].sort((a, b) => (Number(a.hourly_rate) || 0) - (Number(b.hourly_rate) || 0))
+    selectedRate = Number(sorted[0].hourly_rate) || 95.00
+    selectedProfileId = sorted[0].id
+  }
+
+  return { selectedRate, selectedProfileId }
+}
+
 /* ── Main logic ── */
 
 interface AutoAcceptParams {
@@ -128,7 +164,7 @@ export async function autoAcceptSeeds(params: AutoAcceptParams): Promise<void> {
   }
 
   // Group rate profiles by interpreter_id
-  const ratesByInterpreter: Record<string, typeof rateProfiles> = {}
+  const ratesByInterpreter: Record<string, RateProfileRow[]> = {}
   for (const rp of rateProfiles || []) {
     if (!ratesByInterpreter[rp.interpreter_id]) {
       ratesByInterpreter[rp.interpreter_id] = []
@@ -215,19 +251,8 @@ export async function autoAcceptSeeds(params: AutoAcceptParams): Promise<void> {
       }
 
       // Accept path (with or without note)
-      const rates = ratesByInterpreter[seed.id] || []
-      let selectedRate: number = 95.00
-      let selectedProfileId: string | null = null
-
-      const defaultProfile = rates.find(r => r.is_default === true)
-      if (defaultProfile) {
-        selectedRate = Number(defaultProfile.hourly_rate) || 95.00
-        selectedProfileId = defaultProfile.id
-      } else if (rates.length > 0) {
-        const sorted = [...rates].sort((a, b) => (Number(a.hourly_rate) || 0) - (Number(b.hourly_rate) || 0))
-        selectedRate = Number(sorted[0].hourly_rate) || 95.00
-        selectedProfileId = sorted[0].id
-      } else {
+      const { selectedRate, selectedProfileId } = resolveRateProfile(seed.id, ratesByInterpreter)
+      if (!ratesByInterpreter[seed.id]?.length) {
         console.warn(`[auto-accept-seeds] no rate profiles for seed interpreter ${seed.id}, using fallback $95.00`)
       }
 
