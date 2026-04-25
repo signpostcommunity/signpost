@@ -97,7 +97,7 @@ export function decryptFields<T extends Record<string, any>>(
 }
 
 // The fields on the bookings table that should be encrypted
-export const BOOKING_ENCRYPTED_FIELDS = ['title', 'description', 'notes'] as const
+export const BOOKING_ENCRYPTED_FIELDS = ['title', 'description'] as const
 
 // The fields on direct_messages / messages tables that should be encrypted
 export const MESSAGE_ENCRYPTED_FIELDS = ['body'] as const

@@ -546,6 +546,24 @@ If scope is genuinely ambiguous, default to investigation-only and ask: "Should 
 
 ---
 
+## Parallel session commit hygiene (mandatory)
+
+Multiple Claude Code instances may run concurrently on this same working tree. To prevent Frankenstein commits where one instance sweeps up another instance's WIP, every CC session must follow these rules without exception.
+
+1. NEVER run `git add -A` or `git add .`. Always stage explicit file paths.
+2. Before staging anything, run `git status` and read the full output. Identify exactly which files are yours.
+3. Every prompt declares a "Files I own" scope. Stage and commit ONLY files within that scope.
+4. If `git status` shows modifications to files NOT in your declared scope:
+   - DO NOT stage them.
+   - DO NOT commit them.
+   - In your final summary, list them under "files left untouched in working tree".
+5. After commit, run `git status` again. Confirm files outside your scope are STILL dirty (untouched by you). Report this verification in your final output.
+6. Standard pattern: `git add <path1> <path2> ... && git commit -m "..." && git push`.
+
+The failure mode these rules prevent: instance B running `git add -A` and grabbing instance A's mid-edit files plus instance C's mid-write files, producing a commit whose message describes only B's work but whose contents include unfinished WIP from A and C. The build then fails on A's incomplete code and the cause is hard to trace. This has happened. These rules are mandatory.
+
+---
+
 ## Prototype Comparison Protocol
 
 ### Working Rules
