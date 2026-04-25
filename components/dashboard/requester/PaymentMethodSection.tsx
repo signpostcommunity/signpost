@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { loadStripe, type Stripe as StripeJS } from '@stripe/stripe-js'
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
+import { createClient } from '@/lib/supabase/client'
 
 /* ── Types ── */
 
@@ -55,6 +56,14 @@ const cardStyle: React.CSSProperties = {
   marginBottom: 34,
 }
 
+/* ── Session refresh helper ── */
+
+async function ensureFreshSession(): Promise<boolean> {
+  const supabase = createClient()
+  const { data: { session } } = await supabase.auth.getSession()
+  return !!session
+}
+
 /* ── Card brand display helpers ── */
 
 function brandDisplayName(brand: string): string {
@@ -105,11 +114,22 @@ function CardForm({
     setProcessing(true)
 
     try {
+      // 0. Refresh auth session before API calls to prevent stale-cookie 401
+      const hasSession = await ensureFreshSession()
+      if (!hasSession) {
+        onToast('We had trouble verifying your session. Please refresh and try again.', 'error')
+        setProcessing(false)
+        return
+      }
+
       // 1. Create SetupIntent on server
       const intentRes = await fetch('/api/stripe/setup-intent', { method: 'POST' })
       const intentData = await intentRes.json()
       if (!intentRes.ok) {
-        onToast(intentData.error || 'Failed to set up payment', 'error')
+        const msg = intentRes.status === 401
+          ? 'We had trouble verifying your session. Please refresh and try again.'
+          : intentData.error || 'Failed to set up payment'
+        onToast(msg, 'error')
         setProcessing(false)
         return
       }
@@ -151,7 +171,10 @@ function CardForm({
       const saveData = await saveRes.json()
 
       if (!saveRes.ok) {
-        onToast(saveData.error || 'Failed to save payment method', 'error')
+        const saveMsg = saveRes.status === 401
+          ? 'We had trouble verifying your session. Please refresh and try again.'
+          : saveData.error || 'Failed to save payment method'
+        onToast(saveMsg, 'error')
         setProcessing(false)
         return
       }
@@ -186,7 +209,7 @@ function CardForm({
             opacity: (!stripe || processing) ? 0.4 : 1,
           }}
         >
-          {processing ? 'Saving...' : 'Save Card'}
+          {processing ? 'Saving card...' : 'Save Card'}
         </button>
         <button
           type="button"
@@ -224,6 +247,9 @@ export default function PaymentMethodSection({ onToast }: PaymentMethodSectionPr
   useEffect(() => {
     async function init() {
       try {
+        // Refresh auth session before API calls to prevent stale-cookie 401
+        await ensureFreshSession()
+
         // Ensure Stripe customer exists (lazy creation for existing accounts)
         await fetch('/api/stripe/customer', { method: 'POST' })
 
