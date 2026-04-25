@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { createNotification } from '@/lib/notifications-server'
 import { sanitizeText } from '@/lib/sanitize'
+import { autoAcceptSeeds, getSeedInterpreterIds } from '@/lib/auto-accept-seeds'
 
 export const dynamic = 'force-dynamic'
 
@@ -68,6 +69,9 @@ export async function POST(request: NextRequest) {
     const requesterName = reqProfile?.org_name || reqProfile?.name || 'Requester'
     const bookingTitle = booking.title || 'Untitled'
 
+    // Pre-fetch seed IDs to skip notifications for seeds
+    const seedIds = await getSeedInterpreterIds(newIds)
+
     // Insert new booking_recipients
     for (const interpreterId of newIds) {
       const { error: recipientErr } = await admin
@@ -84,6 +88,9 @@ export async function POST(request: NextRequest) {
         console.error('[wave-send] booking_recipients insert failed:', recipientErr.message)
         continue
       }
+
+      // Skip notification for seed interpreters (auto-accept handles them below)
+      if (seedIds.has(interpreterId)) continue
 
       // Send notification to interpreter
       try {
@@ -115,6 +122,25 @@ export async function POST(request: NextRequest) {
         }
       } catch (notifErr) {
         console.error('[wave-send] notification send failed:', notifErr)
+      }
+    }
+
+    // Auto-accept any seed interpreter recipients
+    if (seedIds.size > 0) {
+      try {
+        await autoAcceptSeeds({
+          bookingId,
+          interpreterIds: newIds,
+          requesterUserId: user.id,
+          bookingTitle,
+          bookingDate: booking.date || undefined,
+          bookingTime: booking.time_start && booking.time_end ? `${booking.time_start} - ${booking.time_end}` : undefined,
+          bookingLocation: booking.location || undefined,
+          bookingFormat: booking.format || undefined,
+          requesterName,
+        })
+      } catch (autoAcceptErr) {
+        console.error('[wave-send] auto-accept seeds failed:', autoAcceptErr)
       }
     }
 

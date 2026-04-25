@@ -7,6 +7,7 @@ import { logAudit } from '@/lib/audit'
 import { createNotification } from '@/lib/notifications-server'
 import { sendEmail } from '@/lib/email'
 import { taggedWithSparsePrefListEmail } from '@/lib/emails/tagged-with-sparse-pref-list'
+import { autoAcceptSeeds, getSeedInterpreterIds } from '@/lib/auto-accept-seeds'
 
 export const dynamic = 'force-dynamic'
 
@@ -268,6 +269,9 @@ export async function POST(request: NextRequest) {
 
     // Create booking_recipients for each interpreter (if provided)
     if (interpreterIds?.length && !saveAsDraft) {
+      // Pre-fetch seed IDs to skip notifications for seeds
+      const seedIds = await getSeedInterpreterIds(interpreterIds)
+
       for (const interpreterId of interpreterIds) {
         const { error: recipientErr } = await admin
           .from('booking_recipients')
@@ -282,6 +286,9 @@ export async function POST(request: NextRequest) {
         if (recipientErr) {
           console.error('[request/booking] booking_recipients insert failed:', recipientErr.message)
         }
+
+        // Skip notification for seed interpreters (auto-accept handles them below)
+        if (seedIds.has(interpreterId)) continue
 
         // Send notification to interpreter
         try {
@@ -306,6 +313,25 @@ export async function POST(request: NextRequest) {
           }
         } catch (notifErr) {
           console.error('[request/booking] notification send failed:', notifErr)
+        }
+      }
+
+      // Auto-accept any seed interpreter recipients
+      if (seedIds.size > 0) {
+        try {
+          await autoAcceptSeeds({
+            bookingId: booking.id,
+            interpreterIds,
+            requesterUserId: user.id,
+            bookingTitle: title || 'Untitled',
+            bookingDate: date || undefined,
+            bookingTime: timeStart && timeEnd ? `${timeStart} - ${timeEnd}` : undefined,
+            bookingLocation: location || undefined,
+            bookingFormat: dbFormat || undefined,
+            requesterName,
+          })
+        } catch (autoAcceptErr) {
+          console.error('[request/booking] auto-accept seeds failed:', autoAcceptErr)
         }
       }
     }

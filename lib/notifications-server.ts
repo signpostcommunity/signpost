@@ -645,8 +645,21 @@ export async function createNotification(params: CreateNotificationParams) {
     inAppNotif = data
   }
 
+  // Check if recipient is a seed user; skip email and SMS for all seeds
+  let recipientIsSeed = false
+  {
+    const { data: seedCheck } = await admin
+      .from('interpreter_profiles')
+      .select('is_seed')
+      .eq('user_id', params.recipientUserId)
+      .maybeSingle()
+    if (seedCheck?.is_seed === true) {
+      recipientIsSeed = true
+    }
+  }
+
   // 2. Send email (if channel includes email)
-  if (channel === 'email' || channel === 'both') {
+  if ((channel === 'email' || channel === 'both') && !recipientIsSeed) {
     // Insert email notification row with status 'pending'
     const { data: emailNotif, error: emailInsertErr } = await admin
       .from('notifications')
@@ -778,7 +791,7 @@ export async function createNotification(params: CreateNotificationParams) {
   }
 
   // 3. Send SMS (fire-and-forget, never blocks)
-  if (channel === 'email' || channel === 'both') {
+  if ((channel === 'email' || channel === 'both') && !recipientIsSeed) {
     try {
       // Look up notification phone and SMS preference
       let smsPhone: string | null = null

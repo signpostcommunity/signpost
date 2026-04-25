@@ -4,6 +4,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { sanitizeText } from '@/lib/sanitize'
 import { encryptFields, decryptFields, BOOKING_ENCRYPTED_FIELDS } from '@/lib/encryption'
 import { displayBookingFormat } from '@/lib/bookingFormat'
+import { autoAcceptSeeds, getSeedInterpreterIds } from '@/lib/auto-accept-seeds'
 
 export const dynamic = 'force-dynamic'
 
@@ -193,6 +194,9 @@ export async function POST(request: NextRequest) {
       console.error('[dhh/request] booking_dhh_clients insert failed:', dhhClientErr.message)
     }
 
+    // Pre-fetch seed IDs to skip notifications for seeds
+    const seedIds = await getSeedInterpreterIds(interpreterIds)
+
     // Create booking_recipients for each interpreter
     for (const interpreterId of interpreterIds) {
       const { error: recipientErr } = await admin
@@ -207,6 +211,9 @@ export async function POST(request: NextRequest) {
       if (recipientErr) {
         console.error('[dhh/request] booking_recipients insert failed:', recipientErr.message)
       }
+
+      // Skip notification for seed interpreters (auto-accept handles them below)
+      if (seedIds.has(interpreterId)) continue
 
       // Look up interpreter's user_id for notification
       const { data: interpProfile, error: interpError } = await admin
@@ -266,6 +273,28 @@ export async function POST(request: NextRequest) {
           console.error('[dhh/request] notification send failed:', notifErr instanceof Error ? notifErr.message : notifErr)
           // Don't fail the booking creation if notification fails
         }
+      }
+    }
+
+    // Auto-accept any seed interpreter recipients
+    if (seedIds.size > 0) {
+      try {
+        const dateDisplay = date ? new Date(date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : undefined
+        const timeDisplay = timeStart && timeEnd ? `${timeStart} - ${timeEnd}` : undefined
+
+        await autoAcceptSeeds({
+          bookingId: booking.id,
+          interpreterIds,
+          requesterUserId: user.id,
+          bookingTitle: title || 'Untitled',
+          bookingDate: dateDisplay,
+          bookingTime: timeDisplay,
+          bookingLocation: location || undefined,
+          bookingFormat: dbFormat || undefined,
+          requesterName: dhhClientName,
+        })
+      } catch (autoAcceptErr) {
+        console.error('[dhh/request] auto-accept seeds failed:', autoAcceptErr)
       }
     }
 
