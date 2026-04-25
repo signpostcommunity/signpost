@@ -77,6 +77,11 @@ interface RateProfileTerms {
   additional_terms: string | null
 }
 
+interface DhhClient {
+  booking_id: string
+  dhh_user_id: string
+}
+
 interface Props {
   firstName: string
   orgName: string
@@ -88,6 +93,8 @@ interface Props {
   recentRecipients?: RecentRecipient[]
   recentInterpreterMap?: Record<string, InterpreterInfo>
   recentRateProfileMap?: Record<string, RateProfileTerms>
+  recentDhhClients?: DhhClient[]
+  recentTierMap?: Record<string, string>
 }
 
 /* ── Helpers ── */
@@ -163,9 +170,10 @@ function ChevronIcon({ expanded }: { expanded: boolean }) {
 
 /* ── Interpreter Mini Card (matching Deaf portal style) ── */
 
-function InterpreterMiniCard({ recipient, interp, showRate }: {
+function InterpreterMiniCard({ recipient, interp, showRate, tier }: {
   recipient: RecentRecipient
   interp: InterpreterInfo | undefined
+  tier?: string | null
   showRate?: boolean
 }) {
   const name = interp?.first_name
@@ -217,17 +225,33 @@ function InterpreterMiniCard({ recipient, interp, showRate }: {
         )}
       </Link>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <Link
-          href={`/directory/${recipient.interpreter_id}`}
-          onClick={e => e.stopPropagation()}
-          style={{
-            fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.82rem',
-            color: 'var(--text)', textDecoration: 'none', display: 'block',
-            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-          }}
-        >
-          {name}
-        </Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Link
+            href={`/directory/${recipient.interpreter_id}`}
+            onClick={e => e.stopPropagation()}
+            style={{
+              fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.82rem',
+              color: 'var(--text)', textDecoration: 'none',
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            }}
+          >
+            {name}
+          </Link>
+          {tier === 'preferred' && (
+            <span style={{
+              fontSize: '0.6rem', fontWeight: 700, color: '#a78bfa',
+              background: 'rgba(167,139,250,0.15)', borderRadius: 100,
+              padding: '1px 6px', whiteSpace: 'nowrap', flexShrink: 0,
+            }}>Preferred</span>
+          )}
+          {tier === 'approved' && (
+            <span style={{
+              fontSize: '0.6rem', fontWeight: 700, color: '#96a0b8',
+              background: 'rgba(150,160,184,0.12)', borderRadius: 100,
+              padding: '1px 6px', whiteSpace: 'nowrap', flexShrink: 0,
+            }}>Approved</span>
+          )}
+        </div>
         <span style={{
           fontSize: '0.68rem', fontWeight: 600, color: sc.color,
           background: sc.bg, borderRadius: 100, padding: '1px 7px',
@@ -276,10 +300,26 @@ function StatCard({ num, label, href }: { num: number; label: string; href: stri
 export default function RequesterOverviewClient({
   firstName, orgName, activeRequests, confirmedBookings, rosterCount, pendingResponses, recentBookings,
   recentRecipients = [], recentInterpreterMap = {}, recentRateProfileMap = {},
+  recentDhhClients = [], recentTierMap = {},
 }: Props) {
   const router = useRouter()
   const [expandedBookingId, setExpandedBookingId] = useState<string | null>(null)
   const bookingCardRefs = useRef<Record<string, HTMLDivElement | null>>({})
+
+  // Build DHH client map per booking for tier lookups
+  const dhhClientsByBooking = new Map<string, DhhClient[]>()
+  for (const c of recentDhhClients) {
+    const list = dhhClientsByBooking.get(c.booking_id) || []
+    list.push(c)
+    dhhClientsByBooking.set(c.booking_id, list)
+  }
+
+  function getInterpreterTier(bookingId: string, interpreterId: string): string | null {
+    const clients = dhhClientsByBooking.get(bookingId)
+    if (!clients || clients.length === 0) return null
+    const primaryDhh = clients[0].dhh_user_id
+    return recentTierMap[`${interpreterId}:${primaryDhh}`] || null
+  }
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
@@ -672,6 +712,7 @@ export default function RequesterOverviewClient({
                                 recipient={rec}
                                 interp={recentInterpreterMap[rec.interpreter_id]}
                                 showRate
+                                tier={getInterpreterTier(booking.id, rec.interpreter_id)}
                               />
                             ))}
                           </div>
@@ -689,11 +730,24 @@ export default function RequesterOverviewClient({
                               const interpName = interp?.first_name
                                 ? `${interp.first_name} ${interp.last_name?.[0] || ''}.`
                                 : interp?.name || 'Interpreter'
+                              const actionTier = getInterpreterTier(booking.id, rec.interpreter_id)
                               return (
                                 <div key={rec.id} style={{
                                   display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap',
                                 }}>
                                   <span style={{ fontSize: '0.78rem', color: 'var(--muted)', fontWeight: 500 }}>{interpName}:</span>
+                                  {actionTier === 'preferred' && (
+                                    <span style={{
+                                      fontSize: '0.6rem', fontWeight: 700, color: '#a78bfa',
+                                      background: 'rgba(167,139,250,0.15)', borderRadius: 100, padding: '1px 6px',
+                                    }}>Preferred</span>
+                                  )}
+                                  {actionTier === 'approved' && (
+                                    <span style={{
+                                      fontSize: '0.6rem', fontWeight: 700, color: '#96a0b8',
+                                      background: 'rgba(150,160,184,0.12)', borderRadius: 100, padding: '1px 6px',
+                                    }}>Approved</span>
+                                  )}
                                   <Link
                                     href={`/request/dashboard/accept/${booking.id}/${rec.id}`}
                                     style={{

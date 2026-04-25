@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { seedRequesterData } from '@/lib/seedRequesterData'
 import { syncNameFields } from '@/lib/nameSync'
 import { getExistingProfileData } from '@/lib/populateNewProfile'
-import { decryptFields } from '@/lib/encryption'
+import { decryptFields, BOOKING_ENCRYPTED_FIELDS } from '@/lib/encryption'
 import RequesterOverviewClient from './RequesterOverviewClient'
 
 export const dynamic = 'force-dynamic'
@@ -70,6 +70,8 @@ export default async function RequesterDashboardPage() {
   let recentInterpreterMap: Record<string, { name: string; first_name: string | null; last_name: string | null; photo_url: string | null }> = {}
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let recentRateProfileMap: Record<string, any> = {}
+  let recentDhhClients: { booking_id: string; dhh_user_id: string }[] = []
+  let recentTierMap: Record<string, string> = {}
 
   if (user) {
     // BUG 1 FIX: Auto-create requester_profiles row for multi-role users
@@ -139,7 +141,7 @@ export default async function RequesterDashboardPage() {
     }
 
     const recent = recentRes.status === 'fulfilled' ? recentRes.value.data : null
-    if (recent) recentBookings = recent.map(b => decryptFields(b, ['title']))
+    if (recent) recentBookings = recent.map(b => decryptFields(b, [...BOOKING_ENCRYPTED_FIELDS]))
 
     // Fetch recipients for recent bookings (for multi-interpreter status display)
     const recentIds = recentBookings.map(b => b.id)
@@ -188,6 +190,36 @@ export default async function RequesterDashboardPage() {
         }
       }
     }
+
+    // Fetch DHH clients and tier info for recent bookings
+    if (recentIds.length > 0) {
+      const { data: clients } = await supabase
+        .from('booking_dhh_clients')
+        .select('booking_id, dhh_user_id')
+        .in('booking_id', recentIds)
+
+      if (clients && clients.length > 0) {
+        recentDhhClients = clients
+
+        const dhhUserIds = [...new Set(clients.map(c => c.dhh_user_id))]
+        const interpIds = [...new Set(recentRecipients.map(r => r.interpreter_id))]
+        if (dhhUserIds.length > 0 && interpIds.length > 0) {
+          const adminTier = (await import('@/lib/supabase/admin')).getSupabaseAdmin()
+          const { data: rosterRows } = await adminTier
+            .from('deaf_roster')
+            .select('deaf_user_id, interpreter_id, tier')
+            .in('deaf_user_id', dhhUserIds)
+            .in('interpreter_id', interpIds)
+            .in('tier', ['preferred', 'approved'])
+
+          if (rosterRows) {
+            for (const row of rosterRows) {
+              recentTierMap[`${row.interpreter_id}:${row.deaf_user_id}`] = row.tier
+            }
+          }
+        }
+      }
+    }
   }
 
   return (
@@ -202,6 +234,8 @@ export default async function RequesterDashboardPage() {
       recentRecipients={recentRecipients}
       recentInterpreterMap={recentInterpreterMap}
       recentRateProfileMap={recentRateProfileMap}
+      recentDhhClients={recentDhhClients}
+      recentTierMap={recentTierMap}
     />
   )
 }

@@ -126,6 +126,26 @@ export default async function AllRequestsPage() {
     dhhClients = clients || []
   }
 
+  // Fetch deaf_roster tier info for interpreters relative to tagged DHH clients
+  // Key: "interpreter_id:dhh_user_id" -> tier
+  let tierMap: Record<string, string> = {}
+  if (dhhClients.length > 0 && interpreterIds.length > 0) {
+    const dhhUserIds = [...new Set(dhhClients.map(c => c.dhh_user_id))]
+    const admin2 = getSupabaseAdmin()
+    const { data: rosterRows } = await admin2
+      .from('deaf_roster')
+      .select('deaf_user_id, interpreter_id, tier')
+      .in('deaf_user_id', dhhUserIds)
+      .in('interpreter_id', interpreterIds)
+      .in('tier', ['preferred', 'approved'])
+
+    if (rosterRows) {
+      for (const row of rosterRows) {
+        tierMap[`${row.interpreter_id}:${row.deaf_user_id}`] = row.tier
+      }
+    }
+  }
+
   return (
     <RequestsClient
       bookings={allBookings}
@@ -133,6 +153,7 @@ export default async function AllRequestsPage() {
       interpreterMap={interpreterMap}
       rateProfileMap={rateProfileMap}
       dhhClients={dhhClients}
+      tierMap={tierMap}
     />
   )
 }

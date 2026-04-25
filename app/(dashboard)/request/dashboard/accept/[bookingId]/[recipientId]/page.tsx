@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
+import { decryptFields, BOOKING_ENCRYPTED_FIELDS } from '@/lib/encryption'
 import AcceptClient from './AcceptClient'
 
 export const dynamic = 'force-dynamic'
@@ -23,6 +24,9 @@ export default async function AcceptPage({ params }: { params: Promise<{ booking
   if (bookingErr || !booking) {
     redirect('/request/dashboard/requests')
   }
+
+  // Decrypt encrypted fields (title, description, notes)
+  const decryptedBooking = decryptFields(booking, [...BOOKING_ENCRYPTED_FIELDS])
 
   // Fetch recipient
   const { data: recipient, error: recErr } = await supabase
@@ -96,19 +100,19 @@ export default async function AcceptPage({ params }: { params: Promise<{ booking
   return (
     <AcceptClient
       booking={{
-        id: booking.id,
-        title: booking.title,
-        date: booking.date,
-        time_start: booking.time_start,
-        time_end: booking.time_end,
-        location: booking.location,
-        format: booking.format,
-        specialization: booking.specialization,
-        event_category: booking.event_category,
-        interpreter_count: booking.interpreter_count,
-        interpreters_confirmed: booking.interpreters_confirmed,
-        status: booking.status,
-        platform_fee_amount: booking.platform_fee_amount,
+        id: decryptedBooking.id,
+        title: decryptedBooking.title,
+        date: decryptedBooking.date,
+        time_start: decryptedBooking.time_start,
+        time_end: decryptedBooking.time_end,
+        location: decryptedBooking.location,
+        format: decryptedBooking.format,
+        specialization: decryptedBooking.specialization,
+        event_category: decryptedBooking.event_category,
+        interpreter_count: decryptedBooking.interpreter_count,
+        interpreters_confirmed: decryptedBooking.interpreters_confirmed,
+        status: decryptedBooking.status,
+        platform_fee_amount: decryptedBooking.platform_fee_amount,
       }}
       recipient={{
         id: recipient.id,

@@ -9,6 +9,8 @@ import BetaTryThis from '@/components/ui/BetaTryThis'
 import { createClient } from '@/lib/supabase/client'
 import LocationInput from '@/components/ui/LocationInput'
 import type { LocationFields } from '@/components/ui/LocationInput'
+import PaymentMethodSection from '@/components/dashboard/requester/PaymentMethodSection'
+import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
 
 /* -- Constants -- */
 
@@ -209,6 +211,8 @@ export default function NewRequestPage() {
 
   const [submitting, setSubmitting] = useState(false)
   const [hasPaymentMethod, setHasPaymentMethod] = useState<boolean | null>(null)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const paymentModalRef = useFocusTrap(showPaymentModal)
   const paymentNoticeRef = useRef<HTMLDivElement>(null)
   const lookupInputRef = useRef<HTMLInputElement>(null)
   const [draftId, setDraftId] = useState<string | null>(null)
@@ -282,7 +286,7 @@ export default function NewRequestPage() {
   }, [searchParams])
 
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
 
   // Section 1: Event details
   const [title, setTitle] = useState('')
@@ -1776,34 +1780,6 @@ export default function NewRequestPage() {
           </div>
         </div>
 
-        {/* Smart directory link */}
-        {(() => {
-          const params = new URLSearchParams({ context: 'requester' })
-          if (signLanguage) params.set('signLang', signLanguage)
-          if (spokenLanguage) params.set('spokenLang', spokenLanguage)
-          if (specialization) params.set('spec', specialization)
-          if (locationFields.city) params.set('location', locationFields.city)
-          if (format) params.set('workMode', format)
-          return (
-            <Link
-              href={`/directory?${params.toString()}`}
-              target="_blank"
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: 7,
-                padding: '9px 18px', borderRadius: 'var(--radius-sm)',
-                background: 'rgba(0,229,255,0.06)', border: '1px solid rgba(0,229,255,0.2)',
-                color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600,
-                textDecoration: 'none', fontFamily: "'Inter', sans-serif",
-                marginTop: 20, transition: 'all 0.15s',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.12)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.06)' }}
-            >
-              Browse matching interpreters &#8594;
-            </Link>
-          )
-        })()}
-
         {/* Payment method gate warning */}
         {hasPaymentMethod === false && (
           <div
@@ -1830,19 +1806,47 @@ export default function NewRequestPage() {
                 <p style={{ fontSize: '14px', color: '#c8cdd8', margin: '0 0 14px' }}>
                   Please add a payment method before submitting a request. You won&apos;t be charged until you confirm an interpreter.
                 </p>
-                <Link
-                  href="/request/dashboard/profile"
+                <button
+                  onClick={() => setShowPaymentModal(true)}
                   className="btn-primary"
                   style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 6,
                     padding: '10px 20px', fontSize: '14px', fontWeight: 600,
-                    textDecoration: 'none',
+                    cursor: 'pointer',
                   }}
                 >
-                  Go to Profile to add payment method
-                </Link>
+                  Add payment method
+                </button>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Payment method saved confirmation */}
+        {hasPaymentMethod === true && (
+          <div style={{
+            marginTop: 24,
+            padding: '16px 20px',
+            background: 'rgba(52,211,153,0.06)',
+            border: '1px solid rgba(52,211,153,0.25)',
+            borderRadius: 'var(--radius-sm)',
+            display: 'flex', alignItems: 'center', gap: 10,
+          }}>
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8l3.5 3.5L13 5" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span style={{ fontSize: '14px', color: '#34d399', fontWeight: 600, fontFamily: "'Inter', sans-serif" }}>
+              Payment method on file
+            </span>
+            <button
+              onClick={() => setShowPaymentModal(true)}
+              style={{
+                background: 'none', border: 'none', color: '#96a0b8',
+                fontSize: '13px', fontWeight: 500, cursor: 'pointer',
+                fontFamily: "'Inter', sans-serif", marginLeft: 'auto',
+              }}
+            >
+              Update
+            </button>
           </div>
         )}
 
@@ -1892,6 +1896,63 @@ export default function NewRequestPage() {
       </div>{/* end req-editor-layout */}
 
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
+      {/* Payment method modal */}
+      {showPaymentModal && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 1000, padding: 20,
+          }}
+          onClick={() => setShowPaymentModal(false)}
+        >
+          <div
+            ref={paymentModalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="payment-modal-title"
+            style={{
+              background: 'var(--card-bg)', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius)', padding: '28px 32px',
+              width: '100%', maxWidth: 520,
+            }}
+            onClick={e => e.stopPropagation()}
+            onKeyDown={e => { if (e.key === 'Escape') setShowPaymentModal(false) }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+              <h2 id="payment-modal-title" style={{
+                fontFamily: "'DM Sans', sans-serif", fontWeight: 700,
+                fontSize: '1.1rem', margin: 0, color: 'var(--text)',
+              }}>
+                Payment Method
+              </h2>
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                aria-label="Close"
+                style={{
+                  background: 'none', border: 'none', color: 'var(--muted)',
+                  fontSize: '1.2rem', cursor: 'pointer', padding: '4px 8px',
+                  lineHeight: 1,
+                }}
+              >
+                &#10005;
+              </button>
+            </div>
+            <PaymentMethodSection
+              onToast={(msg, type) => {
+                setToast({ message: msg, type })
+                if (type === 'success' && msg === 'Payment method saved') {
+                  setHasPaymentMethod(true)
+                  setTimeout(() => setShowPaymentModal(false), 800)
+                } else if (type === 'info' && msg === 'Payment method removed') {
+                  setHasPaymentMethod(false)
+                }
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       <style>{`
         @keyframes pulse-highlight {

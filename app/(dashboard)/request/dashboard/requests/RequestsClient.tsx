@@ -184,12 +184,14 @@ export default function RequestsClient({
   interpreterMap,
   rateProfileMap = {},
   dhhClients,
+  tierMap = {},
 }: {
   bookings: Booking[]
   recipients: Recipient[]
   interpreterMap: Record<string, InterpreterInfo>
   rateProfileMap?: Record<string, RateProfileTerms>
   dhhClients: DhhClient[]
+  tierMap?: Record<string, string>
 }) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -219,6 +221,35 @@ export default function RequestsClient({
       })
     }
   }, [searchParams])
+
+  // Build DHH client map per booking
+  const dhhClientsByBooking = new Map<string, DhhClient[]>()
+  for (const c of dhhClients) {
+    const list = dhhClientsByBooking.get(c.booking_id) || []
+    list.push(c)
+    dhhClientsByBooking.set(c.booking_id, list)
+  }
+
+  // Helper: get tier for an interpreter on a booking (via the primary tagged DHH user)
+  function getInterpreterTier(bookingId: string, interpreterId: string): string | null {
+    const clients = dhhClientsByBooking.get(bookingId)
+    if (!clients || clients.length === 0) return null
+    const primaryDhh = clients[0].dhh_user_id
+    return tierMap[`${interpreterId}:${primaryDhh}`] || null
+  }
+
+  // Sort recipients: preferred first, approved second, others last, then by status
+  function sortRecipientsWithTier(recs: Recipient[], bookingId: string): Recipient[] {
+    const tierOrder: Record<string, number> = { preferred: 0, approved: 1 }
+    return [...recs].sort((a, b) => {
+      const aTier = getInterpreterTier(bookingId, a.interpreter_id)
+      const bTier = getInterpreterTier(bookingId, b.interpreter_id)
+      const aTierOrder = aTier ? (tierOrder[aTier] ?? 2) : 2
+      const bTierOrder = bTier ? (tierOrder[bTier] ?? 2) : 2
+      if (aTierOrder !== bTierOrder) return aTierOrder - bTierOrder
+      return (RECIPIENT_STATUS_ORDER[a.status] ?? 3) - (RECIPIENT_STATUS_ORDER[b.status] ?? 3)
+    })
+  }
 
   // Build recipient map per booking
   const recipientsByBooking = new Map<string, Recipient[]>()
@@ -771,7 +802,7 @@ export default function RequestsClient({
                           <div className="req-interp-grid" style={{
                             display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 14,
                           }}>
-                            {[...recs].sort((a, b) => (RECIPIENT_STATUS_ORDER[a.status] ?? 3) - (RECIPIENT_STATUS_ORDER[b.status] ?? 3)).map(rec => {
+                            {sortRecipientsWithTier(recs, booking.id).map(rec => {
                               const interp = interpreterMap[rec.interpreter_id]
                               const name = interp?.first_name
                                 ? `${interp.first_name} ${interp.last_name?.[0] || ''}.`
@@ -792,6 +823,7 @@ export default function RequestsClient({
                               const rateLabel = rec.response_rate != null && (rec.status === 'responded' || rec.status === 'confirmed' || rec.status === 'proposed')
                                 ? ` · $${rec.response_rate}/hr`
                                 : ''
+                              const tier = getInterpreterTier(booking.id, rec.interpreter_id)
 
                               return (
                                 <div key={rec.id} style={{
@@ -820,17 +852,33 @@ export default function RequestsClient({
                                     )}
                                   </Link>
                                   <div style={{ flex: 1, minWidth: 0 }}>
-                                    <Link
-                                      href={`/directory/${rec.interpreter_id}`}
-                                      onClick={e => e.stopPropagation()}
-                                      style={{
-                                        fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.82rem',
-                                        color: 'var(--text)', textDecoration: 'none', display: 'block',
-                                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                                      }}
-                                    >
-                                      {name}
-                                    </Link>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                      <Link
+                                        href={`/directory/${rec.interpreter_id}`}
+                                        onClick={e => e.stopPropagation()}
+                                        style={{
+                                          fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.82rem',
+                                          color: 'var(--text)', textDecoration: 'none',
+                                          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                                        }}
+                                      >
+                                        {name}
+                                      </Link>
+                                      {tier === 'preferred' && (
+                                        <span style={{
+                                          fontSize: '0.6rem', fontWeight: 700, color: '#a78bfa',
+                                          background: 'rgba(167,139,250,0.15)', borderRadius: 100,
+                                          padding: '1px 6px', whiteSpace: 'nowrap', flexShrink: 0,
+                                        }}>Preferred</span>
+                                      )}
+                                      {tier === 'approved' && (
+                                        <span style={{
+                                          fontSize: '0.6rem', fontWeight: 700, color: '#96a0b8',
+                                          background: 'rgba(150,160,184,0.12)', borderRadius: 100,
+                                          padding: '1px 6px', whiteSpace: 'nowrap', flexShrink: 0,
+                                        }}>Approved</span>
+                                      )}
+                                    </div>
                                     <span style={{
                                       fontSize: '0.68rem', fontWeight: 600, color: sc.color,
                                       background: sc.bg, borderRadius: 100, padding: '1px 7px',
@@ -850,9 +898,10 @@ export default function RequestsClient({
                           </div>
 
                           {/* Action buttons for responded/proposed interpreters */}
-                          {recs.filter(r => r.status === 'responded' || r.status === 'proposed').map(rec => {
+                          {sortRecipientsWithTier(recs.filter(r => r.status === 'responded' || r.status === 'proposed'), booking.id).map(rec => {
                             const interp = interpreterMap[rec.interpreter_id]
                             const interpName = interp?.name || 'Unknown Interpreter'
+                            const actionTier = getInterpreterTier(booking.id, rec.interpreter_id)
                             return (
                               <div key={`action-${rec.id}`} className="req-resp-card" style={{
                                 background: 'var(--surface)', border: '1px solid var(--border)',
@@ -863,6 +912,18 @@ export default function RequestsClient({
                                   <span style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.85rem', color: 'var(--text)' }}>
                                     {interpName}
                                   </span>
+                                  {actionTier === 'preferred' && (
+                                    <span style={{
+                                      fontSize: '0.6rem', fontWeight: 700, color: '#a78bfa',
+                                      background: 'rgba(167,139,250,0.15)', borderRadius: 100, padding: '1px 6px',
+                                    }}>Preferred</span>
+                                  )}
+                                  {actionTier === 'approved' && (
+                                    <span style={{
+                                      fontSize: '0.6rem', fontWeight: 700, color: '#96a0b8',
+                                      background: 'rgba(150,160,184,0.12)', borderRadius: 100, padding: '1px 6px',
+                                    }}>Approved</span>
+                                  )}
                                   <span style={{
                                     fontSize: '0.68rem', fontWeight: 600,
                                     color: rec.status === 'proposed' ? '#a78bfa' : '#ffa500',
@@ -1008,7 +1069,7 @@ export default function RequestsClient({
                               fontFamily: "'Inter', sans-serif", whiteSpace: 'nowrap' as const,
                             }}
                           >
-                            Send to more interpreters
+                            Send next wave
                           </button>
                         </div>
                       )
@@ -1069,7 +1130,7 @@ export default function RequestsClient({
                           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.14)' }}
                           onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.08)' }}
                         >
-                          Send to more interpreters
+                          Send next wave
                         </button>
                       </div>
                     )}
@@ -1143,7 +1204,7 @@ export default function RequestsClient({
                           onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.12)' }}
                           onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,229,255,0.06)' }}
                         >
-                          Find more interpreters for this request &#8594;
+                          Search directory for more interpreters &#8594;
                         </Link>
                       )
                     })()}
