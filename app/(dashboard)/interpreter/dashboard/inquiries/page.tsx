@@ -1075,7 +1075,7 @@ export default function InquiriesPage() {
       if (bookingIds.length > 0) {
         const { data: bookingsData, error: bookingsErr } = await supabase
           .from('bookings')
-          .select('id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, interpreter_count, notes, status, is_seed, created_at, request_type, context_video_url, prep_notes, onsite_contact_name, onsite_contact_phone, onsite_contact_email')
+          .select('id, title, requester_id, requester_name, specialization, date, time_start, time_end, location, format, recurrence, interpreter_count, notes, status, is_seed, created_at, request_type, context_video_url, context_video_visible_before_accept, prep_notes, onsite_contact_name, onsite_contact_phone, onsite_contact_email')
           .in('id', bookingIds)
 
         if (bookingsErr) {
