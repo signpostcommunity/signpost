@@ -110,7 +110,7 @@ function getEmailContent(
   type: NotificationType,
   metadata: Record<string, unknown>,
   params: CreateNotificationParams
-): { subject: string; htmlBody: string; ctaText: string; ctaUrl: string; contentBlocks?: EmailContentBlock[]; preferencesUrl?: string } | null {
+): { subject: string; heading?: string; htmlBody: string; ctaText: string; ctaUrl: string; contentBlocks?: EmailContentBlock[]; preferencesUrl?: string } | null {
   if (type === 'welcome') {
     const vanitySlug = metadata.vanity_slug as string | undefined
     const bookMeSection = vanitySlug
@@ -242,6 +242,7 @@ ${bookMeSection}
 
     return {
       subject: `Booking confirmed: ${bookingTitle || 'Booking'}${subjectDate}`,
+      heading: 'Booking confirmed',
       htmlBody: `<p>${bodyText}</p>`,
       ctaText,
       ctaUrl,
@@ -754,7 +755,7 @@ export async function createNotification(params: CreateNotificationParams) {
     const emailContent = getEmailContent(params.type, params.metadata ?? {}, params)
     const emailSubject = emailContent?.subject ?? params.subject
     const html = emailTemplate({
-      heading: emailContent?.subject ?? params.subject,
+      heading: emailContent?.heading ?? emailContent?.subject ?? params.subject,
       body: emailContent?.htmlBody ?? `<p>${params.body}</p>`,
       ctaText: emailContent?.ctaText ?? params.ctaText,
       ctaUrl: emailContent?.ctaUrl ?? params.ctaUrl,

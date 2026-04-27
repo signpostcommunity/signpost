@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { createNotification } from '@/lib/notifications-server'
+import { decryptFields } from '@/lib/encryption'
 
 export const dynamic = 'force-dynamic'
 
@@ -76,15 +77,17 @@ export async function POST(request: NextRequest) {
 
       if (openBookings && openBookings.length > 0) {
         for (const booking of openBookings) {
+          // Only 'title' is in the select; description is not fetched here
+          const decryptedBooking = decryptFields(booking, ['title'])
           await createNotification({
             recipientUserId: requesterUserId,
             type: 'preferred_list_shared',
             subject: `${dhhName} shared their preferred interpreter list with you`,
-            body: `${dhhName} shared their preferred interpreter list with you. You can now send your request for ${booking.title || 'your booking'} to interpreters ${dhhName} trusts.`,
+            body: `${dhhName} shared their preferred interpreter list with you. You can now send your request for ${decryptedBooking.title || 'your booking'} to interpreters ${dhhName} trusts.`,
             metadata: {
               dhh_name: dhhName,
               booking_id: booking.id,
-              booking_title: booking.title || '',
+              booking_title: decryptedBooking.title || '',
             },
             ctaText: 'View Request',
             ctaUrl: 'https://signpost.community/request/dashboard',

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { createNotification } from '@/lib/notifications-server'
+import { decryptFields } from '@/lib/encryption'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,6 +30,9 @@ export async function GET(request: NextRequest) {
 
   type AlertEntry = { sent_at: string; type: string; booking_id?: string }
   for (const booking of bookings) {
+    // Decrypt encrypted fields before use in notifications
+    // Only 'title' is used here; description is not in the select
+    const decryptedBooking = decryptFields(booking, ['title'])
     const alerts: Record<string, AlertEntry> =
       (booking.wave_alerts_sent as Record<string, AlertEntry>) || {}
     const wave = booking.current_wave || 1
@@ -58,7 +62,7 @@ export async function GET(request: NextRequest) {
     const timeoutKey = `wave_${wave}_timeout`
     const allRespondedKey = `wave_${wave}_all_responded`
 
-    const bookingTitle = booking.title || 'Untitled request'
+    const bookingTitle = decryptedBooking.title || 'Untitled request'
     const bookingDate = booking.date || ''
 
     // TRIGGER A: Nudge (5+ declined)

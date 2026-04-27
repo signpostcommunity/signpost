@@ -4,6 +4,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { createNotification } from '@/lib/notifications-server'
 import { sanitizeText } from '@/lib/sanitize'
 import { autoAcceptSeeds, getSeedInterpreterIds } from '@/lib/auto-accept-seeds'
+import { decryptFields } from '@/lib/encryption'
 
 export const dynamic = 'force-dynamic'
 
@@ -40,6 +41,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
     }
 
+    // Decrypt encrypted fields before use in notifications/emails
+    // Only 'title' is used here; description is not in the select
+    const decryptedBooking = decryptFields(booking, ['title'])
+
     if (booking.status === 'cancelled' || booking.status === 'completed') {
       return NextResponse.json({ error: 'Cannot send to more interpreters for this booking' }, { status: 400 })
     }
@@ -67,7 +72,7 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
 
     const requesterName = reqProfile?.org_name || reqProfile?.name || 'Requester'
-    const bookingTitle = booking.title || 'Untitled'
+    const bookingTitle = decryptedBooking.title || 'Untitled'
 
     // Pre-fetch seed IDs to skip notifications for seeds
     const seedIds = await getSeedInterpreterIds(newIds)

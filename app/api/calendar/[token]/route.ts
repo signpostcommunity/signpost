@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { decryptFields, BOOKING_ENCRYPTED_FIELDS } from '@/lib/encryption'
 
 export const dynamic = 'force-dynamic'
 
@@ -146,7 +147,13 @@ export async function GET(
     br => br.bookings.status !== 'cancelled',
   )
 
-  const icsContent = generateICS(interpreter, activeBookings)
+  // Decrypt encrypted fields (title, description) on each booking before ICS generation
+  const decryptedBookings = activeBookings.map(br => ({
+    ...br,
+    bookings: decryptFields(br.bookings, [...BOOKING_ENCRYPTED_FIELDS]),
+  }))
+
+  const icsContent = generateICS(interpreter, decryptedBookings)
 
   return new Response(icsContent, {
     headers: {

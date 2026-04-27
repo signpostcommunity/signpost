@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { createNotification } from '@/lib/notifications-server'
 import { chargePlatformFee } from '@/lib/charge-platform-fee'
+import { decryptFields } from '@/lib/encryption'
 
 export const dynamic = 'force-dynamic'
 
@@ -61,6 +62,10 @@ export async function POST(request: NextRequest) {
     if (bookingErr || !booking) {
       return NextResponse.json({ success: false, error: 'Booking not found' }, { status: 404 })
     }
+
+    // Decrypt encrypted fields before use in notifications/emails
+    // Only 'title' is in the select; description is not fetched here
+    const decryptedBooking = decryptFields(booking, ['title'])
 
     // 2. Authorize: must be the requester, OR a tagged DHH client on a personal booking
     let authorized = booking.requester_id === user.id
@@ -221,7 +226,7 @@ export async function POST(request: NextRequest) {
 
     const dateFormatted = formatBookingDate(effectiveDate)
     const timeFormatted = formatBookingTime(effectiveTimeStart, effectiveTimeEnd)
-    const bookingTitle = booking.title || 'Untitled Request'
+    const bookingTitle = decryptedBooking.title || 'Untitled Request'
 
     const sharedMeta = {
       booking_id: bookingId,
