@@ -162,7 +162,7 @@ export default function Nav({ initialSession = null }: NavProps) {
             <>
               {/* ── Logged-in state ── */}
               <Link href="/directory" className="nav-btn" style={{ textDecoration: 'none' }}>
-                Browse Interpreter Directory
+                Browse Directory
               </Link>
               <Link href={getPortalHref()} className="btn-primary" style={{ textDecoration: 'none' }}>
                 My Portal
@@ -172,35 +172,14 @@ export default function Nav({ initialSession = null }: NavProps) {
             <>
               {/* ── Logged-out state ── */}
               <Link href="/directory" className="nav-btn" style={{ textDecoration: 'none' }}>
-                Browse Interpreter Directory
-              </Link>
-              <Link href="/interpreter" className="nav-btn" style={{ textDecoration: 'none' }}>
-                Interpreter Portal
-              </Link>
-              <Link
-                href="/dhh"
-                className="nav-btn"
-                style={{ color: 'var(--accent2)', textDecoration: 'none' }}
-              >
-                D/DB/HH Portal
+                Browse Directory
               </Link>
               <Link
                 href="/interpreter/login"
-                style={{
-                  padding: '8px 18px',
-                  border: '1px solid var(--border)',
-                  borderRadius: 'var(--radius-sm)',
-                  color: 'var(--muted)',
-                  fontSize: '0.9rem',
-                  fontFamily: "'DM Sans', sans-serif",
-                  textDecoration: 'none',
-                  transition: 'color 0.15s, border-color 0.15s',
-                }}
+                className="nav-login-btn"
+                style={{ textDecoration: 'none' }}
               >
                 Log in
-              </Link>
-              <Link href="/request" className="btn-primary" style={{ textDecoration: 'none' }}>
-                Request Interpreters
               </Link>
             </>
           )}
@@ -371,7 +350,7 @@ export default function Nav({ initialSession = null }: NavProps) {
             onClick={() => setMobileOpen(false)}
             style={{ textDecoration: 'none' }}
           >
-            Browse Interpreter Directory
+            Browse Directory
           </Link>
 
           {isLoggedIn ? (
@@ -399,36 +378,12 @@ export default function Nav({ initialSession = null }: NavProps) {
           ) : (
             <>
               <Link
-                href="/interpreter"
-                className="mobile-nav-btn"
-                onClick={() => setMobileOpen(false)}
-                style={{ textDecoration: 'none' }}
-              >
-                Interpreter Portal
-              </Link>
-              <Link
-                href="/dhh"
-                className="mobile-nav-btn"
-                onClick={() => setMobileOpen(false)}
-                style={{ color: 'var(--accent2)', borderColor: 'rgba(157,135,255,0.3)', textDecoration: 'none' }}
-              >
-                D/DB/HH Portal
-              </Link>
-              <Link
                 href="/interpreter/login"
                 className="mobile-nav-btn"
                 onClick={() => setMobileOpen(false)}
                 style={{ textDecoration: 'none' }}
               >
                 Log in
-              </Link>
-              <Link
-                href="/request"
-                className="mobile-nav-btn mobile-nav-btn-primary"
-                onClick={() => setMobileOpen(false)}
-                style={{ textDecoration: 'none' }}
-              >
-                Request Interpreters
               </Link>
             </>
           )}
@@ -468,6 +423,24 @@ export default function Nav({ initialSession = null }: NavProps) {
           transition: all 0.2s;
         }
         .nav-btn:hover { color: var(--text); background: var(--surface2); }
+        .nav-login-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 8px 18px;
+          border-radius: var(--radius-sm);
+          border: 1px solid var(--border);
+          background: transparent;
+          color: var(--muted);
+          font-family: 'DM Sans', sans-serif;
+          font-size: 0.9rem;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+        .nav-login-btn:hover {
+          border-color: var(--accent);
+          color: var(--accent);
+        }
         .btn-primary-outline {
           display: inline-flex;
           align-items: center;
@@ -561,7 +534,7 @@ export default function Nav({ initialSession = null }: NavProps) {
           text-align: center !important;
         }
         .mobile-nav-btn-primary:hover { background: #00cceb !important; }
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
           .nav-links { display: none !important; }
           .hamburger { display: flex !important; }
         }
