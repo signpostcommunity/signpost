@@ -470,7 +470,14 @@ export default function NewRequestPage() {
       errs.timeEnd = 'End time must be after start time'
     }
     setErrors(errs)
-    return Object.keys(errs).length === 0
+    if (Object.keys(errs).length > 0) {
+      const firstKey = Object.keys(errs)[0]
+      setToast({ message: `Please fix: ${errs[firstKey]}`, type: 'error' })
+      const el = document.querySelector(`[data-field="${firstKey}"]`)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return false
+    }
+    return true
   }
 
   function buildPayload() {
@@ -520,6 +527,10 @@ export default function NewRequestPage() {
     if (saveState === 'saving') return
     setSaveState('saving')
     try {
+      // Refresh auth session before save
+      const supabase = createClient()
+      await supabase.auth.getSession()
+
       const res = await fetch('/api/request/booking', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -527,6 +538,7 @@ export default function NewRequestPage() {
       })
       const data = await res.json()
       if (!res.ok) {
+        setToast({ message: data.error || 'Failed to save draft', type: 'error' })
         setSaveState('error')
         setTimeout(() => setSaveState('idle'), 3000)
         return
@@ -535,7 +547,9 @@ export default function NewRequestPage() {
       setSaveState('saved')
       setToast({ message: 'Draft saved. You can find it in your All Requests page under Drafts.', type: 'success' })
       setTimeout(() => setSaveState('idle'), 2000)
-    } catch {
+    } catch (err) {
+      console.error('[new-request save-draft]', err)
+      setToast({ message: 'Could not save draft. Please try again.', type: 'error' })
       setSaveState('error')
       setTimeout(() => setSaveState('idle'), 3000)
     }
@@ -558,6 +572,10 @@ export default function NewRequestPage() {
     setSubmitting(true)
 
     try {
+      // Refresh auth session before submit to prevent stale-token failures
+      const supabase = createClient()
+      await supabase.auth.getSession()
+
       const res = await fetch('/api/request/booking', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -576,8 +594,9 @@ export default function NewRequestPage() {
         : 'Request submitted. Interpreters will be notified.'
       setToast({ message: interpMsg, type: 'success' })
       setTimeout(() => router.push('/request/dashboard'), 1500)
-    } catch {
-      setToast({ message: 'Something went wrong. Please try again.', type: 'error' })
+    } catch (err) {
+      console.error('[new-request submit]', err)
+      setToast({ message: 'Could not submit request. Please try again.', type: 'error' })
       setSubmitting(false)
     }
   }
@@ -828,7 +847,7 @@ export default function NewRequestPage() {
         {activeTab === 'Event Details' && (
         <>
 
-        <div style={{ marginBottom: 20 }}>
+        <div data-field="title" style={{ marginBottom: 20 }}>
           <label style={labelStyle}>What is this event? *</label>
           <input
             type="text"
@@ -840,7 +859,7 @@ export default function NewRequestPage() {
           {errors.title && <div style={errorStyle}>{errors.title}</div>}
         </div>
 
-        <div style={{ marginBottom: 20 }}>
+        <div data-field="eventCategory" style={{ marginBottom: 20 }}>
           <label style={labelStyle}>Event Category *</label>
           <select value={eventCategory} onChange={e => setEventCategory(e.target.value)} style={selectStyle}>
             <option value="">Select a category</option>
@@ -849,18 +868,18 @@ export default function NewRequestPage() {
           {errors.eventCategory && <div style={errorStyle}>{errors.eventCategory}</div>}
         </div>
 
-        <div className="req-date-time-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 20 }}>
-          <div>
+        <div data-field="date" className="req-date-time-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 20 }}>
+          <div data-field="date">
             <label style={labelStyle}>Date *</label>
             <input type="date" value={date} onChange={e => setDate(e.target.value)} style={inputStyle} />
             {errors.date && <div style={errorStyle}>{errors.date}</div>}
           </div>
-          <div>
+          <div data-field="timeStart">
             <label style={labelStyle}>Start Time *</label>
             <input type="time" value={timeStart} onChange={e => setTimeStart(e.target.value)} style={inputStyle} />
             {errors.timeStart && <div style={errorStyle}>{errors.timeStart}</div>}
           </div>
-          <div>
+          <div data-field="timeEnd">
             <label style={labelStyle}>End Time *</label>
             <input type="time" value={timeEnd} onChange={e => setTimeEnd(e.target.value)} style={inputStyle} />
             {errors.timeEnd && <div style={errorStyle}>{errors.timeEnd}</div>}
@@ -899,7 +918,7 @@ export default function NewRequestPage() {
           </div>
         </div>
 
-        <div style={{ marginBottom: 20 }}>
+        <div data-field="location" style={{ marginBottom: 20 }}>
           <LocationInput
             locationName={locationFields.locationName}
             address={locationFields.address}
@@ -958,7 +977,7 @@ export default function NewRequestPage() {
         </div>
         )}
 
-        <div style={{ marginBottom: 20 }}>
+        <div data-field="signLanguage" style={{ marginBottom: 20 }}>
           <label style={labelStyle}>Sign Language Needed *</label>
           <select value={signLanguage} onChange={e => setSignLanguage(e.target.value)} style={selectStyle}>
             {SIGN_LANGUAGES.map(l => <option key={l} value={l}>{l}</option>)}
@@ -1509,7 +1528,7 @@ export default function NewRequestPage() {
           &#8592; Use email or phone instead
         </button>
 
-        <div style={{ marginBottom: 16 }}>
+        <div data-field="namedFirstName" style={{ marginBottom: 16 }}>
           <label style={labelStyle}>First name *</label>
           <input
             type="text"
