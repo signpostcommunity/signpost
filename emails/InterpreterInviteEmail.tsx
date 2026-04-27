@@ -64,8 +64,8 @@ export function InterpreterInviteEmail({
   const signupUrl = `https://signpost.community/interpreter/signup?invite=${inviteToken}`
   const senderFirstName = senderName.split(' ')[0]
   const inviteLabel = orgName
-    ? `\${orgName} wants to add you to their preferred interpreter team`
-    : `\${senderName} wants to add you to their preferred interpreter team`
+    ? `${orgName} wants to add you to their preferred interpreter team`
+    : `${senderName} wants to add you to their preferred interpreter team`
 
   return (
     <SignpostEmail preview={`${inviteLabel} on signpost`}>

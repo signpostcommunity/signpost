@@ -36,7 +36,7 @@ const bodyStyle: React.CSSProperties = {
 
 const outerContainer: React.CSSProperties = {
   backgroundColor: COLORS.bg,
-  maxWidth: '600px',
+  maxWidth: '640px',
   margin: '0 auto',
   padding: '20px 20px',
 }
@@ -47,7 +47,7 @@ const innerContainer: React.CSSProperties = {
   border: `1px solid ${COLORS.border}`,
   padding: '40px 32px',
   margin: '0 auto',
-  maxWidth: '560px',
+  maxWidth: '600px',
 }
 
 const header: React.CSSProperties = {
