@@ -62,7 +62,7 @@ export default function HomePage() {
             <h1
               style={{
                 fontFamily: 'var(--font-syne)',
-                fontSize: 'clamp(2.5rem, 4.8vw, 4.2rem)',
+                fontSize: 'clamp(2rem, 3.5vw, 3rem)',
                 fontWeight: 800,
                 lineHeight: 1.0,
                 letterSpacing: '-0.04em',
@@ -76,6 +76,7 @@ export default function HomePage() {
                   WebkitBackgroundClip: 'text',
                   backgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
+                  whiteSpace: 'nowrap',
                 }}
               >
                 the un-agency.
