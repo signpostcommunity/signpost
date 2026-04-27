@@ -149,16 +149,20 @@ export function emailTemplate({
           border-radius: 12px;
           border: 1px solid #1e2433;
         ">
-          <!-- Wordmark -->
+          <!-- Logo -->
           <tr>
             <td style="padding: 32px 36px 24px; border-bottom: 1px solid #1e2433;">
-              <span style="
-                font-family: 'Arial Black', 'Helvetica Neue', Arial, sans-serif;
-                font-weight: 900;
-                font-size: 24px;
-                letter-spacing: -0.8px;
-                line-height: 1;
-              "><span style="color: #ffffff;">sign</span><span style="color: #00e5ff;">post</span></span>
+              <a href="https://signpost.community" style="display:inline-block;text-decoration:none;">
+                <img
+                  src="https://udyddevceuulwkqpxkxp.supabase.co/storage/v1/object/public/avatars/signpostlogo.png"
+                  alt="signpost"
+                  width="200"
+                  height="auto"
+                  style="display:block;border:0;outline:none;text-decoration:none;max-width:100%;"
+                />
+              </a>
+            </td>
+          </tr>
 
           <!-- Body -->
           <tr>

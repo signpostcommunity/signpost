@@ -60,16 +60,6 @@ const logoStyle: React.CSSProperties = {
   display: 'block',
 }
 
-const wordmarkFallback: React.CSSProperties = {
-  fontSize: '24px',
-  fontWeight: 700,
-  fontFamily: "'Syne', 'Inter', sans-serif",
-  letterSpacing: '-0.02em',
-  margin: '8px 0 0',
-  textAlign: 'center' as const,
-  display: 'none',
-}
-
 const contentStyle: React.CSSProperties = {
   padding: '0',
 }
@@ -126,17 +116,14 @@ export function SignpostEmail({ preview, children, wide = false }: SignpostEmail
           <Section style={inner}>
             {/* Header: signpost logo */}
             <Section style={header}>
-              <Img
-                src={LOGO_URL}
-                alt="signpost"
-                width="180"
-                style={logoStyle}
-              />
-              {/* Text fallback if image blocked */}
-              <Text style={wordmarkFallback}>
-                <span style={{ color: COLORS.white }}>sign</span>
-                <span style={{ color: COLORS.cyan }}>post</span>
-              </Text>
+              <Link href="https://signpost.community" style={{ display: 'inline-block', textDecoration: 'none' }}>
+                <Img
+                  src={LOGO_URL}
+                  alt="signpost"
+                  width="200"
+                  style={logoStyle}
+                />
+              </Link>
             </Section>
 
             {/* Content */}
