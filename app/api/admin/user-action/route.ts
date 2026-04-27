@@ -74,15 +74,44 @@ export async function POST(request: NextRequest) {
                   .eq('user_id', invite.sender_user_id)
                   .maybeSingle()
                 if (senderIp) {
-                  await admin.from('interpreter_preferred_team').insert({
-                    interpreter_id: senderIp.id,
-                    member_interpreter_id: ip.id,
-                    first_name: '',
-                    last_name: '',
-                    email: ip.email,
-                    tier: 'preferred',
-                    status: 'accepted',
-                  })
+                  // Check for existing placeholder row (invited by email)
+                  const { data: placeholder } = await admin
+                    .from('interpreter_preferred_team')
+                    .select('id')
+                    .eq('interpreter_id', senderIp.id)
+                    .is('member_interpreter_id', null)
+                    .ilike('email', ip.email || '')
+                    .maybeSingle()
+
+                  if (placeholder) {
+                    // Upgrade placeholder to real member
+                    await admin.from('interpreter_preferred_team').update({
+                      member_interpreter_id: ip.id,
+                      first_name: '',
+                      last_name: '',
+                      status: 'accepted',
+                    }).eq('id', placeholder.id)
+                  } else {
+                    // Check for existing real-member row (idempotency)
+                    const { data: existingMember } = await admin
+                      .from('interpreter_preferred_team')
+                      .select('id')
+                      .eq('interpreter_id', senderIp.id)
+                      .eq('member_interpreter_id', ip.id)
+                      .maybeSingle()
+
+                    if (!existingMember) {
+                      await admin.from('interpreter_preferred_team').insert({
+                        interpreter_id: senderIp.id,
+                        member_interpreter_id: ip.id,
+                        first_name: '',
+                        last_name: '',
+                        email: ip.email,
+                        tier: 'preferred',
+                        status: 'accepted',
+                      })
+                    }
+                  }
                 }
               } else if (role === 'dhh_pref_list') {
                 await admin.from('deaf_roster').insert({

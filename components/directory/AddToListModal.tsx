@@ -287,7 +287,7 @@ export default function AddToListModal({
             return;
           }
         } else {
-          // Add mode - INSERT new row
+          // Add mode - INSERT new row (with duplicate guard)
           const { data: profile, error: profileErr } = await supabase
             .from('interpreter_profiles')
             .select('id')
@@ -297,6 +297,25 @@ export default function AddToListModal({
           if (profileErr || !profile) {
             console.error('Profile lookup error:', profileErr);
             setError('Could not find your interpreter profile.');
+            setSaving(false);
+            return;
+          }
+
+          // Check if already on team (idempotency guard)
+          const { data: existingRow } = await supabase
+            .from('interpreter_preferred_team')
+            .select('id, tier')
+            .eq('interpreter_id', profile.id)
+            .eq('member_interpreter_id', interpreter.id)
+            .maybeSingle();
+
+          if (existingRow) {
+            if (onDuplicate) {
+              onDuplicate(interpreter.name);
+              onClose();
+              return;
+            }
+            setError('Already on your team.');
             setSaving(false);
             return;
           }
@@ -319,6 +338,16 @@ export default function AddToListModal({
             console.error('Insert error (interpreter_preferred_team):', insertErr);
             if (insertErr.code === '23503') {
               setError('This interpreter is no longer available.');
+              setSaving(false);
+              return;
+            }
+            if (insertErr.code === '23505') {
+              if (onDuplicate) {
+                onDuplicate(interpreter.name);
+                onClose();
+                return;
+              }
+              setError('Already on your team.');
               setSaving(false);
               return;
             }

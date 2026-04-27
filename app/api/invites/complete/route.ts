@@ -51,22 +51,62 @@ export async function POST(req: NextRequest) {
             .eq('id', newInterpreterProfileId)
             .maybeSingle()
 
-          // Add to sender's preferred team
-          const { error: teamErr } = await admin
+          // Check for existing placeholder row (invited by email, member_interpreter_id is NULL)
+          const { data: placeholder } = await admin
             .from('interpreter_preferred_team')
-            .insert({
-              interpreter_id: senderProfile.id,
-              member_interpreter_id: newInterpreterProfileId,
-              first_name: newProfile?.first_name || '',
-              last_name: newProfile?.last_name || '',
-              email: newProfile?.email || '',
-              status: 'accepted',
-            })
+            .select('id')
+            .eq('interpreter_id', senderProfile.id)
+            .is('member_interpreter_id', null)
+            .ilike('email', newProfile?.email || '')
+            .maybeSingle()
 
-          if (teamErr) {
-            console.error('[invite-complete] Team insert error:', teamErr)
+          if (placeholder) {
+            // Upgrade placeholder to real member
+            const { error: updateErr } = await admin
+              .from('interpreter_preferred_team')
+              .update({
+                member_interpreter_id: newInterpreterProfileId,
+                first_name: newProfile?.first_name || '',
+                last_name: newProfile?.last_name || '',
+                status: 'accepted',
+              })
+              .eq('id', placeholder.id)
+
+            if (updateErr) {
+              console.error('[invite-complete] Placeholder upgrade error:', updateErr)
+            } else {
+              console.log(`[invite-complete] Upgraded placeholder to ${newInterpreterProfileId} on interpreter ${senderProfile.id}'s preferred team`)
+            }
           } else {
-            console.log(`[invite-complete] Added ${newInterpreterProfileId} to interpreter ${senderProfile.id}'s preferred team`)
+            // No placeholder exists -- check for existing real-member row (idempotency)
+            const { data: existingMember } = await admin
+              .from('interpreter_preferred_team')
+              .select('id')
+              .eq('interpreter_id', senderProfile.id)
+              .eq('member_interpreter_id', newInterpreterProfileId)
+              .maybeSingle()
+
+            if (!existingMember) {
+              // Insert fresh row
+              const { error: teamErr } = await admin
+                .from('interpreter_preferred_team')
+                .insert({
+                  interpreter_id: senderProfile.id,
+                  member_interpreter_id: newInterpreterProfileId,
+                  first_name: newProfile?.first_name || '',
+                  last_name: newProfile?.last_name || '',
+                  email: newProfile?.email || '',
+                  status: 'accepted',
+                })
+
+              if (teamErr) {
+                console.error('[invite-complete] Team insert error:', teamErr)
+              } else {
+                console.log(`[invite-complete] Added ${newInterpreterProfileId} to interpreter ${senderProfile.id}'s preferred team`)
+              }
+            } else {
+              console.log(`[invite-complete] ${newInterpreterProfileId} already on interpreter ${senderProfile.id}'s team, skipping`)
+            }
           }
         }
       } else if (invite.sender_role === 'deaf') {
