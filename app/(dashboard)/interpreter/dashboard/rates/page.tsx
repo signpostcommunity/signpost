@@ -66,6 +66,8 @@ function parseTravelExpenses(raw: unknown): { items: string[]; custom: CustomFee
   return { items: [], custom: [] }
 }
 
+const DEFAULT_AFTER_HOURS_DESCRIPTION = 'Mon-Fri 8am-5pm. Differential applies outside these hours, weekends, and holidays.'
+
 const TRAVEL_OPTIONS = ['Mileage', 'Parking', 'Tolls', 'Ferry', 'Public Transit', 'Airfare', 'Lodging', 'Per diem / Meals']
 
 const DEFAULT_PROFILES: RateProfile[] = [
@@ -74,7 +76,7 @@ const DEFAULT_PROFILES: RateProfile[] = [
     hourlyRate: '', currency: 'USD (US Dollar)', minBooking: 'No minimum',
     cancellationPolicy: '48 hours notice required', lateFee: '100% of booking fee',
     notes: '', travel: [],
-    afterHoursOn: false, afterHoursDiff: '', afterHoursDescription: '', customFees: [],
+    afterHoursOn: false, afterHoursDiff: '', afterHoursDescription: DEFAULT_AFTER_HOURS_DESCRIPTION, customFees: [],
     travelTimeBilling: 'none', travelTimeRate: '', travelTimeDescription: '',
   },
 ]
@@ -142,7 +144,7 @@ export default function RatesPage() {
           travel: te.items,
           afterHoursOn: r.after_hours_diff != null && Number(r.after_hours_diff) > 0,
           afterHoursDiff: r.after_hours_diff != null ? String(r.after_hours_diff) : '',
-          afterHoursDescription: r.after_hours_description || '',
+          afterHoursDescription: r.after_hours_description || DEFAULT_AFTER_HOURS_DESCRIPTION,
           customFees: te.custom,
           travelTimeBilling: ((r as { travel_time_billing?: string | null }).travel_time_billing as RateProfile['travelTimeBilling']) || 'none',
           travelTimeRate: (r as { travel_time_rate?: number | null }).travel_time_rate != null ? String((r as { travel_time_rate?: number | null }).travel_time_rate) : '',
@@ -191,7 +193,7 @@ export default function RatesPage() {
           travel: te.items,
           afterHoursOn: r.after_hours_diff != null && Number(r.after_hours_diff) > 0,
           afterHoursDiff: r.after_hours_diff != null ? String(r.after_hours_diff) : '',
-          afterHoursDescription: (r as { after_hours_description?: string | null }).after_hours_description || '',
+          afterHoursDescription: (r as { after_hours_description?: string | null }).after_hours_description || DEFAULT_AFTER_HOURS_DESCRIPTION,
           customFees: te.custom,
           travelTimeBilling: ((r as { travel_time_billing?: string | null }).travel_time_billing as RateProfile['travelTimeBilling']) || 'none',
           travelTimeRate: (r as { travel_time_rate?: number | null }).travel_time_rate != null ? String((r as { travel_time_rate?: number | null }).travel_time_rate) : '',
