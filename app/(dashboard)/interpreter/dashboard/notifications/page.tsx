@@ -15,30 +15,45 @@ interface NotificationPreferences {
   categories: Record<string, { email: boolean; sms: boolean }>
 }
 
-// ── Category display config ─────────────────────────────────────────────────
+// ── Category sections ────────────────────────────────────────────────────────
 // Only categories present in the user's JSONB are rendered.
-// This map provides labels and ordering for known categories.
+// Grouped into sections matching Deaf/Requester notification pages.
 
-const CATEGORY_CONFIG: { key: string; label: string }[] = [
-  // Bookings / rates
-  { key: 'new_request', label: 'New booking request' },
-  { key: 'rate_response', label: 'Response to your rate' },
-  { key: 'booking_confirmed', label: 'Booking confirmed' },
-  { key: 'booking_reminder', label: 'Upcoming booking reminder' },
-  { key: 'cancelled_by_requester', label: 'Requester cancelled a booking' },
-  { key: 'cancelled_by_you', label: 'Your cancellation confirmed' },
-  { key: 'sub_search_update', label: 'Substitute search update' },
-  // Communication
-  { key: 'new_message', label: 'New message' },
-  { key: 'team_invite', label: 'Team invite' },
-  // Roster / community
-  { key: 'added_to_preferred_list', label: 'Added to a preferred interpreter list' },
-  // Profile / admin
-  { key: 'profile_approved', label: 'Profile approved' },
-  { key: 'profile_denied', label: 'Profile changes denied' },
-  { key: 'profile_saved', label: 'Profile draft saved' },
-  { key: 'invoice_paid', label: 'Invoice paid' },
+const NOTIF_SECTIONS: { section: string; keys: string[] }[] = [
+  {
+    section: 'Bookings & rates',
+    keys: ['new_request', 'rate_response', 'booking_confirmed', 'booking_reminder', 'cancelled_by_requester', 'cancelled_by_you', 'sub_search_update'],
+  },
+  {
+    section: 'Communication',
+    keys: ['new_message', 'team_invite'],
+  },
+  {
+    section: 'Roster & community',
+    keys: ['added_to_preferred_list'],
+  },
+  {
+    section: 'Profile & admin',
+    keys: ['profile_approved', 'profile_denied', 'profile_saved', 'invoice_paid'],
+  },
 ]
+
+const CATEGORY_LABELS: Record<string, string> = {
+  new_request: 'New booking request',
+  rate_response: 'Response to your rate',
+  booking_confirmed: 'Booking confirmed',
+  booking_reminder: 'Upcoming booking reminder',
+  cancelled_by_requester: 'Requester cancelled a booking',
+  cancelled_by_you: 'Your cancellation confirmed',
+  sub_search_update: 'Substitute search update',
+  new_message: 'New message',
+  team_invite: 'Team invite',
+  added_to_preferred_list: 'Added to a preferred interpreter list',
+  profile_approved: 'Profile approved',
+  profile_denied: 'Profile changes denied',
+  profile_saved: 'Profile draft saved',
+  invoice_paid: 'Invoice paid',
+}
 
 // ── Toggle switch ────────────────────────────────────────────────────────────
 
@@ -160,9 +175,12 @@ export default function InterpreterNotificationsPage() {
     savePrefs(prefs, normalized)
   }
 
-  // Build the list of categories to display — only those present in user's JSONB
-  const visibleCategories = prefs
-    ? CATEGORY_CONFIG.filter(c => c.key in prefs.categories)
+  // Build visible sections — only categories present in user's JSONB
+  const visibleSections = prefs
+    ? NOTIF_SECTIONS.map(s => ({
+        section: s.section,
+        items: s.keys.filter(k => k in prefs.categories).map(k => ({ key: k, label: CATEGORY_LABELS[k] || k })),
+      })).filter(s => s.items.length > 0)
     : []
 
   if (loading) {
@@ -278,43 +296,54 @@ export default function InterpreterNotificationsPage() {
         </div>
 
         {/* Category toggles */}
-        {visibleCategories.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {visibleCategories.map(item => {
-              const pref = prefs.categories[item.key] ?? { email: false, sms: false }
-              return (
-                <div key={item.key} style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '10px 12px', borderRadius: 'var(--radius-sm)',
-                }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: '0.86rem', fontWeight: 500, color: '#f0f2f8' }}>{item.label}</div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                      <span style={{ fontSize: 12, color: '#96a0b8', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Email</span>
-                      <ToggleSwitch
-                        on={prefs.email_enabled && pref.email}
-                        onChange={() => toggleCategory(item.key, 'email')}
-                        disabled={saving || !prefs.email_enabled}
-                      />
+        {visibleSections.length > 0 && visibleSections.map(section => (
+          <div key={section.section} style={{ marginBottom: 20 }}>
+            <div style={{
+              fontWeight: 600, fontSize: 13,
+              letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+              color: '#00e5ff',
+              marginBottom: 10, paddingBottom: 6,
+              borderBottom: '1px solid var(--border)',
+            }}>
+              {section.section}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              {section.items.map(item => {
+                const pref = prefs.categories[item.key] ?? { email: false, sms: false }
+                return (
+                  <div key={item.key} style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '10px 12px', borderRadius: 'var(--radius-sm)',
+                  }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '0.86rem', fontWeight: 500, color: '#f0f2f8' }}>{item.label}</div>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                      <span style={{ fontSize: 12, color: '#96a0b8', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>SMS</span>
-                      <ToggleSwitch
-                        on={prefs.sms_enabled && pref.sms}
-                        onChange={() => toggleCategory(item.key, 'sms')}
-                        disabled={saving || !prefs.sms_enabled || !hasPhone}
-                      />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexShrink: 0 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                        <span style={{ fontSize: 12, color: '#96a0b8', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Email</span>
+                        <ToggleSwitch
+                          on={prefs.email_enabled && pref.email}
+                          onChange={() => toggleCategory(item.key, 'email')}
+                          disabled={saving || !prefs.email_enabled}
+                        />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                        <span style={{ fontSize: 12, color: '#96a0b8', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>SMS</span>
+                        <ToggleSwitch
+                          on={prefs.sms_enabled && pref.sms}
+                          onChange={() => toggleCategory(item.key, 'sms')}
+                          disabled={saving || !prefs.sms_enabled || !hasPhone}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
-        )}
+        ))}
 
-        {visibleCategories.length === 0 && (
+        {visibleSections.length === 0 && (
           <div style={{ color: '#96a0b8', fontSize: '0.84rem', padding: '12px 0' }}>
             No notification categories configured yet.
           </div>

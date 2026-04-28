@@ -335,6 +335,16 @@ The Deaf dashboard uses `display: grid; grid-template-columns: 1.5fr 1fr` for tw
 - Tier labels on interpreter cards: "Top Choice" (cyan), "Approved" (muted), "Not recommended for this request" (greyed out, opacity 0.4, pointer-events: none)
 - Setting-specific indicators: "Preferred for personal settings" / "Preferred for work settings" (muted, italic, informational only, never blocking)
 
+### Locked Color Decisions
+
+These color choices are final and must not be changed or second-guessed:
+
+1. **Personal-only roster section accent: `#a78bfa` (purple) header.**
+   Applies on the requester portal Client Interpreter Lists page and any future surface displaying personal-only interpreters. Section header uses `color: '#a78bfa'`, `fontWeight: 600`, `fontSize: 13px`, `letterSpacing: '0.08em'`, `textTransform: 'uppercase'`.
+
+2. **Do Not Book section accent: `#ff6b85` (red) header + subtle red-tinted left-border on cards.**
+   Header uses `color: '#ff6b85'` with same uppercase treatment. Cards use `borderLeft: '3px solid rgba(255,107,133,0.4)'` and `background: 'rgba(255,107,133,0.03)'`. Applies on requester-facing surfaces showing another user's DNB list.
+
 ---
 
 ## Environment Variables
