@@ -472,7 +472,7 @@ export default function DeafDashboardPage() {
           {/* Tier move controls */}
           <div style={{
             display: 'flex', gap: 8, flexWrap: 'wrap',
-            paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)',
+            marginTop: 10, paddingTop: 12, borderTop: '1px solid var(--border)',
           }} onClick={e => e.stopPropagation()}>
             {item.tier !== 'preferred' && (
               <button onClick={() => requestTierChange(item.roster_id, 'preferred')} style={{

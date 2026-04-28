@@ -148,7 +148,7 @@ function InterpreterCard({ interp, onMoveTier, onRemove, onEditNote, onMoveToDnb
         {/* Action buttons */}
         <div style={{
           display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12,
-          paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)',
+          paddingTop: 12, borderTop: '1px solid var(--border)',
         }}>
           <Link
             href={`/directory/${interp.interpreter_id}?context=requester`}
