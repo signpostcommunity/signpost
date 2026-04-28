@@ -16,7 +16,8 @@
 //
 // Created: 2026-04-27
 
-import 'dotenv/config'
+import { config } from 'dotenv'
+config({ path: '.env.local' })
 import { createClient } from '@supabase/supabase-js'
 import { decrypt } from '../lib/encryption'
 
