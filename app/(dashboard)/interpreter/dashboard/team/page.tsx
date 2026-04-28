@@ -66,7 +66,7 @@ function TierSection({ title, accentColor, members, onMoveTier, onRemove, onEdit
           No interpreters in this tier yet
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {members.map(member => (
             <TeamCard
               key={member.id}
@@ -399,13 +399,14 @@ function TeamCard({ member, onMoveTier, onRemove, onEdit, onMessage, moveLabel }
       style={{
         background: 'var(--card-bg)',
         border: `1px solid ${hover ? 'rgba(0,229,255,0.3)' : 'var(--border)'}`,
-        borderRadius: 'var(--radius)', padding: '18px 22px',
+        borderRadius: 'var(--radius)', padding: '18px 20px',
         display: 'flex', alignItems: 'flex-start', gap: 16, transition: 'border-color 0.2s',
         cursor: 'pointer',
       }}
     >
+      {/* Avatar */}
       {profileHref ? (
-        <Link href={profileHref} onClick={e => e.stopPropagation()} style={{ flexShrink: 0 }}>
+        <Link href={profileHref} onClick={e => e.stopPropagation()} style={{ flexShrink: 0, textDecoration: 'none' }}>
           {member.photo_url ? (
             <img src={member.photo_url} alt={fullName} style={{
               width: 44, height: 44, borderRadius: '50%', objectFit: 'cover',
@@ -423,66 +424,73 @@ function TeamCard({ member, onMoveTier, onRemove, onEdit, onMessage, moveLabel }
       ) : (
         <Avatar initials={initials} gradient={member.avatar_color || 'linear-gradient(135deg,#7b61ff,#00e5ff)'} size={44} />
       )}
+
+      {/* Content — vertical flow */}
       <div style={{ flex: 1, minWidth: 0 }}>
         {profileHref ? (
-          <Link href={profileHref} onClick={e => e.stopPropagation()} style={{ fontWeight: 600, fontSize: '0.92rem', color: 'var(--text)', textDecoration: 'none' }}
+          <Link href={profileHref} onClick={e => e.stopPropagation()} style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text)', textDecoration: 'none' }}
             onMouseEnter={e => { e.currentTarget.style.textDecoration = 'underline' }}
             onMouseLeave={e => { e.currentTarget.style.textDecoration = 'none' }}
           >{fullName}</Link>
         ) : (
-          <div style={{ fontWeight: 600, fontSize: '0.92rem' }}>{fullName}</div>
+          <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>{fullName}</div>
         )}
         {member.notes && (
           <div style={{
-            fontSize: '0.78rem', color: 'var(--muted)', marginTop: 6,
+            fontSize: '0.8rem', color: 'var(--muted)', marginTop: 6,
             fontStyle: 'italic', lineHeight: 1.5,
           }}>
             &ldquo;{member.notes}&rdquo;
           </div>
         )}
-      </div>
-      <div style={{ display: 'flex', gap: 8, flexShrink: 0, alignSelf: 'center' }}>
-        {member.user_id && (
+
+        {/* Action buttons — below divider, wrapping */}
+        <div style={{
+          display: 'flex', gap: 8, flexWrap: 'wrap',
+          marginTop: 10, paddingTop: 12, borderTop: '1px solid var(--border)',
+        }}>
+          {member.user_id && (
+            <button
+              onClick={e => { e.stopPropagation(); onMessage() }}
+              style={{
+                background: 'none', border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
+                fontSize: '0.75rem', padding: '5px 14px', cursor: 'pointer',
+                whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'Inter', sans-serif",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
+            >
+              Message
+            </button>
+          )}
           <button
-            onClick={e => { e.stopPropagation(); onMessage() }}
+            onClick={e => { e.stopPropagation(); onMoveTier() }}
             style={{
               background: 'none', border: '1px solid var(--border)',
               borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
-              fontSize: '0.73rem', padding: '5px 12px', cursor: 'pointer',
+              fontSize: '0.75rem', padding: '5px 14px', cursor: 'pointer',
               whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'Inter', sans-serif",
             }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
           >
-            Message
+            {moveLabel}
           </button>
-        )}
-        <button
-          onClick={e => { e.stopPropagation(); onMoveTier() }}
-          style={{
-            background: 'none', border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
-            fontSize: '0.73rem', padding: '5px 12px', cursor: 'pointer',
-            whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'Inter', sans-serif",
-          }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(0,229,255,0.4)'; e.currentTarget.style.color = 'var(--accent)' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
-        >
-          {moveLabel}
-        </button>
-        <button
-          onClick={e => { e.stopPropagation(); onRemove() }}
-          style={{
-            background: 'none', border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
-            fontSize: '0.73rem', padding: '5px 12px', cursor: 'pointer',
-            whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'Inter', sans-serif",
-          }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,80,80,0.4)'; e.currentTarget.style.color = '#f87171' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
-        >
-          Remove
-        </button>
+          <button
+            onClick={e => { e.stopPropagation(); onRemove() }}
+            style={{
+              background: 'none', border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-sm)', color: 'var(--muted)',
+              fontSize: '0.75rem', padding: '5px 14px', cursor: 'pointer',
+              whiteSpace: 'nowrap', transition: 'all 0.2s', fontFamily: "'Inter', sans-serif",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(255,80,80,0.4)'; e.currentTarget.style.color = '#f87171' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
+          >
+            Remove
+          </button>
+        </div>
       </div>
     </div>
   )
