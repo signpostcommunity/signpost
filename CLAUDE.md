@@ -349,6 +349,7 @@ RESEND_API_KEY=<resend api key>
 STRIPE_SECRET_KEY=<stripe secret key>
 STRIPE_PUBLISHABLE_KEY=<stripe publishable key>
 STRIPE_WEBHOOK_SECRET=<stripe webhook secret>
+ENCRYPTION_KEY=<32-byte hex key for AES-256-GCM encryption of booking fields and messages>
 ```
 
 ---
