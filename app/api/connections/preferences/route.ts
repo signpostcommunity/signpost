@@ -91,9 +91,13 @@ export async function GET(request: NextRequest) {
     if (!interp) continue
 
     if (entry.do_not_book) {
-      // DNB: IDs only for silent exclusion - no names, no details
+      // DNB: full details for requester view (requesters need to see who is DNB'd;
+      // privacy rule is interpreters never know they're DNB'd, not that requesters can't see)
       doNotBook.push({
-        interpreter_id: entry.interpreter_id,
+        ...interp,
+        roster_notes: entry.notes,
+        approve_work: entry.approve_work,
+        approve_personal: entry.approve_personal,
       })
     } else if (entry.tier === 'preferred') {
       preferred.push({
@@ -116,6 +120,6 @@ export async function GET(request: NextRequest) {
     dhh_user: dhhUser || null,
     preferred,
     approved,
-    do_not_book_ids: doNotBook.map(d => d.interpreter_id),
+    do_not_book: doNotBook,
   })
 }

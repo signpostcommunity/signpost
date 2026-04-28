@@ -29,6 +29,8 @@ type ClientData = {
   offplatformEmail: string | null
   preferred: RosterEntry[]
   approved: RosterEntry[]
+  personalOnly: RosterEntry[]
+  dnb: RosterEntry[]
   expanded: boolean
 }
 
@@ -132,7 +134,9 @@ function InterpreterRow({ entry }: { entry: RosterEntry }) {
 function ClientCard({ client, onToggle }: { client: ClientData; onToggle: () => void }) {
   const prefCount = client.preferred.length
   const appCount = client.approved.length
-  const total = prefCount + appCount
+  const personalCount = client.personalOnly.length
+  const dnbCount = client.dnb.length
+  const total = prefCount + appCount + personalCount + dnbCount
 
   return (
     <div style={{
@@ -243,7 +247,61 @@ function ClientCard({ client, onToggle }: { client: ClientData; onToggle: () => 
             </div>
           )}
 
-          {client.preferred.length === 0 && client.approved.length === 0 && (
+          {/* Personal-context only */}
+          {client.personalOnly.length > 0 && (
+            <div style={{ marginBottom: 20 }}>
+              <div style={{
+                fontWeight: 600,
+                fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+                color: '#a78bfa', marginBottom: 4,
+              }}>
+                Approved for personal context only ({client.personalOnly.length})
+              </div>
+              <div style={{
+                fontSize: '0.78rem', color: 'var(--muted)', fontStyle: 'italic',
+                marginBottom: 10, lineHeight: 1.4,
+              }}>
+                Ask {client.clientName.split(' ')[0]} before booking for work.
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {client.personalOnly.map(entry => (
+                  <InterpreterRow key={entry.interpreter_id} entry={entry} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Do Not Book */}
+          {client.dnb.length > 0 && (
+            <div style={{ marginBottom: 20 }}>
+              <div style={{
+                fontWeight: 600,
+                fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+                color: '#ff6b85', marginBottom: 4,
+              }}>
+                Do Not Book ({client.dnb.length})
+              </div>
+              <div style={{
+                fontSize: '0.78rem', color: 'var(--muted)', fontStyle: 'italic',
+                marginBottom: 10, lineHeight: 1.4,
+              }}>
+                {client.clientName.split(' ')[0]} has asked that you not book these interpreters.
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {client.dnb.map(entry => (
+                  <div key={entry.interpreter_id} style={{
+                    borderLeft: '3px solid rgba(255,107,133,0.4)',
+                    borderRadius: 10,
+                    background: 'rgba(255,107,133,0.03)',
+                  }}>
+                    <InterpreterRow entry={entry} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {client.preferred.length === 0 && client.approved.length === 0 && client.personalOnly.length === 0 && client.dnb.length === 0 && (
             <p style={{ color: 'var(--muted)', fontSize: '0.85rem', fontStyle: 'italic', margin: '0 0 16px' }}>
               {client.isOffPlatform
                 ? 'This contact is not on signpost yet. Once they join, they can share their preferred interpreter list with you.'
@@ -620,6 +678,8 @@ export default function ClientListsClient() {
           offplatformEmail: conn.offplatform_email || null,
           preferred: [],
           approved: [],
+          personalOnly: [],
+          dnb: [],
           expanded: false,
         })
         continue
@@ -651,6 +711,8 @@ export default function ClientListsClient() {
             offplatformEmail: null,
             preferred: [],
             approved: [],
+            personalOnly: [],
+            dnb: [],
             expanded: false,
           })
           continue
@@ -658,13 +720,31 @@ export default function ClientListsClient() {
 
         const data = await res.json()
 
-        // Filter to approve_work=true only (requester context is always work)
-        const filterWork = (entries: RosterEntry[]) =>
-          entries.filter((e: RosterEntry) => e.approve_work)
-
         // Sort within each tier by first_name
         const sortByName = (entries: RosterEntry[]) =>
           entries.sort((a, b) => (a.first_name || a.name || '').localeCompare(b.first_name || b.name || ''))
+
+        // Three-way grouping:
+        // - Tier sections (preferred/approved): approve_work=true, not DNB
+        // - Personal-only: approve_work=false, approve_personal=true, not DNB
+        // - DNB: returned separately from API
+        const splitByWorkContext = (entries: RosterEntry[]) => {
+          const work: RosterEntry[] = []
+          const personalOnly: RosterEntry[] = []
+          for (const e of entries) {
+            if (e.approve_work) {
+              work.push(e)
+            } else if (e.approve_personal) {
+              personalOnly.push(e)
+            }
+            // Skip rows where both are false (incomplete settings)
+          }
+          return { work, personalOnly }
+        }
+
+        const prefSplit = splitByWorkContext(data.preferred || [])
+        const appSplit = splitByWorkContext(data.approved || [])
+        const allPersonalOnly = [...prefSplit.personalOnly, ...appSplit.personalOnly]
 
         clientDataArr.push({
           connectionId: conn.id,
@@ -674,8 +754,10 @@ export default function ClientListsClient() {
           connectionDate: conn.confirmed_at || conn.created_at,
           isOffPlatform: false,
           offplatformEmail: null,
-          preferred: sortByName(filterWork(data.preferred || [])),
-          approved: sortByName(filterWork(data.approved || [])),
+          preferred: sortByName(prefSplit.work),
+          approved: sortByName(appSplit.work),
+          personalOnly: sortByName(allPersonalOnly),
+          dnb: sortByName(data.do_not_book || []),
           expanded: false,
         })
       } catch (err) {
