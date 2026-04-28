@@ -325,7 +325,7 @@ export default function HomePage() {
         }
         .role-card-deaf { --accent-color: #a78bfa; }
         .role-card-interpreter { --accent-color: #00e5ff; }
-        .role-card-requester { --accent-color: #00e5ff; }
+        .role-card-requester { --accent-color: #a78bfa; }
         .role-card:hover {
           background: #1a1a25;
           border-color: var(--accent-color);
