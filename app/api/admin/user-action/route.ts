@@ -118,6 +118,7 @@ export async function POST(request: NextRequest) {
                   deaf_user_id: invite.sender_user_id,
                   interpreter_id: ip.id,
                   tier: 'preferred',
+                  do_not_book: false,
                 })
               } else if (role === 'requester_pref_list') {
                 await admin.from('requester_roster').insert({

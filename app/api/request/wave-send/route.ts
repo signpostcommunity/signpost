@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     // Verify booking belongs to this requester
     const { data: booking, error: bookingErr } = await admin
       .from('bookings')
-      .select('id, requester_id, title, date, time_start, time_end, location, format, current_wave, status')
+      .select('id, requester_id, title, date, time_start, time_end, location, format, current_wave, status, tagged_deaf_user_ids')
       .eq('id', bookingId)
       .eq('requester_id', user.id)
       .maybeSingle()
@@ -62,6 +62,33 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'All selected interpreters have already been contacted' }, { status: 400 })
     }
 
+    // DNB filter: exclude interpreters on any tagged Deaf user's Do Not Book list
+    let filteredIds = newIds as string[]
+    const taggedDeafIds = (booking as Record<string, unknown>).tagged_deaf_user_ids as string[] | null
+    if (taggedDeafIds && taggedDeafIds.length > 0) {
+      const { data: dnbRows, error: dnbError } = await admin
+        .from('deaf_roster')
+        .select('interpreter_id')
+        .in('deaf_user_id', taggedDeafIds)
+        .in('interpreter_id', filteredIds)
+        .or('do_not_book.eq.true,tier.eq.dnb')
+
+      if (dnbError) {
+        console.error('[wave-send] DNB filter query failed:', dnbError.message)
+        return NextResponse.json({ error: 'DNB filter query failed; aborting wave to protect DNB rule' }, { status: 500 })
+      }
+
+      const dnbIds = new Set((dnbRows || []).map(r => r.interpreter_id))
+      if (dnbIds.size > 0) {
+        console.log(`[wave-send] DNB filter excluded ${dnbIds.size} interpreter(s) from wave`)
+        filteredIds = filteredIds.filter(id => !dnbIds.has(id))
+      }
+    }
+
+    if (filteredIds.length === 0) {
+      return NextResponse.json({ error: 'All selected interpreters are excluded (DNB or already contacted)' }, { status: 400 })
+    }
+
     const newWave = (booking.current_wave || 1) + 1
 
     // Get requester name
@@ -75,10 +102,10 @@ export async function POST(request: NextRequest) {
     const bookingTitle = decryptedBooking.title || 'Untitled'
 
     // Pre-fetch seed IDs to skip notifications for seeds
-    const seedIds = await getSeedInterpreterIds(newIds)
+    const seedIds = await getSeedInterpreterIds(filteredIds)
 
     // Insert new booking_recipients
-    for (const interpreterId of newIds) {
+    for (const interpreterId of filteredIds) {
       const { error: recipientErr } = await admin
         .from('booking_recipients')
         .insert({
@@ -135,7 +162,7 @@ export async function POST(request: NextRequest) {
       try {
         await autoAcceptSeeds({
           bookingId,
-          interpreterIds: newIds,
+          interpreterIds: filteredIds,
           requesterUserId: user.id,
           bookingTitle,
           bookingDate: booking.date || undefined,
@@ -155,7 +182,7 @@ export async function POST(request: NextRequest) {
       .update({ current_wave: newWave })
       .eq('id', bookingId)
 
-    return NextResponse.json({ success: true, waveNumber: newWave, sentCount: newIds.length })
+    return NextResponse.json({ success: true, waveNumber: newWave, sentCount: filteredIds.length })
   } catch (err) {
     console.error('[wave-send] error:', err instanceof Error ? err.message : err)
     return NextResponse.json({ error: 'Internal error' }, { status: 500 })

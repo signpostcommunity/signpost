@@ -269,10 +269,33 @@ export async function POST(request: NextRequest) {
 
     // Create booking_recipients for each interpreter (if provided)
     if (interpreterIds?.length && !saveAsDraft) {
-      // Pre-fetch seed IDs to skip notifications for seeds
-      const seedIds = await getSeedInterpreterIds(interpreterIds)
+      // DNB filter: exclude interpreters on any tagged Deaf user's Do Not Book list
+      let filteredInterpreterIds = interpreterIds as string[]
+      const taggedIds = Array.isArray(tagged_deaf_user_ids) ? tagged_deaf_user_ids as string[] : []
+      if (taggedIds.length > 0 && filteredInterpreterIds.length > 0) {
+        const { data: dnbRows, error: dnbError } = await admin
+          .from('deaf_roster')
+          .select('interpreter_id')
+          .in('deaf_user_id', taggedIds)
+          .in('interpreter_id', filteredInterpreterIds)
+          .or('do_not_book.eq.true,tier.eq.dnb')
 
-      for (const interpreterId of interpreterIds) {
+        if (dnbError) {
+          console.error('[request/booking] DNB filter query failed:', dnbError.message)
+          return NextResponse.json({ error: 'DNB filter query failed; aborting to protect DNB rule' }, { status: 500 })
+        }
+
+        const dnbIds = new Set((dnbRows || []).map(r => r.interpreter_id))
+        if (dnbIds.size > 0) {
+          console.log(`[request/booking] DNB filter excluded ${dnbIds.size} interpreter(s)`)
+          filteredInterpreterIds = filteredInterpreterIds.filter((id: string) => !dnbIds.has(id))
+        }
+      }
+
+      // Pre-fetch seed IDs to skip notifications for seeds
+      const seedIds = await getSeedInterpreterIds(filteredInterpreterIds)
+
+      for (const interpreterId of filteredInterpreterIds) {
         const { error: recipientErr } = await admin
           .from('booking_recipients')
           .insert({
@@ -321,7 +344,7 @@ export async function POST(request: NextRequest) {
         try {
           await autoAcceptSeeds({
             bookingId: booking.id,
-            interpreterIds,
+            interpreterIds: filteredInterpreterIds,
             requesterUserId: user.id,
             bookingTitle: title || 'Untitled',
             bookingDate: date || undefined,

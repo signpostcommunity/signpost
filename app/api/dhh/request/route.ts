@@ -194,11 +194,34 @@ export async function POST(request: NextRequest) {
       console.error('[dhh/request] booking_dhh_clients insert failed:', dhhClientErr.message)
     }
 
+    // DNB filter: exclude interpreters on this Deaf user's Do Not Book list
+    let filteredInterpreterIds = interpreterIds as string[]
+    const deafUserId = deafRow?.id || user.id
+    if (filteredInterpreterIds.length > 0) {
+      const { data: dnbRows, error: dnbError } = await admin
+        .from('deaf_roster')
+        .select('interpreter_id')
+        .eq('deaf_user_id', deafUserId)
+        .in('interpreter_id', filteredInterpreterIds)
+        .or('do_not_book.eq.true,tier.eq.dnb')
+
+      if (dnbError) {
+        console.error('[dhh/request] DNB filter query failed:', dnbError.message)
+        return NextResponse.json({ error: 'DNB filter query failed; aborting to protect DNB rule' }, { status: 500 })
+      }
+
+      const dnbIds = new Set((dnbRows || []).map(r => r.interpreter_id))
+      if (dnbIds.size > 0) {
+        console.log(`[dhh/request] DNB filter excluded ${dnbIds.size} interpreter(s)`)
+        filteredInterpreterIds = filteredInterpreterIds.filter((id: string) => !dnbIds.has(id))
+      }
+    }
+
     // Pre-fetch seed IDs to skip notifications for seeds
-    const seedIds = await getSeedInterpreterIds(interpreterIds)
+    const seedIds = await getSeedInterpreterIds(filteredInterpreterIds)
 
     // Create booking_recipients for each interpreter
-    for (const interpreterId of interpreterIds) {
+    for (const interpreterId of filteredInterpreterIds) {
       const { error: recipientErr } = await admin
         .from('booking_recipients')
         .insert({
@@ -284,7 +307,7 @@ export async function POST(request: NextRequest) {
 
         await autoAcceptSeeds({
           bookingId: booking.id,
-          interpreterIds,
+          interpreterIds: filteredInterpreterIds,
           requesterUserId: user.id,
           bookingTitle: title || 'Untitled',
           bookingDate: dateDisplay,

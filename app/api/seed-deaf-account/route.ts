@@ -209,7 +209,7 @@ export async function POST() {
         { firstName: 'Sandra', tier: 'approved' },
         { firstName: 'Dwayne', tier: 'approved' },
         // DNB: use Dolly Parton (not used in bookings above)
-        { firstName: 'Dolly', tier: 'preferred', dnb: true },
+        { firstName: 'Dolly', tier: 'dnb', dnb: true },
       ]
 
       for (const entry of rosterEntries) {
@@ -220,7 +220,7 @@ export async function POST() {
           {
             deaf_user_id: userId,
             interpreter_id: interpId,
-            tier: entry.dnb ? 'preferred' : entry.tier,
+            tier: entry.dnb ? 'dnb' : entry.tier,
             do_not_book: entry.dnb || false,
             approve_work: !entry.dnb,
             approve_personal: !entry.dnb,
