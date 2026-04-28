@@ -178,15 +178,23 @@ export default function DhhPreferencesPage() {
         setTimezone(tz)
         setTimezoneDraft(tz)
 
-        // Auto-detect timezone on first load if empty
+        // Auto-detect timezone on first load if empty, and save silently
         if (!tz) {
           try {
             const detected = Intl.DateTimeFormat().resolvedOptions().timeZone
             if (detected) {
               setTimezone(detected)
               setTimezoneDraft(detected)
+              // Silently persist to DB so user doesn't stay NULL
+              supabase
+                .from('deaf_profiles')
+                .update({ timezone: detected, updated_at: new Date().toISOString() })
+                .or(`user_id.eq.${user.id},id.eq.${user.id}`)
+                .then(({ error }) => {
+                  if (error) console.error('[dhh-preferences] silent timezone save failed:', error.message)
+                })
             }
-          } catch { /* ignore */ }
+          } catch { /* ignore detection errors */ }
         }
 
         const cp = profile.comm_prefs as Record<string, unknown> | null
@@ -718,7 +726,7 @@ export default function DhhPreferencesPage() {
                   </div>
                   {timezone && (
                     <div style={{ fontSize: 13, color: '#96a0b8', marginTop: 4 }}>
-                      Auto-detected from your browser
+                      Saved to your account
                     </div>
                   )}
                 </div>

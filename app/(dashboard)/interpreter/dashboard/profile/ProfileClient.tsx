@@ -3365,7 +3365,7 @@ function TimezoneSection({
               fontFamily: "'Inter', sans-serif", fontSize: 13,
               color: '#96a0b8', lineHeight: 1.6,
             }}>
-              Auto-detected from your browser.
+              Saved to your account
             </div>
           </div>
           <button

@@ -116,13 +116,25 @@ export default function ProfileClient({ profile, userEmail }: Props) {
       setTimezone(tz)
       setTimezoneDraft(tz)
 
-      // Auto-detect timezone on first load if empty
+      // Auto-detect timezone on first load if empty, and save silently
       if (!tz) {
         try {
           const detected = Intl.DateTimeFormat().resolvedOptions().timeZone
           if (detected) {
             setTimezone(detected)
             setTimezoneDraft(detected)
+            // Silently persist to DB so user doesn't stay NULL
+            const supabase = createClient()
+            supabase.auth.getUser().then(({ data: { user: u } }) => {
+              if (!u) return
+              supabase
+                .from('requester_profiles')
+                .update({ timezone: detected, updated_at: new Date().toISOString() })
+                .or(`user_id.eq.${u.id},id.eq.${u.id}`)
+                .then(({ error }) => {
+                  if (error) console.error('[requester-profile] silent timezone save failed:', error.message)
+                })
+            })
           }
         } catch {
           // Ignore detection errors
@@ -337,7 +349,7 @@ export default function ProfileClient({ profile, userEmail }: Props) {
                 </div>
                 {timezone && (
                   <div style={{ fontSize: 13, color: '#96a0b8', marginTop: 4 }}>
-                    Auto-detected from your browser
+                    Saved to your account
                   </div>
                 )}
               </div>
