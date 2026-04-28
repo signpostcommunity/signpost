@@ -104,20 +104,41 @@ export default function HomePage() {
               Request an interpreter <span className="hero-cta-arrow">&rarr;</span>
             </Link>
 
-            {/* Account creation pills */}
-            <div className="hero-account-section">
-              <span style={{ fontSize: '0.82rem', fontWeight: 500, color: 'var(--muted)', marginBottom: 10, display: 'block' }}>
-                Create an account:
-              </span>
-              <div className="hero-pills">
-                <Link href="/dhh/signup" className="hero-pill hero-pill-deaf" style={{ textDecoration: 'none' }}>
-                  Deaf / DB / HH <span>&rarr;</span>
+            {/* Role cards */}
+            <div className="roles-cards">
+              <div className="roles-cards-label">New here? Create an account:</div>
+              <div className="role-cards-grid">
+                <Link href="/dhh/signup" className="role-card role-card-deaf" style={{ textDecoration: 'none' }}>
+                  <svg className="role-card-icon" viewBox="0 3 26 17" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="13" cy="7" r="2.5"/>
+                    <path d="M13 10.5 C 11 10.5, 9.5 12, 9.5 18 L 16.5 18 C 16.5 12, 15 10.5, 13 10.5 Z"/>
+                    <path d="M4.5 16 Q 3 14, 4.5 12" stroke="currentColor" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.5"/>
+                    <path d="M7.5 16 Q 6 14, 7.5 12" stroke="currentColor" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.5"/>
+                    <path d="M18.5 16 Q 20 14, 18.5 12" stroke="currentColor" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.5"/>
+                    <path d="M21.5 16 Q 23 14, 21.5 12" stroke="currentColor" strokeWidth="1" fill="none" strokeLinecap="round" opacity="0.5"/>
+                  </svg>
+                  <div className="role-card-name">Deaf / DB / HH</div>
                 </Link>
-                <Link href="/interpreter/signup" className="hero-pill" style={{ textDecoration: 'none' }}>
-                  Interpreter <span>&rarr;</span>
+                <Link href="/interpreter/signup" className="role-card role-card-interpreter" style={{ textDecoration: 'none' }}>
+                  <svg className="role-card-icon" viewBox="0 3 32 17" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="4" cy="7" r="2.5"/>
+                    <path d="M4 10.5 C 2 10.5, 0.5 12, 0.5 18 L 7.5 18 C 7.5 12, 6 10.5, 4 10.5 Z"/>
+                    <circle cx="16" cy="7" r="2.5"/>
+                    <path d="M16 10.5 C 14 10.5, 12.5 12, 12.5 18 L 19.5 18 C 19.5 12, 18 10.5, 16 10.5 Z"/>
+                    <circle cx="28" cy="7" r="2.5"/>
+                    <path d="M28 10.5 C 26 10.5, 24.5 12, 24.5 18 L 31.5 18 C 31.5 12, 30 10.5, 28 10.5 Z"/>
+                    <line x1="8" y1="11.5" x2="12" y2="11.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    <line x1="20" y1="11.5" x2="24" y2="11.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                  <div className="role-card-name">Interpreter</div>
                 </Link>
-                <Link href="/request/signup" className="hero-pill" style={{ textDecoration: 'none' }}>
-                  Requester <span>&rarr;</span>
+                <Link href="/request/signup" className="role-card role-card-requester" style={{ textDecoration: 'none' }}>
+                  <svg className="role-card-icon" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="4" y="6" width="24" height="22" rx="2.5"/>
+                    <path d="M21 3v6M11 3v6M4 13h24"/>
+                    <path d="M11 21l3 3 6-6"/>
+                  </svg>
+                  <div className="role-card-name">Requester</div>
                 </Link>
               </div>
             </div>
@@ -257,40 +278,77 @@ export default function HomePage() {
         .hero-cta-btn:hover .hero-cta-arrow {
           transform: translateX(4px);
         }
-        .hero-account-section {
+        .roles-cards {
           margin-top: 28px;
-          max-width: 420px;
+          max-width: 540px;
         }
-        .hero-pills {
-          display: flex;
-          gap: 8px;
+        .roles-cards-label {
+          color: var(--muted);
+          font-size: 0.85rem;
+          font-weight: 500;
+          margin-bottom: 14px;
+          letter-spacing: 0.01em;
         }
-        .hero-pill {
-          flex: 1;
-          min-width: 130px;
-          white-space: nowrap;
-          background: var(--card-bg);
-          border: 1px solid var(--border);
-          font-family: var(--font-dm), 'DM Sans', sans-serif;
-          font-weight: 600;
-          font-size: 0.82rem;
-          padding: 12px 14px;
-          border-radius: 10px;
-          text-align: center;
-          color: var(--text);
-          transition: all 0.2s;
+        .role-cards-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 10px;
+        }
+        .role-card {
+          background: #16161f;
+          border: 1px solid #2a3044;
+          border-radius: 12px;
+          padding: 18px 14px 16px;
           cursor: pointer;
+          color: var(--text);
+          transition: all 0.18s;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          position: relative;
+          overflow: hidden;
+          text-align: center;
+          min-height: 96px;
         }
-        .hero-pill:hover {
-          border-color: var(--accent);
-          color: var(--accent);
-          background: rgba(0,229,255,0.06);
-          transform: translateY(-1px);
+        .role-card::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: var(--accent-color);
+          opacity: 0.7;
+          transition: opacity 0.2s, height 0.2s;
         }
-        .hero-pill-deaf:hover {
-          border-color: var(--accent2) !important;
-          color: var(--accent2) !important;
-          background: rgba(167,139,250,0.06) !important;
+        .role-card-deaf { --accent-color: #a78bfa; }
+        .role-card-interpreter { --accent-color: #00e5ff; }
+        .role-card-requester { --accent-color: #00e5ff; }
+        .role-card:hover {
+          background: #1a1a25;
+          border-color: var(--accent-color);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+        .role-card:hover::before {
+          height: 3px;
+          opacity: 1;
+        }
+        .role-card-icon {
+          height: 36px;
+          width: auto;
+          color: var(--accent-color);
+          flex-shrink: 0;
+        }
+        .role-card-name {
+          font-family: var(--font-syne), 'Syne', sans-serif;
+          font-weight: 700;
+          font-size: 0.92rem;
+          color: var(--text);
+          letter-spacing: -0.01em;
+          line-height: 1.2;
         }
         .features-grid {
           display: grid;
@@ -305,14 +363,12 @@ export default function HomePage() {
           .hero-logo-wrap::before { width: 400px; height: 400px; }
           .hero-content { align-items: center; }
           .hero-cta-btn { max-width: 100% !important; }
-          .hero-account-section { max-width: 100%; margin-left: auto; margin-right: auto; }
-          .hero-pills { justify-content: center; }
+          .roles-cards { max-width: 100%; margin-left: auto; margin-right: auto; }
         }
         @media (max-width: 480px) {
           .hero-section { padding: 40px 16px 60px !important; }
           .hero-logo-img { max-width: 200px !important; }
-          .hero-pills { flex-direction: column; }
-          .hero-pill { min-width: auto; }
+          .role-cards-grid { grid-template-columns: 1fr; }
           .feature-highlights-section { padding: 0 16px 60px !important; }
           .features-grid { grid-template-columns: 1fr !important; }
         }
