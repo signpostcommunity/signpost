@@ -31,7 +31,7 @@ const NAV: NavGroup[] = [
         icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8.5l6-5.5 6 5.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/><path d="M3.5 7.5V13a1 1 0 001 1h7a1 1 0 001-1V7.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
       },
       {
-        label: 'Invite to Trusted Circle',
+        label: 'Invite interpreters',
         href: '/invite',
         icon: INVITE_ICON,
       },
@@ -84,7 +84,7 @@ const NAV: NavGroup[] = [
         icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5.5" r="2.5" stroke="currentColor" strokeWidth="1.3"/><path d="M2.5 14c0-3.04 2.46-5.5 5.5-5.5s5.5 2.46 5.5 5.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
       },
       {
-        label: 'Notifications',
+        label: 'Notification Settings',
         href: '/dhh/dashboard/notifications',
         icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M12 5.5a4 4 0 0 0-8 0c0 4-1.5 5.5-1.5 5.5h11S12 9.5 12 5.5z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/><path d="M9.15 13a1.5 1.5 0 0 1-2.3 0" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
       },

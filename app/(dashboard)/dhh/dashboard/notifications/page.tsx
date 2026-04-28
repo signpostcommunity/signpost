@@ -196,7 +196,7 @@ export default function DhhNotificationsPage() {
           fontFamily: "'Syne', sans-serif", fontWeight: 775, fontSize: 27,
           letterSpacing: '-0.02em', color: '#f0f2f8', marginBottom: 8,
         }}>
-          Notifications
+          Notification Settings
         </div>
         <div style={{ color: '#96a0b8', fontSize: 14, marginTop: 24 }}>Loading preferences...</div>
       </div>
@@ -210,7 +210,7 @@ export default function DhhNotificationsPage() {
         fontFamily: "'Syne', sans-serif", fontWeight: 775, fontSize: 27,
         letterSpacing: '-0.02em', color: '#f0f2f8', marginBottom: 8,
       }}>
-        Notifications
+        Notification Settings
       </div>
       <div style={{ color: '#96a0b8', fontSize: 14, marginBottom: 28, lineHeight: 1.5 }}>
         Choose how and when signpost reaches out to you.
