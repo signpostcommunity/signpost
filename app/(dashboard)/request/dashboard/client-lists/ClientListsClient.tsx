@@ -19,23 +19,16 @@ type RosterEntry = {
   approve_personal: boolean
 }
 
-type DnbEntry = {
-  interpreter_id: string
-  name: string
-  first_name: string
-  last_name: string
-  photo_url: string | null
-}
-
 type ClientData = {
   connectionId: string
-  dhhUserId: string
+  dhhUserId: string | null
   clientName: string
   clientPhoto: string | null
   connectionDate: string
+  isOffPlatform: boolean
+  offplatformEmail: string | null
   preferred: RosterEntry[]
-  secondary: RosterEntry[]
-  doNotBook: DnbEntry[]
+  approved: RosterEntry[]
   expanded: boolean
 }
 
@@ -138,9 +131,8 @@ function InterpreterRow({ entry }: { entry: RosterEntry }) {
 
 function ClientCard({ client, onToggle }: { client: ClientData; onToggle: () => void }) {
   const prefCount = client.preferred.length
-  const secCount = client.secondary.length
-  const dnbCount = client.doNotBook.length
-  const total = prefCount + secCount
+  const appCount = client.approved.length
+  const total = prefCount + appCount
 
   return (
     <div style={{
@@ -180,11 +172,18 @@ function ClientCard({ client, onToggle }: { client: ClientData; onToggle: () => 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>{client.clientName}</div>
           <div style={{ color: 'var(--muted)', fontSize: '0.78rem', marginTop: 2 }}>
+            {client.isOffPlatform && (
+              <span style={{ color: '#96a0b8', marginRight: 8 }}>Off-platform contact</span>
+            )}
             Connected {new Date(client.connectionDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
           </div>
           <div style={{ color: 'var(--muted)', fontSize: '0.75rem', marginTop: 4 }}>
-            {prefCount} Preferred &middot; {secCount} Secondary
-            {dnbCount > 0 && <span style={{ color: '#ff8099' }}> &middot; {dnbCount} Do Not Book</span>}
+            {total > 0
+              ? <>{prefCount} Preferred &middot; {appCount} Approved</>
+              : client.isOffPlatform
+                ? 'Off-platform contact'
+                : 'No interpreters shared yet'
+            }
           </div>
         </div>
 
@@ -226,27 +225,29 @@ function ClientCard({ client, onToggle }: { client: ClientData; onToggle: () => 
             </div>
           )}
 
-          {/* Secondary */}
-          {client.secondary.length > 0 && (
+          {/* Approved */}
+          {client.approved.length > 0 && (
             <div style={{ marginBottom: 20 }}>
               <div style={{
                 fontWeight: 600,
                 fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase' as const,
                 color: '#00e5ff', marginBottom: 10,
               }}>
-                Secondary Tier ({client.secondary.length})
+                Approved ({client.approved.length})
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {client.secondary.map(entry => (
+                {client.approved.map(entry => (
                   <InterpreterRow key={entry.interpreter_id} entry={entry} />
                 ))}
               </div>
             </div>
           )}
 
-          {client.preferred.length === 0 && client.secondary.length === 0 && (
+          {client.preferred.length === 0 && client.approved.length === 0 && (
             <p style={{ color: 'var(--muted)', fontSize: '0.85rem', fontStyle: 'italic', margin: '0 0 16px' }}>
-              This client hasn&apos;t added any interpreters to their list yet.
+              {client.isOffPlatform
+                ? 'This contact is not on signpost yet. Once they join, they can share their preferred interpreter list with you.'
+                : 'This client has not yet shared interpreters with you. They can update their list from their Trusted Circle.'}
             </p>
           )}
 
@@ -269,48 +270,6 @@ function ClientCard({ client, onToggle }: { client: ClientData; onToggle: () => 
         </div>
       )}
 
-      {/* Do Not Book section - always visible when there are entries */}
-      {client.doNotBook.length > 0 && (
-        <div style={{
-          borderTop: '1px solid rgba(255,107,133,0.2)',
-          padding: '16px 24px',
-          background: 'rgba(255,107,133,0.03)',
-        }}>
-          <div style={{
-            fontWeight: 600,
-            fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase' as const,
-            color: '#ff8099', marginBottom: 8,
-          }}>
-            Do Not Book ({client.doNotBook.length})
-          </div>
-          <p style={{
-            color: 'var(--muted)', fontSize: '0.78rem', margin: '0 0 10px',
-            lineHeight: 1.5,
-          }}>
-            These interpreters should not be booked for {client.clientName.split(' ')[0]}.
-            This list was shared with you in confidence.
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {client.doNotBook.map(entry => {
-              const fullName = entry.first_name
-                ? `${entry.first_name} ${entry.last_name || ''}`.trim()
-                : entry.name || 'Unknown'
-              return (
-                <div key={entry.interpreter_id} style={{
-                  display: 'flex', alignItems: 'center', gap: 10,
-                  padding: '8px 14px', borderRadius: 8,
-                  background: 'rgba(255,107,133,0.05)',
-                  border: '1px solid rgba(255,107,133,0.15)',
-                }}>
-                  <span style={{ color: '#ff8099', fontSize: '0.82rem', fontWeight: 500 }}>
-                    {fullName}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
     </div>
   )
 }
@@ -613,16 +572,16 @@ export default function ClientListsClient() {
     // Fetch all connections (active + pending) for the connections list
     const { data: allConnections } = await supabase
       .from('dhh_requester_connections')
-      .select('id, dhh_user_id, status, created_at, confirmed_at')
+      .select('id, dhh_user_id, status, created_at, confirmed_at, offplatform_name, offplatform_email')
       .eq('requester_id', user.id)
       .in('status', ['active', 'pending'])
-      .order('created_at', { ascending: false })
+      .order('confirmed_at', { ascending: false, nullsFirst: false })
 
     // Build connections list with names
     const connRows: ConnectionRow[] = []
     if (allConnections) {
       for (const conn of allConnections) {
-        let clientName = 'Client'
+        let clientName = conn.offplatform_name || 'Client'
         if (conn.dhh_user_id) {
           const { data: dp } = await supabase
             .from('deaf_profiles')
@@ -647,28 +606,65 @@ export default function ClientListsClient() {
     const clientDataArr: ClientData[] = []
 
     for (const conn of activeConns) {
-      if (!conn.dhh_user_id) continue
+      const isOffPlatform = !conn.dhh_user_id
+
+      // Off-platform connections: no roster to fetch
+      if (isOffPlatform) {
+        clientDataArr.push({
+          connectionId: conn.id,
+          dhhUserId: null,
+          clientName: conn.offplatform_name || 'Off-platform contact',
+          clientPhoto: null,
+          connectionDate: conn.confirmed_at || conn.created_at,
+          isOffPlatform: true,
+          offplatformEmail: conn.offplatform_email || null,
+          preferred: [],
+          approved: [],
+          expanded: false,
+        })
+        continue
+      }
 
       try {
-        const res = await fetch(`/api/connections/preferences?dhh_user_id=${conn.dhh_user_id}`)
-        if (!res.ok) continue
-
-        const data = await res.json()
-        const dhhUser = data.dhh_user as { name?: string; first_name?: string } | null
-
-        const clientName = dhhUser?.first_name
-          ? dhhUser.first_name
-          : dhhUser?.name || 'Client'
-
+        // Fetch deaf profile for display name + photo
         const { data: deafProfile } = await supabase
           .from('deaf_profiles')
-          .select('first_name, last_name, photo_url')
+          .select('name, first_name, last_name, photo_url')
           .eq('id', conn.dhh_user_id)
           .maybeSingle()
 
         const fullClientName = deafProfile
-          ? `${deafProfile.first_name || ''} ${deafProfile.last_name || ''}`.trim() || clientName
-          : clientName
+          ? (`${deafProfile.first_name || ''} ${deafProfile.last_name || ''}`.trim() || deafProfile.name || 'Client')
+          : 'Client'
+
+        // Fetch roster via preferences API (service role required for deaf_roster RLS)
+        const res = await fetch(`/api/connections/preferences?dhh_user_id=${conn.dhh_user_id}`)
+        if (!res.ok) {
+          // Connection exists but roster fetch failed; show client with empty roster
+          clientDataArr.push({
+            connectionId: conn.id,
+            dhhUserId: conn.dhh_user_id,
+            clientName: fullClientName,
+            clientPhoto: deafProfile?.photo_url || null,
+            connectionDate: conn.confirmed_at || conn.created_at,
+            isOffPlatform: false,
+            offplatformEmail: null,
+            preferred: [],
+            approved: [],
+            expanded: false,
+          })
+          continue
+        }
+
+        const data = await res.json()
+
+        // Filter to approve_work=true only (requester context is always work)
+        const filterWork = (entries: RosterEntry[]) =>
+          entries.filter((e: RosterEntry) => e.approve_work)
+
+        // Sort within each tier by first_name
+        const sortByName = (entries: RosterEntry[]) =>
+          entries.sort((a, b) => (a.first_name || a.name || '').localeCompare(b.first_name || b.name || ''))
 
         clientDataArr.push({
           connectionId: conn.id,
@@ -676,9 +672,10 @@ export default function ClientListsClient() {
           clientName: fullClientName,
           clientPhoto: deafProfile?.photo_url || null,
           connectionDate: conn.confirmed_at || conn.created_at,
-          preferred: (data.preferred || []).filter((e: RosterEntry) => e.approve_work || e.approve_personal),
-          secondary: (data.approved || []).filter((e: RosterEntry) => e.approve_work || e.approve_personal),
-          doNotBook: data.do_not_book || [],
+          isOffPlatform: false,
+          offplatformEmail: null,
+          preferred: sortByName(filterWork(data.preferred || [])),
+          approved: sortByName(filterWork(data.approved || [])),
           expanded: false,
         })
       } catch (err) {
@@ -751,7 +748,7 @@ export default function ClientListsClient() {
           borderRadius: 'var(--radius)',
         }}>
           <p style={{ color: 'var(--muted)', fontSize: '0.85rem', maxWidth: 460, margin: '0 auto' }}>
-            No lists shared yet. Use the form above to request access to a Deaf client&apos;s preferred interpreter list.
+            No clients connected yet. Once a Deaf client adds you as a requester, you&apos;ll see their shared interpreter list here.
           </p>
         </div>
       )}
