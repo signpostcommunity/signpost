@@ -833,7 +833,7 @@ export default function InterpretersClient() {
             </Link>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {preferred.map(interp => (
               <div key={interp.roster_id}>
                 {editingNoteId === interp.roster_id ? (
@@ -938,7 +938,7 @@ export default function InterpretersClient() {
             </p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {secondary.map(interp => (
               <div key={interp.roster_id}>
                 {editingNoteId === interp.roster_id ? (
@@ -1023,7 +1023,7 @@ export default function InterpretersClient() {
             </p>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {dnb.map(interp => (
               <DnbInterpreterCard
                 key={interp.roster_id}

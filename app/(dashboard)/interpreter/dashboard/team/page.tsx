@@ -66,7 +66,7 @@ function TierSection({ title, accentColor, members, onMoveTier, onRemove, onEdit
           No interpreters in this tier yet
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {members.map(member => (
             <TeamCard
               key={member.id}

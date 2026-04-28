@@ -613,7 +613,7 @@ export default function DeafDashboardPage() {
           </div>
         }
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {preferred.length > 0
             ? preferred.map(renderCard)
             : <div style={{ color: 'var(--muted)', fontSize: '0.88rem', padding: 16, background: 'var(--surface)', borderRadius: 10, border: '1px dashed var(--border)' }}>
@@ -638,7 +638,7 @@ export default function DeafDashboardPage() {
           </div>
         }
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {approved.length > 0
             ? approved.map(renderCard)
             : <div style={{ color: 'var(--muted)', fontSize: '0.88rem', padding: 16, background: 'var(--surface)', borderRadius: 10, border: '1px dashed var(--border)' }}>
@@ -658,12 +658,12 @@ export default function DeafDashboardPage() {
               &#10005; Do Not Book
             </div>
             <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8' }}>
-              Visible to your requesters. Reason notes help them understand without requiring explanation.
+              Visible to your requesters only. Interpreters are never notified that they are added to this list.
             </div>
           </div>
         }
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {dnb.length > 0
             ? dnb.map(renderCard)
             : <div style={{ color: 'var(--muted)', fontSize: '0.88rem', padding: 16, background: 'var(--surface)', borderRadius: 10, border: '1px dashed var(--border)' }}>
