@@ -127,8 +127,8 @@ export default function HomePage() {
                     <path d="M16 10.5 C 14 10.5, 12.5 12, 12.5 18 L 19.5 18 C 19.5 12, 18 10.5, 16 10.5 Z"/>
                     <circle cx="28" cy="7" r="2.5"/>
                     <path d="M28 10.5 C 26 10.5, 24.5 12, 24.5 18 L 31.5 18 C 31.5 12, 30 10.5, 28 10.5 Z"/>
-                    <line x1="8" y1="11.5" x2="12" y2="11.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-                    <line x1="20" y1="11.5" x2="24" y2="11.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    <line x1="8" y1="11.5" x2="12" y2="11.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.5"/>
+                    <line x1="20" y1="11.5" x2="24" y2="11.5" stroke="currentColor" strokeWidth="1" strokeLinecap="round" opacity="0.5"/>
                   </svg>
                   <div className="role-card-name">Interpreter</div>
                 </Link>
