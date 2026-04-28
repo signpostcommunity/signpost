@@ -12,7 +12,6 @@ import { displayBookingFormat } from '@/lib/bookingFormat'
 import { sendNotification } from '@/lib/notifications'
 import Toast from '@/components/ui/Toast'
 import RequesterInterpreterPicker from '@/components/requester/RequesterInterpreterPicker'
-import BetaTryThis from '@/components/ui/BetaTryThis'
 import BookingFilterBar, { filterBySearch, filterByDateRange } from '@/components/dashboard/shared/BookingFilterBar'
 import RequestTracker from '@/components/dashboard/dhh/RequestTracker'
 import { formatContactedAgo } from '@/lib/format-time'
@@ -555,10 +554,6 @@ export default function RequestsClient({
           View and manage all your interpreter requests.
         </p>
       </div>
-
-      <BetaTryThis storageKey="beta_try_all_requests">
-        Open the &apos;Staff Training Workshop&apos; request to see interpreter responses with their rates. Try accepting one of the rates to see the confirmation flow.
-      </BetaTryThis>
 
       {/* Status tabs */}
       <div style={{ display: 'flex', gap: 6, marginBottom: 20, flexWrap: 'wrap' }}>

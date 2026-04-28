@@ -1,5 +1,4 @@
 import RequesterDashboardSidebar from '@/components/layout/RequesterDashboardSidebar'
-import RequesterBetaPanel from '@/components/dashboard/requester/RequesterBetaPanel'
 import PrelaunchNotice from '@/components/prelaunch/PrelaunchNotice'
 import { createClient } from '@/lib/supabase/server'
 
@@ -50,7 +49,6 @@ export default async function RequesterDashboardLayout({ children }: { children:
             {children}
           </div>
         </main>
-        {user && <RequesterBetaPanel />}
         <style>{`
           @media (max-width: 768px) {
             .dash-layout { flex-direction: column !important; }

@@ -3,7 +3,6 @@
 import { useState, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import BetaTryThis from '@/components/ui/BetaTryThis'
 import { formatLocationShort, formatLocationFull } from '@/lib/location-display'
 import { displayBookingFormat } from '@/lib/bookingFormat'
 import { formatContactedAgo } from '@/lib/format-time'
@@ -374,11 +373,6 @@ export default function RequesterOverviewClient({
 
       {/* How Billing Works */}
       <BillingInfoCard />
-
-      {/* Try This banner */}
-      <BetaTryThis storageKey="beta_try_dashboard_recent">
-        Click on any of the sample requests below to see their details, interpreter responses, and status tracking. Try the &apos;Staff Training Workshop&apos; request to see how interpreter rate responses work.
-      </BetaTryThis>
 
       {/* Recent Requests */}
       <div style={{ marginBottom: 34 }}>

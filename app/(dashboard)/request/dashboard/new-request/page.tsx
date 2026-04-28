@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Toast from '@/components/ui/Toast'
 import RequesterInterpreterPicker from '@/components/requester/RequesterInterpreterPicker'
-import BetaTryThis from '@/components/ui/BetaTryThis'
 import { createClient } from '@/lib/supabase/client'
 import LocationInput from '@/components/ui/LocationInput'
 import type { LocationFields } from '@/components/ui/LocationInput'
@@ -1250,10 +1249,6 @@ export default function NewRequestPage() {
         <>
         {!useNamedUnreachable ? (
         <>
-        <BetaTryThis storageKey="beta_try_new_request_deaf">
-          Try entering jordan.rivera.test@signpost.community in the field below to see how a Deaf client&apos;s preferred interpreter list works. Then click &apos;+ Add another person&apos; and enter maria.chen.test@signpost.community. Notice which interpreters are recommended because they appear on both lists.
-        </BetaTryThis>
-
         {prefillError && (
           <div style={{
             padding: '14px 18px', marginBottom: 16,
@@ -1576,12 +1571,6 @@ export default function NewRequestPage() {
         {/* ================================================================ */}
         {activeTab === 'Interpreters' && (
         <>
-        {hasDeafLists && !isSparse && (
-          <BetaTryThis storageKey="beta_try_new_request_interp">
-            The interpreters below come from your tagged client&apos;s preferred list. These are interpreters the Deaf client trusts. Notice how they appear above your own roster, giving priority to the client&apos;s preferences.
-          </BetaTryThis>
-        )}
-
         {/* Sparse pref list wider pool banner (Phase 3) */}
         {isSparse && (
           <div style={{
