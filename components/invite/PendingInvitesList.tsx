@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
+import InviteCard from '@/components/invite/InviteCard'
 
 type TargetListRole = 'interpreter_team' | 'dhh_pref_list' | 'requester_pref_list'
 
@@ -28,64 +29,6 @@ interface PendingInvitesListProps {
 const SORT_KEY = 'signpost_pending_invites_sort'
 const RESEND_COOLDOWN_DAYS = 7
 
-function relativeTime(dateStr: string): string {
-  const now = Date.now()
-  const then = new Date(dateStr).getTime()
-  const diffMs = now - then
-  const diffMins = Math.floor(diffMs / 60000)
-  if (diffMins < 1) return 'just now'
-  if (diffMins < 60) return `${diffMins} min ago`
-  const diffHours = Math.floor(diffMins / 60)
-  if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`
-  const diffDays = Math.floor(diffHours / 24)
-  if (diffDays === 1) return '1 day ago'
-  if (diffDays < 30) return `${diffDays} days ago`
-  const diffMonths = Math.floor(diffDays / 30)
-  return `${diffMonths} month${diffMonths === 1 ? '' : 's'} ago`
-}
-
-function formatDatetime(dateStr: string): string {
-  return new Date(dateStr).toLocaleString('en-US', {
-    weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
-    hour: 'numeric', minute: '2-digit',
-  })
-}
-
-// ── Channel Icons ────────────────────────────────────────────────────────────
-
-function EnvelopeIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-      <rect x="1.5" y="3.5" width="13" height="9" rx="1.5" stroke="#96a0b8" strokeWidth="1.3" />
-      <path d="M1.5 5l6.5 4 6.5-4" stroke="#96a0b8" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
-
-function PhoneIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-      <rect x="4" y="1" width="8" height="14" rx="2" stroke="#96a0b8" strokeWidth="1.3" />
-      <circle cx="8" cy="12.5" r="0.8" fill="#96a0b8" />
-    </svg>
-  )
-}
-
-function ClipboardIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-      <rect x="3" y="2.5" width="10" height="12" rx="1.5" stroke="#96a0b8" strokeWidth="1.3" />
-      <path d="M6 1.5h4a1 1 0 011 1v1H5v-1a1 1 0 011-1z" stroke="#96a0b8" strokeWidth="1.2" />
-    </svg>
-  )
-}
-
-function ChannelIcon({ channel }: { channel: string }) {
-  if (channel === 'sms') return <PhoneIcon />
-  if (channel === 'clipboard') return <ClipboardIcon />
-  return <EnvelopeIcon />
-}
-
 // ── Chevron Icon ─────────────────────────────────────────────────────────────
 
 function ChevronIcon({ expanded }: { expanded: boolean }) {
@@ -96,63 +39,6 @@ function ChevronIcon({ expanded }: { expanded: boolean }) {
     >
       <path d="M6 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
-  )
-}
-
-// ── Three Dot Menu ───────────────────────────────────────────────────────────
-
-function ThreeDotMenu({ onCancel }: { onCancel: () => void }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!open) return
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [open])
-
-  return (
-    <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
-      <button
-        onClick={e => { e.stopPropagation(); setOpen(!open) }}
-        aria-label="More actions"
-        style={{
-          background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px',
-          color: 'var(--muted)', fontSize: '1rem', lineHeight: 1,
-        }}
-      >
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-          <circle cx="8" cy="3" r="1.3" />
-          <circle cx="8" cy="8" r="1.3" />
-          <circle cx="8" cy="13" r="1.3" />
-        </svg>
-      </button>
-      {open && (
-        <div style={{
-          position: 'absolute', right: 0, top: '100%', marginTop: 4,
-          background: '#111118', border: '1px solid var(--border)',
-          borderRadius: 8, padding: '4px 0', zIndex: 100, minWidth: 140,
-          boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-        }}>
-          <button
-            onClick={e => { e.stopPropagation(); setOpen(false); onCancel() }}
-            style={{
-              display: 'block', width: '100%', textAlign: 'left',
-              background: 'none', border: 'none', padding: '8px 14px',
-              color: '#f87171', fontSize: '0.82rem', cursor: 'pointer',
-              fontFamily: "'Inter', sans-serif",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.08)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'none' }}
-          >
-            Cancel invite
-          </button>
-        </div>
-      )}
-    </div>
   )
 }
 
@@ -442,99 +328,44 @@ export default function PendingInvitesList({
         }}>
           {sorted.map(invite => {
             const isClicked = invite.status === 'clicked'
-            const contactDisplay = invite.recipient_email || invite.recipient_phone || ''
             const statusDate = isClicked && invite.clicked_at ? invite.clicked_at : invite.sent_at
-            const statusLabel = isClicked ? 'Opened' : 'Invited'
-            const statusColor = isClicked ? accentColor : '#96a0b8'
             const resendable = canResend(invite)
 
+            const actions = resendable ? [{
+              label: copiedId === invite.id ? 'Copied!' : 'Resend',
+              variant: 'secondary' as const,
+              onClick: () => initiateResend(invite),
+              disabled: actionLoading,
+            }] : []
+
+            const menuActions = [{
+              label: 'Cancel invite',
+              variant: 'danger' as const,
+              onClick: () => setConfirmAction({ type: 'cancel', invite }),
+            }]
+
             return (
-              <div key={invite.id} style={{
-                background: 'var(--card-bg)',
-                border: '1px solid var(--border)',
-                borderRadius: 10,
-                padding: '14px 18px',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: 12,
-              }}>
-                {/* Avatar */}
-                <div style={{
-                  width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
-                  background: `linear-gradient(135deg, ${accentColor}44, ${accentColor}22)`,
-                  border: `1px solid ${accentColor}33`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontFamily: "'Inter', sans-serif", fontWeight: 700,
-                  fontSize: '0.68rem', color: accentColor,
-                  marginTop: 2,
-                }}>
-                  {invite.recipient_name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()}
-                </div>
-
-                {/* Content */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  {/* Name */}
-                  <div style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text)' }}>
-                    {invite.recipient_name}
-                  </div>
-
-                  {/* Contact info - wraps, never truncates */}
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: 5, marginTop: 3,
-                  }}>
-                    <ChannelIcon channel={invite.channel} />
-                    <span style={{
-                      fontSize: '0.78rem', color: 'var(--muted)',
-                      wordBreak: 'break-all', overflowWrap: 'break-word',
-                    }}>
-                      {contactDisplay}
-                    </span>
-                  </div>
-
-                  {/* Timestamp */}
-                  <div
-                    title={formatDatetime(statusDate)}
-                    style={{
-                      fontSize: '0.73rem', color: statusColor,
-                      marginTop: 6,
-                    }}
-                  >
-                    {statusLabel} {relativeTime(statusDate)}
-                  </div>
-
-                  {/* Resent count indicator */}
-                  {(invite.resend_count || 0) > 0 && (
-                    <div style={{
-                      fontSize: '0.68rem', color: '#96a0b8',
-                      marginTop: 3, fontStyle: 'italic',
-                    }}>
-                      Resent {invite.resend_count} time{invite.resend_count === 1 ? '' : 's'}
-                    </div>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, marginTop: 2 }}>
-                  {resendable && (
-                    <button
-                      onClick={() => initiateResend(invite)}
-                      disabled={actionLoading}
-                      style={{
-                        background: 'none', border: `1px solid ${accentColor}44`,
-                        borderRadius: 8, padding: '4px 10px',
-                        color: accentColor, fontSize: '0.73rem', fontWeight: 600,
-                        cursor: 'pointer', fontFamily: "'Inter', sans-serif",
-                        whiteSpace: 'nowrap', transition: 'all 0.2s',
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor = accentColor; e.currentTarget.style.background = `${accentColor}11` }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor = `${accentColor}44`; e.currentTarget.style.background = 'none' }}
-                    >
-                      {copiedId === invite.id ? 'Copied!' : 'Resend'}
-                    </button>
-                  )}
-                  <ThreeDotMenu onCancel={() => setConfirmAction({ type: 'cancel', invite })} />
-                </div>
-              </div>
+              <InviteCard
+                key={invite.id}
+                id={invite.id}
+                recipientName={invite.recipient_name}
+                recipientEmail={invite.recipient_email}
+                recipientPhone={invite.recipient_phone}
+                channel={invite.channel}
+                sentAt={statusDate}
+                statusBadge={isClicked
+                  ? { label: 'Opened', variant: 'accent' }
+                  : { label: 'Invited', variant: 'muted' }
+                }
+                metadata={
+                  (invite.resend_count || 0) > 0
+                    ? `Resent ${invite.resend_count} time${invite.resend_count === 1 ? '' : 's'}`
+                    : undefined
+                }
+                accentColor={accentColor}
+                actions={actions}
+                menuActions={menuActions}
+              />
             )
           })}
         </div>

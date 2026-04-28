@@ -9,6 +9,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
 import { InviteHeaderIcon } from '@/components/invite/InviteHeaderIcon'
+import InviteCard from '@/components/invite/InviteCard'
 
 export const dynamic = 'force-dynamic'
 
@@ -349,52 +350,18 @@ export default function TrustedDeafCirclePage() {
                   </h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {pendingReceived.map(c => (
-                      <div key={c.id} style={{
-                        background: 'var(--card-bg)',
-                        border: '1px solid var(--border)',
-                        borderRadius: 10,
-                        padding: '14px 20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: 12,
-                        flexWrap: 'wrap',
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <div style={{
-                            width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                            background: 'linear-gradient(135deg, #9d87ff, #00e5ff)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontFamily: "'Inter', sans-serif", fontWeight: 700, fontSize: '0.68rem', color: '#fff',
-                          }}>
-                            {c.other_name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()}
-                          </div>
-                          <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{c.other_name}</span>
-                        </div>
-                        <div style={{ display: 'flex', gap: 8 }}>
-                          <button
-                            onClick={() => handleRespond(c.id, 'accept')}
-                            style={{
-                              background: '#7b61ff', color: '#fff', border: 'none',
-                              borderRadius: 8, padding: '7px 18px', fontSize: '0.82rem',
-                              fontWeight: 600, cursor: 'pointer', fontFamily: "'Inter', sans-serif",
-                            }}
-                          >
-                            Accept
-                          </button>
-                          <button
-                            onClick={() => handleRespond(c.id, 'decline')}
-                            style={{
-                              background: 'transparent', color: 'var(--muted)',
-                              border: '1px solid var(--border)', borderRadius: 8,
-                              padding: '7px 18px', fontSize: '0.82rem', fontWeight: 600,
-                              cursor: 'pointer', fontFamily: "'Inter', sans-serif",
-                            }}
-                          >
-                            Decline
-                          </button>
-                        </div>
-                      </div>
+                      <InviteCard
+                        key={c.id}
+                        id={c.id}
+                        recipientName={c.other_name}
+                        channel="email"
+                        sentAt={c.created_at}
+                        accentColor="#a78bfa"
+                        actions={[
+                          { label: 'Accept', variant: 'primary', onClick: (id) => handleRespond(id, 'accept') },
+                          { label: 'Decline', variant: 'ghost', onClick: (id) => handleRespond(id, 'decline') },
+                        ]}
+                      />
                     ))}
                   </div>
                 </div>
@@ -411,57 +378,34 @@ export default function TrustedDeafCirclePage() {
                   </h3>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {pendingSent.map(c => (
-                      <div key={c.id} style={{
-                        background: 'var(--card-bg)',
-                        border: '1px solid var(--border)',
-                        borderRadius: 10,
-                        padding: '12px 20px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: 12,
-                      }}>
-                        <span style={{ fontWeight: 500, fontSize: '0.88rem', color: 'var(--text)' }}>
-                          {c.invitee_email}
-                        </span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                          <span style={{
-                            fontSize: '0.75rem', color: 'var(--muted)',
-                            border: '1px solid var(--border)',
-                            padding: '3px 10px', borderRadius: 100,
-                          }}>
-                            Pending
-                          </span>
-                          <button
-                            onClick={() => {
-                              // Re-send invite by calling the same invite endpoint
-                              fetch('/api/dhh/circle/invite', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ email: c.invitee_email }),
-                              }).then(() => showToast('Invite resent'))
-                                .catch(() => showToast('Failed to resend'))
-                            }}
-                            style={{
-                              background: 'none', border: 'none', color: '#9d87ff',
-                              fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
-                              fontFamily: "'Inter', sans-serif", padding: 0,
-                            }}
-                          >
-                            Resend
-                          </button>
-                          <button
-                            onClick={() => handleRespond(c.id, 'decline')}
-                            style={{
-                              background: 'none', border: 'none', color: 'var(--muted)',
-                              fontSize: '0.78rem', fontWeight: 600, cursor: 'pointer',
-                              fontFamily: "'Inter', sans-serif", padding: 0,
-                            }}
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
+                      <InviteCard
+                        key={c.id}
+                        id={c.id}
+                        recipientName={c.invitee_email}
+                        recipientEmail={c.invitee_email}
+                        channel="email"
+                        sentAt={c.created_at}
+                        statusBadge={{ label: 'Pending', variant: 'pill' }}
+                        accentColor="#a78bfa"
+                        actions={[{
+                          label: 'Resend',
+                          variant: 'secondary',
+                          onClick: () => {
+                            // Re-send invite by calling the same invite endpoint
+                            fetch('/api/dhh/circle/invite', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ email: c.invitee_email }),
+                            }).then(() => showToast('Invite resent'))
+                              .catch(() => showToast('Failed to resend'))
+                          },
+                        }]}
+                        menuActions={[{
+                          label: 'Cancel',
+                          variant: 'danger',
+                          onClick: (id) => handleRespond(id, 'decline'),
+                        }]}
+                      />
                     ))}
                   </div>
                 </div>
