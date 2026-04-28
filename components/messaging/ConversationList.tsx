@@ -71,7 +71,6 @@ export default function ConversationList({ threadBaseUrl, accent = '#00e5ff' }: 
       const res = await fetch('/api/messages/conversations')
       if (res.ok) {
         const data = await res.json()
-        // API returns { conversations: [...] }
         setConversations(data.conversations || data || [])
       }
     } catch (err) {
@@ -85,6 +84,44 @@ export default function ConversationList({ threadBaseUrl, accent = '#00e5ff' }: 
     const interval = setInterval(fetchConversations, 30000)
     return () => clearInterval(interval)
   }, [fetchConversations])
+
+  function notifyUnreadChanged() {
+    window.dispatchEvent(new Event('signpost:unread-changed'))
+  }
+
+  async function markAllRead() {
+    const res = await fetch('/api/messages/conversations/mark-all-read', { method: 'PATCH' })
+    if (res.ok) {
+      setConversations(prev => prev.map(c => ({ ...c, unread: false })))
+      notifyUnreadChanged()
+    }
+  }
+
+  async function toggleRead(convoId: string, currentlyUnread: boolean) {
+    if (currentlyUnread) {
+      const res = await fetch(`/api/messages/conversations/${convoId}/read`, { method: 'POST' })
+      if (res.ok) {
+        setConversations(prev => prev.map(c => c.id === convoId ? { ...c, unread: false } : c))
+        notifyUnreadChanged()
+      }
+    } else {
+      const res = await fetch(`/api/messages/conversations/${convoId}/read`, { method: 'DELETE' })
+      if (res.ok) {
+        setConversations(prev => prev.map(c => c.id === convoId ? { ...c, unread: true } : c))
+        notifyUnreadChanged()
+      }
+    }
+  }
+
+  async function deleteConversation(convoId: string) {
+    const res = await fetch(`/api/messages/conversations/${convoId}`, { method: 'DELETE' })
+    if (res.ok) {
+      setConversations(prev => prev.filter(c => c.id !== convoId))
+      notifyUnreadChanged()
+    }
+  }
+
+  const unreadCount = conversations.filter(c => c.unread).length
 
   if (loading) {
     return (
@@ -104,19 +141,44 @@ export default function ConversationList({ threadBaseUrl, accent = '#00e5ff' }: 
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column' }}>
+      {unreadCount > 0 && (
+        <div style={{
+          padding: '8px 20px', display: 'flex', justifyContent: 'flex-end',
+          borderBottom: '1px solid var(--border)',
+        }}>
+          <button
+            onClick={markAllRead}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: accent, fontSize: '0.76rem', fontFamily: "'DM Sans', sans-serif",
+              fontWeight: 600, whiteSpace: 'nowrap', padding: '2px 4px',
+            }}
+          >
+            Mark all read
+          </button>
+        </div>
+      )}
       {conversations.map(convo => (
         <ConversationRow
           key={convo.id}
           convo={convo}
           accent={accent}
           onClick={() => router.push(`${threadBaseUrl}/${convo.id}`)}
+          onToggleRead={() => toggleRead(convo.id, convo.unread)}
+          onDelete={() => deleteConversation(convo.id)}
         />
       ))}
     </div>
   )
 }
 
-function ConversationRow({ convo, accent, onClick }: { convo: Conversation; accent: string; onClick: () => void }) {
+function ConversationRow({ convo, accent, onClick, onToggleRead, onDelete }: {
+  convo: Conversation
+  accent: string
+  onClick: () => void
+  onToggleRead: () => void
+  onDelete: () => void
+}) {
   const [hover, setHover] = useState(false)
   const name = convo.otherParticipant.name
   const photo = convo.otherParticipant.photoUrl
@@ -170,6 +232,52 @@ function ConversationRow({ convo, accent, onClick }: { convo: Conversation; acce
         }}>
           {preview.length > 80 ? preview.slice(0, 80) + '...' : preview || '(no messages)'}
         </p>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+        {/* Mark read / unread toggle */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleRead() }}
+          title={convo.unread ? 'Mark as read' : 'Mark as unread'}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: 'var(--muted)', padding: 4,
+            display: hover ? 'flex' : 'none', alignItems: 'center', justifyContent: 'center',
+            borderRadius: 4, transition: 'color 0.15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.color = accent }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'var(--muted)' }}
+        >
+          {convo.unread ? (
+            /* Open envelope — mark as read */
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 13V6a2 2 0 00-2-2H4a2 2 0 00-2 2v12a2 2 0 002 2h9" />
+              <path d="M22 7l-10 7L2 7" />
+            </svg>
+          ) : (
+            /* Closed envelope — mark as unread */
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="4" width="20" height="16" rx="2" />
+              <path d="M22 7l-10 7L2 7" />
+            </svg>
+          )}
+        </button>
+        {/* Delete conversation */}
+        <button
+          onClick={(e) => { e.stopPropagation(); onDelete() }}
+          title="Delete conversation"
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: 'var(--muted)', padding: 4,
+            display: hover ? 'flex' : 'none', alignItems: 'center', justifyContent: 'center',
+            borderRadius: 4, transition: 'color 0.15s',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.color = 'var(--accent3)' }}
+          onMouseLeave={e => { e.currentTarget.style.color = 'var(--muted)' }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 6L6 18M6 6l12 12" />
+          </svg>
+        </button>
       </div>
     </div>
   )
