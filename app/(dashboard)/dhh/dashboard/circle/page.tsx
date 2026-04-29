@@ -391,19 +391,44 @@ export default function TrustedDeafCirclePage() {
                           label: 'Resend',
                           variant: 'secondary',
                           onClick: () => {
-                            // Re-send invite by calling the same invite endpoint
-                            fetch('/api/dhh/circle/invite', {
+                            fetch('/api/dhh/circle/resend', {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ email: c.invitee_email }),
-                            }).then(() => showToast('Invite resent'))
-                              .catch(() => showToast('Failed to resend'))
+                              body: JSON.stringify({ inviteId: c.id }),
+                            }).then(async (res) => {
+                              if (res.status === 429) {
+                                showToast('Resend too soon — please wait a minute')
+                              } else if (res.status === 403) {
+                                showToast('You can only resend invites you sent')
+                              } else if (res.ok) {
+                                showToast('Invite resent')
+                              } else {
+                                const data = await res.json().catch(() => ({}))
+                                showToast(data.error || 'Failed to resend')
+                              }
+                            }).catch(() => showToast('Failed to resend'))
                           },
                         }]}
                         menuActions={[{
                           label: 'Cancel',
                           variant: 'danger',
-                          onClick: (id) => handleRespond(id, 'decline'),
+                          onClick: (id) => {
+                            fetch('/api/dhh/circle/cancel', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ inviteId: id }),
+                            }).then(async (res) => {
+                              if (res.status === 403) {
+                                showToast('You can only cancel invites you sent')
+                              } else if (res.ok) {
+                                showToast('Invite cancelled')
+                                fetchConnections()
+                              } else {
+                                const data = await res.json().catch(() => ({}))
+                                showToast(data.error || 'Failed to cancel')
+                              }
+                            }).catch(() => showToast('Failed to cancel'))
+                          },
                         }]}
                       />
                     ))}
