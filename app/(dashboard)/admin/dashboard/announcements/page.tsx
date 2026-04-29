@@ -416,7 +416,7 @@ export default function AdminAnnouncementsPage() {
   const batchRecipientCount = parseBatchRecipients(batchText).length
 
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 1200 }}>
       {/* Toast */}
       {toast && (
         <div style={{

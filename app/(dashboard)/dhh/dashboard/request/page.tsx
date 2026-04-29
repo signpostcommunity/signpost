@@ -88,7 +88,7 @@ function RequestCallout() {
 
   return (
     <div style={{
-      maxWidth: 640, marginBottom: 32,
+      maxWidth: 720, marginBottom: 32,
       background: 'var(--surface)', borderLeft: '3px solid #9d87ff',
       border: '1px solid var(--border)', borderLeftWidth: 3, borderLeftColor: '#9d87ff',
       borderRadius: 'var(--radius-sm)', padding: '20px 24px',
@@ -315,14 +315,14 @@ export default function DhhRequestPage() {
         title="New Interpreter Request"
         subtitle="Request an interpreter for a personal event. Submitting booking requests for personal events is always free for Deaf/DB/HH users and their families."
       />
-      <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: -16, marginBottom: 28, maxWidth: 640, lineHeight: 1.5 }}>
+      <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: -16, marginBottom: 28, maxWidth: 720, lineHeight: 1.5 }}>
         (Note: this is separate from what the interpreter charges for their services. They will send you their rate directly.)
       </p>
 
       {/* Callout box */}
       <RequestCallout />
 
-      <form onSubmit={handleSubmit} style={{ maxWidth: 640 }}>
+      <form onSubmit={handleSubmit} style={{ maxWidth: 720 }}>
         {/* Section 1: Event Details */}
         <div style={{ marginBottom: 32 }}>
           <h3 style={sectionHeadingStyle}>Event Details</h3>

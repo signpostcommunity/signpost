@@ -784,7 +784,7 @@ export default function ClientListsClient() {
   }
 
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       {/* Header */}
       <div style={{ marginBottom: 32 }}>
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 725, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>

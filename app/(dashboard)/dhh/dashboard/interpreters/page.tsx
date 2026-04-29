@@ -280,7 +280,7 @@ export default function DeafDashboardPage() {
   // Empty state - no interpreters at all
   if (roster.length === 0) {
     return (
-      <div className="dhh-interp-list-page" style={{ maxWidth: 960, margin: '0 auto', padding: '60px 32px 64px' }}>
+      <div className="dhh-interp-list-page" style={{ margin: '0 auto', padding: '60px 32px 64px' }}>
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: '27px', fontWeight: 725, letterSpacing: '-0.03em', marginBottom: 4, color: '#f0f2f8' }}>
           My Interpreter List
         </h1>
@@ -521,7 +521,7 @@ export default function DeafDashboardPage() {
   }
 
   return (
-    <div className="dhh-interp-list-page" style={{ maxWidth: 960, margin: '0 auto', padding: '32px 32px 64px' }}>
+    <div className="dhh-interp-list-page" style={{ margin: '0 auto', padding: '32px 32px 64px' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 4 }}>
         <div>

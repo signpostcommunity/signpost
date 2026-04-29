@@ -230,7 +230,7 @@ export default function RequesterInboxPage() {
   const unreadNotifCount = notifications.filter(n => n.status !== 'read').length
 
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960, display: 'flex', flexDirection: 'column', height: 'calc(100vh - 80px)' }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 80px)' }}>
       {orgName && (
         <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '0.85rem', color: 'var(--muted)', fontWeight: 500, marginBottom: 4 }}>
           {orgName}

@@ -166,7 +166,7 @@ export default function TrustedDeafCirclePage() {
   }
 
   return (
-    <div className="dash-page-content" style={{ padding: '40px 48px', maxWidth: 900 }}>
+    <div className="dash-page-content" style={{ padding: '40px 48px', maxWidth: 960 }}>
       {/* Title row with invite button */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 8 }}>
         <h1 style={{

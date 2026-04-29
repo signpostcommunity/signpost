@@ -321,7 +321,7 @@ export default function RequesterOverviewClient({
   }
 
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       {/* Greeting / Org Header */}
       <div style={{ marginBottom: 30 }}>
         {orgName ? (

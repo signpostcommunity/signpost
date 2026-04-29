@@ -42,7 +42,7 @@ export default async function RequesterDashboardLayout({ children }: { children:
       <div className="dash-layout" style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
         <RequesterDashboardSidebar userName={userName} userInitials={userInitials} userSubtitle={userSubtitle} />
         <main className="dash-main" style={{ flex: 1, overflowY: 'auto', minWidth: 0, display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
-          <div style={{ maxWidth: 960, margin: '0 auto', width: '100%' }}>
+          <div style={{ maxWidth: 1120, margin: '0 auto', width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '12px 32px 0' }}>
               <PrelaunchNotice role="requester" dismissedAt={dismissedPrelaunchAt} />
             </div>

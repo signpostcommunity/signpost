@@ -393,7 +393,7 @@ export default function DhhPreferencesPage() {
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       <PageHeader title="Preferences & Profile" subtitle="Manage your profile and communication preferences." />
 
-      <div style={{ maxWidth: 640 }}>
+      <div style={{ maxWidth: 720 }}>
         {/* ── My Interpreter Request Link ── */}
         {vanitySlug && (
           <div style={{

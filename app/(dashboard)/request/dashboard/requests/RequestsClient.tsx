@@ -539,7 +539,7 @@ export default function RequestsClient({
   const cancelBooking = cancelModalId ? bookings.find(b => b.id === cancelModalId) : null
 
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         {orgName && (

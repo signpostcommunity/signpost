@@ -746,7 +746,7 @@ export default function DeafDashboardOverview() {
   }
 
   return (
-    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
+    <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       {/* Greeting */}
       <div style={{ marginBottom: 30 }}>
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 725, fontSize: '27px', color: '#f0f2f8', margin: '0 0 6px' }}>

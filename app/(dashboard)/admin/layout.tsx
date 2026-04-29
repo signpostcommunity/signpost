@@ -26,7 +26,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="admin-layout" style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg)' }}>
       <AdminSidebar userName={userName} userInitials={userInitials} />
       <main className="admin-main" style={{ flex: 1, overflowY: 'auto', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        <div style={{ maxWidth: 960, margin: '0 auto', width: '100%' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', width: '100%' }}>
           {children}
         </div>
       </main>

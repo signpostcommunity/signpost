@@ -11,7 +11,7 @@ export default async function AllRequestsPage() {
 
   if (!user) {
     return (
-      <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 960 }}>
+      <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 1120 }}>
         <p style={{ color: 'var(--muted)' }}>Please log in to view your requests.</p>
       </div>
     )
