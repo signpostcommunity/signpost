@@ -12,6 +12,21 @@ export async function POST() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Verify the caller is a Deaf user; reject otherwise
+    const { data: userProfile, error: profileErr } = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    if (profileErr || !userProfile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 403 })
+    }
+
+    if (userProfile.role !== 'deaf') {
+      return NextResponse.json({ error: 'Forbidden — Deaf accounts only' }, { status: 403 })
+    }
+
     const userId = user.id
     const admin = getSupabaseAdmin()
 

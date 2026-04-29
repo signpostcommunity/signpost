@@ -277,17 +277,6 @@ export default function Step6Review({ onBack }: { onBack: () => void }) {
         }
       }
 
-      // BETA: seed demo bookings + messages for new interpreter
-      try {
-        await fetch('/api/seed-interpreter', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ interpreterProfileId: profileId }),
-        })
-      } catch (seedErr) {
-        console.warn('Beta: seed call failed, continuing', seedErr)
-      }
-
       // Send welcome notification (email + in-app) - fires once on signup only
       try {
         await fetch('/api/notifications/send', {
