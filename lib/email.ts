@@ -14,10 +14,12 @@ export async function sendEmail({
   to,
   subject,
   html,
+  from,
 }: {
   to: string;
   subject: string;
   html: string;
+  from?: string;
 }): Promise<{ id: string } | null> {
   const resend = getResend();
   if (!resend) {
@@ -28,7 +30,7 @@ export async function sendEmail({
   console.log(`[email] calling resend.emails.send() to=${to} subject="${subject}"`);
 
   const { data, error } = await resend.emails.send({
-    from: 'signpost <noreply@signpost.community>',
+    from: from || 'signpost <noreply@signpost.community>',
     to,
     subject,
     html,

@@ -279,6 +279,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Subject is required for custom emails' }, { status: 400 })
     }
 
+    // Per-template from-name overrides
+    const fromOverride = template === 'soft-launch'
+      ? 'Molly & Regina at signpost <hello@send.signpost.community>'
+      : undefined
+
     // Mode 3: broadcast by role
     if (role) {
       const roleRecipients = await getRecipientsForRole(role)
@@ -293,7 +298,7 @@ export async function POST(request: NextRequest) {
       for (const r of roleRecipients) {
         try {
           const rendered = await renderEmail(template, r.name, subject, customBody)
-          await sendEmail({ to: r.email, subject: rendered.subject, html: rendered.html })
+          await sendEmail({ to: r.email, subject: rendered.subject, html: rendered.html, from: fromOverride })
           sent++
         } catch (err) {
           failed++
@@ -315,7 +320,7 @@ export async function POST(request: NextRequest) {
       for (const r of manualRecipients) {
         try {
           const rendered = await renderEmail(template, r.name, subject, customBody)
-          await sendEmail({ to: r.email, subject: rendered.subject, html: rendered.html })
+          await sendEmail({ to: r.email, subject: rendered.subject, html: rendered.html, from: fromOverride })
           sent++
         } catch (err) {
           failed++
@@ -341,6 +346,7 @@ export async function POST(request: NextRequest) {
       to: recipientEmail,
       subject: rendered.subject,
       html: rendered.html,
+      from: fromOverride,
     })
 
     return NextResponse.json({ success: true, emailId: result?.id ?? null })
