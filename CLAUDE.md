@@ -516,6 +516,16 @@ If scope is genuinely ambiguous, default to investigation-only and ask: "Should 
 
 ---
 
+## Commit message rules
+
+- Do not include Co-Authored-By, Generated-by, "Created with", "Made with", or any other AI attribution in commit messages.
+- Do not attribute commits to Claude, Lucy, ChatGPT, GitHub Copilot, Cursor, or any LLM tooling.
+- Commit messages describe what the commit does and why, not how it was created.
+- Standard format: imperative subject line, optional body explaining the why.
+- Past commits with attribution are not retroactively rewritten — this rule applies going forward only.
+
+---
+
 ## Test Account Isolation
 
 `is_test_account` boolean column on `interpreter_profiles`, `deaf_profiles`, and `requester_profiles`. Default false.
