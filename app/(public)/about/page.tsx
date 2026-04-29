@@ -130,7 +130,7 @@ const faqSections: FaqSection[] = [
               For interpreters: signpost is completely free. No listing fees, no subscription, no commission. You set your own rates and are paid directly by the requester.
             </p>
             <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.75, margin: 0 }}>
-              For Deaf, DeafBlind, and Hard of Hearing individuals: signpost is always free for personal use. Browse the directory, build your preferred interpreter list, rate interpreters, and request interpreters for personal events. signpost never charges a booking fee for personal events.
+              For Deaf, DeafBlind, and Hard of Hearing individuals: browse the directory, build your preferred interpreter list, rate interpreters, and request interpreters for personal events. signpost never charges a booking fee for personal events.
             </p>
           </>
         ),
@@ -588,7 +588,7 @@ export default function AboutPage() {
                   for each interpreter confirmed on a booking
                 </div>
                 <div style={{ color: '#96a0b8', fontSize: '0.82rem', lineHeight: 1.6, marginTop: 12 }}>
-                  Charged to the requester only. Personal requests by Deaf/DB/HH individuals are always free.
+                  Charged to the requester only. signpost never charges a booking fee for personal requests by Deaf/DB/HH individuals.
                 </div>
               </div>
 

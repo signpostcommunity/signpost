@@ -123,7 +123,7 @@ function DeafPortalTab() {
         ]} />
 
         <FeatureBlock accent={PURPLE} title="Personal Interpreter Request" items={[
-          'Submit requests directly from your portal. Always free for Deaf/DB/HH individuals',
+          'Submit requests directly from your portal. signpost never charges a booking fee for personal events',
           'Specify: date/time, format (in-person/remote), event type, location, interpreter count',
           'Choose which interpreters from your preferred list to send the request to',
           'Your communication preferences are automatically shared with every request',
@@ -384,7 +384,7 @@ function CommitmentsTab() {
     {
       title: 'Community',
       items: [
-        'Always free for Deaf/DB/HH individuals',
+        'No booking fees for Deaf/DB/HH personal requests',
         'Open to all interpreters regardless of region or certification body',
         'Giving back to Deaf organizations and community initiatives',
         'Supporting marginalized and disenfranchised communities',

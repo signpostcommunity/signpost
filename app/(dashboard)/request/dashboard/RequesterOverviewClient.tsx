@@ -879,7 +879,7 @@ function BillingInfoCard() {
             This fee supports the signpost platform and is completely separate from the interpreter&apos;s rate. The interpreter will invoice you directly for their services using their preferred payment method.
           </p>
           <p style={{ margin: '0 0 12px' }}>
-            Personal interpreter requests from Deaf/DB/HH individuals are always free.
+            signpost never charges a booking fee for personal interpreter requests from Deaf/DB/HH individuals.
           </p>
           <p style={{
             margin: 0, fontStyle: 'italic', opacity: 0.8,
