@@ -144,7 +144,7 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
-                {userRole === 'interpreter' ? 'On your team' : 'On your list'}
+                {userRole === 'interpreter' ? 'On your team' : userRole === 'deaf' ? 'On your list' : 'On your roster'}
               </span>
             ) : (
               <button
@@ -155,7 +155,7 @@ export default function InterpreterCard({ interpreter: i, onVideoPreview, onAddT
                 }}
                 className="add-to-list-btn"
               >
-                {userRole === 'interpreter' ? '+ Add to my team' : '+ Add to my list'}
+                {userRole === 'interpreter' ? '+ Add to my team' : userRole === 'deaf' ? '+ Add to my list' : '+ Add to my roster'}
               </button>
             )}
           </div>

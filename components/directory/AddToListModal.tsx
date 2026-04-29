@@ -119,10 +119,10 @@ const ROLE_CONFIGS: Record<string, RoleConfig> = {
     personalDesc: '',
     noteLabel: 'Note (optional)',
     notePlaceholder: '"Excellent for high-stakes medical settings. Always arrives early and reviews materials in advance."',
-    confirmLabel: 'Add to my list →',
+    confirmLabel: 'Add to my roster →',
     requireApproval: false,
     negativeListLabel: '✕ Do Not Book',
-    negativeListDesc: 'This interpreter will be flagged on your list so they are not booked.',
+    negativeListDesc: 'This interpreter will be flagged on your roster so they are not booked.',
   },
   interpreter: {
     step1Label: 'Which tier should they be on?',

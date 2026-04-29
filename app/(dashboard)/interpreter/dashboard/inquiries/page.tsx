@@ -10,6 +10,7 @@ import { displayBookingFormat } from '@/lib/bookingFormat'
 import { sendNotification } from '@/lib/notifications'
 import BookingFilterBar, { filterBySearch, filterByDateRange, groupByTimeCategory, timeCategoryHeaderStyle } from '@/components/dashboard/shared/BookingFilterBar'
 import { decryptBatchClient } from '@/lib/decrypt-client'
+import TimePicker from '@/components/shared/TimePicker'
 
 /* ── Types ── */
 
@@ -866,12 +867,10 @@ function SuggestModal({ booking, onClose, onSent }: {
 
         <div className="inq-suggest-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
           <div>
-            <label style={fieldLabelStyle}>Start Time</label>
-            <input type="time" value={startTime} onChange={e => setStartTime(e.target.value)} style={fieldInputStyle} onFocus={focusBorder} onBlur={blurBorder} />
+            <TimePicker label="Start Time" value={startTime} onChange={setStartTime} />
           </div>
           <div>
-            <label style={fieldLabelStyle}>End Time</label>
-            <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} style={fieldInputStyle} onFocus={focusBorder} onBlur={blurBorder} />
+            <TimePicker label="End Time" value={endTime} onChange={setEndTime} />
           </div>
         </div>
 

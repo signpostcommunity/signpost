@@ -97,7 +97,7 @@ export default async function BookPage({ params }: Props) {
 
   const fullName = data.name || [data.first_name, data.last_name].filter(Boolean).join(' ') || 'Interpreter'
   const initials = fullName.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)
-  const location = [data.city, data.state, data.country].filter(Boolean).join(', ')
+  const location = [data.city, data.state, data.country ? data.country.toUpperCase() : null].filter(Boolean).join(', ')
 
   const interpreter: Interpreter = {
     id: data.id,

@@ -88,7 +88,7 @@ function getInterpreterName(info: InterpreterInfo): string {
 }
 
 function getInterpreterLocation(info: InterpreterInfo): string {
-  const parts = [info.city, info.state, info.country].filter(Boolean)
+  const parts = [info.city, info.state, info.country ? info.country.toUpperCase() : null].filter(Boolean)
   return parts.join(', ')
 }
 

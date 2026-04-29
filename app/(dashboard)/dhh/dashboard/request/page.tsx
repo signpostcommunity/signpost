@@ -12,6 +12,7 @@ import InlineVideoCapture from '@/components/ui/InlineVideoCapture'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
 import LocationInput from '@/components/ui/LocationInput'
 import type { LocationFields } from '@/components/ui/LocationInput'
+import TimePicker from '@/components/shared/TimePicker'
 
 const TIMEZONES = [
   { label: 'Pacific Time (PT)', value: 'America/Los_Angeles' },
@@ -371,7 +372,7 @@ export default function DhhRequestPage() {
                     onChange={() => setFormat(f)}
                     style={{ accentColor: '#9d87ff' }}
                   />
-                  {f === 'in_person' ? 'In-person' : 'Remote'}
+                  {f === 'in_person' ? 'In Person' : 'Remote'}
                 </label>
               ))}
             </div>
@@ -412,24 +413,10 @@ export default function DhhRequestPage() {
 
           <div style={{ display: 'flex', gap: 12, marginBottom: 18, flexWrap: 'wrap' }}>
             <div style={{ flex: 1, minWidth: 140 }}>
-              <label style={labelStyle}>Start Time *</label>
-              <input
-                type="time"
-                value={timeStart}
-                onChange={e => setTimeStart(e.target.value)}
-                style={inputStyle}
-                required
-              />
+              <TimePicker label="Start Time" required value={timeStart} onChange={setTimeStart} accent="#a78bfa" />
             </div>
             <div style={{ flex: 1, minWidth: 140 }}>
-              <label style={labelStyle}>End Time *</label>
-              <input
-                type="time"
-                value={timeEnd}
-                onChange={e => setTimeEnd(e.target.value)}
-                style={inputStyle}
-                required
-              />
+              <TimePicker label="End Time" required value={timeEnd} onChange={setTimeEnd} accent="#a78bfa" />
             </div>
           </div>
 

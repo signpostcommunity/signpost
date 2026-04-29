@@ -468,7 +468,7 @@ function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast, on
                 ? { background: 'rgba(123,97,255,0.15)', color: '#a78bfa', border: '1px solid rgba(123,97,255,0.25)' }
                 : { background: 'rgba(0,229,255,0.15)', color: '#00e5ff', border: '1px solid rgba(0,229,255,0.25)' }),
             }}>
-              {booking.format === 'remote' ? 'Remote' : 'In-person'}
+              {booking.format === 'remote' ? 'Remote' : 'In Person'}
             </span>
           </div>
           <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginTop: 3 }}>

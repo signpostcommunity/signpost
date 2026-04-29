@@ -90,7 +90,7 @@ export default function InterpretersClient({ interpreters }: { interpreters: Int
             <tbody>
               {list.map(i => {
                 const name = `${i.first_name || ''} ${i.last_name || ''}`.trim() || 'Unnamed'
-                const loc = [i.location || i.state, i.country].filter(Boolean).join(', ')
+                const loc = [i.location || i.state, i.country ? i.country.toUpperCase() : null].filter(Boolean).join(', ')
                 return (
                   <tr key={i.id} style={{ borderBottom: '1px solid var(--border)' }}>
                     <td style={{ padding: '10px 16px', color: 'var(--text)' }}>{name}</td>

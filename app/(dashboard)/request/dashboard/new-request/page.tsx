@@ -10,6 +10,7 @@ import LocationInput from '@/components/ui/LocationInput'
 import type { LocationFields } from '@/components/ui/LocationInput'
 import PaymentMethodSection from '@/components/dashboard/requester/PaymentMethodSection'
 import { useFocusTrap } from '@/lib/hooks/useFocusTrap'
+import TimePicker from '@/components/shared/TimePicker'
 
 /* -- Constants -- */
 
@@ -446,34 +447,66 @@ export default function NewRequestPage() {
     window.open(data.signedUrl, '_blank')
   }
 
-  function validate(): boolean {
+  function sectionErrors(tab: Tab): Record<string, string> {
     const errs: Record<string, string> = {}
-    if (!title.trim()) errs.title = 'Title is required'
-    if (!eventCategory) errs.eventCategory = 'Category is required'
-    if (!date) errs.date = 'Date is required'
-    if (!timeStart) errs.timeStart = 'Start time is required'
-    if (!timeEnd) errs.timeEnd = 'End time is required'
-    if (!signLanguage) errs.signLanguage = 'Sign language is required'
-    if (format === 'in_person' && !locationFields.city.trim()) errs.location = 'City is required for in-person events'
-    if (clientSpecification === 'tagged' && useNamedUnreachable && !namedFirstName.trim()) {
-      errs.namedFirstName = 'First name is required'
+    if (tab === 'Event Details') {
+      if (!title.trim()) errs.title = 'Title is required'
+      if (!eventCategory) errs.eventCategory = 'Category is required'
+      if (!date) errs.date = 'Date is required'
+      if (!timeStart) errs.timeStart = 'Start time is required'
+      if (!timeEnd) errs.timeEnd = 'End time is required'
+      if (!signLanguage) errs.signLanguage = 'Sign language is required'
+      if (format === 'in_person' && !locationFields.city.trim()) errs.location = 'City is required for in-person events'
+      if (date) {
+        const today = new Date().toISOString().split('T')[0]
+        if (date < today) errs.date = 'Date must be today or in the future'
+      }
+      if (timeStart && timeEnd && timeStart >= timeEnd) {
+        errs.timeEnd = 'End time must be after start time'
+      }
+    } else if (tab === 'Participants') {
+      if (clientSpecification === 'tagged' && useNamedUnreachable && !namedFirstName.trim()) {
+        errs.namedFirstName = 'First name is required'
+      }
     }
-    if (date) {
-      const today = new Date().toISOString().split('T')[0]
-      if (date < today) errs.date = 'Date must be today or in the future'
+    // Interpreters and Preparation have no required fields
+    return errs
+  }
+
+  function validate(): boolean {
+    const allErrs: Record<string, string> = {}
+    for (const tab of TABS) {
+      if (tab === 'Review & Submit') continue
+      Object.assign(allErrs, sectionErrors(tab))
     }
-    if (timeStart && timeEnd && timeStart >= timeEnd) {
-      errs.timeEnd = 'End time must be after start time'
+    setErrors(allErrs)
+    if (Object.keys(allErrs).length > 0) {
+      const firstKey = Object.keys(allErrs)[0]
+      setToast({ message: `Please fix: ${allErrs[firstKey]}`, type: 'error' })
+      const el = document.querySelector(`[data-field="${firstKey}"]`)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      return false
     }
+    return true
+  }
+
+  function handleNextSection() {
+    const currentIndex = TABS.indexOf(activeTab)
+    if (currentIndex >= TABS.length - 1) return
+    const errs = sectionErrors(activeTab)
     setErrors(errs)
     if (Object.keys(errs).length > 0) {
       const firstKey = Object.keys(errs)[0]
       setToast({ message: `Please fix: ${errs[firstKey]}`, type: 'error' })
       const el = document.querySelector(`[data-field="${firstKey}"]`)
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      return false
+      return
     }
-    return true
+    setActiveTab(TABS[currentIndex + 1])
+  }
+
+  function sectionHasRequiredEmpty(tab: Tab): boolean {
+    return Object.keys(sectionErrors(tab)).length > 0
   }
 
   function buildPayload() {
@@ -871,13 +904,11 @@ export default function NewRequestPage() {
             {errors.date && <div style={errorStyle}>{errors.date}</div>}
           </div>
           <div data-field="timeStart">
-            <label style={labelStyle}>Start Time *</label>
-            <input type="time" value={timeStart} onChange={e => setTimeStart(e.target.value)} style={inputStyle} />
+            <TimePicker label="Start Time" required value={timeStart} onChange={setTimeStart} />
             {errors.timeStart && <div style={errorStyle}>{errors.timeStart}</div>}
           </div>
           <div data-field="timeEnd">
-            <label style={labelStyle}>End Time *</label>
-            <input type="time" value={timeEnd} onChange={e => setTimeEnd(e.target.value)} style={inputStyle} />
+            <TimePicker label="End Time" required value={timeEnd} onChange={setTimeEnd} />
             {errors.timeEnd && <div style={errorStyle}>{errors.timeEnd}</div>}
           </div>
         </div>
@@ -908,7 +939,7 @@ export default function NewRequestPage() {
                   transition: 'all 0.15s',
                 }}
               >
-                {f === 'in_person' ? 'In-person' : 'Remote'}
+                {f === 'in_person' ? 'In Person' : 'Remote'}
               </button>
             ))}
           </div>
@@ -965,6 +996,31 @@ export default function NewRequestPage() {
             <option value="">None specified</option>
             {SPECIALIZATIONS.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
+        </div>
+
+        {/* Next section button */}
+        <div style={{ marginTop: 32 }}>
+          <button
+            type="button"
+            disabled={sectionHasRequiredEmpty('Event Details')}
+            onClick={handleNextSection}
+            style={{
+              width: '100%', padding: '12px 24px', borderRadius: 'var(--radius-sm)',
+              background: sectionHasRequiredEmpty('Event Details') ? 'var(--surface)' : 'var(--accent)',
+              border: sectionHasRequiredEmpty('Event Details') ? '1px solid var(--border)' : 'none',
+              color: sectionHasRequiredEmpty('Event Details') ? 'var(--muted)' : '#0a0a0f',
+              fontWeight: 600, fontSize: '0.88rem', fontFamily: "'Inter', sans-serif",
+              cursor: sectionHasRequiredEmpty('Event Details') ? 'not-allowed' : 'pointer',
+              transition: 'all 0.15s',
+            }}
+          >
+            Next: Participants
+          </button>
+          {sectionHasRequiredEmpty('Event Details') && (
+            <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 6, textAlign: 'center' }}>
+              Complete all required fields to continue
+            </p>
+          )}
         </div>
 
         </>
@@ -1120,6 +1176,23 @@ export default function NewRequestPage() {
             rows={4}
             style={{ ...inputStyle, resize: 'vertical' as const }}
           />
+        </div>
+
+        {/* Next section button */}
+        <div style={{ marginTop: 32 }}>
+          <button
+            type="button"
+            onClick={handleNextSection}
+            style={{
+              width: '100%', padding: '12px 24px', borderRadius: 'var(--radius-sm)',
+              background: 'var(--accent)', border: 'none',
+              color: '#0a0a0f', fontWeight: 600, fontSize: '0.88rem',
+              fontFamily: "'Inter', sans-serif", cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}
+          >
+            Next: Review &amp; Submit
+          </button>
         </div>
 
         </>
@@ -1519,6 +1592,31 @@ export default function NewRequestPage() {
           </div>
         )}
 
+        {/* Next section button */}
+        <div style={{ marginTop: 32 }}>
+          <button
+            type="button"
+            disabled={sectionHasRequiredEmpty('Participants')}
+            onClick={handleNextSection}
+            style={{
+              width: '100%', padding: '12px 24px', borderRadius: 'var(--radius-sm)',
+              background: sectionHasRequiredEmpty('Participants') ? 'var(--surface)' : 'var(--accent)',
+              border: sectionHasRequiredEmpty('Participants') ? '1px solid var(--border)' : 'none',
+              color: sectionHasRequiredEmpty('Participants') ? 'var(--muted)' : '#0a0a0f',
+              fontWeight: 600, fontSize: '0.88rem', fontFamily: "'Inter', sans-serif",
+              cursor: sectionHasRequiredEmpty('Participants') ? 'not-allowed' : 'pointer',
+              transition: 'all 0.15s',
+            }}
+          >
+            Next: Interpreters
+          </button>
+          {sectionHasRequiredEmpty('Participants') && (
+            <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 6, textAlign: 'center' }}>
+              Complete all required fields to continue
+            </p>
+          )}
+        </div>
+
         </>
         )}
 
@@ -1660,6 +1758,31 @@ export default function NewRequestPage() {
           )}
         </div>
 
+        {/* Next section button */}
+        <div style={{ marginTop: 32 }}>
+          <button
+            type="button"
+            disabled={sectionHasRequiredEmpty('Interpreters')}
+            onClick={handleNextSection}
+            style={{
+              width: '100%', padding: '12px 24px', borderRadius: 'var(--radius-sm)',
+              background: sectionHasRequiredEmpty('Interpreters') ? 'var(--surface)' : 'var(--accent)',
+              border: sectionHasRequiredEmpty('Interpreters') ? '1px solid var(--border)' : 'none',
+              color: sectionHasRequiredEmpty('Interpreters') ? 'var(--muted)' : '#0a0a0f',
+              fontWeight: 600, fontSize: '0.88rem', fontFamily: "'Inter', sans-serif",
+              cursor: sectionHasRequiredEmpty('Interpreters') ? 'not-allowed' : 'pointer',
+              transition: 'all 0.15s',
+            }}
+          >
+            Next: Preparation
+          </button>
+          {sectionHasRequiredEmpty('Interpreters') && (
+            <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 6, textAlign: 'center' }}>
+              Complete all required fields to continue
+            </p>
+          )}
+        </div>
+
         </>
         )}
 
@@ -1694,7 +1817,7 @@ export default function NewRequestPage() {
             </div>
             <div>
               <span style={{ color: 'var(--muted)' }}>Format: </span>
-              <span style={{ color: 'var(--text)', fontWeight: 600 }}>{format === 'in_person' ? 'In-person' : 'Remote'}</span>
+              <span style={{ color: 'var(--text)', fontWeight: 600 }}>{format === 'in_person' ? 'In Person' : 'Remote'}</span>
             </div>
             <div>
               <span style={{ color: 'var(--muted)' }}>Interpreters: </span>

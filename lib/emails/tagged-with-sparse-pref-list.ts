@@ -23,7 +23,7 @@ export function taggedWithSparsePrefListEmail({
   locationState?: string | null
   prefListUrl: string
 }) {
-  const formatLabel = format === 'in_person' ? 'In-person'
+  const formatLabel = format === 'in_person' ? 'In Person'
     : format === 'remote' ? 'Remote' : 'Hybrid'
 
   const locationLine = format === 'in_person' && locationCity

@@ -11,6 +11,7 @@ import { getVideoEmbedUrl } from '@/lib/videoUtils'
 import { displayBookingFormat } from '@/lib/bookingFormat'
 import BookingFilterBar, { filterByDateRange, groupByTimeCategory, timeCategoryHeaderStyle } from '@/components/dashboard/shared/BookingFilterBar'
 import { decryptBatchClient } from '@/lib/decrypt-client'
+import TimePicker from '@/components/shared/TimePicker'
 
 /* ── Types ── */
 
@@ -1404,16 +1405,10 @@ function InvoiceModal({ booking, interpreterId, onClose, onSaved }: {
             <div style={{ fontWeight: 600, fontSize: '13px', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#00e5ff', marginBottom: 14 }}>Time &amp; Rate</div>
             <div className="confirmed-time-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
               <div>
-                <label style={labelSt}>Start Time</label>
-                <input type="time" value={actualStart} onChange={e => setActualStart(e.target.value)} style={inputSt}
-                  onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
-                  onBlur={e => { e.target.style.borderColor = 'var(--border)' }} />
+                <TimePicker label="Start Time" value={actualStart} onChange={setActualStart} />
               </div>
               <div>
-                <label style={labelSt}>End Time</label>
-                <input type="time" value={actualEnd} onChange={e => setActualEnd(e.target.value)} style={inputSt}
-                  onFocus={e => { e.target.style.borderColor = 'var(--accent)' }}
-                  onBlur={e => { e.target.style.borderColor = 'var(--border)' }} />
+                <TimePicker label="End Time" value={actualEnd} onChange={setActualEnd} />
               </div>
               <div>
                 <label style={labelSt}>Hours</label>

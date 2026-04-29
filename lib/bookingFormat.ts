@@ -5,7 +5,7 @@
 
 export function displayBookingFormat(format: string | null | undefined): string {
   switch (format) {
-    case 'in_person': return 'In-person'
+    case 'in_person': return 'In Person'
     case 'remote': return 'Remote'
     case 'hybrid': return 'Hybrid'
     default: return format || ''
