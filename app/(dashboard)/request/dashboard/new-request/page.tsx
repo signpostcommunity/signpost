@@ -325,9 +325,6 @@ export default function NewRequestPage() {
   const [selectedInterpreters, setSelectedInterpreters] = useState<string[]>([])
   const [includeWiderPool, setIncludeWiderPool] = useState(true)
 
-  // Distance filter (Phase 4)
-  const [searchRadiusMiles, setSearchRadiusMiles] = useState(60)
-
   // Section 4: Notes
   const [notes, setNotes] = useState('')
 
@@ -512,7 +509,7 @@ export default function NewRequestPage() {
       notes: notes || null,
       tagged_deaf_user_ids: taggedIds.length > 0 ? taggedIds : undefined,
       client_specification: spec,
-      search_radius_miles: format === 'in_person' ? searchRadiusMiles : null,
+      search_radius_miles: null,
       client_display_first_name: spec === 'named_unreachable' ? namedFirstName.trim() : null,
       client_display_last_name: spec === 'named_unreachable' ? (namedLastName.trim() || null) : null,
       prep_notes: prepNotes || null,
@@ -934,47 +931,6 @@ export default function NewRequestPage() {
           />
           {errors.location && <div style={errorStyle}>{errors.location}</div>}
         </div>
-
-        {/* Distance filter (Phase 4): visible when format=in_person */}
-        {format === 'in_person' && (
-        <div style={{ marginBottom: 20 }}>
-          <label style={labelStyle}>Search radius for interpreters</label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <input
-              type="range"
-              min={5}
-              max={200}
-              step={5}
-              value={searchRadiusMiles}
-              onChange={e => setSearchRadiusMiles(parseInt(e.target.value))}
-              style={{ flex: 1, accentColor: '#00e5ff' }}
-            />
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              minWidth: 90,
-            }}>
-              <input
-                type="number"
-                min={5}
-                max={200}
-                value={searchRadiusMiles}
-                onChange={e => {
-                  const v = parseInt(e.target.value) || 5
-                  setSearchRadiusMiles(Math.max(5, Math.min(200, v)))
-                }}
-                style={{
-                  ...inputStyle,
-                  width: 64, textAlign: 'center', padding: '8px 6px',
-                }}
-              />
-              <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>miles</span>
-            </div>
-          </div>
-          <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: 6, lineHeight: 1.5 }}>
-            Interpreters within this distance of your event location will be matched. Rural areas may need a wider radius. Urban areas can narrow.
-          </p>
-        </div>
-        )}
 
         <div data-field="signLanguage" style={{ marginBottom: 20 }}>
           <label style={labelStyle}>Sign Language Needed *</label>
@@ -1619,31 +1575,6 @@ export default function NewRequestPage() {
                 </div>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Distance indicator for in-person events */}
-        {format === 'in_person' && locationFields.city && (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 8,
-            marginBottom: 16, fontSize: '0.82rem', color: '#96a0b8',
-          }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#96a0b8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
-            Showing interpreters within {searchRadiusMiles} miles of {locationFields.city}{locationFields.state ? `, ${locationFields.state}` : ''}.{' '}
-            <button
-              type="button"
-              onClick={() => setActiveTab('Event Details')}
-              style={{
-                background: 'none', border: 'none', padding: 0,
-                color: 'var(--accent)', fontSize: '0.82rem', fontWeight: 600,
-                cursor: 'pointer', fontFamily: "'Inter', sans-serif",
-              }}
-            >
-              Adjust &#8594;
-            </button>
           </div>
         )}
 
