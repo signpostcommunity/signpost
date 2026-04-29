@@ -58,10 +58,12 @@ async function main() {
     f => `and(${f}.not.is.null,${f}.not.like.enc:%25)`
   ).join(',')
 
-  const { data: rows, error } = await supabase
+  const { data, error } = await supabase
     .from('bookings')
     .select(`id, ${FIELDS_TO_ENCRYPT.join(', ')}`)
     .or(orConditions)
+
+  const rows = data as Array<Record<string, unknown>> | null
 
   if (error) {
     console.error('Query failed:', error.message)
