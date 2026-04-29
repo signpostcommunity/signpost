@@ -12,7 +12,7 @@ import { SoftLaunchAnnouncementInterpreter } from '@/emails/SoftLaunchAnnounceme
 export const dynamic = 'force-dynamic'
 
 /** Human-authored emails sent via the admin announcements UI use this sender identity. */
-const ANNOUNCEMENTS_FROM = 'Molly & Regina at signpost <hello@send.signpost.community>'
+const ANNOUNCEMENTS_FROM = 'Molly & Regina at signpost <hello@signpost.community>'
 
 const TEMPLATES = {
   'beta-update': {
