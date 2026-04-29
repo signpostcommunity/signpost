@@ -6,7 +6,7 @@ import { useState, useRef, useEffect } from 'react'
 
 const ORANGE = '#ff7e45'
 
-type TemplateName = 'beta-update' | 'invitation' | 'profile-invite' | 'soft-launch' | 'custom'
+type TemplateName = 'beta-update' | 'invitation' | 'profile-invite' | 'soft-launch' | 'personal-invite' | 'custom'
 type RecipientMode = 'role' | 'manual'
 type ManualMode = 'single' | 'batch'
 type RoleName = 'interpreter' | 'deaf' | 'requester'
@@ -54,6 +54,11 @@ const TEMPLATES: { key: TemplateName; label: string; description: string }[] = [
     description: 'May 1 soft launch announcement for existing interpreters. Timeline with profile CTA and invite CTA.',
   },
   {
+    key: 'personal-invite',
+    label: 'Personal invite (interpreters not yet on signpost)',
+    description: 'Cold-list outreach for interpreters who don\'t have signpost accounts yet. Personal invitation from Molly & Regina with three-perspective problem statement and signup CTA.',
+  },
+  {
     key: 'custom',
     label: 'Custom email',
     description: 'Write your own email with signpost branding applied automatically.',
@@ -65,6 +70,7 @@ const TEMPLATE_SUBJECTS: Record<string, string> = {
   'invitation': 'I built something I think you will want to see',
   'profile-invite': 'signpost is opening soon. Help us one more time and coffee\'s on us!',
   'soft-launch': 'signpost opens Friday. Complete your profile in time.',
+  'personal-invite': 'A personal invite to our most trusted interpreters',
 }
 
 const TEMPLATE_PREVIEWS: Record<string, string> = {
@@ -166,6 +172,34 @@ Would you set up a profile? It takes about 5 minutes:
 I'd really appreciate your support on this.
 
 Molly`,
+  'personal-invite': `Hey [name],
+
+My best friend and I (Regina McGinnis, Deaf mental-health professional) have been working long nights and weekends for months, building something special. Now it's finally time to put it out in the world!
+
+Our new baby is called signpost. It's a platform that hopes to address some real challenges within our communities.
+
+For freelance interpreters:
+A direct-booking and business management tool. Requesters pay your rate with no hourly agency commissions stacked on top.
+
+For Deaf, DeafBlind, and Hard of Hearing folks:
+Full visibility over all requests tagged with their name, control over who gets booked.
+
+For requesters:
+A simple booking interface that respects the Deaf person's preferences. signpost charges just $15 per booking.
+
+I'm reaching out personally because signpost will thrive or shrivel based on the quality of freelance interpreters in the directory. That's why your name is at the top of my list.
+
+[ Sign up for signpost ]  [ Invite interpreters ]
+
+Invite 5 or more interpreters after signing up and we'll thank you with a $15 Starbucks gift card.
+
+May 1: Soft launch. Real bookings start.
+Through May: Building the directory.
+June 1: Public launch.
+
+Please reply to this email with any questions or feedback.
+
+Molly & Regina`,
 }
 
 const ROLE_LABELS: Record<RoleName, string> = {
@@ -191,6 +225,7 @@ function templateLabel(t: TemplateName): string {
   if (t === 'invitation') return 'invitation'
   if (t === 'profile-invite') return 'profile + invite'
   if (t === 'soft-launch') return 'soft launch'
+  if (t === 'personal-invite') return 'personal invite'
   return 'custom'
 }
 

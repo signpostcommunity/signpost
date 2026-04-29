@@ -8,6 +8,7 @@ import { InterpreterInvitation } from '@/emails/InterpreterInvitation'
 import { CustomEmail } from '@/emails/CustomEmail'
 import { InterpreterProfileInvite } from '@/emails/InterpreterProfileInvite'
 import { SoftLaunchAnnouncementInterpreter } from '@/emails/SoftLaunchAnnouncementInterpreter'
+import { PersonalInviteInterpreter } from '@/emails/PersonalInviteInterpreter'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,6 +31,10 @@ const TEMPLATES = {
   'soft-launch': {
     subject: 'signpost opens Friday. Complete your profile in time.',
     component: SoftLaunchAnnouncementInterpreter,
+  },
+  'personal-invite': {
+    subject: 'A personal invite to our most trusted interpreters',
+    component: PersonalInviteInterpreter,
   },
 } as const
 
@@ -270,7 +275,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Template is required' }, { status: 400 })
     }
 
-    const validTemplates = ['beta-update', 'invitation', 'profile-invite', 'soft-launch', 'custom']
+    const validTemplates = ['beta-update', 'invitation', 'profile-invite', 'soft-launch', 'personal-invite', 'custom']
     if (!validTemplates.includes(template)) {
       return NextResponse.json(
         { error: `Invalid template. Must be one of: ${validTemplates.join(', ')}` },
