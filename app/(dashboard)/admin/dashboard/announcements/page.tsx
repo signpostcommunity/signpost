@@ -6,7 +6,7 @@ import { useState, useRef, useEffect } from 'react'
 
 const ORANGE = '#ff7e45'
 
-type TemplateName = 'beta-update' | 'invitation' | 'profile-invite' | 'custom'
+type TemplateName = 'beta-update' | 'invitation' | 'profile-invite' | 'soft-launch' | 'custom'
 type RecipientMode = 'role' | 'manual'
 type ManualMode = 'single' | 'batch'
 type RoleName = 'interpreter' | 'deaf' | 'requester'
@@ -49,6 +49,11 @@ const TEMPLATES: { key: TemplateName; label: string; description: string }[] = [
     description: 'Thanks interpreters for beta feedback, asks them to complete their profile and invite colleagues. Includes forwarding buttons and feature highlights.',
   },
   {
+    key: 'soft-launch',
+    label: 'Soft launch announcement (interpreters)',
+    description: 'May 1 soft launch announcement for existing interpreters. Timeline with profile CTA and invite CTA.',
+  },
+  {
     key: 'custom',
     label: 'Custom email',
     description: 'Write your own email with signpost branding applied automatically.',
@@ -59,6 +64,7 @@ const TEMPLATE_SUBJECTS: Record<string, string> = {
   'beta-update': 'signpost is almost ready. We need your help.',
   'invitation': 'I built something I think you will want to see',
   'profile-invite': 'signpost is opening soon. Help us one more time and coffee\'s on us!',
+  'soft-launch': 'signpost opens Friday. Complete your profile in time.',
 }
 
 const TEMPLATE_PREVIEWS: Record<string, string> = {
@@ -109,6 +115,33 @@ Feature highlights: Mentorship Matching, Confidential Interpreter Ratings, "Book
 Thank you for helping us build something special.
 
 Molly and Regina`,
+  'soft-launch': `Hey [name],
+
+Sharpen your pencils and polish your profile, Friday is the day! After months of work and hundreds of hours of development, signpost is opening our doors.
+
+Freelance interpreters will finally have our own platform for managing our direct work in one place.
+
+Here's what that looks like:
+
+May 1: Soft launch.
+We open to a small group of requesters we've worked with directly, who've asked for early access. Real bookings, but no marketing, no social, no public announcement.
+Make sure your profile is ready. Real requesters will be accessing the directory soon.
+
+[ Complete my profile ]
+
+Through May: Building the directory.
+Help spread the word. Invite the interpreters you trust, so they're there when a Deaf/DB/HH person wants to request them.
+Send invites to interpreters you trust.
+Invite 5 or more and we'll thank you with a $15 Starbucks gift card.
+
+[ Invite an interpreter ]
+
+June 1: Public launch.
+Social media, the public announcement.
+
+Thank you for being here from the start.
+
+Molly & Regina`,
   'invitation': `Hi [name],
 
 I've been building something over the past few months and I'd love for you to check it out.
@@ -157,6 +190,7 @@ function templateLabel(t: TemplateName): string {
   if (t === 'beta-update') return 'beta update'
   if (t === 'invitation') return 'invitation'
   if (t === 'profile-invite') return 'profile + invite'
+  if (t === 'soft-launch') return 'soft launch'
   return 'custom'
 }
 
