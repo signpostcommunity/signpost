@@ -41,6 +41,8 @@ interface Booking {
   onsite_contact_name: string | null
   onsite_contact_phone: string | null
   onsite_contact_email: string | null
+  location_address: string | null
+  meeting_link: string | null
 }
 
 interface BookingAttachment {
@@ -1789,7 +1791,7 @@ export default function ConfirmedPage() {
         })
         .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
       // Decrypt encrypted fields (title, description, notes) server-side
-      const decrypted = await decryptBatchClient(data, ['title', 'description', 'notes'], 'bookings')
+      const decrypted = await decryptBatchClient(data, ['title', 'description', 'notes', 'location_address', 'prep_notes', 'onsite_contact_name', 'onsite_contact_phone', 'onsite_contact_email', 'meeting_link', 'requester_name', 'context_video_url'], 'bookings')
       setBookings(decrypted)
 
       // Fetch invoice status for all bookings

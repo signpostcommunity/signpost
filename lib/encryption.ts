@@ -66,38 +66,45 @@ export function decrypt(ciphertext: string | null): string | null {
 
 /**
  * Encrypt specific fields on an object. Returns a new object with encrypted values.
+ * Fields not present on the object are silently skipped.
  */
 export function encryptFields<T extends Record<string, any>>(
   obj: T,
-  fields: (keyof T)[]
+  fields: string[]
 ): T {
-  const result = { ...obj }
+  const result: Record<string, any> = { ...obj }
   for (const field of fields) {
     if (typeof result[field] === 'string') {
-      result[field] = encrypt(result[field] as string) as any
+      result[field] = encrypt(result[field] as string)
     }
   }
-  return result
+  return result as T
 }
 
 /**
  * Decrypt specific fields on an object. Returns a new object with decrypted values.
+ * Fields not present on the object are silently skipped.
  */
 export function decryptFields<T extends Record<string, any>>(
   obj: T,
-  fields: (keyof T)[]
+  fields: string[]
 ): T {
-  const result = { ...obj }
+  const result: Record<string, any> = { ...obj }
   for (const field of fields) {
     if (typeof result[field] === 'string') {
-      result[field] = decrypt(result[field] as string) as any
+      result[field] = decrypt(result[field] as string)
     }
   }
-  return result
+  return result as T
 }
 
 // The fields on the bookings table that should be encrypted
-export const BOOKING_ENCRYPTED_FIELDS = ['title', 'description'] as const
+export const BOOKING_ENCRYPTED_FIELDS: string[] = [
+  'title', 'description',
+  'location_address', 'prep_notes',
+  'onsite_contact_name', 'onsite_contact_phone', 'onsite_contact_email',
+  'meeting_link', 'requester_name', 'context_video_url',
+]
 
 // The fields on direct_messages / messages tables that should be encrypted
 export const MESSAGE_ENCRYPTED_FIELDS = ['body'] as const

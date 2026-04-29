@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
 
     // Decrypt encrypted fields before use in notifications/emails
     // Only 'title' is in the select; description is not fetched here
-    const decryptedBooking = decryptFields(booking, ['title'])
+    const decryptedBooking = decryptFields(booking, ['title', 'location_address', 'onsite_contact_name', 'onsite_contact_phone', 'onsite_contact_email', 'prep_notes'])
 
     // 2. Authorize: must be the requester, OR a tagged DHH client on a personal booking
     let authorized = booking.requester_id === user.id

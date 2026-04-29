@@ -452,7 +452,7 @@ export default function OverviewClient({ interpreterProfileId, firstName, lastNa
       if (upcomingResult.error) {
         console.error('[overview] upcoming bookings fetch error:', upcomingResult.error.message, upcomingResult.error.details)
       } else if (upcomingResult.data && upcomingResult.data.length > 0) {
-        const decrypted = await decryptBatchClient(upcomingResult.data as Booking[], ['title', 'notes'], 'bookings')
+        const decrypted = await decryptBatchClient(upcomingResult.data as Booking[], ['title', 'notes', 'requester_name'], 'bookings')
         setConfirmedBookings(decrypted)
       }
 
