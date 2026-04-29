@@ -98,7 +98,7 @@ export function SoftLaunchAnnouncementInterpreter({ recipientName = 'there' }: S
       </Text>
 
       <Text style={paragraph}>
-        Freelance interpreters will finally have our own platform for managing our direct work in one place.
+        Freelance interpreters will finally have our own platform for managing our direct work in one place. Wherever you live, whatever language pair you work in.
       </Text>
 
       <Text style={{ ...paragraph, fontWeight: 600, color: COLORS.text }}>
