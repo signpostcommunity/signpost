@@ -236,7 +236,7 @@ function SidebarContent({ userName, userInitials, photoUrl, activeRole, onRoleCh
           <span style={{ width: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             {ICONS.directory}
           </span>
-          <span>Browse Directory</span>
+          <span>Browse Interpreter Directory</span>
         </div>
         <Link
           href="/"

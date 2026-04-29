@@ -300,7 +300,7 @@ export default function DeafDashboardPage() {
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Link href="/directory" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-block', padding: '11px 24px' }}>
-              Browse Directory &#8594;
+              Browse Interpreter Directory &#8594;
             </Link>
             <button
               onClick={() => setShowInvite(true)}
@@ -581,7 +581,7 @@ export default function DeafDashboardPage() {
           <div style={{ fontWeight: 400, fontSize: '14px', color: '#96a0b8' }}>Browse the directory and add interpreters directly from their profile.</div>
         </div>
         <Link href="/directory" className="btn-primary" style={{ textDecoration: 'none', padding: '9px 20px', fontSize: '0.85rem' }}>
-          Browse Directory &#8594;
+          Browse Interpreter Directory &#8594;
         </Link>
       </div>
 

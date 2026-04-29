@@ -829,7 +829,7 @@ export default function InterpretersClient() {
               Browse the directory to find interpreters.
             </p>
             <Link href="/directory?context=requester" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-block', padding: '10px 22px', fontSize: '0.85rem' }}>
-              Browse Directory &#8594;
+              Browse Interpreter Directory &#8594;
             </Link>
           </div>
         ) : (
