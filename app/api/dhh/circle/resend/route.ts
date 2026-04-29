@@ -109,7 +109,25 @@ export async function POST(request: NextRequest) {
       // Don't fail the resend if email fails
     }
 
-    console.log(`[audit] circle_invite_resent actor=${user.id} invite=${inviteId} target_email=${invite.invitee_email} resend_count=${newResendCount}`)
+    // Best-effort audit log
+    try {
+      const forwarded = request.headers.get('x-forwarded-for')
+      const ip = forwarded ? forwarded.split(',')[0].trim() : null
+
+      await admin.from('audit_log').insert({
+        user_id: user.id,
+        action: 'resend',
+        resource_type: 'circle_invite',
+        resource_id: inviteId,
+        metadata: {
+          invitee_email: invite.invitee_email,
+          resend_count: newResendCount,
+        },
+        ip_address: ip,
+      })
+    } catch (auditErr) {
+      console.error('[dhh/circle/resend] audit_log write failed:', auditErr instanceof Error ? auditErr.message : auditErr)
+    }
 
     return NextResponse.json({ ok: true, resend_count: newResendCount })
   } catch (err) {

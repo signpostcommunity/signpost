@@ -55,7 +55,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to cancel invite' }, { status: 500 })
     }
 
-    console.log(`[audit] circle_invite_cancelled actor=${user.id} invite=${inviteId} target_email=${invite.invitee_email}`)
+    // Best-effort audit log
+    try {
+      const forwarded = request.headers.get('x-forwarded-for')
+      const ip = forwarded ? forwarded.split(',')[0].trim() : null
+
+      await admin.from('audit_log').insert({
+        user_id: user.id,
+        action: 'cancel',
+        resource_type: 'circle_invite',
+        resource_id: inviteId,
+        metadata: {
+          invitee_email: invite.invitee_email,
+        },
+        ip_address: ip,
+      })
+    } catch (auditErr) {
+      console.error('[dhh/circle/cancel] audit_log write failed:', auditErr instanceof Error ? auditErr.message : auditErr)
+    }
 
     return NextResponse.json({ ok: true })
   } catch (err) {
