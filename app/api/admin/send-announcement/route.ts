@@ -342,7 +342,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const rendered = await renderEmail(template, recipientName, subject, customBody)
+    let rendered: { html: string; subject: string }
+    try {
+      rendered = await renderEmail(template, recipientName, subject, customBody)
+    } catch (renderErr) {
+      const msg = renderErr instanceof Error ? renderErr.message : String(renderErr)
+      console.error(`[admin/send-announcement] renderEmail failed for template=${template} name=${recipientName}:`, renderErr)
+      return NextResponse.json({ error: `Render failed: ${msg}` }, { status: 500 })
+    }
+
     const result = await sendEmail({
       to: recipientEmail,
       subject: rendered.subject,
@@ -352,7 +360,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, emailId: result?.id ?? null })
   } catch (err) {
+    const message = err instanceof Error ? err.message : 'Internal error'
     console.error('[admin/send-announcement] POST error:', err)
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
