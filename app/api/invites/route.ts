@@ -7,6 +7,7 @@ import { normalizePhone } from '@/lib/phone'
 import { render } from '@react-email/components'
 import { InterpreterInviteEmail } from '@/emails/InterpreterInviteEmail'
 import { logAudit } from '@/lib/audit'
+import { sendAdminAlert } from '@/lib/adminAlerts'
 
 function generateToken(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
@@ -133,6 +134,41 @@ export async function POST(req: NextRequest) {
     logAudit({ user_id: senderUserId, action: 'create', resource_type: 'invite', resource_id: invite.id, metadata: { invitee_contact: recipientEmail || recipientPhone || null, channel, target_list: targetListRole || 'interpreter_team' }, ip_address: ip })
   } catch (auditErr) {
     console.error('[audit] invite create:', auditErr)
+  }
+
+  // Check if sender just hit the gift card reward threshold (5 distinct invitees)
+  // The DB trigger handles creating the invite_rewards row; here we send the admin notification
+  if (senderUserId && resolvedSenderRole === 'interpreter') {
+    try {
+      const { data: rewardRow } = await admin
+        .from('invite_rewards')
+        .select('id, distinct_invite_count')
+        .eq('sender_user_id', senderUserId)
+        .maybeSingle()
+
+      if (rewardRow) {
+        // Check if this reward was just created (within last 10 seconds) — avoid repeat notifications
+        const { data: rewardFull } = await admin
+          .from('invite_rewards')
+          .select('threshold_met_at')
+          .eq('id', rewardRow.id)
+          .single()
+
+        const metAt = rewardFull?.threshold_met_at ? new Date(rewardFull.threshold_met_at).getTime() : 0
+        const isNew = Date.now() - metAt < 10000
+
+        if (isNew) {
+          sendAdminAlert({
+            type: 'invite_reward_threshold',
+            emailSubject: '[signpost] Invite reward threshold reached',
+            emailBody: `${resolvedSenderName} (${resolvedSenderEmail}) has invited ${rewardRow.distinct_invite_count} distinct people and qualifies for the $15 Starbucks gift card.\n\nSend the eGift Card via the Starbucks app, then mark it sent at:\nhttps://signpost.community/admin/dashboard/invite-rewards`,
+            smsMessage: `[signpost] ${resolvedSenderName} hit 5 invites — send $15 Starbucks gift card. See admin dashboard.`,
+          }).catch(e => console.error('[invites] Admin alert failed:', e))
+        }
+      }
+    } catch (e) {
+      console.error('[invites] Reward check failed:', e)
+    }
   }
 
   const signupUrl = `https://signpost.community/interpreter/signup?invite=${token}`

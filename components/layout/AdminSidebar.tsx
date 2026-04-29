@@ -68,6 +68,11 @@ const NAV: NavGroup[] = [
         href: '/admin/dashboard/feedback',
         icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3"/><path d="M5 7h6M5 10h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>,
       },
+      {
+        label: 'Invite Rewards',
+        href: '/admin/dashboard/invite-rewards',
+        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v4M4.5 5h7a1 1 0 011 1v1H3.5V6a1 1 0 011-1zM3 7h10v6a1.5 1.5 0 01-1.5 1.5h-7A1.5 1.5 0 013 13V7z" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/><path d="M8 7v7.5M5.5 3.5L8 5l2.5-1.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>,
+      },
     ],
   },
   {

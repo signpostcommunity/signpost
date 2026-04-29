@@ -10,6 +10,7 @@ export type AdminAlertType =
   | 'dispute_opened'
   | 'new_signup_daily'
   | 'negative_review'
+  | 'invite_reward_threshold'
 
 interface AlertPref {
   email?: boolean
