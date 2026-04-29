@@ -15,6 +15,35 @@ export const dynamic = 'force-dynamic'
 /** Human-authored emails sent via the admin announcements UI use this sender identity. */
 const ANNOUNCEMENTS_FROM = 'Molly & Regina at signpost <hello@signpost.community>'
 
+async function logSend(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  entry: {
+    template_name: string
+    recipient_email: string
+    recipient_name?: string
+    sender_email: string
+    status: 'sent' | 'failed'
+    resend_message_id?: string | null
+    error_message?: string | null
+    sent_by_user_id: string
+  },
+) {
+  try {
+    await supabase.from('email_send_log').insert({
+      template_name: entry.template_name,
+      recipient_email: entry.recipient_email,
+      recipient_name: entry.recipient_name || null,
+      sender_email: entry.sender_email,
+      status: entry.status,
+      resend_message_id: entry.resend_message_id || null,
+      error_message: entry.error_message || null,
+      sent_by_user_id: entry.sent_by_user_id,
+    })
+  } catch (logErr) {
+    console.error('[admin/send-announcement] Failed to log send:', logErr)
+  }
+}
+
 const TEMPLATES = {
   'beta-update': {
     subject: 'signpost is almost ready. We need your help.',
@@ -304,12 +333,22 @@ export async function POST(request: NextRequest) {
       for (const r of roleRecipients) {
         try {
           const rendered = await renderEmail(template, r.name, subject, customBody)
-          await sendEmail({ to: r.email, subject: rendered.subject, html: rendered.html, from: fromOverride })
+          const result = await sendEmail({ to: r.email, subject: rendered.subject, html: rendered.html, from: fromOverride })
           sent++
+          logSend(supabase, {
+            template_name: template, recipient_email: r.email, recipient_name: r.name,
+            sender_email: 'hello@signpost.community', status: 'sent',
+            resend_message_id: result?.id, sent_by_user_id: user.id,
+          })
         } catch (err) {
           failed++
           const msg = err instanceof Error ? err.message : String(err)
           errors.push(`${r.email}: ${msg}`)
+          logSend(supabase, {
+            template_name: template, recipient_email: r.email, recipient_name: r.name,
+            sender_email: 'hello@signpost.community', status: 'failed',
+            error_message: msg, sent_by_user_id: user.id,
+          })
         }
         await sleep(100)
       }
@@ -326,12 +365,22 @@ export async function POST(request: NextRequest) {
       for (const r of manualRecipients) {
         try {
           const rendered = await renderEmail(template, r.name, subject, customBody)
-          await sendEmail({ to: r.email, subject: rendered.subject, html: rendered.html, from: fromOverride })
+          const result = await sendEmail({ to: r.email, subject: rendered.subject, html: rendered.html, from: fromOverride })
           sent++
+          logSend(supabase, {
+            template_name: template, recipient_email: r.email, recipient_name: r.name,
+            sender_email: 'hello@signpost.community', status: 'sent',
+            resend_message_id: result?.id, sent_by_user_id: user.id,
+          })
         } catch (err) {
           failed++
           const msg = err instanceof Error ? err.message : String(err)
           errors.push(`${r.email}: ${msg}`)
+          logSend(supabase, {
+            template_name: template, recipient_email: r.email, recipient_name: r.name,
+            sender_email: 'hello@signpost.community', status: 'failed',
+            error_message: msg, sent_by_user_id: user.id,
+          })
         }
         await sleep(100)
       }
@@ -356,12 +405,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Render failed: ${msg}` }, { status: 500 })
     }
 
-    const result = await sendEmail({
-      to: recipientEmail,
-      subject: rendered.subject,
-      html: rendered.html,
-      from: fromOverride,
-    })
+    let result: { id: string } | null = null
+    try {
+      result = await sendEmail({
+        to: recipientEmail,
+        subject: rendered.subject,
+        html: rendered.html,
+        from: fromOverride,
+      })
+      logSend(supabase, {
+        template_name: template, recipient_email: recipientEmail, recipient_name: recipientName,
+        sender_email: 'hello@signpost.community', status: 'sent',
+        resend_message_id: result?.id, sent_by_user_id: user.id,
+      })
+    } catch (sendErr) {
+      const msg = sendErr instanceof Error ? sendErr.message : String(sendErr)
+      logSend(supabase, {
+        template_name: template, recipient_email: recipientEmail, recipient_name: recipientName,
+        sender_email: 'hello@signpost.community', status: 'failed',
+        error_message: msg, sent_by_user_id: user.id,
+      })
+      return NextResponse.json({ error: msg }, { status: 500 })
+    }
 
     return NextResponse.json({ success: true, emailId: result?.id ?? null })
   } catch (err) {

@@ -2,7 +2,8 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 const ORANGE = '#ff7e45'
 
@@ -12,12 +13,23 @@ type ManualMode = 'single' | 'batch'
 type RoleName = 'interpreter' | 'deaf' | 'requester'
 
 interface SentEntry {
+  id?: string
   email: string
   name: string
   template: TemplateName
   status: 'success' | 'error'
   error?: string
   timestamp: Date
+}
+
+interface PersistedLogRow {
+  id: string
+  template_name: string
+  recipient_email: string
+  recipient_name: string | null
+  sent_at: string
+  status: 'sent' | 'failed'
+  error_message: string | null
 }
 
 interface RoleCounts {
@@ -212,12 +224,15 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
 }
 
-function timeAgo(date: Date): string {
-  const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
-  if (seconds < 60) return 'just now'
-  const minutes = Math.floor(seconds / 60)
-  if (minutes === 1) return '1 min ago'
-  return `${minutes} min ago`
+function formatTimestamp(date: Date): string {
+  const diffMs = Date.now() - date.getTime()
+  const diffSec = Math.floor(diffMs / 1000)
+  if (diffSec < 60) return 'just now'
+  const diffMin = Math.floor(diffSec / 60)
+  if (diffMin < 60) return `${diffMin} min ago`
+  const diffHr = Math.floor(diffMin / 60)
+  if (diffHr < 24) return `${diffHr}h ago`
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
 }
 
 function templateLabel(t: TemplateName): string {
@@ -310,6 +325,58 @@ export default function AdminAnnouncementsPage() {
   const [loadingList, setLoadingList] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const sentEmails = useRef(new Set<string>())
+  const [persistedLog, setPersistedLog] = useState<SentEntry[]>([])
+
+  // Fetch persisted send log on mount
+  useEffect(() => {
+    const supabase = createClient()
+    supabase
+      .from('email_send_log')
+      .select('id, template_name, recipient_email, recipient_name, sent_at, status, error_message')
+      .order('sent_at', { ascending: false })
+      .limit(500)
+      .then(({ data }: { data: PersistedLogRow[] | null }) => {
+        if (data) {
+          const rows = data.map(r => ({
+            id: r.id,
+            email: r.recipient_email,
+            name: r.recipient_name || '',
+            template: r.template_name as TemplateName,
+            status: (r.status === 'sent' ? 'success' : 'error') as 'success' | 'error',
+            error: r.error_message || undefined,
+            timestamp: new Date(r.sent_at),
+          }))
+          setPersistedLog(rows)
+          // Pre-populate sentEmails ref so in-session dedup catches already-sent
+          for (const r of rows) {
+            if (r.status === 'success') sentEmails.current.add(r.email.toLowerCase())
+          }
+        }
+      })
+  }, [])
+
+  // Merged log: in-session entries first, then persisted (deduped by id)
+  const mergedLog = useMemo(() => {
+    const seen = new Set<string>()
+    const merged: SentEntry[] = []
+    for (const e of sentLog) {
+      merged.push(e)
+      if (e.id) seen.add(e.id)
+    }
+    for (const e of persistedLog) {
+      if (e.id && !seen.has(e.id)) merged.push(e)
+    }
+    return merged
+  }, [sentLog, persistedLog])
+
+  // Set of "email::template" for duplicate-send warnings
+  const alreadySentSet = useMemo(() => {
+    const s = new Set<string>()
+    for (const e of mergedLog) {
+      if (e.status === 'success') s.add(`${e.email.toLowerCase()}::${e.template}`)
+    }
+    return s
+  }, [mergedLog])
 
   // Fetch role counts on mount
   useEffect(() => {
@@ -481,8 +548,6 @@ export default function AdminAnnouncementsPage() {
     showToast(`Complete: ${successCount} sent, ${failCount} failed`, failCount === 0 ? 'success' : 'error')
     setSending(false)
   }
-
-  const batchRecipientCount = parseBatchRecipients(batchText).length
 
   return (
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%', maxWidth: 1200 }}>
@@ -804,6 +869,18 @@ export default function AdminAnnouncementsPage() {
                       style={inputStyle}
                       disabled={sending}
                     />
+                    {template && singleEmail.trim() && alreadySentSet.has(`${singleEmail.trim().toLowerCase()}::${template}`) && (() => {
+                      const match = mergedLog.find(e => e.email.toLowerCase() === singleEmail.trim().toLowerCase() && e.template === template && e.status === 'success')
+                      return (
+                        <div style={{
+                          marginTop: 8, padding: '8px 12px', borderRadius: 0,
+                          background: 'rgba(240,166,35,0.08)', borderLeft: '3px solid #f0a623',
+                          fontSize: '0.82rem', color: '#f0a623', fontFamily: "'Inter', sans-serif",
+                        }}>
+                          Already sent {templateLabel(template)} {match ? `on ${match.timestamp.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''}
+                        </div>
+                      )
+                    })()}
                   </div>
                   <div style={{ marginBottom: 18 }}>
                     <label style={labelStyle}>Name</label>
@@ -841,11 +918,28 @@ export default function AdminAnnouncementsPage() {
                     }}
                   />
 
-                  {batchText.trim() && (
-                    <p style={{ color: '#96a0b8', fontSize: '0.82rem', margin: '8px 0 0', fontFamily: "'Inter', sans-serif" }}>
-                      {batchRecipientCount} recipient{batchRecipientCount !== 1 ? 's' : ''} detected
-                    </p>
-                  )}
+                  {batchText.trim() && (() => {
+                    const parsed = parseBatchRecipients(batchText)
+                    const dupes = template ? parsed.filter(r => alreadySentSet.has(`${r.email.trim().toLowerCase()}::${template}`)) : []
+                    return (
+                      <div style={{ marginTop: 8 }}>
+                        <p style={{ color: '#96a0b8', fontSize: '0.82rem', margin: 0, fontFamily: "'Inter', sans-serif" }}>
+                          {parsed.length} recipient{parsed.length !== 1 ? 's' : ''} detected
+                        </p>
+                        {dupes.length > 0 && (
+                          <div style={{
+                            marginTop: 8, padding: '8px 12px', borderRadius: 0,
+                            background: 'rgba(240,166,35,0.08)', borderLeft: '3px solid #f0a623',
+                            fontSize: '0.82rem', color: '#f0a623', fontFamily: "'Inter', sans-serif",
+                            lineHeight: 1.5,
+                          }}>
+                            {dupes.length} recipient{dupes.length !== 1 ? 's' : ''} already received {template ? templateLabel(template) : 'this template'}:{' '}
+                            {dupes.map(d => d.email).join(', ')}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })()}
 
                   {progress && (
                     <div style={{ marginTop: 12 }}>
@@ -879,18 +973,18 @@ export default function AdminAnnouncementsPage() {
       )}
 
       {/* ---- SENT LOG ---- */}
-      {sentLog.length > 0 && (
+      {mergedLog.length > 0 && (
         <div style={cardStyle}>
           <div style={sectionLabel}>Sent Log</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {sentLog.map((entry, i) => (
+            {mergedLog.map((entry, i) => (
               <div
-                key={`${entry.email}-${i}`}
+                key={entry.id || `${entry.email}-${i}`}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 10,
                   fontSize: '0.82rem', fontFamily: "'Inter', sans-serif",
                   padding: '8px 0',
-                  borderBottom: i < sentLog.length - 1 ? '1px solid var(--border)' : 'none',
+                  borderBottom: i < mergedLog.length - 1 ? '1px solid var(--border)' : 'none',
                 }}
               >
                 <span style={{
@@ -906,7 +1000,7 @@ export default function AdminAnnouncementsPage() {
                   {templateLabel(entry.template)}
                 </span>
                 <span style={{ color: '#666', fontSize: '0.75rem', flexShrink: 0 }}>
-                  {timeAgo(entry.timestamp)}
+                  {formatTimestamp(entry.timestamp)}
                 </span>
                 {entry.error && (
                   <span style={{ color: '#ff6b85', fontSize: '0.75rem', flexShrink: 0 }} title={entry.error}>
