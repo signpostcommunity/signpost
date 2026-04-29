@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { logAudit } from '@/lib/audit'
 
 export async function POST(request: NextRequest) {
   const supabase = await createClient()
@@ -76,6 +77,13 @@ export async function POST(request: NextRequest) {
       }
     }
     return NextResponse.json({ error: 'Failed to create connection' }, { status: 500 })
+  }
+
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || undefined
+  try {
+    logAudit({ user_id: user.id, action: 'create', resource_type: 'connection', resource_id: connection.id, metadata: { deaf_user_id: dhh_user_id, requester_id: user.id }, ip_address: ip })
+  } catch (auditErr) {
+    console.error('[audit] connection create:', auditErr)
   }
 
   return NextResponse.json({ connection })

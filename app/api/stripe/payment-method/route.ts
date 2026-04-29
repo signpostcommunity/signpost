@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { getStripe } from '@/lib/stripe'
+import { logAudit } from '@/lib/audit'
 
 // GET: Retrieve the requester's saved payment method details
 export async function GET() {
@@ -107,6 +108,14 @@ export async function POST(req: NextRequest) {
 
     // Return the card details
     const pm = await stripe.paymentMethods.retrieve(paymentMethodId)
+
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || undefined
+    try {
+      logAudit({ user_id: user.id, action: 'create', resource_type: 'payment_method', resource_id: paymentMethodId, metadata: { brand: pm.card?.brand || 'unknown', last4: pm.card?.last4 || '****' }, ip_address: ip })
+    } catch (auditErr) {
+      console.error('[audit] payment method create:', auditErr)
+    }
+
     return NextResponse.json({
       paymentMethod: {
         id: pm.id,
@@ -153,6 +162,8 @@ export async function DELETE() {
       // Already detached - continue
     }
 
+    const pmId = profile.stripe_default_payment_method_id
+
     const { error: updateError } = await admin
       .from('requester_profiles')
       .update({ stripe_default_payment_method_id: null })
@@ -161,6 +172,12 @@ export async function DELETE() {
     if (updateError) {
       console.error('Failed to clear payment method ID:', updateError)
       return NextResponse.json({ error: 'Failed to remove payment method' }, { status: 500 })
+    }
+
+    try {
+      logAudit({ user_id: user.id, action: 'delete', resource_type: 'payment_method', resource_id: pmId, metadata: {} })
+    } catch (auditErr) {
+      console.error('[audit] payment method delete:', auditErr)
     }
 
     return NextResponse.json({ success: true })

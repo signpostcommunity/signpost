@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { sendEmail } from '@/lib/email'
 import { emailTemplate } from '@/lib/email-template'
+import { logAudit } from '@/lib/audit'
 
 export const dynamic = 'force-dynamic'
 
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
       : inviterProfile?.name || 'A signpost user'
 
     // Create the invite
-    const { error: insertError } = await admin
+    const { data: invite, error: insertError } = await admin
       .from('trusted_deaf_circle')
       .insert({
         inviter_id: user.id,
@@ -79,10 +80,19 @@ export async function POST(request: NextRequest) {
         invitee_email: normalizedEmail,
         status: 'pending',
       })
+      .select('id')
+      .single()
 
     if (insertError) {
       console.error('[dhh/circle/invite] insert failed:', insertError.message)
       return NextResponse.json({ error: 'Failed to create invite' }, { status: 500 })
+    }
+
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || undefined
+    try {
+      logAudit({ user_id: user.id, action: 'create', resource_type: 'circle_invite', resource_id: invite.id, metadata: { invitee_email: normalizedEmail, channel: 'email' }, ip_address: ip })
+    } catch (auditErr) {
+      console.error('[audit] circle invite:', auditErr)
     }
 
     // Send email

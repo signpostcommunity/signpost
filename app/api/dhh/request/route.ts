@@ -5,6 +5,7 @@ import { sanitizeText } from '@/lib/sanitize'
 import { encryptFields, decryptFields, BOOKING_ENCRYPTED_FIELDS } from '@/lib/encryption'
 import { displayBookingFormat } from '@/lib/bookingFormat'
 import { autoAcceptSeeds, getSeedInterpreterIds } from '@/lib/auto-accept-seeds'
+import { logAudit } from '@/lib/audit'
 
 export const dynamic = 'force-dynamic'
 
@@ -164,6 +165,13 @@ export async function POST(request: NextRequest) {
       }
 
       booking = newBooking
+
+      const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || undefined
+      try {
+        logAudit({ user_id: user.id, action: 'create', resource_type: 'booking', resource_id: booking.id, metadata: { request_type: 'personal', format: dbFormat || null }, ip_address: ip })
+      } catch (auditErr) {
+        console.error('[audit] dhh request create:', auditErr)
+      }
 
       // For new drafts, return early - don't create recipients or send notifications
       if (saveAsDraft) {

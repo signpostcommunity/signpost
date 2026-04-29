@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { logAudit } from '@/lib/audit'
 
 export async function POST(req: NextRequest) {
   try {
@@ -55,6 +56,13 @@ export async function POST(req: NextRequest) {
     if (creditErr) {
       console.error('[booking-credit] insert failed:', creditErr.message)
       return NextResponse.json({ error: 'Failed to issue credit' }, { status: 500 })
+    }
+
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || undefined
+    try {
+      logAudit({ user_id: user.id, action: 'issue_credit', resource_type: 'booking_credit', resource_id: credit.id, metadata: { amount: 15.00, booking_id: bookingId, reason }, ip_address: ip })
+    } catch (auditErr) {
+      console.error('[audit] booking credit:', auditErr)
     }
 
     return NextResponse.json({ status: 'credited', creditId: credit.id })

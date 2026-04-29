@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { logAudit } from '@/lib/audit'
 
 export const dynamic = 'force-dynamic'
 
@@ -57,6 +58,13 @@ export async function POST(request: NextRequest) {
     if (updateError) {
       console.error('[dhh/circle/respond] update failed:', updateError.message)
       return NextResponse.json({ error: 'Failed to update invite' }, { status: 500 })
+    }
+
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || undefined
+    try {
+      logAudit({ user_id: user.id, action: action === 'accept' ? 'accept' : 'decline', resource_type: 'circle_invite', resource_id: inviteId, metadata: { inviter_id: invite.inviter_id }, ip_address: ip })
+    } catch (auditErr) {
+      console.error('[audit] circle respond:', auditErr)
     }
 
     return NextResponse.json({ success: true, status: newStatus })

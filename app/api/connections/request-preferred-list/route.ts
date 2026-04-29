@@ -5,6 +5,7 @@ import { createNotification } from '@/lib/notifications-server'
 import { sendEmail } from '@/lib/email'
 import { emailTemplate } from '@/lib/email-template'
 import type { EmailContentBlock } from '@/lib/email-template'
+import { logAudit } from '@/lib/audit'
 
 export const dynamic = 'force-dynamic'
 
@@ -112,6 +113,13 @@ export async function POST(request: NextRequest) {
         channel: 'both',
       })
 
+      const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || undefined
+      try {
+        logAudit({ user_id: user.id, action: 'request', resource_type: 'connection', resource_id: undefined, metadata: { deaf_user_id: dhhUserId }, ip_address: ip })
+      } catch (auditErr) {
+        console.error('[audit] request preferred list (existing user):', auditErr)
+      }
+
       return NextResponse.json({ success: true, userExists: true })
     } else {
       // Non-user - send invitation email via Resend
@@ -144,6 +152,13 @@ export async function POST(request: NextRequest) {
 
       if (connErr) {
         console.error('[request-preferred-list] offplatform connection insert error:', connErr.message)
+      }
+
+      const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || undefined
+      try {
+        logAudit({ user_id: user.id, action: 'request', resource_type: 'connection', resource_id: undefined, metadata: { deaf_user_id: dhhEmail }, ip_address: ip })
+      } catch (auditErr) {
+        console.error('[audit] request preferred list (offplatform):', auditErr)
       }
 
       return NextResponse.json({ success: true, userExists: false })

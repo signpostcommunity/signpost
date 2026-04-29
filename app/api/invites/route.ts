@@ -6,6 +6,7 @@ import { sendSms } from '@/lib/sms'
 import { normalizePhone } from '@/lib/phone'
 import { render } from '@react-email/components'
 import { InterpreterInviteEmail } from '@/emails/InterpreterInviteEmail'
+import { logAudit } from '@/lib/audit'
 
 function generateToken(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
@@ -125,6 +126,13 @@ export async function POST(req: NextRequest) {
   if (insertError) {
     console.error('[invites] Insert error:', insertError)
     return NextResponse.json({ error: 'Failed to create invite' }, { status: 500 })
+  }
+
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || undefined
+  try {
+    logAudit({ user_id: senderUserId, action: 'create', resource_type: 'invite', resource_id: invite.id, metadata: { invitee_contact: recipientEmail || recipientPhone || null, channel, target_list: targetListRole || 'interpreter_team' }, ip_address: ip })
+  } catch (auditErr) {
+    console.error('[audit] invite create:', auditErr)
   }
 
   const signupUrl = `https://signpost.community/interpreter/signup?invite=${token}`

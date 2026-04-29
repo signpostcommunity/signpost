@@ -4,6 +4,7 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { getStripe } from '@/lib/stripe'
 import { sendEmail } from '@/lib/email'
 import { emailTemplate } from '@/lib/email-template'
+import { logAudit } from '@/lib/audit'
 
 export async function POST(req: NextRequest) {
   try {
@@ -121,6 +122,13 @@ export async function POST(req: NextRequest) {
           stripe_payment_intent_id: paymentIntent.id,
         })
         .eq('id', bookingId)
+
+      const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || undefined
+      try {
+        logAudit({ user_id: user.id, action: 'charge', resource_type: 'platform_fee', resource_id: bookingId, metadata: { amount: 1500, payment_intent_id: paymentIntent.id, currency: 'usd' }, ip_address: ip })
+      } catch (auditErr) {
+        console.error('[audit] charge platform fee:', auditErr)
+      }
 
       return NextResponse.json({ status: 'charged', paymentIntentId: paymentIntent.id })
     } catch (chargeError) {

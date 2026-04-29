@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { logAudit } from '@/lib/audit'
 
 export async function POST(req: NextRequest) {
   const { token, newUserId, newInterpreterProfileId } = await req.json()
@@ -141,6 +142,13 @@ export async function POST(req: NextRequest) {
       console.error('[invite-complete] Auto-add error:', autoAddErr)
       // Non-fatal: invite status already updated
     }
+  }
+
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || undefined
+  try {
+    logAudit({ user_id: invite.sender_user_id, action: 'auto_add', resource_type: 'roster_entry', resource_id: newInterpreterProfileId, metadata: { from_invite_id: invite.id }, ip_address: ip })
+  } catch (auditErr) {
+    console.error('[audit] invite complete:', auditErr)
   }
 
   return NextResponse.json({ success: true })

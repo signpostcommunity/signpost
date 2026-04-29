@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { createNotification } from '@/lib/notifications-server'
 import { decryptFields } from '@/lib/encryption'
+import { logAudit } from '@/lib/audit'
 
 export const dynamic = 'force-dynamic'
 
@@ -109,6 +110,13 @@ export async function POST(request: NextRequest) {
         })
       }
 
+      const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || undefined
+      try {
+        logAudit({ user_id: user.id, action: 'approve', resource_type: 'connection', resource_id: connection.id, metadata: { requester_id: connection.requester_id, deaf_user_id: connection.dhh_user_id }, ip_address: ip })
+      } catch (auditErr) {
+        console.error('[audit] approve list share:', auditErr)
+      }
+
       return NextResponse.json({ success: true, status: 'approved' })
     } else {
       // Declined: update connection to revoked
@@ -123,6 +131,13 @@ export async function POST(request: NextRequest) {
       if (updateErr) {
         console.error('[approve-list-share] revoke failed:', updateErr.message)
         return NextResponse.json({ error: 'Failed to decline' }, { status: 500 })
+      }
+
+      const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || undefined
+      try {
+        logAudit({ user_id: user.id, action: 'decline', resource_type: 'connection', resource_id: connection.id, metadata: { requester_id: connection.requester_id, deaf_user_id: connection.dhh_user_id }, ip_address: ip })
+      } catch (auditErr) {
+        console.error('[audit] decline list share:', auditErr)
       }
 
       return NextResponse.json({ success: true, status: 'declined' })

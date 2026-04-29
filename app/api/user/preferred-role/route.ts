@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { logAudit } from '@/lib/audit'
 
 const VALID_ROLES = ['interpreter', 'deaf', 'requester', 'admin'] as const
 type PreferredRole = (typeof VALID_ROLES)[number]
@@ -68,6 +69,14 @@ export async function PATCH(req: NextRequest) {
     }
   }
 
+  // Fetch old preferred_role for audit
+  const { data: oldProfile } = await supabase
+    .from('user_profiles')
+    .select('preferred_role')
+    .eq('id', user.id)
+    .single()
+  const oldRole = oldProfile?.preferred_role || null
+
   // The DB column uses 'dhh' for deaf role in the CHECK constraint
   const dbRole = role === 'deaf' ? 'dhh' : role
   const { error: updateErr } = await supabase
@@ -82,6 +91,13 @@ export async function PATCH(req: NextRequest) {
       supabaseError: updateErr.message,
     })
     return NextResponse.json({ error: 'Failed to update preferred role' }, { status: 500 })
+  }
+
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || undefined
+  try {
+    logAudit({ user_id: user.id, action: 'set_preferred_role', resource_type: 'user_profile', resource_id: user.id, metadata: { from: oldRole, to: dbRole }, ip_address: ip })
+  } catch (auditErr) {
+    console.error('[audit] preferred role:', auditErr)
   }
 
   return NextResponse.json({ success: true })
