@@ -698,7 +698,7 @@ function DeafSignupForm() {
         uid = authData.user.id;
 
         await supabase.from('user_profiles').insert({
-          id: uid, role: 'deaf', pending_roles: [],
+          id: uid, role: 'deaf', pending_roles: [], email: email.trim().toLowerCase(),
         });
       }
 

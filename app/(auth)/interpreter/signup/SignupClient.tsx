@@ -1001,7 +1001,7 @@ function InterpreterSignupForm() {
             uid = authData.user.id;
             // Only insert user_profiles for genuinely new users
             const { error: upError } = await supabase.from('user_profiles').insert({
-              id: uid, role: 'interpreter', pending_roles: [],
+              id: uid, role: 'interpreter', pending_roles: [], email: email.trim().toLowerCase(),
             });
             if (upError && !upError.message.includes('duplicate')) {
               console.warn('user_profiles insert warning:', upError.message);

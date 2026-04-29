@@ -55,9 +55,10 @@ export async function GET(request: NextRequest) {
   }
 
   // New OAuth user - create user_profiles row with role, then route to signup wizard
+  // email must be set here — DB trigger is the safety net, but explicit is better
   const assignedRole = role ?? 'requester';
   await supabase.from('user_profiles').upsert(
-    { id: user.id, role: assignedRole },
+    { id: user.id, role: assignedRole, email: user.email },
     { onConflict: 'id' }
   );
 
