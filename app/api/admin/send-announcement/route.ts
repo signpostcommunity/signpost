@@ -11,6 +11,9 @@ import { SoftLaunchAnnouncementInterpreter } from '@/emails/SoftLaunchAnnounceme
 
 export const dynamic = 'force-dynamic'
 
+/** Human-authored emails sent via the admin announcements UI use this sender identity. */
+const ANNOUNCEMENTS_FROM = 'Molly & Regina at signpost <hello@send.signpost.community>'
+
 const TEMPLATES = {
   'beta-update': {
     subject: 'signpost is almost ready. We need your help.',
@@ -279,10 +282,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Subject is required for custom emails' }, { status: 400 })
     }
 
-    // Per-template from-name overrides
-    const fromOverride = template === 'soft-launch'
-      ? 'Molly & Regina at signpost <hello@send.signpost.community>'
-      : undefined
+    // All admin announcements are human-authored — use personal sender
+    const fromOverride = ANNOUNCEMENTS_FROM
 
     // Mode 3: broadcast by role
     if (role) {
