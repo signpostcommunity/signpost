@@ -54,7 +54,7 @@ interface Booking {
   context_video_url?: string | null
 }
 
-interface MockBooking extends Booking {
+interface DisplayBooking extends Booking {
   requester_display: string
   comm_prefs_summary: string
   replacement_info?: {
@@ -226,7 +226,7 @@ function ReplacementAlertBanner() {
 
 /* ── Replacement Info Box ── */
 
-function ReplacementInfoBox({ info }: { info: NonNullable<MockBooking['replacement_info']> }) {
+function ReplacementInfoBox({ info }: { info: NonNullable<DisplayBooking['replacement_info']> }) {
   return (
     <div style={{
       background: 'rgba(0,229,255,0.04)',
@@ -269,7 +269,7 @@ function ReplacementInfoBox({ info }: { info: NonNullable<MockBooking['replaceme
 /* ── Detail Modal (read-only) ── */
 
 function DetailModal({ booking, onClose, onToast }: {
-  booking: MockBooking
+  booking: DisplayBooking
   onClose: () => void
   onToast: (msg: string) => void
 }) {
@@ -427,7 +427,7 @@ function DetailModal({ booking, onClose, onToast }: {
 /* ── Booking Card (D/HH read-only) ── */
 
 function DhhBookingCard({ booking, dnbInterpreterIds, onViewDetails, onToast, onAddContextVideo }: {
-  booking: MockBooking
+  booking: DisplayBooking
   dnbInterpreterIds: Set<string>
   onViewDetails: () => void
   onToast: (msg: string) => void
@@ -607,92 +607,33 @@ function EmptyState() {
     <div style={{
       border: '2px dashed var(--border)',
       borderRadius: 'var(--radius)',
-      padding: '32px 24px',
+      padding: '48px 24px',
       textAlign: 'center',
-      color: 'var(--muted)',
-      fontSize: '0.88rem',
       lineHeight: 1.6,
     }}>
-      No bookings yet. When a request is made, it will appear here with real-time updates.
+      <div style={{ marginBottom: 8 }}>
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style={{ margin: '0 auto', opacity: 0.5 }}>
+          <rect x="4" y="6" width="32" height="28" rx="3" stroke="var(--muted)" strokeWidth="1.5" />
+          <path d="M4 14h32M14 6v8M26 6v8" stroke="var(--muted)" strokeWidth="1.5" strokeLinecap="round" />
+          <circle cx="20" cy="25" r="4" stroke="var(--muted)" strokeWidth="1.5" />
+          <path d="M20 23v4M18 25h4" stroke="var(--muted)" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      </div>
+      <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 600, fontSize: '1.05rem', color: 'var(--text)', marginBottom: 6 }}>
+        No bookings yet
+      </div>
+      <div style={{ color: 'var(--muted)', fontSize: '0.88rem', marginBottom: 20, maxWidth: 360, margin: '0 auto 20px' }}>
+        When you have appointments, they&apos;ll show here. Browse interpreters to request your first booking.
+      </div>
+      <Link
+        href="/dhh/dashboard/interpreters"
+        className="btn-primary"
+        style={{ display: 'inline-block', padding: '10px 24px', fontSize: '0.88rem', textDecoration: 'none' }}
+      >
+        Browse interpreters
+      </Link>
     </div>
   )
-}
-
-/* ── Mock Data ── */
-
-const MOCK_ON_BEHALF_CONFIRMED: MockBooking = {
-  id: 'mock-behalf-1',
-  title: 'Cardiology Appointment',
-  requester_name: 'Alex Rivera',
-  requester_display: 'Alex Rivera (Seattle Medical Center)',
-  specialization: 'Medical',
-  date: '2026-03-04',
-  time_start: '14:00',
-  time_end: '16:00',
-  location: 'Seattle Medical Center, Floor 3',
-  format: 'in_person',
-  status: 'filled',
-  request_type: 'professional',
-  interpreter_count: 1,
-  is_seed: true,
-  cancellation_reason: null,
-  sub_search_initiated: null,
-  created_at: '2026-03-01T00:00:00Z',
-  comm_prefs_summary: 'Black ASL preferred. Prefers interpreter positioned directly across.',
-  recipients: [
-    {
-      id: 'mock-r-1',
-      interpreter_id: 'mock-interp-1',
-      status: 'confirmed',
-      interpreter: {
-        name: 'Sofia Reyes',
-        first_name: 'Sofia',
-        last_name: 'Reyes',
-        photo_url: null,
-      },
-    },
-  ],
-}
-
-const MOCK_ON_BEHALF_CANCELLED: MockBooking = {
-  id: 'mock-behalf-2',
-  title: 'Legal Consultation',
-  requester_name: 'Alex Rivera',
-  requester_display: 'Alex Rivera',
-  specialization: 'Legal',
-  date: '2026-02-22',
-  time_start: '10:30',
-  time_end: '12:00',
-  location: 'Remote (Zoom)',
-  format: 'remote',
-  status: 'cancelled',
-  request_type: 'professional',
-  interpreter_count: 1,
-  is_seed: true,
-  cancellation_reason: 'Illness',
-  sub_search_initiated: true,
-  created_at: '2026-02-18T00:00:00Z',
-  comm_prefs_summary: 'Black ASL preferred. Prefers interpreter positioned directly across.',
-  recipients: [
-    {
-      id: 'mock-r-2',
-      interpreter_id: 'mock-interp-2',
-      status: 'confirmed',
-      interpreter: {
-        name: 'Sofia Reyes',
-        first_name: 'Sofia',
-        last_name: 'Reyes',
-        photo_url: null,
-      },
-    },
-  ],
-  replacement_info: {
-    message: 'Your requester is looking for a replacement interpreter. The request has been forwarded to 2 interpreters.',
-    interpreters: [
-      { name: 'Marcus Kim', languages: 'ASL', specs: 'Medical, Legal', status: 'awaiting' },
-      { name: 'Priya Nair', languages: 'ASL', specs: 'Medical', status: 'available' },
-    ],
-  },
 }
 
 /* ── Requester Connection Types ── */
@@ -757,8 +698,8 @@ type ActiveTab = 'on-behalf' | 'personal' | 'requesters'
 /* ── Main Page ── */
 
 export default function DhhBookingsPage() {
-  const [selfBookings, setSelfBookings] = useState<MockBooking[]>([])
-  const [onBehalfBookings, setOnBehalfBookings] = useState<MockBooking[]>([MOCK_ON_BEHALF_CONFIRMED, MOCK_ON_BEHALF_CANCELLED])
+  const [selfBookings, setSelfBookings] = useState<DisplayBooking[]>([])
+  const [onBehalfBookings, setOnBehalfBookings] = useState<DisplayBooking[]>([])
   const [dnbInterpreterIds, setDnbInterpreterIds] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
   const [viewing, setViewing] = useState<string | null>(null)
@@ -793,7 +734,7 @@ export default function DhhBookingsPage() {
       const data = await res.json()
       if (data.bookings) {
         // Separate self-initiated vs on-behalf bookings
-        const realSelfBookings: MockBooking[] = data.bookings
+        const realSelfBookings: DisplayBooking[] = data.bookings
           .filter((b: BookingWithRecipients) => !b.is_on_behalf)
           .map((b: BookingWithRecipients) => ({
             ...b,
@@ -801,7 +742,7 @@ export default function DhhBookingsPage() {
             comm_prefs_summary: '',
           }))
 
-        const realOnBehalfBookings: MockBooking[] = data.bookings
+        const realOnBehalfBookings: DisplayBooking[] = data.bookings
           .filter((b: BookingWithRecipients) => b.is_on_behalf)
           .map((b: BookingWithRecipients) => ({
             ...b,
@@ -809,42 +750,7 @@ export default function DhhBookingsPage() {
             comm_prefs_summary: '',
           }))
 
-        if (realSelfBookings.length === 0) {
-          // Show a mock self-booking
-          setSelfBookings([{
-            id: 'mock-self-1',
-            title: 'ASL Practice',
-            requester_name: null,
-            requester_display: '',
-            specialization: 'Education',
-            date: '2026-03-12',
-            time_start: '10:00',
-            time_end: '11:30',
-            location: 'Seattle Community Center, Room 204',
-            format: 'in_person',
-            status: 'filled',
-            request_type: 'personal',
-            interpreter_count: 1,
-            is_seed: true,
-            cancellation_reason: null,
-            sub_search_initiated: null,
-            created_at: '2026-03-08T00:00:00Z',
-            comm_prefs_summary: 'Black ASL preferred. Prefers interpreter positioned directly across.',
-            recipients: [
-              {
-                id: 'mock-r-self',
-                interpreter_id: 'mock-interp-mk',
-                status: 'confirmed',
-                interpreter: {
-                  name: 'Marcus Kim',
-                  first_name: 'Marcus',
-                  last_name: 'Kim',
-                  photo_url: null,
-                },
-              },
-            ],
-          }])
-        } else {
+        if (realSelfBookings.length > 0) {
           const decryptedSelf = await decryptBatchClient(realSelfBookings, ['title'])
           setSelfBookings(decryptedSelf)
         }
@@ -853,7 +759,6 @@ export default function DhhBookingsPage() {
           const decryptedOnBehalf = await decryptBatchClient(realOnBehalfBookings, ['title'])
           setOnBehalfBookings(decryptedOnBehalf)
         }
-        // If no real on-behalf bookings, keep the mock data
       }
     } catch (err) {
       console.error('[dhh-bookings] fetch failed:', err)
@@ -979,7 +884,7 @@ export default function DhhBookingsPage() {
 
   useEffect(() => { fetchData(); fetchConnections() }, [fetchData, fetchConnections])
 
-  const searchFields: (keyof MockBooking)[] = ['title', 'requester_name', 'location', 'specialization']
+  const searchFields: (keyof DisplayBooking)[] = ['title', 'requester_name', 'location', 'specialization']
   const filteredSelf = filterByDateRange(filterBySearch(selfBookings, search, searchFields), dateFrom, dateTo)
   const filteredOnBehalf = filterByDateRange(filterBySearch(onBehalfBookings, search, searchFields), dateFrom, dateTo)
   const groupedSelf = groupByTimeCategory(filteredSelf)
