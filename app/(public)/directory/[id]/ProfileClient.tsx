@@ -10,10 +10,19 @@ import FlagProfileModal from '@/components/directory/FlagProfileModal';
 import AddToListModal from '@/components/directory/AddToListModal';
 import SendMessageModal from '@/components/messaging/SendMessageModal';
 import RequestVideoModal from '@/components/directory/RequestVideoModal';
+import DirectoryPortalSidebar from '@/components/directory/DirectoryPortalSidebar';
 import { createClient } from '@/lib/supabase/client';
 import { groupSpecsByCategory } from '@/lib/constants/specializations';
 import { getMentorshipLabel } from '@/lib/mentorship-categories';
 import { getTimezoneLabel } from '@/lib/timezones';
+
+interface PortalUserData {
+  id: string
+  primaryRole: string
+  name: string
+  initials: string
+  photoUrl: string | null
+}
 
 const TABS = ['Overview', 'Credentials', 'Availability'] as const;
 type Tab = (typeof TABS)[number];
@@ -52,17 +61,20 @@ const CERT_FULL_NAMES: Record<string, string> = {
   AICA: 'Association of International Conference Interpreters',
 };
 
-export default function ProfileClient({ interpreter: i, activeAway, availability, timezone }: { interpreter: Interpreter; activeAway?: ActiveAway | null; availability?: AvailabilityRow[]; timezone?: string | null }) {
+export default function ProfileClient({ interpreter: i, activeAway, availability, timezone, userData }: { interpreter: Interpreter; activeAway?: ActiveAway | null; availability?: AvailabilityRow[]; timezone?: string | null; userData?: PortalUserData | null }) {
   const [activeTab, setActiveTab] = useState<Tab>('Overview');
   const router = useRouter();
   const [toast, setToast] = useState<string | null>(null);
   const [flagModalOpen, setFlagModalOpen] = useState(false);
   const [addToListOpen, setAddToListOpen] = useState(false);
   const [messageModalOpen, setMessageModalOpen] = useState(false);
-  const [userRole, setUserRole] = useState<'deaf' | 'requester' | 'interpreter' | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userRole, setUserRole] = useState<'deaf' | 'requester' | 'interpreter' | null>(
+    (userData?.primaryRole as 'deaf' | 'requester' | 'interpreter') || null
+  );
+  const [userId, setUserId] = useState<string | null>(userData?.id || null);
   const [videoRequestModalOpen, setVideoRequestModalOpen] = useState(false);
   const [videoAlreadyRequested, setVideoAlreadyRequested] = useState(false);
+  const isPortalView = !!userData;
 
   useEffect(() => {
     const supabase = createClient();
@@ -121,14 +133,35 @@ export default function ProfileClient({ interpreter: i, activeAway, availability
     setTimeout(() => setToast(null), 3000);
   }
 
+  const addToListLabel = userRole === 'interpreter' ? '+ Add to my team' : userRole === 'requester' ? '+ Add to my roster' : '+ Add to my list';
+
+  function handleRoleChange(newRole: string) {
+    setUserRole(newRole as 'deaf' | 'requester' | 'interpreter');
+    try { localStorage.setItem('signpost:lastRole', newRole) } catch { /* noop */ }
+  }
+
   return (
+    <div
+      className={isPortalView ? 'profile-portal-layout' : undefined}
+      style={isPortalView ? { display: 'flex' } : undefined}
+    >
+      {isPortalView && (
+        <DirectoryPortalSidebar
+          userName={userData!.name}
+          userInitials={userData!.initials}
+          photoUrl={userData!.photoUrl}
+          activeRole={userRole || userData!.primaryRole}
+          onRoleChange={handleRoleChange}
+        />
+      )}
+      <div style={isPortalView ? { flex: 1, minWidth: 0 } : undefined}>
     <div style={{ minHeight: '100vh' }}>
       {/* ── Header band (lighter surface) ── */}
       <div
         style={{
           background: 'var(--surface)',
           borderBottom: '1px solid var(--border)',
-          paddingTop: '80px',
+          paddingTop: isPortalView ? '24px' : '80px',
         }}
       >
         <div className="profile-header-inner" style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 32px 0' }}>
@@ -368,7 +401,7 @@ export default function ProfileClient({ interpreter: i, activeAway, availability
                   fontFamily: "'DM Sans', sans-serif",
                 }}
               >
-                + Add to my list
+                {addToListLabel}
               </button>
               <button
                 onClick={async () => {
@@ -667,8 +700,11 @@ export default function ProfileClient({ interpreter: i, activeAway, availability
           .profile-flag-row { padding: 0 16px 32px !important; }
           .profile-action-buttons { width: 100% !important; min-width: 0 !important; }
           .profile-action-buttons a, .profile-action-buttons button { width: 100% !important; }
+          .profile-portal-layout { flex-direction: column !important; }
         }
       `}</style>
+    </div>
+      </div>
     </div>
   );
 }

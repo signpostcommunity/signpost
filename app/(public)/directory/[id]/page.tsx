@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import type { Interpreter } from '@/lib/types';
+import { getPortalUserData } from '@/lib/getPortalUserData';
 import ProfileClient from './ProfileClient';
 
 function ProfileUnavailable() {
@@ -45,6 +46,7 @@ interface Props {
 export default async function ProfilePage({ params }: Props) {
   const { id } = await params;
   const supabase = await createClient();
+  const userData = await getPortalUserData();
 
   const { data, error } = await supabase
     .from('interpreter_profiles')
@@ -152,6 +154,7 @@ export default async function ProfilePage({ params }: Props) {
       activeAway={activeAway}
       availability={availRows || []}
       timezone={(data as Record<string, unknown>).timezone as string | null}
+      userData={userData}
     />
   );
 }

@@ -5,6 +5,15 @@ import { useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { isValidPhone } from '@/lib/phone'
 import { InviteHeaderIcon } from '@/components/invite/InviteHeaderIcon'
+import DirectoryPortalSidebar from '@/components/directory/DirectoryPortalSidebar'
+
+interface PortalUserData {
+  id: string
+  primaryRole: string
+  name: string
+  initials: string
+  photoUrl: string | null
+}
 
 type Contact = {
   name: string
@@ -279,8 +288,15 @@ function BatchResults({ results, onReset }: { results: InviteResult[]; onReset: 
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
-function InviteContent() {
+function InviteContent({ userData }: { userData?: PortalUserData | null }) {
   const searchParams = useSearchParams()
+  const isPortalView = !!userData
+  const [activeRole, setActiveRole] = useState(userData?.primaryRole || 'interpreter')
+
+  function handleRoleChange(newRole: string) {
+    setActiveRole(newRole)
+    try { localStorage.setItem('signpost:lastRole', newRole) } catch { /* noop */ }
+  }
 
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null)
   const [senderName, setSenderName] = useState('')
@@ -534,11 +550,25 @@ function InviteContent() {
   }
 
   return (
+    <div
+      className={isPortalView ? 'invite-portal-layout' : undefined}
+      style={isPortalView ? { display: 'flex' } : undefined}
+    >
+      {isPortalView && (
+        <DirectoryPortalSidebar
+          userName={userData!.name}
+          userInitials={userData!.initials}
+          photoUrl={userData!.photoUrl}
+          activeRole={activeRole}
+          onRoleChange={handleRoleChange}
+        />
+      )}
+      <div style={isPortalView ? { flex: 1, minWidth: 0 } : undefined}>
     <div style={{
       background: 'var(--bg)', minHeight: 'calc(100vh - 73px)',
       display: 'flex', justifyContent: 'center', alignItems: 'flex-start',
     }}>
-      <div className="invite-container" style={{ width: '100%', maxWidth: 560, padding: '48px 24px 80px' }}>
+      <div className="invite-container" style={{ width: '100%', maxWidth: 560, padding: isPortalView ? '32px 24px 80px' : '48px 24px 80px' }}>
         {/* Page header */}
         <InviteHeaderIcon portal="public" />
         <h1 style={{
@@ -780,19 +810,24 @@ function InviteContent() {
             align-items: stretch !important;
           }
         }
+        @media (max-width: 768px) {
+          .invite-portal-layout { flex-direction: column !important; }
+        }
       `}</style>
+    </div>
+      </div>
     </div>
   )
 }
 
-export default function InviteClient() {
+export default function InviteClient({ userData }: { userData?: PortalUserData | null }) {
   return (
     <Suspense fallback={
       <div style={{ padding: '100px 24px', textAlign: 'center', color: 'var(--muted)', fontSize: '14px' }}>
         Loading...
       </div>
     }>
-      <InviteContent />
+      <InviteContent userData={userData} />
     </Suspense>
   )
 }
