@@ -313,10 +313,10 @@ export default function DhhRequestPage() {
     <div className="dash-page-content" style={{ padding: '48px 56px', width: '100%' }}>
       <PageHeader
         title="New Interpreter Request"
-        subtitle="Request an interpreter for a personal event. Submitting booking requests for personal events is always free for Deaf/DB/HH users and their families."
+        subtitle="Request an interpreter for a personal event. signpost never charges a booking fee for personal events."
       />
       <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: -16, marginBottom: 28, maxWidth: 720, lineHeight: 1.5 }}>
-        (Note: this is separate from what the interpreter charges for their services. They will send you their rate directly.)
+        Interpreters set their own rates and will send theirs directly.
       </p>
 
       {/* Callout box */}
