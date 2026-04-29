@@ -57,6 +57,13 @@ export async function GET(request: NextRequest) {
     ).length
     const interpretersNeeded = booking.interpreter_count || 1
 
+    // Gate all "send to more" alerts: if enough interpreters have already
+    // responded (status IN ('responded','confirmed') — sent a rate and
+    // committed availability for the original date/time), the booking has
+    // sufficient coverage and these alerts are misleading. 'proposed'
+    // (alternative time suggestion) does NOT count toward sufficiency.
+    const hasSufficientResponses = responded >= interpretersNeeded
+
     const nudgeKey = `wave_${wave}_nudge`
     const urgentKey = `wave_${wave}_urgent`
     const timeoutKey = `wave_${wave}_timeout`
@@ -65,8 +72,8 @@ export async function GET(request: NextRequest) {
     const bookingTitle = decryptedBooking.title || 'Untitled request'
     const bookingDate = booking.date || ''
 
-    // TRIGGER A: Nudge (5+ declined)
-    if (declined >= 5 && !alerts[nudgeKey]) {
+    // TRIGGER A: Nudge (5+ declined, but only if coverage is still insufficient)
+    if (!hasSufficientResponses && declined >= 5 && !alerts[nudgeKey]) {
       await createNotification({
         recipientUserId: booking.requester_id,
         type: 'wave_nudge',
@@ -92,13 +99,15 @@ export async function GET(request: NextRequest) {
     }
 
     // TRIGGER B: Urgent (7+ declined OR remaining pending < needed + 2)
-    const isUrgent = declined >= 7 || (pending < interpretersNeeded + 2 && declined >= 3)
+    // Gated on insufficient responses — if the booking already has enough
+    // interpreters who sent a rate, this is not at-risk.
+    const isUrgent = !hasSufficientResponses && (declined >= 7 || (pending < interpretersNeeded + 2 && declined >= 3))
     if (isUrgent && !alerts[urgentKey]) {
       await createNotification({
         recipientUserId: booking.requester_id,
         type: 'wave_urgent',
         subject: `Urgent: Your request for ${bookingTitle} is at risk`,
-        body: `Your request "${bookingTitle}" is at risk. Only ${pending} interpreters haven't responded and you still need ${interpretersNeeded}. We recommend sending to more interpreters now.`,
+        body: `Your request "${bookingTitle}" is at risk. Only ${pending} interpreter${pending === 1 ? " hasn't" : "s haven't"} responded and you still need ${interpretersNeeded}. We recommend sending to more interpreters now.`,
         metadata: {
           booking_id: booking.id,
           booking_title: bookingTitle,

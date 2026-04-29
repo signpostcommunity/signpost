@@ -512,10 +512,10 @@ ${bookMeSection}
       htmlBody = `<p>${declinedCount} interpreters have declined your request. ${pendingCount} are still pending and ${respondedCount} have responded. You can send to more interpreters to improve your chances.</p>`
     } else if (type === 'wave_urgent') {
       subject = `Urgent: Your request for ${bookingTitle} is at risk`
-      htmlBody = `<p>Your request is at risk. Only ${pendingCount} interpreters haven't responded yet. We recommend sending to more interpreters now to make sure your event is covered.</p>`
+      htmlBody = `<p>Your request is at risk. Only ${pendingCount} interpreter${pendingCount === '1' ? " hasn't" : "s haven't"} responded yet. We recommend sending to more interpreters now to make sure your event is covered.</p>`
       contentBlocks.push({
         type: 'warning_card',
-        data: { title: 'Action needed', message: `Only ${pendingCount} interpreters haven't responded. Send to more now.` },
+        data: { title: 'Action needed', message: `Only ${pendingCount} interpreter${pendingCount === '1' ? " hasn't" : "s haven't"} responded. Send to more now.` },
       })
     } else if (type === 'wave_timeout') {
       subject = `${bookingTitle}: interpreters haven't responded yet`
