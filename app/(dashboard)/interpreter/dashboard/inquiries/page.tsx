@@ -1147,7 +1147,7 @@ export default function InquiriesPage() {
       }
 
       // Decrypt encrypted fields (title, notes) server-side
-      const decrypted = await decryptBatchClient(mapped, ['title', 'notes'])
+      const decrypted = await decryptBatchClient(mapped, ['title', 'notes'], 'bookings')
       setBookings(decrypted)
     }
     setLoading(false)

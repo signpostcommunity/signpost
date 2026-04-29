@@ -662,7 +662,7 @@ export default function DeafDashboardOverview() {
           .order('date', { ascending: false })
           .limit(3)
         if (bookingsData) {
-          const decrypted = await decryptBatchClient(bookingsData, ['title'])
+          const decrypted = await decryptBatchClient(bookingsData, ['title'], 'bookings')
           setRecentBookings(decrypted.map(b => ({
             ...b, event_type: null, event_category: null, description: null,
             notes: null, interpreter_count: null, cancellation_reason: null,

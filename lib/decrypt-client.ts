@@ -2,10 +2,21 @@
  * Client-side decryption helper.
  * Calls the /api/decrypt server route to decrypt encrypted field values.
  * Fields that don't start with 'enc:' are returned unchanged without a server call.
+ *
+ * Requires a context param for ownership verification:
+ *   { table: "bookings" | "messages", id: string }
  */
+
+export interface DecryptContext {
+  table: 'bookings' | 'messages'
+  id?: string
+  ids?: string[]
+}
+
 export async function decryptFieldsClient<T extends Record<string, any>>(
   obj: T,
-  fieldNames: (keyof T)[]
+  fieldNames: (keyof T)[],
+  context: DecryptContext
 ): Promise<T> {
   const fieldsToDecrypt: Record<string, string> = {}
   let needsDecryption = false
@@ -24,7 +35,7 @@ export async function decryptFieldsClient<T extends Record<string, any>>(
     const res = await fetch('/api/decrypt', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fields: fieldsToDecrypt }),
+      body: JSON.stringify({ fields: fieldsToDecrypt, context }),
     })
 
     if (!res.ok) return obj
@@ -42,10 +53,16 @@ export async function decryptFieldsClient<T extends Record<string, any>>(
 
 /**
  * Batch decrypt an array of objects.
+ * Each item must have an `id` field used for ownership verification.
+ *
+ * @param items - Array of records to decrypt
+ * @param fieldNames - Fields to check for encryption
+ * @param contextTable - The table these records belong to ("bookings" or "messages")
  */
 export async function decryptBatchClient<T extends Record<string, any>>(
   items: T[],
-  fieldNames: (keyof T)[]
+  fieldNames: (keyof T)[],
+  contextTable: 'bookings' | 'messages'
 ): Promise<T[]> {
   // Collect all encrypted fields across all items
   const allFields: Record<string, string> = {}
@@ -64,11 +81,17 @@ export async function decryptBatchClient<T extends Record<string, any>>(
 
   if (fieldMap.length === 0) return items
 
+  // Extract unique record IDs for ownership verification
+  const ids = [...new Set(items.map(item => item.id as string).filter(Boolean))]
+
   try {
     const res = await fetch('/api/decrypt', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fields: allFields }),
+      body: JSON.stringify({
+        fields: allFields,
+        context: { table: contextTable, ids },
+      }),
     })
 
     if (!res.ok) return items

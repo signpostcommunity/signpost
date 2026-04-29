@@ -1789,7 +1789,7 @@ export default function ConfirmedPage() {
         })
         .sort((a, b) => (a.date || '').localeCompare(b.date || ''))
       // Decrypt encrypted fields (title, description, notes) server-side
-      const decrypted = await decryptBatchClient(data, ['title', 'description', 'notes'])
+      const decrypted = await decryptBatchClient(data, ['title', 'description', 'notes'], 'bookings')
       setBookings(decrypted)
 
       // Fetch invoice status for all bookings

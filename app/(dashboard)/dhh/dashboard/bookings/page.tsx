@@ -9,7 +9,6 @@ import { PageHeader, SectionLabel, DemoBadge, GhostButton, Avatar, DashMobileSty
 import VideoRecorder from '@/components/ui/VideoRecorder'
 import { getVideoEmbedUrl } from '@/lib/videoUtils'
 import BookingFilterBar, { filterBySearch, filterByDateRange, groupByTimeCategory, timeCategoryHeaderStyle } from '@/components/dashboard/shared/BookingFilterBar'
-import { decryptBatchClient } from '@/lib/decrypt-client'
 import { formatLocationShort, formatLocationFull } from '@/lib/location-display'
 
 /* ── Types ── */
@@ -751,13 +750,11 @@ export default function DhhBookingsPage() {
           }))
 
         if (realSelfBookings.length > 0) {
-          const decryptedSelf = await decryptBatchClient(realSelfBookings, ['title'])
-          setSelfBookings(decryptedSelf)
+          setSelfBookings(realSelfBookings)
         }
 
         if (realOnBehalfBookings.length > 0) {
-          const decryptedOnBehalf = await decryptBatchClient(realOnBehalfBookings, ['title'])
-          setOnBehalfBookings(decryptedOnBehalf)
+          setOnBehalfBookings(realOnBehalfBookings)
         }
       }
     } catch (err) {
