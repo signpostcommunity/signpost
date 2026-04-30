@@ -653,7 +653,6 @@ function InterpreterSignupForm() {
     if (!signLanguages?.length) missing.push('At least one sign language');
     if (!spokenLanguages?.length) missing.push('At least one spoken language');
     if (!yearsExperience) missing.push('Years of professional interpreting experience');
-    if (!specializations?.length) missing.push('At least one specialization');
     return missing;
   }
 
@@ -2500,6 +2499,14 @@ function InterpreterSignupForm() {
           <PrimaryButton onClick={handleSaveAboutYou} disabled={loading}>
             {loading ? 'Saving...' : 'Continue'}
           </PrimaryButton>
+          {!bio && !bioSpecializations && !videoUrl && (
+            <div style={{ marginTop: 10 }}>
+              <OutlineButton onClick={() => { setError(''); goToSection(7); }}>Skip for now</OutlineButton>
+              <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#96a0b8', fontStyle: 'italic', margin: '6px 0 0', lineHeight: 1.4 }}>
+                {"You'll be in the directory but won't appear in matched search results until you complete this section."}
+              </p>
+            </div>
+          )}
           <div style={{ marginTop: 10 }}>
             <OutlineButton onClick={() => goToSection(5)}>Back</OutlineButton>
           </div>
@@ -2659,6 +2666,14 @@ function InterpreterSignupForm() {
             <PrimaryButton onClick={handleSection7Save} disabled={loading}>
               {loading ? 'Saving...' : 'Continue'}
             </PrimaryButton>
+            {specializations.length === 0 && (
+              <div style={{ marginTop: 10 }}>
+                <OutlineButton onClick={() => { setError(''); goToSection(8); }}>Skip for now</OutlineButton>
+                <p style={{ fontFamily: "'Inter', sans-serif", fontSize: 13, color: '#96a0b8', fontStyle: 'italic', margin: '6px 0 0', lineHeight: 1.4 }}>
+                  {"You'll be in the directory but won't appear in matched search results until you complete this section."}
+                </p>
+              </div>
+            )}
             <div style={{ marginTop: 8 }}>
               <OutlineButton onClick={() => goToSection(6)}>Back</OutlineButton>
             </div>
